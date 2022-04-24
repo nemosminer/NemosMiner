@@ -6,6 +6,25 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+Changelog NemosMiner 4.0.0.27 24.04.2022
+========================================
+
+Core:
+- Reduce number of requests to 'min-api.cryptocompare.com'
+- Renamed config item 'AllowedBadShareRatio' to 'BadShareRatioThreshold' to better reflect its purpose
+- Renamed config item 'DeductRejectedShares to 'SubtractBadShares'
+- Remove obsolete config item 'EstimateCorrection' (Accuracy & Bias reduce prices which in turn avoids pools with high price fluctuation)
+
+Miner updates:
+- NanoMiner-v3.6.2
+- Trex-v0.25.12
+
+Fixes:
+- ZergPool broken (all variants, regression from 4.0.0.26)
+
+Web GUI:
+- Config editor: Re-arranged some items
+
 
 Changelog NemosMiner 4.0.0.26 15.04.2022
 ========================================

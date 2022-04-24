@@ -1,34 +1,34 @@
 {
   "Currency": {
     "ETH": {
-      "BlockHeight": 14584331,
+      "BlockHeight": 14639463,
       "CoinName": "Ethereum",
-      "DAGsize": 5150605184,
-      "Epoch": 486
+      "DAGsize": 5158993024,
+      "Epoch": 487
     },
     "EGEM": {
-      "BlockHeight": 10250642,
+      "BlockHeight": 10312937,
       "CoinName": "EtherGem",
-      "DAGsize": 3934256512,
-      "Epoch": 341
+      "DAGsize": 3951032192,
+      "Epoch": 343
     },
     "CLO": {
-      "BlockHeight": 9696195,
+      "BlockHeight": 9753670,
       "CoinName": "Callisto",
-      "DAGsize": 3783260032,
-      "Epoch": 323
+      "DAGsize": 3800036224,
+      "Epoch": 325
     },
     "QKC": {
-      "BlockHeight": 9512213,
+      "BlockHeight": 9587301,
       "CoinName": "QuarkChain",
-      "DAGsize": 3732925568,
-      "Epoch": 317
+      "DAGsize": 3749706368,
+      "Epoch": 319
     },
     "MOAC": {
-      "BlockHeight": 8973046,
+      "BlockHeight": 9030472,
       "CoinName": "Moac",
-      "DAGsize": 3581934464,
-      "Epoch": 299
+      "DAGsize": 3598712704,
+      "Epoch": 301
     },
     "ETHO": {
       "BlockHeight": 8709768,
@@ -37,16 +37,10 @@
       "Epoch": 290
     },
     "ETC": {
-      "BlockHeight": 14928386,
+      "BlockHeight": 14985354,
       "CoinName": "Ethereum Classic",
-      "DAGsize": 3154109312,
-      "Epoch": 248
-    },
-    "NUKO": {
-      "BlockHeight": 7217546,
-      "CoinName": "Nekonium",
-      "DAGsize": 3087003776,
-      "Epoch": 240
+      "DAGsize": 3162505088,
+      "Epoch": 249
     },
     "REOSC": {
       "BlockHeight": 7114083,
@@ -55,25 +49,25 @@
       "Epoch": 237
     },
     "AKA": {
-      "BlockHeight": 6841175,
+      "BlockHeight": 6897416,
       "CoinName": "Akroma",
-      "DAGsize": 2986338944,
-      "Epoch": 228
+      "DAGsize": 2994731392,
+      "Epoch": 229
     },
     "ETP": {
-      "BlockHeight": 6507775,
+      "BlockHeight": 6542410,
       "CoinName": "Metaverse",
-      "DAGsize": 2885676928,
-      "Epoch": 216
+      "DAGsize": 2902451584,
+      "Epoch": 218
     },
     "ESN": {
-      "BlockHeight": 6342439,
+      "BlockHeight": 6344796,
       "CoinName": "EtherSocial",
       "DAGsize": 2843734144,
       "Epoch": 211
     },
     "NILU": {
-      "BlockHeight": 6154897,
+      "BlockHeight": 6160618,
       "CoinName": "Nilu",
       "DAGsize": 2793401984,
       "Epoch": 205
@@ -85,34 +79,34 @@
       "Epoch": 196
     },
     "ATH": {
-      "BlockHeight": 5473816,
+      "BlockHeight": 5502086,
       "CoinName": "Atheios",
-      "DAGsize": 2600467328,
-      "Epoch": 182
+      "DAGsize": 2608856192,
+      "Epoch": 183
     },
     "ERG": {
-      "BlockHeight": 727890,
+      "BlockHeight": 734213,
       "CoinName": "Ergo",
       "DAGsize": 1275067264,
       "Epoch": 24
     },
     "PGC": {
-      "BlockHeight": 4547580,
+      "BlockHeight": 4565375,
       "CoinName": "PegasCoin",
-      "DAGsize": 2340420224,
-      "Epoch": 151
+      "DAGsize": 2348808064,
+      "Epoch": 152
     },
     "UBQ": {
-      "BlockHeight": 2164685,
+      "BlockHeight": 2198794,
       "CoinName": "UBIQ",
-      "DAGsize": 1677721216,
-      "Epoch": 72
+      "DAGsize": 1686109312,
+      "Epoch": 73
     },
     "DBIX": {
-      "BlockHeight": 1706033,
+      "BlockHeight": 1714310,
       "CoinName": "DubaiCoin",
-      "DAGsize": 1543503488,
-      "Epoch": 56
+      "DAGsize": 1551892096,
+      "Epoch": 57
     },
     "ERE": {
       "BlockHeight": 484111,
@@ -121,18 +115,18 @@
       "Epoch": 16
     },
     "RVN": {
-      "BlockHeight": 2233042,
+      "BlockHeight": 2245455,
       "CoinName": "RavenCoin",
-      "DAGsize": 3565157248,
-      "Epoch": 297
+      "DAGsize": 3581934464,
+      "Epoch": 299
     },
     "*": {
-      "BlockHeight": 14928386,
+      "BlockHeight": 14985354,
       "CoinName": "*",
-      "DAGsize": 5150605184,
-      "Epoch": 486
+      "DAGsize": 5158993024,
+      "Epoch": 487
     }
   },
-  "Updated_Minerstat": "2022-04-14T15:27:04.4715467Z",
-  "Updated_Ravencoin": "2022-04-14T15:27:05.0484973Z"
+  "Updated_Minerstat": "2022-04-23T07:40:12.5966947Z",
+  "Updated_Ravencoin": "2022-04-23T07:40:13.1307167Z"
 }

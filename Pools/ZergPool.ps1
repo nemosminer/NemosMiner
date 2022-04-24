@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.0.0.26
-Version date:   13 April 2022
+Version:        4.0.0.27
+Version date:   24 April 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -72,9 +72,6 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
-        Try { $EstimateFactor = $Request.$_.actual_last24h / $Request.$_.$PriceField }
-        Catch { $EstimateFactor = 1 }
-
         ForEach ($Region in $Regions) { 
 
             $PoolHost = If ($Config.UseAnycast -or $PoolConfig.UseAnycast) { "$Algorithm.$HostSuffix" } Else { "$Algorithm.$Region.$HostSuffix" }
@@ -95,7 +92,6 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
                 Region                   = "$(Get-Region $Region)"
                 SSL                      = $false
                 Fee                      = [Decimal]$Fee
-                EstimateFactor           = [Decimal]$EstimateFactor
                 Updated                  = [DateTime]$Updated
                 Workers                  = [Int]$Workers
             }

@@ -46,7 +46,8 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 $_.Arguments += " --url $(If ($Pools.($_.Algorithm).SSL) { "ssl://" } )$($Pools.($_.Algorithm).User)@$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)"
                 $_.Arguments += " --pass $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum - 0.95GB) / 1GB)" })"
 
-                If ($Config.UseMinerTweaks -eq $true) { $_.Arguments += " --oc1" }
+                # Apply tuning parameters
+                If ($Variables.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
 
                 [PSCustomObject]@{ 
                     Name            = $Miner_Name

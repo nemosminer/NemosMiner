@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "NVIDIA")) { Return }
 
-$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.25.9/t-rex-0.25.9-win.zip"
+$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.25.12/t-rex-0.25.12-win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\t-rex.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
@@ -54,7 +54,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 #(ethash, kawpow, progpow) Worker name is not being passed for some mining pools
                 # From now on the username (--user) for these algorithms is no longer parsed as <wallet_address>.<worker_name>
                 $_.Arguments += " --user $(If ($Pools.($_.Algorithm[0]).DAGsize -gt 0 -and ($Pools.($_.Algorithm[0]).User -split "\.").Count -eq 2 -and $Pools.($_.Algorithm[0]).BaseName -ne "MiningPoolHub") { "$($Pools.($_.Algorithm[0]).User -split "\." | Select-Object -First 1) --worker $($Pools.($_.Algorithm[0]).User -split "\." | Select-Object -Index 1)" } Else { "$($Pools.($_.Algorithm[0]).User)" })"
-                $_.Arguments += " --pass $($Pools.($_.Algorithm[0]).Pass)$(If ($Pools.($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum -1.5GB) / 1GB)" })"
+                $_.Arguments += " --pass $($Pools.($_.Algorithm[0]).Pass)$(If ($Pools.($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum - 0.95GB) / 1GB)" })"
 
                 If ($_.Algorithm[0] -in @("ProgPoW", "Zano")) { 
                     If ($Pools.($_.Algorithm[0]).Currency -in @("SERO", "ZANO")) { 
@@ -70,11 +70,11 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     #(ethash, kawpow, progpow) Worker name is not being passed for some mining pools
                     # From now on the username (--user) for these algorithms is no longer parsed as <wallet_address>.<worker_name>
                     $_.Arguments += " --user2 $(If ($Pools.($_.Algorithm[1]).DAGsize -gt 0 -and ($Pools.($_.Algorithm[1]).User -split "\.").Count -eq 2 -and $Pools.($_.Algorithm[1]).BaseName -ne "MiningPoolHub") { "$($Pools.($_.Algorithm[1]).User -split "\." | Select-Object -First 1) --worker2 $($Pools.($_.Algorithm[1]).User -split "\." | Select-Object -Index 1)" } Else { "$($Pools.($_.Algorithm[1]).User)" })"
-                    $_.Arguments += " --pass2 $($Pools.($_.Algorithm[1]).Pass)$(If ($Pools.($_.Algorithm[1]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum -1.5GB) / 1GB)" })"
+                    $_.Arguments += " --pass2 $($Pools.($_.Algorithm[1]).Pass)$(If ($Pools.($_.Algorithm[1]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum - 0.95GB) / 1GB)" })"
                 }
 
                 # Apply tuning parameters
-                If ($Variables.IsLocalAdmin -and $Config.UseMinerTweaks) { $_.Arguments += $_.Tuning }
+                If ($Variables.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
 
                 If ($_.Arguments -notmatch "--kernel [0-9]") { $_.WarmupTimes[0] += 15 } # Allow extra seconds for kernel auto tuning
 

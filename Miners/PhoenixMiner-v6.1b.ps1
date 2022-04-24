@@ -29,7 +29,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
     # Intensities for 2. algorithm
     $Intensities = [PSCustomObject]@{ 
-        "Blake2s" = @($null, 10, 20, 30, 40) # $null is for auto-tuning
+        "Blake2s" = @(10, 20, 30, 40)
     }
 
     # Build command sets for intensities
@@ -72,8 +72,8 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 $_.Arguments += " -pass $($Pools.($_.Algorithm[0]).Pass)$(If ($Pools.($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum - 0.95GB) / 1GB)" })"
 
                 If ($Pools.($_.Algorithm[0]).DAGsize -gt 0) { 
-                    If ($Pools.($_.Algorithm[0]).BaseName -eq "MiningPoolHub") { $_.Arguments += " -proto 1" }
-                    If ($Pools.($_.Algorithm[0]).BaseName -eq "NiceHash") { $_.Arguments += " -proto 4" }
+                    If ($Pools.($_.Algorithm[0]).BaseName -in @("MiningPoolHub", "ProHashing")) { $_.Arguments += " -proto 1" }
+                    ElseIf ($Pools.($_.Algorithm[0]).BaseName -eq "NiceHash") { $_.Arguments += " -proto 4" }
                 }
 
                 # kernel 3 does not support dual mining
@@ -85,7 +85,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 If ($_.Algorithm[1]) { $_.Arguments += " -dpool $(If ($PoolsSecondaryAlgorithm.($_.Algorithm[1]).SSL) { "ssl://" })$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host):$($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Port) -dwal $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).User) -dpass $($PoolsSecondaryAlgorithm.($_.Algorithm[1]).Pass)" }
 
                 # Apply tuning parameters
-                If ($Config.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
+                If ($Variables.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
 
                 If (-not $_.Intensity) { $_.WarmupTimes[1] += 45 } # Allow extra seconds for auto-tuning
 

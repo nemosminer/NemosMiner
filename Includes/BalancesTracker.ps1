@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.0.26
-Version date:   13 April 2022
+Version:        4.0.0.27
+Version date:   24 April 2022
 #>
 
 # Start transcript log
@@ -89,9 +89,7 @@ While ($true) {
         $BalanceObjects = @($BalanceObjects | Where-Object { $_.Pool -match "^MiningPoolHub(|Coins)$|^ProHashing(|24h)$" }) + @($BalanceObjects | Where-Object { $_.Pool -notmatch "^MiningPoolHub(|Coins)$|^ProHashing(|24h)$" } | Group-Object Pool, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
 
         # Read exchange rates
-        $Variables.BalancesCurrencies = @($BalanceObjects.Currency | Select-Object -Unique)
-        $Variables.AllCurrencies = @((@($Config.Currency) + @($Config.Wallets.PSObject.Properties.Name) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies)) | Select-Object -Unique)
-        If (-not $Variables.Rates.BTC.($Config.Currency) -or $Config.ExtraCurrencies -ne $Variables.ExtraCurrencies -or $Config.BalancesTrackerPollInterval -lt 1 -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-3))) { Get-Rate }
+        Get-Rate
 
         $BalanceObjects | Where-Object { $_.DateTime -gt $Now } | ForEach-Object { 
             $PoolBalanceObject = $_
@@ -385,4 +383,4 @@ While ($true) {
     }
 }
 
-Write-Message -Level INFO "Balances Tracker stopped."
+Write-Message -Level Info "Balances Tracker stopped."

@@ -49,7 +49,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 If ($Pools.($_.Algorithm).SSL) { $_.Arguments += " --ssl" }
 
                 # Apply tuning parameters
-                If ($Config.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
+                If ($Variables.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
 
                 [PSCustomObject]@{ 
                     Name        = $Miner_Name

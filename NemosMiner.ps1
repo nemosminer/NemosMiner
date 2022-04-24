@@ -21,22 +21,22 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.26
-Version date:   13 April 2022
+Version:        4.0.0.27
+Version date:   24 April 2022
 #>
 
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $false)]
     [String[]]$Algorithm = @(), # i.e. @("Ethash", "Equihash", "Cryptonight") etc.
-    [Parameter(Mandatory = $false)]
-    [Double]$AllowedBadShareRatio = 0.1, # Allowed ratio of bad shares (total / bad) as reported by the miner. If the ratio exceeds the configured threshold then the miner will marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
     [Parameter(Mandatory = $false)] 
     [String]$APILogfile = "", # API will log all requests to this file, to disable leave empty
     [Parameter(Mandatory = $false)]
     [Int]$APIPort = 3999, # TCP Port for API & Web GUI
     [Parameter(Mandatory = $false)]
     [Boolean]$AutoUpdate = $false, # Autoupdate
+    [Parameter(Mandatory = $false)]
+    [Double]$BadShareRatioThreshold = 0.05, # Allowed ratio of bad shares (total / bad) as reported by the miner. If the ratio exceeds the configured threshold then the miner will get marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
     [Parameter(Mandatory = $false)]
     [Boolean]$BalancesKeepAlive = $true, # If true will force mining at a pool to protect your earnings (some pools auto-purge the wallet after longer periods of inactivity, see '\Data\PoolData.Json' BalancesKeepAlive properties)
     [Parameter(Mandatory = $false)]
@@ -54,8 +54,6 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$Currency = (Get-Culture).NumberFormat.CurrencySymbol, # Main 'real-money' currency, i.e. GBP, USD, AUD, NZD ect. Do not use crypto currencies
     [Parameter(Mandatory = $false)]
-    [Boolean]$DeductRejectedShares = $true, # If true will deduct rejected shares when calculating effective hashrates
-    [Parameter(Mandatory = $false)]
     [Int]$Delay = 0, # seconds between stop and start of miners, use only when getting blue screens on miner switches
     [Parameter(Mandatory = $false)]
     [Switch]$DisableDualAlgoMining = $false, # If true will not use any dual algorithm miners
@@ -69,8 +67,6 @@ param(
     [Int]$Donate = 13, # Minutes per Day
     [Parameter(Mandatory = $false)]
     [Double]$EarningsAdjustmentFactor = 1, # Default factor with which multiplies the prices reported by ALL pools. Allowed values: 0.0 - 1.0
-    [Parameter(Mandatory = $false)]
-    [Switch]$EstimateCorrection = $false, # If true will multiply the algorithm price by estimate factor (actual_last24h / estimate_last24h) to counter pool overestimated prices
     [Parameter(Mandatory = $false)]
     [Double]$EthashLowMemMinMemGB = 2GB, # Minimum EthashLowMem MinMem GB (sometimes Pool does not like GPUs with very little VRAM)
     [Parameter(Mandatory = $false)]
@@ -121,13 +117,13 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$MiningPoolHubAPIKey = "", # MiningPoolHub API Key (required to retrieve balance information)
     [Parameter(Mandatory = $false)]
-    [String]$MiningPoolHubUserName = "Nemo", # MiningPoolHub UserName
+    [String]$MiningPoolHubUserName = (Get-Random("MrPlus", "Nemo", "uselessguru")), # MiningPoolHub username
     [Parameter(Mandatory = $false)]
     [Int]$MinInterval = 1, # Minimum number of full cycles a miner must mine the same available algorithm@pool continously before switching is allowed (e.g. 3 would force a miner to stick mining algorithm@pool for min. 3 intervals before switching to another algorithm or pool)
     [Parameter(Mandatory = $false)]
     [Int]$MinWorker = 25, # Minimum workers mining the algorithm at the pool. If less miners are mining the algorithm then the pool will be disabled. This is also a per pool setting configurable in 'PoolsConfig.json'
     [Parameter(Mandatory = $false)]
-    [String]$MonitoringServer = "", # Monitoring server hostname, default "https://nemosminer.com"
+    [String]$MonitoringServer = "https://nemosminer.com", # Monitoring server hostname, default "https://nemosminer.com"
     [Parameter(Mandatory = $false)]
     [String]$MonitoringUser = "", # Monitoring user ID as registered with monitoring server
     [Parameter(Mandatory = $false)]
@@ -205,7 +201,11 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$StartGUIMinimized = $true, 
     [Parameter(Mandatory = $false)]
+    [String]$SSL = "prefer", # SSL pool connections: One of three values: 'Prefer' (use where available), 'Never' or 'Always' (pools that do not allow SSL are ignored)
+    [Parameter(Mandatory = $false)]
     [String]$StartupMode = $false, # One of 'Idle', 'Paused' or 'Running'. This is the same as the buttons in the Web GUI
+    [Parameter(Mandatory = $false)]
+    [Boolean]$SubtractBadShares = $true, # If true will deduct rejected shares when calculating effective hashrates
     [Parameter(Mandatory = $false)]
     [Int]$SyncWindow = 3, # Cycles. Pool prices must all be all have been collected within the last 'SyncWindow' cycles, otherwise the biased value of older poll price data will get reduced more the older the data is
     [Parameter(Mandatory = $false)]
@@ -223,7 +223,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$UseAnycast = $false, # If true pools (currently ZergPool only) will use anycast for best network performance and ping times
     [Parameter(Mandatory = $false)]
-    [Hashtable]$Wallets = @{ "BTC" = "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"; "ETC" = "0x7CF99ec9029A98AFd385f106A93977D8105Fec0f"; "ETH" = "0x92e6F22C1493289e6AD2768E1F502Fc5b414a287" }, 
+    [Hashtable]$Wallets = @{ "BTC" = (Get-Random("134bw4oTorEJUUVFhokDQDfNqTs7rBMNYy", "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE", "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF")); "ETC" = "0x7CF99ec9029A98AFd385f106A93977D8105Fec0f"; "ETH" = "0x92e6F22C1493289e6AD2768E1F502Fc5b414a287" }, 
     [Parameter(Mandatory = $false)]
     [Switch]$Watchdog = $true, # if true will automatically put pools and/or miners temporarily on hold it they fail $WatchdogCount times in a row
     [Parameter(Mandatory = $false)]
@@ -247,67 +247,37 @@ https://github.com/Minerx117/NemosMiner/blob/master/LICENSE
 "@
 Write-Host "`nCopyright and license notices must be preserved.`n" -ForegroundColor Yellow
 
-# Load Branding
-$Global:Branding = [PSCustomObject]@{ 
-    LogoPath     = "https://raw.githubusercontent.com/Minerx117/UpDateData/master/NM.png"
-    BrandName    = "NemosMiner"
-    BrandWebSite = "https://nemosminer.com"
-    ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.26"
-}
-
-If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
-
-If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
-    Write-Host "`nUnsupported PowerShell version $($PSVersiontable.PSVersion.ToString()) detected.`n$($Branding.BrandName) requires at least PowerShell version 7.0.0 which can be downloaded from https://github.com/PowerShell/powershell/releases.`n`n" -ForegroundColor Red
-    Start-Sleep -Seconds 30
-    Exit
-}
-
-Try { 
-    Add-Type -Path ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll" -ErrorAction Stop
-}
-Catch { 
-    Remove-Item ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll" -Force -ErrorAction Ignore
-    Add-Type -Path ".\Includes\OpenCL\*.cs" -OutputAssembly ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll"
-    Add-Type -Path ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll"
-}
-
-Try { 
-    Add-Type -Path ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll" -ErrorAction Stop
-}
-Catch { 
-    Remove-Item ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll" -Force -ErrorAction Ignore
-    Add-Type -Path ".\Includes\CPUID.cs" -OutputAssembly ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
-    Add-Type -Path ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
-}
-
-Add-Type -AssemblyName System.Windows.Forms
-[System.Windows.Forms.Application]::EnableVisualStyles()
-[Void][Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms.DataVisualization")
-
-# Create directories
-If (-not (Test-Path -Path ".\Config" -PathType Container)) { New-Item -Path . -Name "Config" -ItemType Directory | Out-Null }
-If (-not (Test-Path -Path ".\Logs" -PathType Container)) { New-Item -Path . -Name "Logs" -ItemType Directory | Out-Null }
-
 # Initialize thread safe global variables
 New-Variable Config ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
 New-Variable Stats ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
 New-Variable Variables ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
 
-$Variables.CurrentProduct = $Branding.ProductLabel
-$Variables.CurrentVersion = $Branding.Version
-Remove-Variable Branding -ErrorAction Ignore
+# Load Branding
+$Variables.Branding = [PSCustomObject]@{ 
+    LogoPath     = "https://raw.githubusercontent.com/Minerx117/UpDateData/master/NM.png"
+    BrandName    = "NemosMiner"
+    BrandWebSite = "https://nemosminer.com"
+    ProductLabel = "NemosMiner"
+    Version      = [System.Version]"4.0.0.27"
+}
+
+If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
+    Write-Host "`nUnsupported PowerShell version $($PSVersiontable.PSVersion.ToString()) detected.`n$($Variables.Branding.BrandName) requires at least PowerShell version 7.0.0 which can be downloaded from https://github.com/PowerShell/powershell/releases.`n`n" -ForegroundColor Red
+    Start-Sleep -Seconds 30
+    Exit
+}
+
+# Create directories
+If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
+If (-not (Test-Path -Path ".\Config" -PathType Container)) { New-Item -Path . -Name "Config" -ItemType Directory | Out-Null }
+If (-not (Test-Path -Path ".\Logs" -PathType Container)) { New-Item -Path . -Name "Logs" -ItemType Directory | Out-Null }
 
 # Expand paths
 $Variables.MainPath = (Split-Path $MyInvocation.MyCommand.Path)
-$Variables.LogFile = ".\Logs\$($Variables.CurrentProduct)_$(Get-Date -Format "yyyy-MM-dd").log"
+$Variables.LogFile = ".\Logs\$($Variables.Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd").log"
 $Variables.ConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
 $Variables.PoolsConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PoolsConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
 $Variables.BalancesTrackerConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.BalancesTrackerConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
-
-# Read configuration
-Read-Config -ConfigFile $Variables.ConfigFile
 
 # Verify donation data
 $Variables.DonationData = Get-Content -Path ".\Data\DonationData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore -NoEnumerate
@@ -324,8 +294,8 @@ If (-not $Variables.Algorithms) {
     Exit
 }
 # Load coin names
-$Variables.CoinNames = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
-If (-not $Variables.CoinNames) { 
+$Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+If (-not $Global:CoinNames) { 
     Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CoinNames.json' is not a valid JSON file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
@@ -342,11 +312,10 @@ $Variables.PoolData = Get-Content -Path ".\Data\PoolData.json" -ErrorAction Igno
 $Variables.PoolNames = @($Variables.PoolData.Keys)
 $Variables.PoolVariants = @(($Variables.PoolData.Keys | ForEach-Object { $Variables.PoolData.$_.Variant.Keys -replace " External$| Internal$" }) | Sort-Object -Unique)
 If (-not $Variables.PoolVariants) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\PoolData.json' is not a valid $($Variables.CurrentProduct) JSON data file. Please restore it from your original download." -Console
+    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\PoolData.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file. Please restore it from your original download." -Console
     Start-Sleep -Seconds 10
     Exit
 }
-
 # Load PoolsLastUsed data
 $Variables.PoolsLastUsed = (Get-Content -Path ".\Data\PoolsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore)
 If (-not $Variables.PoolsLastUsed.Keys) { $Variables.PoolsLastUsed = @{ } }
@@ -361,13 +330,16 @@ $MyInvocation.MyCommand.Parameters.Keys | Where-Object { Get-Variable $_ -ErrorA
     Remove-Variable $_ -ErrorAction Ignore
 }
 
+# Read configuration
+Read-Config -ConfigFile $Variables.ConfigFile
+
 # Start transcript log
 If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\$((Get-Item $MyInvocation.MyCommand.Path).BaseName)-Transcript_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
 
 # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
 Start-LogReader
 
-Write-Message -Level Info "Starting $($Variables.CurrentProduct)® v$($Variables.CurrentVersion) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru"
+Write-Message -Level Info "Starting $($Variables.Branding.ProductLabel)® v$($Variables.Branding.Version) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru"
 If (-not $Variables.FreshConfig) { Write-Message -Level Info "Using configuration file '$($Variables.ConfigFile)'." }
 Write-Host ""
 
@@ -387,13 +359,41 @@ If ($PrerequisitesMissing = @($Prerequisites | Where-Object { -not (Test-Path $_
     Start-Sleep -Seconds 10
     Exit
 }
-Else { Write-Message -Level Verbose "Pre-requisites check OK." }
+
+If ([System.Environment]::OSVersion.Version -lt [Version]"10.0.0.0" -and -not (Get-Command Get-PnpDevice -ErrorAction Ignore)) { 
+    Write-Message -Level Error "Windows Management Framework 5.1 is missing."
+    Write-Message -Level Error "Please install the required runtime modules from https://www.microsoft.com/en-us/download/details.aspx?id=54616"
+    Start-Sleep -Seconds 10
+    Exit
+}
+
+Write-Message -Level Verbose "Pre-requisites verification OK."
 Remove-Variable Prerequisites, PrerequisitesMissing
 
 # Check if new version is available
 Get-NMVersion
 
 Write-Host "Importing modules..." -ForegroundColor Yellow
+Try { 
+    Add-Type -Path ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll" -ErrorAction Stop
+}
+Catch { 
+    Remove-Item ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll" -Force -ErrorAction Ignore
+    Add-Type -Path ".\Includes\OpenCL\*.cs" -OutputAssembly ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll"
+    Add-Type -Path ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll"
+}
+
+Try { 
+    Add-Type -Path ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll" -ErrorAction Stop
+}
+Catch { 
+    Remove-Item ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll" -Force -ErrorAction Ignore
+    Add-Type -Path ".\Includes\CPUID.cs" -OutputAssembly ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
+    Add-Type -Path ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
+}
+Add-Type -AssemblyName System.Windows.Forms
+[System.Windows.Forms.Application]::EnableVisualStyles()
+[Void][Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms.DataVisualization")
 Import-Module NetSecurity -ErrorAction SilentlyContinue
 Import-Module Defender -ErrorAction SilentlyContinue -SkipEditionCheck
 
@@ -407,18 +407,13 @@ If (Get-Item .\* -Stream Zone.*) {
 }
 
 # Update config file to include all new config items
-If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.CurrentVersion)) { 
+If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.Branding.Version)) { 
     Update-ConfigFile -ConfigFile $Variables.ConfigFile
 }
 
 If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) { 
     Write-Message -Level Verbose "Verifying integrity of VertHash data file '.\Cache\VertHash.dat'..."
     $VertHashDatCheckJob = Start-ThreadJob -ThrottleLimit 99 -ScriptBlock { (Get-FileHash ".\Cache\VertHash.dat").Hash -eq "A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48" }
-}
-
-If ($Config.WebGUI -eq $true) { 
-    Initialize-API
-    Start-LogReader # To bring SnakeTail back in focus
 }
 
 $Variables.Summary = "Loading miner device information..."
@@ -428,7 +423,6 @@ $Variables.SupportedCPUDeviceVendors = @("AMD", "INTEL")
 $Variables.SupportedGPUDeviceVendors = @("AMD", "NVIDIA")
 
 $Variables.Devices = [Device[]](Get-Device -Refresh)
-
 $Variables.Devices | Where-Object { $_.Type -eq "CPU" -and $_.Vendor -notin $Variables.SupportedCPUDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
 $Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -notin $Variables.SupportedGPUDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
 
@@ -504,6 +498,18 @@ If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) {
         Write-Message -Level Warn "VertHash data file '.\Cache\VertHash.dat' is corrupt -> file deleted. It will be recreated by the miners if needed."
     }
     Remove-Variable VertHashDatCheckJob -ErrorAction Ignore
+}
+
+If ($Config.WebGUI -eq $true) { 
+    Initialize-API
+    Start-LogReader # To bring SnakeTail back in focus
+}
+
+If ($Variables.APIVersion -ne "" -and $Variables.FreshConfig -eq $true) { 
+    $Variables.Summary = "Change your settings and apply the configuration; then click 'Start mining'."
+    $wshell = New-Object -ComObject Wscript.Shell
+    $wshell.Popup("This is the first time you have started $($Variables.Branding.ProductLabel).`n`nUse the configuration editor to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!", 0, "Welcome to $($Variables.Branding.ProductLabel) v$($Variables.Branding.Version)", 4096) | Out-Null
+    Remove-Variable wshell
 }
 
 Function Get-Chart { 
@@ -788,7 +794,7 @@ Function Update-TabControl {
 Function Global:TimerUITick { 
     $TimerUI.Enabled = $false
 
-    $Variables.LogFile = "$($Variables.MainPath)\Logs\$($Variables.CurrentProduct)_$(Get-Date -Format "yyyy-MM-dd").log"
+    $Variables.LogFile = "$($Variables.MainPath)\Logs\$($Variables.Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd").log"
 
     # If something (pause button, idle timer, WebGUI/config) has set the RestartCycle flag, stop and start mining to switch modes immediately
     If ($Variables.RestartCycle) { 
@@ -802,19 +808,20 @@ Function Global:TimerUITick {
 
             Switch ($Variables.NewMiningStatus) { 
                 "Idle" { 
-                    If ($Variables.MiningStatus) { $Variables.Summary = "Stopping $($Variables.CurrentProduct) ('Stop mining' button pressed)..." }
-                    Write-Message -Level Info $Variables.Summary
-
+                    If ($Variables.MiningStatus) { 
+                        $Variables.Summary = "Stopping $($Variables.Branding.ProductLabel) ('Stop mining' button pressed)..."
+                        Write-Message -Level Info $Variables.Summary
+                    }
                     Stop-Mining
                     Stop-BrainJob
                     Stop-IdleDetection
                     Stop-BalancesTracker
                     Send-MonitoringData
 
-                    $LabelMiningStatus.Text = "Stopped | $($Variables.CurrentProduct) $($Variables.CurrentVersion)"
+                    $LabelMiningStatus.Text = "Stopped | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Red
 
-                    $Variables.Summary = "$($Variables.CurrentProduct) is idle."
+                    $Variables.Summary = "$($Variables.Branding.ProductLabel) is idle."
                     Write-Host "`n"
                     Write-Message -Level Info $Variables.Summary
 
@@ -824,8 +831,10 @@ Function Global:TimerUITick {
                 "Paused" { 
                     $TimerUI.Stop
 
-                    If ($Variables.MiningStatus) { $Variables.Summary = "Pausing $($Variables.CurrentProduct) ('Pause mining' button pressed)..." }
-                    Write-Message -Level Info $Variables.Summary
+                    If ($Variables.MiningStatus) { 
+                        $Variables.Summary = "Pausing $($Variables.Branding.ProductLabel) ('Pause mining' button pressed)..."
+                        Write-Message -Level Info $Variables.Summary
+                    }
 
                     If ($Variables.MiningStatus -eq "Running") { 
                         Stop-Mining
@@ -838,10 +847,10 @@ Function Global:TimerUITick {
                     }
                     Send-MonitoringData
 
-                    $LabelMiningStatus.Text = "Paused | $($Variables.CurrentProduct) $($Variables.CurrentVersion)"
+                    $LabelMiningStatus.Text = "Paused | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Blue
 
-                    $Variables.Summary = "$($Variables.CurrentProduct) is paused."
+                    $Variables.Summary = "$($Variables.Branding.ProductLabel) is paused."
                     Write-Host "`n"
                     Write-Message -Level Info $Variables.Summary
 
@@ -849,17 +858,19 @@ Function Global:TimerUITick {
                     $ButtonStart.Enabled = $true
                 }
                 "Running" { 
-                    If ($Variables.MiningStatus) { $Variables.Summary = "Starting $($Variables.CurrentProduct) ('Start mining' button pressed)..." }
-                    Write-Message -Level Info $Variables.Summary
+                    If ($Variables.MiningStatus) { 
+                        $Variables.Summary = "Starting $($Variables.Branding.ProductLabel) ('Start mining' button pressed)..."
+                        Write-Message -Level Info $Variables.Summary
+                    }
 
                     Initialize-Application
                     Start-BalancesTracker
                     Start-Mining
 
-                    $LabelMiningStatus.Text = "Running | $($Variables.CurrentProduct) $($Variables.CurrentVersion)"
+                    $LabelMiningStatus.Text = "Running | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
 
-                    $Variables.Summary = "$($Variables.CurrentProduct) is running."
+                    $Variables.Summary = "$($Variables.Branding.ProductLabel) is running."
                     Write-Host "`n"
                     Write-Message -Level Info $Variables.Summary
 
@@ -874,7 +885,7 @@ Function Global:TimerUITick {
     }
 
     If ($Variables.RefreshNeeded -and $Variables.MiningStatus -eq "Running") { 
-        $host.UI.RawUI.WindowTitle = $MainForm.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion) Runtime: {0:dd} days {0:hh} hrs {0:mm} mins Path: $($Variables.Mainpath)" -f [TimeSpan]((Get-Date).ToUniversalTime() - $Variables.ScriptStartTime)
+        $host.UI.RawUI.WindowTitle = $MainForm.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) Runtime: {0:dd} days {0:hh} hrs {0:mm} mins Path: $($Variables.Mainpath)" -f [TimeSpan]((Get-Date).ToUniversalTime() - $Variables.ScriptStartTime)
 
         If (-not ($Variables.Miners | Where-Object Status -eq "Running")) { Write-Message "No miners running. Waiting for next cycle." }
 
@@ -1026,7 +1037,7 @@ Function Global:TimerUITick {
         Remove-Variable MinersDeviceGroupNeedingPowerUsageMeasurement -ErrorAction SilentlyContinue
         Remove-Variable Miner_Table -ErrorAction SilentlyContinue
 
-        $Variables.Summary -split '<br>' | ForEach-Object { Write-Host ($_ -replace '&ensp;', ' ' -replace ' / ', '/') }
+        $Variables.Summary -split '<br>' | ForEach-Object { Write-Host ($_ -replace "&ensp;", " " -replace "'/ ", "/") }
 
         If (-not $Variables.Paused) { 
             If ($Variables.Miners | Where-Object Available -EQ $true | Where-Object { $_.Benchmark -eq $false -or $_.MeasurePowerUsage -eq $false }) { 
@@ -1052,8 +1063,8 @@ Function Global:TimerUITick {
 }
 
 Function MainForm_Load { 
-    $MainForm.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
-    $LabelMiningStatus.Text = "$($Variables.CurrentProduct) $($Variables.CurrentVersion)"
+    $MainForm.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
+    $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
     $MainForm.Number = 0
     $TimerUI.Add_Tick(
         { 
@@ -1205,7 +1216,7 @@ Function MainForm_Load {
 $MainForm = New-Object System.Windows.Forms.Form
 $MainForm.Icon = New-Object System.Drawing.Icon (".\Data\NM.ICO")
 $MainForm.MinimumSize = [System.Drawing.Size]::new(756, 501) # best to keep under 800x600
-$MainForm.Text = $Variables.CurrentProduct
+$MainForm.Text = $Variables.Branding.ProductLabel
 $MainForm.TopMost = $false
 $MainForm.MaximizeBox = $true
 $MainForm | Add-Member -Name "Variables" -Value $Variables -MemberType NoteProperty -Force
@@ -1252,7 +1263,7 @@ $PictureBoxLogo = New-Object Windows.Forms.PictureBox
 $PictureBoxLogo.Width = 47 #$img.Size.Width
 $PictureBoxLogo.Height = 47 #$img.Size.Height
 $PictureBoxLogo.SizeMode = 1
-$PictureBoxLogo.ImageLocation = $Branding.LogoPath
+$PictureBoxLogo.ImageLocation = $Variables.Branding.LogoPath
 $MainFormControls += $PictureBoxLogo
 
 $LabelEarningsDetails = New-Object System.Windows.Forms.TextBox
@@ -1657,7 +1668,7 @@ $MainForm.Add_Shown(
 
 $MainForm.Add_FormClosing(
     { 
-        Write-Message -Level Info "Shutting down $($Variables.CurrentProduct)..."
+        Write-Message -Level Info "Shutting down $($Variables.Branding.ProductLabel)..."
         $Variables.NewMiningStatus = "Idle"
         $TimerUI.Stop()
 
@@ -1669,7 +1680,7 @@ $MainForm.Add_FormClosing(
         # Save window settings
         $MainForm.DesktopBounds | ConvertTo-Json -ErrorAction Ignore | Out-File -FilePath ".\Config\WindowSettings.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
 
-        Write-Message -Level Info "$($Variables.CurrentProduct) has shut down."
+        Write-Message -Level Info "$($Variables.Branding.ProductLabel) has shut down."
 
         Stop-Process -Id $PID
     }
@@ -1680,11 +1691,5 @@ $MainForm.Add_SizeChanged(
         MainForm_Resize
     }
 )
-
-If ($Variables.APIVersion -ne "" -and $Variables.FreshConfig -eq $true) { 
-    $wshell = New-Object -ComObject Wscript.Shell
-    $wshell.Popup("This is the first time you have started $($Variables.CurrentProduct).`n`nUse the configuration editor to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!", 0, "Welcome to $($Variables.CurrentProduct) v$($Variables.CurrentVersion)", 4096) | Out-Null
-    Remove-Variable wshell
-}
 
 [Void]$MainForm.ShowDialog()

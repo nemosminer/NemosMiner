@@ -9,14 +9,14 @@ $Path = ".\Bin\$($Name)\TT-Miner.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.01; MinMemGB = ($Pools."EtcHash".DAGSize + $1.5GB) / 1GB;      MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo ETHASH -coin ETC -intensity 15" } # PhoenixMiner-v6.1b is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.01; MinMemGB = ($Pools."Ethash".DAGSize + $1.5GB) / 1GB;       MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.1b is fastest
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.01; MinMemGB = ($Pools."EthashLowMem".DAGSize + $1.5GB) / 1GB; MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.1b is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";       Fee = 0.01; MinMemGB = ($Pools."KawPoW".DAGSize + $1.5GB) / 1GB;       MinerSet = 1; WarmupTimes = @(60, 60); Arguments = " -algo KAWPOW -intensity 15" } # Trex-v0.25.9 is fastest
-    [PSCustomObject]@{ Algorithm = "MTP";          Fee = 0.01; MinMemGB = 3;                                              MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo MTP -intensity 21" } # CcminerMTP-v1.3.2 is faster
-    [PSCustomObject]@{ Algorithm = "ProgPoW";      Fee = 0.01; MinMemGB = ($Pools."ProgPoW".DAGSize + $1.5GB) / 1GB;      MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo PROGPOW" } # Sero
-    [PSCustomObject]@{ Algorithm = "UbqHash";      Fee = 0.01; MinMemGB = ($Pools."UbqHash".DAGSize + $1.5GB) / 1GB;      MinerSet = 1; WarmupTimes = @(45, 60); Arguments = " -algo UBQHASH -intensity 15" }
-    [PSCustomObject]@{ Algorithm = "Zano";         Fee = 0.01; MinMemGB = 2;                                              MinerSet = 0; WarmupTimes = @(45, 60); Arguments = " -algo PROGPOWZ" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.01; MinMemGB = ($Pools."EtcHash".DAGSize + 0.8GB) / 1GB;      MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo ETHASH -coin ETC -intensity 15" } # PhoenixMiner-v6.1b is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.01; MinMemGB = ($Pools."Ethash".DAGSize + 0.8GB) / 1GB;       MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.1b is fastest
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.01; MinMemGB = ($Pools."EthashLowMem".DAGSize + 0.8GB) / 1GB; MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.1b is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";       Fee = 0.01; MinMemGB = ($Pools."KawPoW".DAGSize + 0.8GB) / 1GB;       MinerSet = 1; WarmupTimes = @(60, 30); Arguments = " -algo KAWPOW -intensity 15" } # Trex-v0.25.12 is fastest
+    [PSCustomObject]@{ Algorithm = "MTP";          Fee = 0.01; MinMemGB = 3;                                             MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo MTP -intensity 21" } # CcminerMTP-v1.3.2 is faster
+    [PSCustomObject]@{ Algorithm = "ProgPoW";      Fee = 0.01; MinMemGB = ($Pools."ProgPoW".DAGSize + 0.8GB) / 1GB;      MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOW" } # Sero
+    [PSCustomObject]@{ Algorithm = "UbqHash";      Fee = 0.01; MinMemGB = ($Pools."UbqHash".DAGSize + 0.8GB) / 1GB;      MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo UBQHASH -intensity 15" }
+    [PSCustomObject]@{ Algorithm = "Zano";         Fee = 0.01; MinMemGB = 2;                                             MinerSet = 0; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOWZ" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 

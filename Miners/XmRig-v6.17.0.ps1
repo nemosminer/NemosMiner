@@ -45,7 +45,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXao";       Type = "AMD"; MinMemGB = 2;                                        MinerSet = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/xao" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   Type = "AMD"; MinMemGB = 4;                                        MinerSet = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "AMD"; MinMemGB = 2;                                        MinerSet = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/zls" } 
-    [PSCustomObject]@{ Algorithm = "KawPoW";               Type = "AMD"; MinMemGB = ($Pools."KawPoW".DAGSize + $1.5GB) / 1GB; MinerSet = 2; WarmupTimes = @(60, 15); Arguments = " --algo kawpow" } # NBMiner-v40.1 is fastest, but has 2% miner fee
+    [PSCustomObject]@{ Algorithm = "KawPoW";               Type = "AMD"; MinMemGB = ($Pools."KawPoW".DAGSize + 0.95GB) / 1GB; MinerSet = 2; WarmupTimes = @(60, 15); Arguments = " --algo kawpow" } # NBMiner-v40.1 is fastest, but has 2% miner fee
     # [PSCustomObject]@{ Algorithm = "RandomX";              Type = "AMD"; MinMemGB = 3;                                        MinerSet = 2; WarmupTimes = @(45, 0); Arguments = " --algo rx/0" } # Not profitable at all
     [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "AMD"; MinMemGB = 4;                                        MinerSet = 2; WarmupTimes = @(45, 0); Arguments = " --algo rx/arq" }
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "AMD"; MinMemGB = 1;                                        MinerSet = 2; WarmupTimes = @(45, 0); Arguments = " --algo rx/keva" }
@@ -109,7 +109,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXao";       Type = "NVIDIA"; MinMemGB = 2;                                                MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo cn/xao" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhvTube";   Type = "NVIDIA"; MinMemGB = 4;                                                MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "NVIDIA"; MinMemGB = 2;                                                MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo cn/zls" } 
-    [PSCustomObject]@{ Algorithm = "KawPoW";               Type = "NVIDIA"; MinMemGB = ($Pools."KawPoW".DAGSize + $1.5GB) / 1GB; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo kawpow" } # Trex-v0.25.9 is fastest, but has 1% miner fee
+    [PSCustomObject]@{ Algorithm = "KawPoW";               Type = "NVIDIA"; MinMemGB = ($Pools."KawPoW".DAGSize + 0.95GB) / 1GB; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo kawpow" } # Trex-v0.25.12 is fastest, but has 1% miner fee
     # [PSCustomObject]@{ Algorithm = "RandomX";              Type = "NVIDIA"; MinMemGB = 3;                                                MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo rx/0" } # Not profitable at all
     [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "NVIDIA"; MinMemGB = 4;                                                MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo rx/arq" }
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "NVIDIA"; MinMemGB = 1;                                                MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo rx/keva" }
