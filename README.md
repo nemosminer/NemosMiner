@@ -189,7 +189,6 @@ Easy configuration, easy start:
 
       Displays BTC/h and BTC/d and an estimation of when the pool payment threshold will be reached.
       Supported pools:
-         - AHashPool
          - BlockMasters
          - HiveON
          - MiningPoolHub
