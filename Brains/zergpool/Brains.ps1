@@ -18,12 +18,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Brains.ps1
-version:        4.0.0.26
-version date:   13 April 2022
+version:        4.0.0.28
+version date:   30 April 2022
 #>
 
-#Set-Location ($args[0])
-Set-Location c:\Users\Stephan\Desktop\NemosMiner\Brains\ZPool\
+Set-Location ($args[0])
 
 # Set Process priority
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
@@ -93,7 +92,7 @@ While (Test-Path -Path ".\BrainConfig.xml" -PathType Leaf) {
 
     Try { 
         $CurrenciesData = Invoke-RestMethod -Uri $PoolCurrenciesUri -Headers @{ "Cache-Control" = "no-cache" } # -SkipCertificateCheck
-        If ($true -or $args[1] -match "Coins(|Plus)$"){ 
+        If ($args[1] -match "Coins(|Plus)$"){ 
             $AlgoData = [PSCustomObject]@{ }
             $CurrenciesArray = @()
             # Add currency and convert to array for easy sorting

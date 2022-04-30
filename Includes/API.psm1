@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.26
-Version date:   13 April 2022
+Version:        4.0.0.28
+Version date:   30 April 2022
 #>
 
 Function Initialize-API { 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.5.1"
+    $APIVersion = "0.4.5.2"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
@@ -318,7 +318,7 @@ Function Start-APIServer {
                     "/functions/mining/stop" { 
                         If ($Variables.MiningStatus -ne "Idle") { 
                             $Variables.NewMiningStatus = "Idle"
-                            $Data = "$($Variables.CurrentProduct) is getting idle...`n"
+                            $Data = "$($Variables.Branding.ProductLabel) is getting idle...`n"
                             $Variables.RestartCycle = $true
                         }
                         $Data = "<pre>$Data</pre>"
@@ -434,7 +434,7 @@ Function Start-APIServer {
                                     $Data += "`n$($Stat_Name) ($($_.Region))"
                                     Remove-Stat -Name "$($Stat_Name)_Profit"
                                     $_.Reason = [String[]]@()
-                                    $_.Price = $_.Price_Bias = $_.StablePrice = $_.Accuracy = $_.EstimateFactor = [Double]::Nan
+                                    $_.Price = $_.Price_Bias = $_.StablePrice = $_.Accuracy = [Double]::Nan
                                     $_.Available = $true
                                     $_.Disabled = $false
                                 }
@@ -510,7 +510,7 @@ Function Start-APIServer {
                                 Remove-Stat -Name $_.Name
                                 $Data += "`n$($_.Name -replace "_$($Parameters.Type)")"
                             }
-                            Write-Message "Web GUI: Removed $($TempStats.Count) $($Parameters.Type) stat file$(If ($TempStats.Count -ne 1) { "s" })."
+                            Write-Message -Level Info "Web GUI: Removed $($TempStats.Count) $($Parameters.Type) stat file$(If ($TempStats.Count -ne 1) { "s" })."
                             If ($Parameters.Type -eq "Hashrate") { $Data += "`n`nReset $($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)H/s $($Parameters.Type)." }
                             ElseIf ($Parameters.Type -eq "PowerUsage") { $Data += "`n`nReset $($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)W $($Parameters.Type)." }
                             ElseIf ($Parameters.Type -eq "Profit") { $Data += "`n`nReset $($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" })." }
@@ -612,7 +612,7 @@ Function Start-APIServer {
                         $Variables.Miners | ForEach-Object { $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Miner suspended by watchdog *" }); $_ } | Where-Object { -not $_.Reason } | ForEach-Object { $_.Available = $true }
                         $Variables.Pools | ForEach-Object { $_.Reason = @($_.Reason | Where-Object { $_ -notlike "*Pool suspended by watchdog" }); $_ } | Where-Object { -not $_.Reason } | ForEach-Object { $_.Available = $true }
                         Write-Message -Level Verbose "Web GUI: All watchdog timers reset."
-                        $Data = "`nThe watchdog timers will be recreated on next cycle."
+                        $Data = "`nWatchdog timers will be recreated in next cycle."
                         Break
                     }
                     "/algorithms" { 
@@ -909,7 +909,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/version" { 
-                        $Data = @("$($Variables.CurrentProduct) Version: $($Variables.CurrentVersion)", "API Version: $($Variables.APIVersion)", "PWSH Version: $($PSVersionTable.PSVersion.ToString())") | ConvertTo-Json
+                        $Data = @("$($Variables.Branding.ProductLabel) Version: $($Variables.Branding.Version)", "API Version: $($Variables.APIVersion)", "PWSH Version: $($PSVersionTable.PSVersion.ToString())") | ConvertTo-Json
                         Break
                     }
                     Default { 

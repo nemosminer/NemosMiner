@@ -85,7 +85,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
                     If ($_.Algorithm[0] -match "^Et(c)hash.+" -and $AvailableMiner_Devices.Model -notmatch "^Radeon RX [0-9]{3} ") { $_.Fee = @(0.0075) } # Polaris cards 0.75%
                 }
-                $_.Arguments += " --user=$($Pools.($_.Algorithm[0]).User) --pass=$($Pools.($_.Algorithm[0]).Pass)$(If ($Pools.($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum -1.5GB) / 1GB)" })"
+                $_.Arguments += " --user=$($Pools.($_.Algorithm[0]).User) --pass=$($Pools.($_.Algorithm[0]).Pass)$(If ($Pools.($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum - 0.95GB) / 1GB)" })"
 
                 If ($_.Algorithm[1] -eq "SHA256ton") { 
                     If ($Pools.($_.Algorithm[1]).BaseName -eq "TonWhales") { 

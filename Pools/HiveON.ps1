@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveOn.ps1
-Version:        4.0.0.26
-Version date:   13 April 2022
+Version:        4.0.0.28
+Version date:   30 April 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -57,9 +57,6 @@ If ($PoolConfig.Wallets) {
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
 
-        Try { $EstimateFactor = $Request.stats.($_.name).expectedReward24H / $Request.stats.($_.name).meanExpectedReward24H }
-        Catch { $EstimateFactor = 1 }
-
         ForEach ($Server in ($_.Servers | Where-Object { $_.Region -in $PoolConfig.Region -or  $_.Region -eq "N/A" } )) { 
             $Region_Norm = Get-Region $Server.Region
 
@@ -79,7 +76,6 @@ If ($PoolConfig.Wallets) {
                 Region                   = [String]$Region_Norm
                 SSL                      = $false
                 Fee                      = [Decimal]0
-                EstimateFactor           = [Decimal]$EstimateFactor
                 Updated                  = [DateTime]$Stat.Updated
                 Workers                  = [Int]$Workers
             }

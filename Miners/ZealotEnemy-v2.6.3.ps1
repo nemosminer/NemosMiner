@@ -16,7 +16,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Bitcore";    MinMemGB = 2;                                        MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo bitcore --intensity 22" }
     [PSCustomObject]@{ Algorithm = "C11";        MinMemGB = 3;                                        MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo c11 --intensity 24" }
     [PSCustomObject]@{ Algorithm = "Hex";        MinMemGB = 2;                                        MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo hex --intensity 24" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";     MinMemGB = ($Pools."KawPoW".DAGSize + $1.5GB) / 1GB; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo kawpow --intensity 23" }
+    [PSCustomObject]@{ Algorithm = "KawPoW";     MinMemGB = ($Pools."KawPoW".DAGSize + 0.95GB) / 1GB; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo kawpow --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Phi";        MinMemGB = 3;                                        MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo phi" }
     [PSCustomObject]@{ Algorithm = "Phi2";       MinMemGB = 2;                                        MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo phi2" }
     [PSCustomObject]@{ Algorithm = "Polytimos";  MinMemGB = 2;                                        MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo poly" }

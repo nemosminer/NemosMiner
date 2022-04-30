@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.0.0.26
-Version date:   13 April 2022
+Version:        4.0.0.28
+Version date:   30 April 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -94,7 +94,6 @@ If ($PoolConfig.UserName) {
                     Region                   = [String]$Region_Norm
                     SSL                      = $false
                     Fee                      = $Fee
-                    EstimateFactor           = [Decimal]1
                 }
             }
         }
@@ -146,7 +145,6 @@ If ($PoolConfig.UserName) {
                     Region                   = [String]$Region_Norm
                     SSL                      = $false
                     Fee                      = [Decimal]$PoolConfig.Fee
-                    EstimateFactor           = [Decimal]1
                 }
             }
         }

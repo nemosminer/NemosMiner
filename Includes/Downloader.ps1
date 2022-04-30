@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Downloader.ps1
-Version:        4.0.0.26
-Version date:   13 April 2022
+Version:        4.0.0.28
+Version date:   30 April 2022
 #>
 
 using module .\Includes\Include.psm1
@@ -37,7 +37,7 @@ $DownloadList | Select-Object | ForEach-Object {
 
     If (-not (Test-Path $Path -PathType Leaf)) { 
         Try { 
-            Write-Message "Downloader: Initiated download of '$URI'."
+            Write-Message -Level Info "Downloader: Initiated download of '$URI'."
 
             If ($URI -and (Split-Path $URI -Leaf) -eq (Split-Path $Path -Leaf)) { 
                 New-Item (Split-Path $Path) -ItemType "Directory" | Out-Null
@@ -46,7 +46,7 @@ $DownloadList | Select-Object | ForEach-Object {
             Else { 
                 Expand-WebRequest $URI $Path -ErrorAction Stop
             }
-            Write-Message "Downloader: Installed downloaded miner binary '$Path'."
+            Write-Message -Level Info "Downloader: Installed downloaded miner binary '$Path'."
         }
         Catch { 
             $Path_Old = $null
@@ -55,7 +55,7 @@ $DownloadList | Select-Object | ForEach-Object {
             Else { Write-Message -Level Warn "Downloader: Cannot download '$(Split-Path $Path -Leaf)'." }
 
             If ($Searchable) { 
-                Write-Message "Downloader: Searching for $(Split-Path $Path -Leaf) on local computer..."
+                Write-Message -Level Info "Downloader: Searching for $(Split-Path $Path -Leaf) on local computer..."
 
                 $Path_Old = Get-PSDrive -PSProvider FileSystem | ForEach-Object { Get-ChildItem -Path $_.Root -Include (Split-Path $Path -Leaf) -Recurse -ErrorAction Ignore } | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
                 $Path_New = $Path
@@ -74,4 +74,4 @@ $DownloadList | Select-Object | ForEach-Object {
     }
 }
 
-Write-Message "Downloader: All tasks complete."
+Write-Message -Level Info "Downloader: All tasks complete."

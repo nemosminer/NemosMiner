@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.0.0.26
-Version date:   13 April 2022
+Version:        4.0.0.28
+Version date:   30 April 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -63,9 +63,6 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
-        Try { $EstimateFactor = $Request.$_.actual_last24h * 1000 / $Request.$_.$PriceField }
-        Catch { $EstimateFactor = 1 }
-
         $Regions = If ($Algorithm_Norm -in @("Chia", "Etchash", "Ethash", "EthashLowMem")) { "US" } Else { $PoolConfig.Region }
 
         ForEach ($Region in $Regions) { 
@@ -87,7 +84,6 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
                 Region                   = [String]$Region_Norm
                 SSL                      = $false
                 Fee                      = [Decimal]$Fee
-                EstimateFactor           = [Decimal]$EstimateFactor
                 Updated                  = [DateTime]$Stat.Updated
             }
         }

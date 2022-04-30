@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.0.26
-Version date:   13 April 2022
+Version:        4.0.0.28
+Version date:   30 April 2022
 #>
 
 # Start transcript log
@@ -79,7 +79,7 @@ While ($true) {
 
         # Fetch balances data from pools
         $BalanceObjects = @($BalanceObjects | Where-Object { $_.Pool -ne "ProHashing" -or $_.DateTime -gt $Now.AddHours((Get-TimeZone -ID "Eastern Standard Time").BaseUtcOffset.totalhours).Date }) # ProHashing does not send balance if all is paid -> remove from balances
-        If ($PoolsToTrack) { Write-Message "Balances Tracker is requesting data from pool$(If ($PoolsToTrack.Count -gt 1) { "s" }) '$($PoolsToTrack -join ', ')'..." }
+        If ($PoolsToTrack) { Write-Message -Level Info "Balances Tracker is requesting data from pool$(If ($PoolsToTrack.Count -gt 1) { "s" }) '$($PoolsToTrack -join ', ')'..." }
         $PoolsToTrack | ForEach-Object { $BalanceObjects += @(& ".\Balances\$($_).ps1") }
 
         # Keep most recent balance objects, keep empty balances for 7 days
@@ -89,9 +89,7 @@ While ($true) {
         $BalanceObjects = @($BalanceObjects | Where-Object { $_.Pool -match "^MiningPoolHub(|Coins)$|^ProHashing(|24h)$" }) + @($BalanceObjects | Where-Object { $_.Pool -notmatch "^MiningPoolHub(|Coins)$|^ProHashing(|24h)$" } | Group-Object Pool, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
 
         # Read exchange rates
-        $Variables.BalancesCurrencies = @($BalanceObjects.Currency | Select-Object -Unique)
-        $Variables.AllCurrencies = @((@($Config.Currency) + @($Config.Wallets.PSObject.Properties.Name) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies)) | Select-Object -Unique)
-        If (-not $Variables.Rates.BTC.($Config.Currency) -or $Config.ExtraCurrencies -ne $Variables.ExtraCurrencies -or $Config.BalancesTrackerPollInterval -lt 1 -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-3))) { Get-Rate }
+        Get-Rate
 
         $BalanceObjects | Where-Object { $_.DateTime -gt $Now } | ForEach-Object { 
             $PoolBalanceObject = $_
@@ -380,9 +378,11 @@ While ($true) {
         If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File -FilePath ".\Data\BalancesTrackerData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
         $Variables.BalanceData = $AllBalanceObjects
 
+        If ($ReadBalances) { Return } # Debug stuff
+
         # Sleep until next update (at least 1 minute, maximum 60 minutes)
         While ((Get-Date).ToUniversalTime() -le $Now.AddMinutes((60, (1, [Int]$Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum | Measure-Object -Minimum).Minimum)) { Start-Sleep -Seconds 5 }
     }
 }
 
-Write-Message -Level INFO "Balances Tracker stopped."
+Write-Message -Level Info "Balances Tracker stopped."

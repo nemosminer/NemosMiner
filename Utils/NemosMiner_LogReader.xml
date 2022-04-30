@@ -15,11 +15,11 @@
       <BookmarkTextColor>Yellow</BookmarkTextColor>
       <BookmarkBackColor>DarkGreen</BookmarkBackColor>
       <Modeless>false</Modeless>
-      <Title>NemosMiner_2021-08-31.log</Title>
+      <Title>NemosMiner_2022-04-26.log</Title>
       <WindowState>Maximized</WindowState>
       <WindowSize>
-        <Width>1395</Width>
-        <Height>596</Height>
+        <Width>2319</Width>
+        <Height>1204</Height>
       </WindowSize>
       <WindowPosition>
         <X>-11</X>
@@ -102,7 +102,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>Started idle detection|Started idle detection|Mining is suspended until system is idle again|System was idle for</Keyword>
+          <Keyword>Started idle detection|Mining is suspended until system is idle again|Stopped idle detection</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
@@ -122,7 +122,7 @@
           <BackColor>#400040</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Started new cycle|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Collecting miner data while|enough samples for this cycle|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+:.+Ending cycle|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+:.+Exiting cycle</Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Started new cycle|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Collecting miner data while|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+:.Ending cycle</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
@@ -187,12 +187,12 @@
   </TailFiles>
   <SelectedTab>0</SelectedTab>
   <WindowSize>
-    <Width>1399</Width>
-    <Height>700</Height>
+    <Width>2323</Width>
+    <Height>1308</Height>
   </WindowSize>
   <WindowPosition>
-    <X>19</X>
-    <Y>20</Y>
+    <X>272</X>
+    <Y>130</Y>
   </WindowPosition>
   <MinimizedToTray>false</MinimizedToTray>
   <AlwaysOnTop>false</AlwaysOnTop>

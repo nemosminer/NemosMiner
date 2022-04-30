@@ -319,7 +319,7 @@ Switch ($Path) {
                     $Data += "`n$($StatName)"
                     Remove-Stat -Name "$($StatName)_Profit"
                     $_.Reason = [String[]]@()
-                    $_.Price = $_.Price_Bias = $_.StablePrice = $_.Accuracy = $_.EstimateFactor = [Double]::Nan
+                    $_.Price = $_.Price_Bias = $_.StablePrice = $_.Accuracy = [Double]::Nan
                 }
                 $Message = "Pool data reset for $($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" })."
                 Write-Message -Level Verbose "Web GUI: $Message"
@@ -403,7 +403,7 @@ Switch ($Path) {
                 Remove-Stat -Name $_.Name
                 $Data += "`n$($_.Name -replace "_$($Parameters.Type)")"
             }
-            Write-Message "Web GUI: Removed $($TempStats.Count) $($Parameters.Type) stat file$(If ($TempStats.Count -ne 1) { "s" })."
+            Write-Message -Level Info "Web GUI: Removed $($TempStats.Count) $($Parameters.Type) stat file$(If ($TempStats.Count -ne 1) { "s" })."
             $Data += "`n`nRemoved $($TempStats.Count) $($Parameters.Type) stat file$(If ($TempStats.Count -ne 1) { "s" } with $($Parameters.Value)$($Parameters.Unit) $($Parameters.Type))."
         }
         Else { 
@@ -790,7 +790,7 @@ Switch ($Path) {
         Break
     }
     "/version" { 
-        $Data = @("NemosMiner Version: $($Variables.CurrentVersion)", "API Version: $($Variables.APIVersion)", "PWSH Version: $($PSVersionTable.PSVersion.ToString())") | ConvertTo-Json
+        $Data = @("NemosMiner Version: $($Variables.Branding.Version)", "API Version: $($Variables.APIVersion)", "PWSH Version: $($PSVersionTable.PSVersion.ToString())") | ConvertTo-Json
         Break
     }
     Default { 

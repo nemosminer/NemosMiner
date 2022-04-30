@@ -3,7 +3,7 @@
             <h1 id="title" class="h2" data-navbaractive="navpoolsbest">Best Pools</h1>
           </div>
 
-          <div class="alert alert-info" role="alert">This is the list of the pools for each algorithm that were selected as the most profitable.</div>
+          <div class="alert alert-info" role="alert">This is the pool data of the best paying pool per algorithm.</div>
 
           <div id="toolbar">
             <button id="reset-data" class="btn btn-warning" disabled>Reset Pool Stat Data</button>
@@ -42,18 +42,17 @@
                 <th data-field="state" data-checkbox="true"></th>
                 <th data-field="Name" data-sortable="true" data-filter-control="select">Name</th>
                 <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">Base Name</th>
-                <th data-field="Algorithm" data-sortable="true" data-filter-control="select">Algorithm</th>
+                <th data-field="Algorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Algorithm</th>
+                <th data-field="CoinName" data-sortable="true" data-filter-control="select">CoinName</th>
+                <th data-field="Currency" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Currency</th>
                 <th data-field="Reason" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Reason</th>
                 <th data-field="User" data-sortable="true" data-filter-control="select" data-visible="false">Wallet / UserName</th>
-                <th data-field="CoinName" data-sortable="true" data-filter-control="select">CoinName</th>
-                <th data-field="Currency" data-sortable="true" data-filter-control="select">Currency</th>
                 <th data-field="Price" data-align="right" data-sortable="true" data-formatter="formatPrices" data-visible="false">BTC/GH/Day</th>
                 <th data-field="Price_Bias" data-align="right" data-sortable="true" data-formatter="formatPrices" data-visible="false">Bias BTC/GH/Day</th>
                 <th data-field="StablePrice" data-align="right" data-sortable="true" data-formatter="formatPrices" data-visible="false">BTC/GH/Day (Week)</th>
                 <th data-field="Accuracy" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=2>Accuracy</th>
                 <th data-field="Host" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Host</th>
                 <th data-field="Port" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-width=1>Port&nbsp;</th>
-                <th data-field="EstimateFactor" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatDigits3" data-width=1>Estimate Factor</th>
                 <th data-field="EarningsAdjustmentFactor" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatDigits3" data-width=1>Earnings Adjustment Factor</th>
                 <th data-field="Region" data-sortable="true" data-filter-control="select">Region</th>
                 <th data-field="SSL" data-sortable="true" data-filter-control="select" data-width=4 data-visible="false">SSL</th>
@@ -76,12 +75,6 @@
               autoRefreshInterval: (parseInt(config.Interval / 2)),
               height: ($(window).height()) - $('h1').outerHeight(true) - 210
             })
-
-            if (config.EstimateCorrection == true) {
-              $table.bootstrapTable('showColumn', 'EstimateFactor');
-            } else {
-              $table.bootstrapTable('hideColumn', 'EstimateFactor');
-            }
 
             $table.on('all.bs.table', function () {
              try {

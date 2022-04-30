@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           include.ps1
 Version:        4.0.0.28
-Version date:   24 April 2022
+Version date:   30 April 2022
 #>
 
 # Window handling

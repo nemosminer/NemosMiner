@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.0.0.26
-Version date:   13 April 2022
+Version:        4.0.0.28
+Version date:   30 April 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -36,6 +36,7 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
 $Fee = $PoolConfig.Variant.$PoolVariant.Fee
 $PayoutCurrency = $PoolConfig.Variant.$PoolVariant.PayoutCurrency
+$Regions = If ($Config.UseAnycast -and $PoolConfig.Region -contains "N/A (Anycast)") { "N/A (Anycast)" } Else { $PoolConfig.Region | Where-Object { $_ -ne "N/A (Anycast)" }  }
 $Wallet = $PoolConfig.Variant.$PoolVariant.Wallets.$PayoutCurrency
 $User = "$Wallet.$($PoolConfig.WorkerName -replace "^ID=")"
 
@@ -49,35 +50,47 @@ If ($Wallet) {
 
     If (-not $Request) { Return }
 
-    $PoolHost = "nicehash.com"
+    $HostSuffix = "nicehash.com"
 
     $Request.miningAlgorithms | Where-Object speed -GT 0 | Where-Object { $_.algodetails.order -gt 0 } | ForEach-Object { 
         $Algorithm = $_.Algorithm
         $Algorithm_Norm = Get-Algorithm $Algorithm
 
         $Currency = Switch -Regex ($Algorithm_Norm) {
-            "BeamHash3"                 { "BEAM" }
+            "Autolykos2"                { "ERG" }
+            "BeamV3"                    { "BEAM" }
             "CuckooCycle"               { "AE" }
             "Cuckaroo29"                { "XBG" }
             "Cuckarood29"               { "MWC" }
             "^Cuckatoo31$|^Cuckatoo32$" { "GRIN" }
+            "CryptonightR"              { "SUMO" }
             "Eaglesong"                 { "CKB" }
-            "EquihashR25x5x3"           { "BEAM" }
+            "Equihash1254"              { "FLUX" }
             "EquihashBTG"               { "BTG" }
+            "Ethash"                    { "ETH" }
+            "Handshake"                 { "HNS" }
             "KawPoW"                    { "RVN" }
             "Lbry"                      { "LBC" }
-            "RandomX"                   { "XMR" }
             "Octopus"                   { "CFX" }
+            "RandomX"                   { "XMR" }
             Default                     { "" }
         }
 
-        $Port = $_.algodetails.port
         $Divisor = 100000000
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor) -FaultDetection $false
 
-        ForEach ($Region in $PoolConfig.Region) { 
+        ForEach ($Region in $Regions) { 
             $Region_Norm = Get-Region $Region
+
+            If ($Region -eq "N/A (Anycast)") { 
+                $PoolHost = "$Algorithm.Auto.$HostSuffix"
+                $PoolPort = 9200
+            }
+            Else { 
+                $PoolHost = "$Algorithm.$Region.$HostSuffix"
+                $PoolPort = $_.algodetails.port
+            }
 
             [PSCustomObject]@{ 
                 Name                     = [String]$PoolVariant
@@ -88,14 +101,13 @@ If ($Wallet) {
                 StablePrice              = [Double]$Stat.Week
                 Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Minute_5_Fluctuation), 1)) # Use short timespan to counter price peaks
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                Host                     = "$Algorithm.$Region.$PoolHost".ToLower()
-                Port                     = [UInt16]$Port
+                Host                     = [String]$PoolHost.ToLower()
+                Port                     = [UInt16]$PoolPort
                 User                     = [String]$User
                 Pass                     = "x"
                 Region                   = [String]$Region_Norm
                 SSL                      = $false
                 Fee                      = [Decimal]$Fee
-                EstimateFactor           = [Decimal]1
                 Updated                  = [DateTime]$Stat.Updated
             }
         }

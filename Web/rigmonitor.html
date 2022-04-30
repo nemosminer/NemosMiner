@@ -18,12 +18,12 @@
           <br>
 
           <div title="Tick to enable reporting rig status to monitoring server">
-            <input type="checkbox" id="ReportToServer" name="ReportToServer">
+            <input type="checkbox" class="toggle-switch" id="ReportToServer" name="ReportToServer">
             <label for="ReportToServer">Report this Rig Status to Monitoring Server</label>
           </div>
 
           <div title="Show status for all reporting mining rigs&#10;`Report to Monitoring Server` must be enabled on these rigs&#10;using the same userID">
-            <input type="checkbox" id="ShowWorkerStatus" name="ShowWorkerStatus">
+            <input type="checkbox" class="toggle-switch" id="ShowWorkerStatus" name="ShowWorkerStatus">
             <label for="ShowWorkerStatus">Show Rig Status</label>
           </div>
           <br>
@@ -106,14 +106,14 @@
               else document.getElementById('workerlist').style.visibility="visible";
 
 
-              $(document.getElementById('MonitoringServer')).click(function (event) {
+              $(document.getElementById('MonitoringServer')).change(function (event) {
                 document.getElementById('ReportToServer').disabled = (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '');
                 document.getElementById('ShowWorkerStatus').disabled = (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '');
                 if (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '' || document.getElementById('ShowWorkerStatus').checked != true) document.getElementById('workerlist').style.visibility="hidden";
                 else document.getElementById('workerlist').style.visibility="visible";
               });
 
-              $(document.getElementById('MonitoringUser')).click(function (event) {
+              $(document.getElementById('MonitoringUser')).change(function (event) {
                 document.getElementById('ReportToServer').disabled = (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '');
                 document.getElementById('ShowWorkerStatus').disabled = (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '');
                 if (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '' || document.getElementById('ShowWorkerStatus').checked != true) document.getElementById('workerlist').style.visibility="hidden";
