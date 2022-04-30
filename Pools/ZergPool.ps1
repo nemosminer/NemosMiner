@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.0.0.27
+Version:        4.0.0.28
 Version date:   24 April 2022
 #>
 
@@ -37,7 +37,7 @@ $PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
 $PriceField = $Variables.PoolData.$Name.Variant.$PoolVariant.PriceField
 $DivisorMultiplier = $Variables.PoolData.$Name.Variant.$PoolVariant.DivisorMultiplier
 $PayoutCurrency = $PoolConfig.Wallets.Keys | Select-Object -First 1
-$Regions = If ($Config.UseAnycast -or $PoolConfig.UseAnycast) { "N/A (Anycast)" } Else { $PoolConfig.Region }
+$Regions = If ($Config.UseAnycast -and $PoolConfig.Region -contains "N/A (Anycast)") { "N/A (Anycast)" } Else { $PoolConfig.Region | Where-Object { $_ -ne "N/A (Anycast)" }  }
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
 
 If ($DivisorMultiplier -and $Regions -and $Wallet) {
@@ -74,7 +74,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
 
         ForEach ($Region in $Regions) { 
 
-            $PoolHost = If ($Config.UseAnycast -or $PoolConfig.UseAnycast) { "$Algorithm.$HostSuffix" } Else { "$Algorithm.$Region.$HostSuffix" }
+            $PoolHost = If ($Region -eq "N/A (Anycast)") { "$Algorithm.$HostSuffix" } Else { "$Algorithm.$Region.$HostSuffix" }
 
             [PSCustomObject]@{ 
                 Name                     = [String]$PoolVariant

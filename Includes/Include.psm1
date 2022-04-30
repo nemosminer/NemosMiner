@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.27
+Version:        4.0.0.28
 Version date:   24 April 2022
 #>
 
@@ -278,7 +278,7 @@ Class Miner {
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         $this.Activated++
 
-        Write-Message "Starting miner '$($this.Name) $($this.Info)'..."
+        Write-Message -Level Info "Starting miner '$($this.Name) $($this.Info)'..."
 
         If (Test-Json $this.Arguments -ErrorAction Ignore) { $this.CreateConfigFiles() }
 
@@ -422,6 +422,7 @@ Class Miner {
             LastDataSample    = $this.Data | Select-Object -Last 1 | ConvertTo-Json -Compress
         } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
+        $this.WorkersRunning = @()
         $this.StatusMessage = If ($this.Status -eq [MinerStatus]::Idle) { "Idle" } Else { "Failed $($this.Info)" }
     }
 
@@ -768,6 +769,7 @@ Function Stop-MiningProcess {
         }
         $Variables.WatchdogTimers = @()
     }
+    $Variables.MiningStatus = "Idle"
 }
 
 Function Start-BrainJob { 
@@ -937,7 +939,7 @@ Function Get-Rate {
                         $Rates.$Currency | Add-Member $mCurrency ([Double]$Rates.$Currency.$_ * 1000)
                     }
                 }
-                Write-Message "Loaded currency exchange rates from 'min-api.cryptocompare.com'."
+                Write-Message -Level Info "Loaded currency exchange rates from 'min-api.cryptocompare.com'."
                 $Rates | ConvertTo-Json -Depth 5 | Out-File -FilePath $RatesFile -Encoding utf8NoBOM -Force -ErrorAction SilentlyContinue
                 $Variables.Rates = $Rates
                 $Variables.RatesUpdated = (Get-Date).ToUniversalTime()
@@ -974,9 +976,7 @@ Function Write-Message {
         [String]$Message, 
         [Parameter(Mandatory = $false)]
         [ValidateSet("Error", "Warn", "Info", "Verbose", "Debug")]
-        [String]$Level = "Info", 
-        [Parameter(Mandatory = $false)]
-        [Switch]$Console = $false
+        [String]$Level = "Info"
     )
 
     If ($Level -in $Config.LogToScreen) { 
@@ -2948,18 +2948,21 @@ Function Update-ConfigFile {
 
     # Available regions have changed
     If (-not (Get-Region $Config.Region -List)) { 
+        $OldRegion = $Config.Region
         # Write message about new mining regions
         Switch ($Config.Region) { 
-            "Brazil"   { $Config.Region = "USA West" }
-            "Europe"   { $Config.Region = "Europe West" }
-            "HongKong" { $Config.Region = "Asia" }
-            "India"    { $Config.Region = "Asia" }
-            "Japan"    { $Config.Region = "Japan" }
-            "Russia"   { $Config.Region = "Russia" }
-            "US"       { $Config.Region = "USA West" }
-            Default    { $Config.Region = "Europe West" }
+            "Brazil"      { $Config.Region = "USA West" }
+            "Europe"      { $Config.Region = "Europe West" }
+            "Europe East" { $Config.Region = "Europe North" }
+            "HongKong"    { $Config.Region = "Asia" }
+            "India"       { $Config.Region = "Asia" }
+            "Japan"       { $Config.Region = "Japan" }
+            "Russia"      { $Config.Region = "Russia" }
+            "US"          { $Config.Region = "USA West" }
+            Default       { $Config.Region = "Europe West" }
         }
-        Write-Message -Level Warn "Available mining locations have changed. Please verify your configuration."
+        Write-Message -Level Warn "Available mining locations have changed ($OldRegion -> $($Config.Region)). Please verify your configuration."
+        Remove-Variable OldRegion
     }
 
     # Remove AHashPool

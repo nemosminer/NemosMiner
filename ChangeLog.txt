@@ -6,6 +6,29 @@ Breaking changes (from main code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+Changelog NemosMiner 4.0.0.28 30.04.2022
+========================================
+
+Core:
+- Improve UnrealPoolPriceFactor calculation
+- Fix false 'Miner has exited unexpectedly messsage' if miner is no longer running
+- Fix best pool selection when enabling / disabling anycast
+
+Miner Updates:
+- MiniZ-v1.8
+
+Pools:
+- NiceHash: Region 'eu-east' changed to 'eu-north', added anycast option
+- Region 'eu-east' changed to 'eu-north', Auto-Update will update config from 'Europe East' to 'Europe North' if necessary
+- ZergPool (all variants): Simplify hostnames for region 'na'
+
+Web GUI:
+- Config editor: Fix typos and improve tool tip info
+- Config editor: Re-arranged some items
+- Config editor: Use toggle switches instead of checkboxes
+- Update Bootstrap Table to version 1.20.0
+
+
 Changelog NemosMiner 4.0.0.27 24.04.2022
 ========================================
 
@@ -13,7 +36,7 @@ Core:
 - Reduce number of requests to 'min-api.cryptocompare.com'
 - Renamed config item 'AllowedBadShareRatio' to 'BadShareRatioThreshold' to better reflect its purpose
 - Renamed config item 'DeductRejectedShares to 'SubtractBadShares'
-- Remove obsolete config item 'EstimateCorrection' (Accuracy & Bias reduce prices which in turn avoids pools with high price fluctuation)
+- Removed obsolete config item 'EstimateCorrection' (Accuracy & Bias reduce prices which in turn avoids pools with high price fluctuation)
 
 Miner updates:
 - NanoMiner-v3.6.2

@@ -117,8 +117,9 @@
       "BTC" // Required here for donation
     ],
     "Region": [
+      "N/A (Anycast)",
       "eu-west",
-      "eu-east",
+      "eu-north",
       "usa-west",
       "usa-east"
     ],
@@ -257,9 +258,10 @@
       // e.g. "mBTC": 5
     },
     "Region": [
+      "N/A (Anycast)",
+      "asia",
       "eu",
-      "na",
-      "asia"
+      "na"
     ],
     "Variant": {
       "ZergPool": {

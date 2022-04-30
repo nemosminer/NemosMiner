@@ -1,6 +1,6 @@
 {
   "Product": "NemosMiner",
-  "Version": "4.0.0.27",
+  "Version": "4.0.0.28",
   "AutoUpdate": true,
   "RequireRestart": true,
   "Uri": "https://github.com/Minerx117/NemosMiner/archive/testing.zip",

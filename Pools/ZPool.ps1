@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool.ps1
-Version:        4.0.0.27
+Version:        4.0.0.28
 Version date:   24 April 2022
 #>
 

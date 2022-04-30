@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0.27
+Version:        4.0.0.28
 Version date:   24 April 2022
 #>
 
@@ -37,12 +37,12 @@ While ($Variables.NewMiningStatus -eq "Running") {
     # Always get the latest config
     Read-Config -ConfigFile $Variables.ConfigFile
 
-    If ($Config.MineWhenIdle -and $Variables.IdleRunspace -and $Variables.IdleRunspace.NewMiningStatus -ne $Variables.IdleRunspace.MiningStatus) { 
+    If ($Config.MineWhenIdle -and $Variables.IdleRunspace -and $Variables.IdleRunspace.NewMiningStatus -eq "Mining" -and $Variables.NewMiningStatus -eq "Running") { 
         $Variables.IdleRunspace | Add-Member MiningStatus "Mining" -Force
-        Write-Message "Started new cycle (System was idle for $($Config.IdleSec) seconds)."
+        Write-Message -Level Info "Started new cycle (System was idle for $($Config.IdleSec) seconds)."
     }
     Else { 
-        Write-Message "Started new cycle."
+        Write-Message -Level Info "Started new cycle."
     }
 
     If ($Config.MineWhenIdle) { 
@@ -218,12 +218,12 @@ While ($Variables.NewMiningStatus -eq "Running") {
                     $PoolNames = $Variables.DonatePoolsConfig.Keys -replace "Nicehash", "NiceHash External"
                     $PoolsConfig = $Variables.DonatePoolsConfig
                     $Variables.NiceHashWalletIsInternal = $false
-                    Write-Message "Donation run: Mining for '$($Variables.DonateRandom.Name)' for the next $(If (($Config.Donate - ((Get-Date) - $Variables.DonateStart).Minutes) -gt 1) { "$($Config.Donate - ((Get-Date) - $Variables.DonateStart).Minutes) minutes" } Else { "minute" }). $($Variables.Branding.ProductLabel) will use these pools while donating: '$($PoolNames -join ', ')'."
+                    Write-Message -Level Info "Donation run: Mining for '$($Variables.DonateRandom.Name)' for the next $(If (($Config.Donate - ((Get-Date) - $Variables.DonateStart).Minutes) -gt 1) { "$($Config.Donate - ((Get-Date) - $Variables.DonateStart).Minutes) minutes" } Else { "minute" }). $($Variables.Branding.ProductLabel) will use these pools while donating: '$($PoolNames -join ', ')'."
                 }
                 ElseIf ((Get-Date).ToUniversalTime() -gt $Variables.DonateEnd) { 
                     $Variables.DonatePoolsConfig = $null
                     $Variables.DonateRandom = $null
-                    Write-Message "Donation run complete - thank you! Mining for you again. :-)"
+                    Write-Message -Level Info "Donation run complete - thank you! Mining for you again. :-)"
 
                     # Clear all pools
                     $Variables.Pools = [Pool[]]@()
@@ -379,6 +379,12 @@ While ($Variables.NewMiningStatus -eq "Running") {
             # Faster shutdown
             If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.NewMiningStatus -eq "Idle") { Break }
 
+            # Anycast changed, remove all pools because best pool sort cannot handle anycast AND regional pools, also helps keeping total pool number down
+            If ($Variables.UseAnycast -ne $Config.UseAnycast) { 
+                $Pools = [Pool[]]@()
+            }
+            $Variables.UseAnycast = $Config.UseAnycast
+
             # Remove de-configured pools
             $Pools = $Pools | Where-Object Name -in $PoolNames
 
@@ -452,11 +458,11 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 $Pools | Where-Object Price -EQ 0 | ForEach-Object { $_.Reason += "Price -eq 0" }
                 # No price data
                 $Pools | Where-Object Price -EQ [Double]::NaN | ForEach-Object { $_.Reason += "No price data" }
-                # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algorithm & currency, NiceHash & MPH are always right
-                If ($Config.UnrealPoolPriceFactor -gt 1 -and ($Pools.Name | Sort-Object -Unique).Count -gt 1) { 
-                    $Pools | Where-Object Price -GT 0 | Where-Object { $_.BaseName -notmatch "NiceHash*|MiningPoolHub" } | Group-Object -Property Algorithm | ForEach-Object { 
-                        If (($_.Group.Price_Bias | Sort-Object -Unique).Count -gt 2 -and ($PriceThreshold = ($_.Group.Price_Bias | Sort-Object -Unique | Select-Object -SkipLast 1 | Measure-Object -Average).Average * $Config.UnrealPoolPriceFactor)) { 
-                            $_.Group | Where-Object Price_Bias -GT $PriceThreshold | ForEach-Object { $_.Reason += "Unreal profit ($($Config.UnrealPoolPriceFactor)x higher than average price of all other pools)" }
+                # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than second highest price of all other pools with same algorithm; NiceHash & MiningPoolHub are always right
+                If ($Config.UnrealPoolPriceFactor -gt 1 -and ($Pools.BaseName | Sort-Object -Unique).Count -gt 1) { 
+                    $Pools | Where-Object Price_Bias -GT 0 | Group-Object -Property Algorithm | ForEach-Object { 
+                        If (($_.Group.BaseName | Sort-Object -Unique).Count -ge 3 -and ($PriceThreshold = @($_.Group.Price_Bias | Sort-Object -Unique)[-2] * $Config.UnrealPoolPriceFactor)) { 
+                            $_.Group | Where-Object { $_.BaseName -notmatch "NiceHash *|MiningPoolHub" } | Where-Object Price_Bias -GT $PriceThreshold | ForEach-Object { $_.Reason += "Unreal price ($($Config.UnrealPoolPriceFactor)x higher than second highest price)" }
                         }
                     }
                 }
@@ -669,7 +675,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                         }
                         $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Speeds.$Algorithm -Duration $Stat_Span -FaultDetection ($Miner.Data.Count -ge $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
                         If ($Stat.Updated -gt $Miner.StatStart) { 
-                            Write-Message "Saved hash rate for '$($Stat_Name -replace '_Hashrate$')': $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' ')$(If ($Factor -le 0.999) { " (adjusted by factor $($Factor.ToString('N3')) [Shares total: $($LastSharesData.$Algorithm[2]), rejected: $($LastSharesData.$Algorithm[1])])" })$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
+                            Write-Message -Level Info "Saved hash rate for '$($Stat_Name -replace '_Hashrate$')': $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' ')$(If ($Factor -le 0.999) { " (adjusted by factor $($Factor.ToString('N3')) [Shares total: $($LastSharesData.$Algorithm[2]), rejected: $($LastSharesData.$Algorithm[1])])" })$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
                             $Miner.StatStart = $Miner.StatEnd
                             $Variables.PoolsLastUsed.(Get-PoolBaseName $Worker.Pool.Name) = $Stat.Updated # most likely this will count at the pool to keep balances alive
                         }
@@ -684,7 +690,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                     $Stat_Name = "$($Miner.Name)$(If ($Miner.Workers.Count -eq 1) { "_$($Miner.Workers.Pool.Algorithm | Select-Object -First 1)" })_PowerUsage"
                     $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration $Stat_Span -FaultDetection ($Miner.Data.Count -gt $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
                     If ($Stat.Updated -gt $Miner.StatStart) { 
-                        Write-Message "Saved power usage for '$($Stat_Name -replace '_PowerUsage$')': $($Stat.Live.ToString("N2"))W$(If ($Stat.Duration -eq $Stat_Span) { " [Power usage measurement done]" })."
+                        Write-Message -Level Info "Saved power usage for '$($Stat_Name -replace '_PowerUsage$')': $($Stat.Live.ToString("N2"))W$(If ($Stat.Duration -eq $Stat_Span) { " [Power usage measurement done]" })."
                     }
                     ElseIf ($PowerUsage -gt 0 -and $Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($PowerUsage -gt $Stat.Week * 2 -or $PowerUsage -lt $Stat.Week / 2)) { 
                         # Stop miner if new value is outside ±200% of current value
@@ -776,7 +782,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
             $Variables.MinersNeedingBenchmark = @($Miners | Where-Object Disabled -NE $true | Where-Object Benchmark -EQ $true)
             $Variables.MinersNeedingPowerUsageMeasurement = @($Miners | Where-Object Disabled -NE $true | Where-Object MeasurePowerUsage -EQ $true)
 
-            # Detect miners with unreal earning (> x times higher than average of the next best 10% or at least 5 miners, error in data provided by pool?)
+            # Detect miners with unreal earning (> x times higher than average of the next best 10% or at least 5 miners)
             If ($Config.UnrealMinerEarningFactor -gt 1) { 
                 $Miners | Where-Object { -not $_.Reason} | Group-Object { $_.DeviceName } | ForEach-Object { 
                     If ($ReasonableEarning = [Double]($_.Group | Sort-Object -Descending Earning | Select-Object -Skip 1 -First (5, [Int]($_.Group.Count / 10) | Measure-Object -Maximum).Maximum | Measure-Object Earning -Average).Average * $Config.UnrealMinerEarningFactor) { 
@@ -815,12 +821,12 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             $Miners | Where-Object Reason | ForEach-Object { $_.Available = $false }
 
-            Write-Message "Found $($Miners.Count) miner$(If ($Miners.Count -ne 1) { "s" }), $(($Miners | Where-Object Available -EQ $true).Count) available miner$(If (($Miners | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (($Miners | Where-Object Available -EQ $true).Count -eq 1) { "s" }) (filtered out $(($Miners | Where-Object Available -NE $true).Count) miner$(If (($Miners | Where-Object Available -NE $true).Count -ne 1) { "s" }))."
+            Write-Message -Level Info "Found $($Miners.Count) miner$(If ($Miners.Count -ne 1) { "s" }), $(($Miners | Where-Object Available -EQ $true).Count) available miner$(If (($Miners | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (($Miners | Where-Object Available -EQ $true).Count -eq 1) { "s" }) (filtered out $(($Miners | Where-Object Available -NE $true).Count) miner$(If (($Miners | Where-Object Available -NE $true).Count -ne 1) { "s" }))."
 
             If ($Variables.MinersMissingBinary) { 
                 # Download miner binaries
                 If ($Variables.Downloader.State -ne "Running") { 
-                    Write-Message "Some miners binaries are missing, starting downloader..."
+                    Write-Message -Level Info "Some miners binaries are missing, starting downloader..."
                     $Downloader_Parameters = @{ 
                         Config = $Config
                         DownloadList = @($Variables.MinersMissingBinary | Select-Object URI, Path, @{ Name = "Searchable"; Expression = { $Miner = $_; @($Miners | Where-Object { (Split-Path $_.Path -Leaf) -eq (Split-Path $Miner.Path -Leaf) }).Count -eq 0 } }) | Select-Object * -Unique
@@ -830,7 +836,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                     Remove-Variable Downloader_Parameters
                 }
                 ElseIf (-not ($Miners | Where-Object Available -EQ $true)) { 
-                    Write-Message "Waiting 30 seconds for downloader to install binaries..."
+                    Write-Message -Level Info "Waiting 30 seconds for downloader to install binaries..."
                 }
             }
 
@@ -855,7 +861,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
         }
 
         If ($Miners | Where-Object Available -EQ $true) { 
-            Write-Message "Selecting best miner$(If (@($Variables.EnabledDevices.Model | Select-Object -Unique).Count -gt 1) { "s" }) based on$(If ($Variables.CalculatePowerCost) { " profit (power cost $($Config.Currency) $($Variables.PowerPricekWh)/kW⋅h)" } Else { " earning" })..."
+            Write-Message -Level Info "Selecting best miner$(If (@($Variables.EnabledDevices.Model | Select-Object -Unique).Count -gt 1) { "s" }) based on$(If ($Variables.CalculatePowerCost) { " profit (power cost $($Config.Currency) $($Variables.PowerPricekWh)/kW⋅h)" } Else { " earning" })..."
 
             If (($Miners | Where-Object Available -EQ $true) -eq 1) { 
                 $Variables.BestMiners_Combo = $Variables.BestMiners = $Variables.MostProfitableMiners = $Miners
@@ -1064,17 +1070,17 @@ While ($Variables.NewMiningStatus -eq "Running") {
                     $AlgorithmPrerunName = ".\Utils\Prerun\$($Miner.Algorithm).bat"
                     $DefaultPrerunName = ".\Utils\Prerun\default.bat"
                     If (Test-Path $MinerAlgorithmPrerunName -PathType Leaf) { 
-                        Write-Message "Launching Prerun: $MinerAlgorithmPrerunName"
+                        Write-Message -Level Info "Launching Prerun: $MinerAlgorithmPrerunName"
                         Start-Process $MinerAlgorithmPrerunName -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
                         Start-Sleep -Seconds 2
                     }
                     ElseIf (Test-Path $AlgorithmPrerunName -PathType Leaf) { 
-                        Write-Message "Launching Prerun: $AlgorithmPrerunName"
+                        Write-Message -Level Info "Launching Prerun: $AlgorithmPrerunName"
                         Start-Process $AlgorithmPrerunName -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
                         Start-Sleep -Seconds 2
                     }
                     ElseIf (Test-Path $DefaultPrerunName -PathType Leaf) { 
-                        Write-Message "Launching Prerun: $DefaultPrerunName"
+                        Write-Message -Level Info "Launching Prerun: $DefaultPrerunName"
                         Start-Process $DefaultPrerunName -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
                         Start-Sleep -Seconds 2
                     }
@@ -1143,7 +1149,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
         If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.NewMiningStatus -eq "Idle") { Break }
 
         If ((Get-Date).ToUniversalTime() -le $Variables.EndLoopTime) { 
-            Write-Message "Collecting miner data while waiting for next cycle..."
+            Write-Message -Level Info "Collecting miner data while waiting for next cycle..."
 
             $RunningMiners = @($Variables.Miners | Where-Object WorkersRunning | Sort-Object -Descending Benchmark, MeasurePowerUsage) # All miners with WorkersRunning should be running
 
@@ -1261,7 +1267,6 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
     If ($Variables.IdleRunspace.NewMiningStatus -eq "Idle") { 
         Stop-MiningProcess
-        $Variables.IdleRunspace.MiningStatus = $Variables.IdleRunspace.NewMiningStatus
         $Variables.Summary = "Mining is suspended until system is idle again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" })..."
         Write-Message -Level Verbose $Variables.Summary
         Do { 
