@@ -1,0 +1,138 @@
+{
+  "Currency": {
+    "ETH": {
+      "BlockHeight": 14584331,
+      "CoinName": "Ethereum",
+      "DAGsize": 5150605184,
+      "Epoch": 486
+    },
+    "EGEM": {
+      "BlockHeight": 10250642,
+      "CoinName": "EtherGem",
+      "DAGsize": 3934256512,
+      "Epoch": 341
+    },
+    "CLO": {
+      "BlockHeight": 9696195,
+      "CoinName": "Callisto",
+      "DAGsize": 3783260032,
+      "Epoch": 323
+    },
+    "QKC": {
+      "BlockHeight": 9512213,
+      "CoinName": "QuarkChain",
+      "DAGsize": 3732925568,
+      "Epoch": 317
+    },
+    "MOAC": {
+      "BlockHeight": 8973046,
+      "CoinName": "Moac",
+      "DAGsize": 3581934464,
+      "Epoch": 299
+    },
+    "ETHO": {
+      "BlockHeight": 8709768,
+      "CoinName": "Ether1",
+      "DAGsize": 3506434432,
+      "Epoch": 290
+    },
+    "ETC": {
+      "BlockHeight": 14928386,
+      "CoinName": "Ethereum Classic",
+      "DAGsize": 3154109312,
+      "Epoch": 248
+    },
+    "NUKO": {
+      "BlockHeight": 7217546,
+      "CoinName": "Nekonium",
+      "DAGsize": 3087003776,
+      "Epoch": 240
+    },
+    "REOSC": {
+      "BlockHeight": 7114083,
+      "CoinName": "REOSC Ecosystem",
+      "DAGsize": 3061837696,
+      "Epoch": 237
+    },
+    "AKA": {
+      "BlockHeight": 6841175,
+      "CoinName": "Akroma",
+      "DAGsize": 2986338944,
+      "Epoch": 228
+    },
+    "ETP": {
+      "BlockHeight": 6507775,
+      "CoinName": "Metaverse",
+      "DAGsize": 2885676928,
+      "Epoch": 216
+    },
+    "ESN": {
+      "BlockHeight": 6342439,
+      "CoinName": "EtherSocial",
+      "DAGsize": 2843734144,
+      "Epoch": 211
+    },
+    "NILU": {
+      "BlockHeight": 6154897,
+      "CoinName": "Nilu",
+      "DAGsize": 2793401984,
+      "Epoch": 205
+    },
+    "EXP": {
+      "BlockHeight": 5890509,
+      "CoinName": "Expanse",
+      "DAGsize": 2717907328,
+      "Epoch": 196
+    },
+    "ATH": {
+      "BlockHeight": 5473816,
+      "CoinName": "Atheios",
+      "DAGsize": 2600467328,
+      "Epoch": 182
+    },
+    "ERG": {
+      "BlockHeight": 727890,
+      "CoinName": "Ergo",
+      "DAGsize": 1275067264,
+      "Epoch": 24
+    },
+    "PGC": {
+      "BlockHeight": 4547580,
+      "CoinName": "PegasCoin",
+      "DAGsize": 2340420224,
+      "Epoch": 151
+    },
+    "UBQ": {
+      "BlockHeight": 2164685,
+      "CoinName": "UBIQ",
+      "DAGsize": 1677721216,
+      "Epoch": 72
+    },
+    "DBIX": {
+      "BlockHeight": 1706033,
+      "CoinName": "DubaiCoin",
+      "DAGsize": 1543503488,
+      "Epoch": 56
+    },
+    "ERE": {
+      "BlockHeight": 484111,
+      "CoinName": "Ethercore",
+      "DAGsize": 1207958912,
+      "Epoch": 16
+    },
+    "RVN": {
+      "BlockHeight": 2233042,
+      "CoinName": "RavenCoin",
+      "DAGsize": 3565157248,
+      "Epoch": 297
+    },
+    "*": {
+      "BlockHeight": 14928386,
+      "CoinName": "*",
+      "DAGsize": 5150605184,
+      "Epoch": 486
+    }
+  },
+  "Updated_Minerstat": "2022-04-14T15:27:04.4715467Z",
+  "Updated_Ravencoin": "2022-04-14T15:27:05.0484973Z"
+}

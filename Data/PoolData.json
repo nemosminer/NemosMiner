@@ -1,0 +1,323 @@
+{
+  "BlockMasters": {
+    "BalancesKeepAlive": 120, // Old accounts are purged every 120 Days
+    "GuaranteedPayoutCurrencies": [
+      "BTC",
+      "DOGE",
+      "LTC"
+    ],
+    "PayoutThreshold": {
+      "mBTC": 1.65,
+      "LTC": 0.05,
+      "DODGE": 20,
+      "*": "0.01 mBTC" // From pool: All other coins is paid once you reach the coin equivalent to 0.0001 BTC every 4 hours or 0.00001 BTC on Sundays
+    },
+    "PayoutCurrency": "[Default]",
+    "Region": [
+      "as",
+      "eu",
+      "us"
+    ],
+    "Variant": {
+      "BlockMasters": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_current"
+      },
+      "BlockMasters24hr": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_last24h"
+      },
+      "BlockMastersPlus": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "Plus_Price"
+      }
+    }
+  },
+  "HiveON": {
+    "BalancesKeepAlive": 90, // No expiration communicated by pool, use 90 days just to be sure
+    "GuaranteedPayoutCurrencies": [
+      "ETC",
+      "ETH"
+    ],
+    "PayoutCurrencies": [
+      "ETC",
+      "ETH"
+    ],
+    "PayoutThreshold": {
+      "ETC": 1,
+      "ETH": 0.1
+    },
+    "Region": [
+      "ru",
+      "eu",
+      "na",
+      "naw",
+      "aspac",
+      "usw",
+      "use"
+    ],
+    "Variant": {
+      "HiveON": {
+      }
+    }
+  },
+  "MiningPoolHub": {
+    "BalancesKeepAlive": 90, // No expiration communicated by pool
+    "Fee": 0.009,
+    "GuaranteedPayoutCurrencies": [
+      "ADZ",
+      "AUR",
+      "BSTY",
+      "BCH",
+      "BTC",
+      "BTG",
+      "DASH",
+      "DGB",
+      "ESN",
+      "ETC",
+      "ETH",
+      "ETN",
+      "EXP",
+      "FTC",
+      "GAME",
+      "GRS",
+      "LTC",
+      "MAX",
+      "MONA",
+      "MUSIC",
+      "RVN",
+      "SC",
+      "START",
+      "SXC",
+      "VTC",
+      "XZC",
+      "XMR",
+      "XMY",
+      "XVG",
+      "ZCL",
+      "ZEC",
+      "ZEN"
+    ],
+    "Region": [
+      "Asia",
+      "EU",
+      "US"
+    ],
+    "Variant": {
+      "MiningPoolHub": {
+      },
+      "MiningPoolHubCoins": {
+      }
+    }
+  },
+  "NiceHash": {
+    "BalancesKeepAlive": 180, // Your NiceHash Account may be deactivated due to your inactivity
+    "EarningsAdjustmentFactor": 1.0, // NiceHash earnings estimates are always correct
+    "GuaranteedPayoutCurrencies": [
+      "BTC" // Required here for donation
+    ],
+    "Region": [
+      "eu-west",
+      "eu-east",
+      "usa-west",
+      "usa-east"
+    ],
+    "Variant": {
+      "NiceHash External": {
+        "Fee": 0.05,
+        "PayoutCurrency": "BTC", // Only BTC is supported
+        "PayoutThreshold": {
+          "mBTC": 1
+        }
+      },
+      "NiceHash Internal": {
+        "Fee": 0.02,
+        "PayoutCurrency": "BTC", // Only BTC is supported
+        "PayoutThreshold": {
+          "mBTC": 0.5
+        }
+      }
+    }
+  },
+  "NLPool": {
+    "BalancesKeepAlive": 30, // Accounts with no mining activity for 1 month are purged
+    "GuaranteedPayoutCurrencies": [
+      "BTC",
+      "LTC"
+    ],
+    "PayoutCurrency": "[Default]",
+    "PayoutThreshold": {
+      "LTC": 0.05,
+      "mBTC": 1
+    },
+    "Region": [
+      "eu-west"
+    ],
+    "Variant": {
+      "NLPool": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_current"
+      },
+      "NLPool24hr": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_last24h"
+      },
+      "NLPoolPlus": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "Plus_Price"
+      }
+    }
+  },
+  "ProHashing": {
+    "BalancesKeepAlive": 90, // The customer has not mined with the pool for 90 days (https://prohashing.com/help/prohashing-legal-information#terms)
+    "GuaranteedPayoutCurrencies": [
+      "BTC",
+      "LTC"
+    ],
+    "PayoutThreshold": {
+      "mBTC": 0,
+      "LTC": 0.010950859265481713,
+      "USD": 10
+    },
+    "Region": [
+      "EU",
+      "US"
+    ],
+    "Variant": {
+      "ProHashing": {
+        "DivisorMultiplier": 1,
+        "PriceField": "estimate_current"
+      },
+      "ProHashing24hr": {
+        "DivisorMultiplier": 0.001,
+        "PriceField": "estimate_last24h"
+      },
+      "ProHashingPlus": {
+        "DivisorMultiplier": 1,
+        "PriceField": "Plus_Price"
+      }
+    }
+  },
+  "TonPool": { 
+    "GuaranteedPayoutCurrencies": [
+      "TON"
+    ],
+    "PayoutCurrency": "TON",
+    "Region": [
+      "asia",
+      "eu",
+      "hk",
+      "na"
+    ],
+    "Variant": { 
+      "TonPool": { 
+        "DivisorMultiplier": 1000000000000000000,
+        "PriceField": "last_24h"
+      }
+    }
+  },
+  "TonWhales": { 
+    "GuaranteedPayoutCurrencies": [
+      "TON"
+    ],
+    "PayoutCurrency": "TON",
+    "Region": [
+      "ru"
+    ],
+    "Variant": { 
+      "TonWhales": { 
+        "DivisorMultiplier": 1000000000000000000,
+        "PriceField": "profitabilityPerGh"
+      }
+    }
+  },
+  "ZergPool": {
+    "BalancesKeepAlive": 90, // Accounts with no mining activity for 3 months are purged 
+    "GuaranteedPayoutCurrencies": [
+      "BCH",
+      "BNB",
+      "BTC",
+      "CAKE",
+      "DASH",
+      "DOGE",
+      "ETH",
+      "KLV",
+      "LTC",
+      "MATIC",
+      "RVN",
+      "SHIB",
+      "TRX",
+      "USDT",
+      "USDT-BEP20",
+      "USDT-TRC20",
+      "WIN"
+    ],
+    "PayoutCurrency": "[Default]",
+    "PayoutThreshold": { // PayoutThreshold is retrieved from API data, but can be set here to override value set by pool (can only set higher)
+      // e.g. "mBTC": 5
+    },
+    "Region": [
+      "eu",
+      "na",
+      "asia"
+    ],
+    "Variant": {
+      "ZergPool": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_current"
+      },
+      "ZergPool24hr": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_current24h"
+      },
+      "ZergPoolCoins": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_current"
+      },
+      "ZergPoolCoinsPlus": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "Plus_Price"
+      },
+      "ZergPoolPlus": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "Plus_Price"
+      }
+    }
+  },
+  "ZPool": {
+    "BalancesKeepAlive": 90, // Inactive accounts are purged after 90 days
+    "GuaranteedPayoutCurrencies": [
+      "BTC",
+      "DASH",
+      "DGB",
+      "KMD",
+      "LTC",
+      "RVN"
+    ],
+    "PayoutCurrency": "[Default]",
+    "PayoutThreshold": {
+      "mBTC": 1.5,
+      "*": 0.0125
+    },
+    "Region": [
+      "eu",
+      "jp",
+      "na",
+      "sea"
+    ],
+    "Variant": {
+      "ZPool": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_current"
+      },
+      "ZPool24hr": {
+        "DivisorMultiplier": 1000000000,
+        "PriceField": "estimate_current24h"
+      },
+      "ZPoolPlus": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "Plus_Price"
+      }
+    }
+  }
+}

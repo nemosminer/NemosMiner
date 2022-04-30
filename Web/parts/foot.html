@@ -1,0 +1,72 @@
+          <div class="footer" id="footer"></div>
+        </main>
+      </div>
+    </div>
+  </body>
+
+<!-- Start of page scripts 'foot.html'-->
+  <script type="text/javascript">
+
+    // Set the active sidebar item
+    $(function() {
+      $('#'+$('#title').data('navbaractive')).addClass('active');
+    });
+
+    // set the footer
+    if (version == "") {
+      $.ajax({
+        async: false,
+        dataType: 'json',
+        timeout: 10,
+        url: '/version',
+        success: function(result) {
+          version = result
+          $("#footer").empty().append(version.join('&nbsp;/&nbsp;') + '&nbsp;/&nbsp;All earnings and profit numbers are estimates based on data provided by the pools APIs&nbsp;/&nbsp&copy; www.nemosminer.com');
+        }
+      });
+    }
+
+    $('#miningpause').click(function () {
+      $command = '/functions/mining/pause';
+      $('.modal-body').load($command, function() {
+        if (this.outerText) {
+          updateHeader();
+          $('.modal-title').text($('#miningpause').text());
+          $('#myModal').modal({show:true});
+        };
+      });
+      document.getElementById('miningpause').disabled = true;
+      document.getElementById('miningstart').disabled = true;
+      document.getElementById('miningstop').disabled = true;
+    });
+
+    $('#miningstart').click(function () {
+      $command = '/functions/mining/start';
+      $('.modal-body').load($command, function() {
+        if (this.outerText) {
+          updateHeader();
+          $('.modal-title').text($('#miningstart').text());
+          $('#myModal').modal({show:true});
+        };
+      });
+      document.getElementById('miningpause').disabled = true;
+      document.getElementById('miningstart').disabled = true;
+      document.getElementById('miningstop').disabled = true;
+    });
+
+    $('#miningstop').click(function () {
+      $command = '/functions/mining/stop';
+      $('.modal-body').load($command, function() {
+        if (this.outerText) {
+          updateHeader();
+          $('.modal-title').text($('#miningstop').text());
+          $('#myModal').modal({show:true});
+        };
+      });
+      document.getElementById('miningpause').disabled = true;
+      document.getElementById('miningstart').disabled = true;
+      document.getElementById('miningstop').disabled = true;
+    });
+  </script>
+<!-- End of page scripts 'foot.html'-->
+</html>

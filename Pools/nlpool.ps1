@@ -1,57 +1,100 @@
-If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+<#
+Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
 
-Try { 
-    $Request = Get-Content ((Split-Path -Parent (Get-Item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\nlpool\nlpool.json") | ConvertFrom-Json
-}
-Catch { return }
 
-If (-not $Request) { return }
+NemosMiner is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-$Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
-$HostSuffix = "mine.nlpool.nl"
-$PriceField = "Plus_Price"
-# $PriceField = "actual_last24h"
-# $PriceField = "estimate_current"
- 
-$Location = "US"
+NemosMiner is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
 
-# Placed here for Perf (Disk reads)
-$ConfName = If ($Config.PoolsConfig.$Name) { $Name } Else { "default" }
-$PoolConf = $Config.PoolsConfig.$ConfName
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+#>
 
-$Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
-    $PoolHost = $HostSuffix
-    $PoolPort = $Request.$_.port
-    $PoolAlgorithm = Get-Algorithm $Request.$_.name
+<#
+Product:        NemosMiner
+File:           NLPool.ps1
+Version:        4.0.0.26
+Version date:   13 April 2022
+#>
 
-    $Divisor = 1000000 * [Double]$Request.$_.mbtc_mh_factor
+using module ..\Includes\Include.psm1
 
-    switch ($PoolAlgorithm) { 
-        "equihash125" { $Divisor *= 2 } #temp fix
-        "equihash144" { $Divisor *= 2 } #temp fix
-        "equihash192" { $Divisor *= 2 } #temp fix
-        "verushash" { $Divisor *= 4 } #temp fix
+param(
+    [PSCustomObject]$Config,
+    [PSCustomObject]$PoolsConfig,
+    [String]$PoolVariant,
+    [Hashtable]$Variables
+)
+
+$Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
+$PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
+$PriceField = $Variables.PoolData.$Name.Variant.$PoolVariant.PriceField
+$DivisorMultiplier = $Variables.PoolData.$Name.Variant.$PoolVariant.DivisorMultiplier
+$PayoutCurrency = $PoolConfig.Wallets.Keys | Select-Object -First 1
+$Wallet = $PoolConfig.Wallets.$PayoutCurrency
+
+If ($DivisorMultiplier -and $PriceField -and $Wallet) { 
+
+    Try { 
+        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\$($Name)\$($Name).json") -ErrorAction Stop | ConvertFrom-Json
     }
+    Catch { Return }
 
-    $Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100)))
+    If (-not $Request) { Return }
 
-    $PwdCurr = If ($PoolConf.PwdCurrency) { $PoolConf.PwdCurrency } Else { $Config.Passwordcurrency }
-    $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
+    $HostSuffix = "mine.nlpool.nl"
 
-    If ($PoolConf.Wallet) { 
-        [PSCustomObject]@{ 
-            Algorithm     = $PoolAlgorithm
-            Info          = ""
-            Price         = $Stat.Live * $PoolConf.PricePenaltyFactor
-            StablePrice   = $Stat.Week
-            MarginOfError = $Stat.Week_Fluctuation
-            Protocol      = "stratum+tcp"
-            Host          = $PoolHost
-            Port          = $PoolPort
-            User          = $PoolConf.Wallet
-            Pass          = "$($WorkerName),c=$($PwdCurr)"
-            Location      = $Location
-            SSL           = $false
+    $Request.PSObject.Properties.Name | Where-Object { [Double]$Request.$_.$PriceField -gt 0 } | ForEach-Object { 
+        $Algorithm = $Request.$_.name
+        $Algorithm_Norm = Get-Algorithm $Algorithm
+        $Currency = "$($Request.$_.currency)".Trim()
+        $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
+        $Fee = $Request.$_.Fees / 100
+        $PoolHost = $HostSuffix
+        $PoolPort = $Request.$_.port
+        $Updated = $Request.$_.Updated
+        $Workers = $Request.$_.workers
+
+        # Add coin name
+        If ($Request.$_.CoinName -and $Currency -and -not (Get-CoinName $Currency)) { 
+            Add-CoinName -Currency $Currency -CoinName $Request.$_.CoinName
+        }
+
+        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
+
+        Try { $EstimateFactor = $Request.$_.actual_last24h / $Request.$_.$PriceField }
+        Catch { $EstimateFactor = 1 }
+
+        ForEach ($Region in $PoolConfig.Region) { 
+            $Region_Norm = Get-Region $Region
+
+            [PSCustomObject]@{ 
+                Name                     = [String]$PoolVariant
+                BaseName                 = [String]$Name
+                Algorithm                = [String]$Algorithm_Norm
+                Currency                 = [String]$Currency
+                
+                Price                    = [Double]$Stat.Live
+                StablePrice              = [Double]$Stat.Week
+                Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
+                EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+                Host                     = [String]$PoolHost
+                Port                     = [UInt16]$PoolPort
+                User                     = [String]$Wallet
+                Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
+                Region                   = [String]$Region_Norm
+                SSL                      = $false
+                Fee                      = [Decimal]$Fee
+                EstimateFactor           = [Decimal]$EstimateFactor
+                Updated                  = [DateTime]$Updated
+                Workers                  = [Int]$Workers
+            }
         }
     }
 }

@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2019 Nemo & MrPlus
+Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,11 +18,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-version:        3.8.1.3
-version date:   12 November 2019
+Version:        4.0.0.28
+Version date:   24 April 2022
 #>
 
-# Try running this script as:  http://localhost:3999/scripts/demo.ps1?message=Hello%20World!
+# Try running this script as:  http://localhost:3999/web/scripts/demo.ps1?message=Hello%20World!
 
 param($Parameters)
 Write-Output $Parameters.message

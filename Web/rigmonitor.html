@@ -1,0 +1,168 @@
+<!--#include file="/parts/head.html" -->
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 id="title" data-navbaractive="navrigmonitor" class="h2">Monitoring Settings</h1>
+          </div>
+
+          <div id="configfilename" class="alert alert-info" role="alert"> </div>
+
+          <div title="Monitoring Server host name">
+            <label for="MonitoringServer">Monitoring Server</label>
+            <input type="text" id="MonitoringServer" name="MonitoringServer" value="https://nemosminer.com" size=64>
+          </div>
+
+          <div title="Monitoring userID &#10;must be identical on each monitored mining rig">
+            <label for="MonitoringUser">Monitoring UserID</label>
+            <input type="text" id="MonitoringUser" name="MonitoringUser" value="" pattern="[0-9A-Fa-f\-]{36}" size=36>
+            <button id="new-guid" class="btn btn-secondary" title="">Generate new UserID</button>
+          </div>
+          <br>
+
+          <div title="Tick to enable reporting rig status to monitoring server">
+            <input type="checkbox" id="ReportToServer" name="ReportToServer">
+            <label for="ReportToServer">Report this Rig Status to Monitoring Server</label>
+          </div>
+
+          <div title="Show status for all reporting mining rigs&#10;`Report to Monitoring Server` must be enabled on these rigs&#10;using the same userID">
+            <input type="checkbox" id="ShowWorkerStatus" name="ShowWorkerStatus">
+            <label for="ShowWorkerStatus">Show Rig Status</label>
+          </div>
+          <br>
+
+          <button id="save-button" class="btn btn-success">Apply Configuration</button>
+          <br><br>
+
+          <div id="workerlist" style="visibility:hidden">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+              <h1 id="title" data-navbaractive="navrigmonitor" class="h2">Rig Monitor</h1>
+            </div>
+
+            <div class="alert alert-info" role="alert">Shows status of all reporting rigs</div>
+
+            <table id="workers" class="table"
+              data-icons="icons"
+              data-url="/displayworkers"
+              data-cache="false"
+              data-toggle="table"
+              data-show-button-text="true"
+              data-filter-control="true"
+              data-disable-control-when-search="true"
+              data-show-search-clear-button="true"
+              data-show-columns="true"
+              data-show-toggle="true"
+              data-detail-view="true"
+              data-show-refresh="true"
+              data-sort-name="LastSeen"
+              data-sort-order="desc"
+              data-click-to-select="true"
+              data-detail-formatter="detailFormatter"
+              >
+
+              <thead>
+                <tr>
+                  <th data-field="Worker" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Worker</th>
+                  <th data-field="Status" data-sortable="true" data-filter-control="select">Status</th>
+                  <th data-field="LastSeen" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatTimeSince">Last seen</th>
+                  <th data-field="Version" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Version</th>
+                  <th data-field="Currency" data-sortable="true">Currency</th>
+                  <th data-field="EstimatedEarning" data-sortable="true">Estimated earning/day</th>
+                  <th data-field="EstimatedProfit" data-sortable="true">Estimated profit/day</th>
+                  <th data-field="Miner" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Miner(s)</th>
+                  <th data-field="Pool" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Pool(s)</th>
+                  <th data-field="Algorithm" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Algorithm(s)</th>
+                  <th data-field="Live Hashrate" data-sortable="true">Live<br>Hashrate(s)</th>
+                  <th data-field="Benchmark Hashrate" data-sortable="true">Benchmark<br>Hashrate(s)</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+<!-- Start of page scripts 'rigmonitor.html' -->
+          <script type="text/javascript">
+            var $table = $('#workers');
+
+            // refresh once per cycle
+            window.setInterval(function() { 
+              $table.bootstrapTable("refresh");
+            }, parseInt(config.Interval) * 1000 * 60);
+
+            $('#workers thead tr th').each(function () {
+              $(this).addClass('align-top');
+            });
+
+            $(document).ready(function () {
+              // Get config file name
+              $.ajax({url: '/configfile',
+                success: function(result) {
+                  $('#configfilename').text("Current configuration file: '" + result + "'");
+                }
+              });
+
+              // Get current config
+              document.getElementById('MonitoringServer').value = config.MonitoringServer;
+              document.getElementById('MonitoringUser').value = config.MonitoringUser;
+              document.getElementById('ReportToServer').checked = config.ReportToServer;
+              document.getElementById('ShowWorkerStatus').checked = config.ShowWorkerStatus;
+
+              if (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '' || document.getElementById('ShowWorkerStatus').checked != true) document.getElementById('workerlist').style.visibility="hidden";
+              else document.getElementById('workerlist').style.visibility="visible";
+
+
+              $(document.getElementById('MonitoringServer')).click(function (event) {
+                document.getElementById('ReportToServer').disabled = (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '');
+                document.getElementById('ShowWorkerStatus').disabled = (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '');
+                if (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '' || document.getElementById('ShowWorkerStatus').checked != true) document.getElementById('workerlist').style.visibility="hidden";
+                else document.getElementById('workerlist').style.visibility="visible";
+              });
+
+              $(document.getElementById('MonitoringUser')).click(function (event) {
+                document.getElementById('ReportToServer').disabled = (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '');
+                document.getElementById('ShowWorkerStatus').disabled = (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '');
+                if (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '' || document.getElementById('ShowWorkerStatus').checked != true) document.getElementById('workerlist').style.visibility="hidden";
+                else document.getElementById('workerlist').style.visibility="visible";
+              });
+
+              $(document.getElementById('ShowWorkerStatus')).click(function (event) {
+                if (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '' || document.getElementById('ShowWorkerStatus').checked != true) document.getElementById('workerlist').style.visibility="hidden";
+                else document.getElementById('workerlist').style.visibility="visible";
+              });
+
+              $('#save-button').click(function () {
+                config.ReportToServer = document.getElementById('ReportToServer').checked;
+                if ((document.getElementById('MonitoringServer').value).toString().trim() == "") document.getElementById('MonitoringServer').value = 'https://nemosminer.com';
+                config.MonitoringServer = document.getElementById('MonitoringServer').value;
+                config.MonitoringUser = document.getElementById('MonitoringUser').value;
+                config.ShowWorkerStatus = document.getElementById('ShowWorkerStatus').checked;
+
+                //Write current config
+                var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
+                $('.modal-body').load($command, function() {
+                  $('.modal-title').text($('#save-button').text());
+                  $('#myModal').modal({show:true});
+                });
+              });
+
+              //Get new guid
+              $('#new-guid').click(function () {
+                document.getElementById('MonitoringUser').value = createUUID();
+              });
+
+              $('#workerlist').on('all.bs.table', function () {
+                if (config.WebGUIUseColor == true) {
+                  $("#workerlist td:nth-child(3)").each(function () {
+                    switch(this.innerText) {
+                      case this.innerText.match(/^Offline/)?.input:
+                        $(this).parent("tr").addClass('miner-failed');
+                        break;
+                      case this.innerText.match(/^Paused/)?.input:
+                        $(this).parent("tr").addClass('miner-disabled');
+                        break;
+                      case this.innerText.match(/^Running/)?.input:
+                        $(this).parent("tr").addClass('miner-running');
+                        break;
+                    };
+                  });
+                };
+              });
+            });
+          </script>
+<!-- End of page scripts 'rigmonitor.html' -->
+<!--#include file="/parts/foot.html" -->

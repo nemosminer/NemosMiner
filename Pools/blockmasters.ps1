@@ -1,64 +1,97 @@
-If (-not (IsLoaded(".\Includes\include.ps1"))) { . .\Includes\include.ps1; RegisterLoaded(".\Includes\include.ps1") }
+<#
+Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
 
-Try { 
-    $Request = Get-Content ((Split-Path -Parent (Get-Item $script:MyInvocation.MyCommand.Path).Directory) + "\Brains\blockmasters\blockmasters.json") | ConvertFrom-Json 
-}
-Catch { return }
 
-If (-not $Request) { 
-    return
-}
+NemosMiner is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-$Name = (Get-Item $script:MyInvocation.MyCommand.Path).BaseName
-$HostSuffix = "blockmasters.co"
-$PriceField = "Plus_Price"
-# $PriceField = "actual_last24h"
-# $PriceField = "estimate_current"
-$DivisorMultiplier = 1000000
+NemosMiner is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
 
-$Location = "US"
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+#>
 
-# Placed here for Perf (Disk reads)
-$ConfName = If ($Config.PoolsConfig.$Name) { $Name } Else { "default" }
-$PoolConf = $Config.PoolsConfig.$ConfName
+<#
+Product:        NemosMiner
+File:           Blockmasters.ps1
+Version:        4.0.0.26
+Version date:   13 April 2022
+#>
 
-$Request | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object { 
-    $PoolHost = "$($HostSuffix)"
-    $PoolPort = $Request.$_.port
-    $PoolAlgorithm = Get-Algorithm $Request.$_.name
+using module ..\Includes\Include.psm1
 
-    $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
+param(
+    [PSCustomObject]$Config,
+    [PSCustomObject]$PoolsConfig,
+    [String]$PoolVariant,
+    [Hashtable]$Variables
+)
 
-    If ((Get-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit") -eq $null) { $Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100))) }
-    Else { $Stat = Set-Stat -Name "$($Name)_$($PoolAlgorithm)_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor * (1 - ($Request.$_.fees / 100))) }
+$Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
+$PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
+$PriceField = $Variables.PoolData.$Name.Variant.$PoolVariant.PriceField
+$DivisorMultiplier = $Variables.PoolData.$Name.Variant.$PoolVariant.DivisorMultiplier
+$PayoutCurrency = $PoolConfig.Wallets.Keys | Select-Object -First 1
+$Wallet = $PoolConfig.Wallets.$PayoutCurrency
 
-    $PwdCurr = If ($PoolConf.PwdCurrency) { $PoolConf.PwdCurrency } Else { $Config.Passwordcurrency }
-    $WorkerName = If ($PoolConf.WorkerName -like "ID=*") { $PoolConf.WorkerName } Else { "ID=$($PoolConf.WorkerName)" }
+If ($DivisorMultiplier -and $PriceField -and $Wallet) { 
 
-    $Locations = "eu.", ""
-    $Locations | ForEach-Object { 
-        $Pool_Location = $_
+    Try { 
+        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\$($Name)\$($Name).json") -ErrorAction Stop | ConvertFrom-Json
+    }
+    Catch { Return }
 
-        switch ($Pool_Location) { 
-            "eu." { $Location = "EU" }
-            "" { $Location = "US" }
+    If (-not $Request) { Return }
+
+    $HostSuffix = "blockmasters.co"
+
+    $Request.PSObject.Properties.Name | Where-Object { $Request.$_.$PriceField -gt 0 } | ForEach-Object { 
+        $Algorithm = $Request.$_.name
+        $Algorithm_Norm = Get-Algorithm $Algorithm
+        $Currency = "$($Request.$_.currency)".Trim()
+        $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
+        $Fee = $Request.$_.Fees / 100
+        $PoolPort = $Request.$_.port
+        $Updated = $Request.$_.Updated
+        $Workers = $Request.$_.workers
+
+        # Add coin name
+        If ($Request.$_.CoinName -and $Currency -and -not (Get-CoinName $Currency)) { 
+            Add-CoinName -Currency $Currency -CoinName $Request.$_.CoinName
         }
-        $PoolHost = "$($Pool_Location)$($HostSuffix)"
 
-        If ($PoolConf.Wallet) { 
+        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
+
+        Try { $EstimateFactor = $Request.$_.actual_last24h / $Request.$_.$PriceField }
+        Catch { $EstimateFactor = 1 }
+
+        ForEach ($Region in $PoolConfig.Region) { 
+            $Region_Norm = Get-Region $Region
+
             [PSCustomObject]@{ 
-                Algorithm     = $PoolAlgorithm
-                Info          = ""
-                Price         = $Stat.Live * $PoolConf.PricePenaltyFactor
-                StablePrice   = $Stat.Week
-                MarginOfError = $Stat.Week_Fluctuation
-                Protocol      = "stratum+tcp"
-                Host          = $PoolHost
-                Port          = $PoolPort
-                User          = $PoolConf.Wallet
-                Pass          = "$($WorkerName),c=$($PwdCurr)"
-                Location      = $Location
-                SSL           = $false
+                Name                     = [String]$PoolVariant
+                BaseName                 = [String]$Name
+                Algorithm                = [String]$Algorithm_Norm
+                Currency                 = [String]$Currency
+                Price                    = [Double]$Stat.Live
+                StablePrice              = [Double]$Stat.Week
+                Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
+                EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+                Host                     = "$($Region).$($HostSuffix)" -replace "^us\."
+                Port                     = [UInt16]$PoolPort
+                User                     = [String]$Wallet
+                Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
+                Region                   = [String]$Region_Norm
+                SSL                      = $false
+                Fee                      = [Decimal]$Fee
+                EstimateFactor           = [Decimal]$EstimateFactor
+                Updated                  = [DateTime]$Updated
+                Workers                  = [Int]$Workers
             }
         }
     }
