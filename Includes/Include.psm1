@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           include.ps1
 Version:        4.0.0.28
-Version date:   24 April 2022
+Version date:   30 April 2022
 #>
 
 # Window handling
@@ -979,7 +979,7 @@ Function Write-Message {
         [String]$Level = "Info"
     )
 
-    If ($Level -in $Config.LogToScreen) { 
+    If ($Config.GetEnumerator() -notcontains "LogToScreen" -or $Level -in $Config.LogToScreen) { 
         # Update status text box in GUI
         If ($Variables.LabelStatus) { 
             $Variables.LabelStatus.Lines += $Message
@@ -2615,7 +2615,7 @@ Function Get-NMVersion {
 
     # Check if new version is available
     Try { 
-        $UpdateVersion = Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Minerx117/NemosMiner/Version.txt" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+        $UpdateVersion = (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Minerx117/NemosMiner/master/Version.txt" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
 
         If ($UpdateVersion.Product -eq $Variables.Branding.ProductLabel -and [Version]$UpdateVersion.Version -gt $Variables.Branding.Version) { 
             If ($UpdateVersion.AutoUpdate -eq $true) { 
