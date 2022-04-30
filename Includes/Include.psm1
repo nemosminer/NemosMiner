@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.26
-Version date:   13 April 2022
+Version:        4.0.0.28
+Version date:   24 April 2022
 #>
 
 # Window handling
@@ -119,7 +119,6 @@ Class Pool {
     [Boolean]$SSL
     [Double]$Fee
     [Double]$EarningsAdjustmentFactor = 1
-    [Double]$EstimateFactor = 1
     [DateTime]$Updated = (Get-Date).ToUniversalTime()
     [Nullable[Int]]$Workers
     [Boolean]$Available = $true
@@ -279,7 +278,7 @@ Class Miner {
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         $this.Activated++
 
-        Write-Message "Starting miner '$($this.Name) $($this.Info)'..."
+        Write-Message -Level Info "Starting miner '$($this.Name) $($this.Info)'..."
 
         If (Test-Json $this.Arguments -ErrorAction Ignore) { $this.CreateConfigFiles() }
 
@@ -375,7 +374,7 @@ Class Miner {
     hidden StopMining() { 
         If ($this.Status -eq [MinerStatus]::Running) { 
             $this.StatusMessage = "Stopping miner '$($this.Name) $($this.Info)'..."
-            Write-Message -Level INFO $this.StatusMessage
+            Write-Message -Level Info $this.StatusMessage
         }
         Else { 
             Write-Message -Level ERROR $this.StatusMessage
@@ -423,6 +422,7 @@ Class Miner {
             LastDataSample    = $this.Data | Select-Object -Last 1 | ConvertTo-Json -Compress
         } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
+        $this.WorkersRunning = @()
         $this.StatusMessage = If ($this.Status -eq [MinerStatus]::Idle) { "Idle" } Else { "Failed $($this.Info)" }
     }
 
@@ -662,7 +662,7 @@ namespace PInvoke.Win32 {
             $ProgressPreference = "SilentlyContinue"
             $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
 
-            Write-Message -Level Verbose "Started idle detection.$(If ($IdleSeconds -le $Config.IdleSec) { " $($Variables.CurrentProduct) will start mining when the system is idle for more than $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" })..." })"
+            Write-Message -Level Verbose "Started idle detection.$(If ($IdleSeconds -le $Config.IdleSec) { " $($Variables.Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" })..." })"
 
             While ($true) { 
                 $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
@@ -671,7 +671,7 @@ namespace PInvoke.Win32 {
                 If ($IdleSeconds -lt $Config.IdleSec -and $Variables.IdleRunspace.NewMiningStatus -ne "Idle") { 
                     $Variables.IdleRunspace | Add-Member NewMiningStatus "Idle" -Force
 
-                    $LabelMiningStatus.Text = "Idle | $($Variables.CurrentProduct) $($Variables.CurrentVersion)"
+                    $LabelMiningStatus.Text = "Idle | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
                 }
 
@@ -679,7 +679,7 @@ namespace PInvoke.Win32 {
                 If ($IdleSeconds -ge $Config.IdleSec -and $Variables.IdleRunspace.NewMiningStatus -ne "Mining") { 
                     $Variables.IdleRunspace | Add-Member NewMiningStatus "Mining" -Force
 
-                    $LabelMiningStatus.Text = "Running | $($Variables.CurrentProduct) $($Variables.CurrentVersion)"
+                    $LabelMiningStatus.Text = "Running | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
                 }
                 Start-Sleep -Seconds 1
@@ -769,6 +769,7 @@ Function Stop-MiningProcess {
         }
         $Variables.WatchdogTimers = @()
     }
+    $Variables.MiningStatus = "Idle"
 }
 
 Function Start-BrainJob { 
@@ -860,7 +861,7 @@ Function Stop-BalancesTracker {
 Function Initialize-Application { 
 
     # Keep only the last 10 files
-    Get-ChildItem -Path ".\Logs\$($Variables.CurrentProduct)_*.log" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse
+    Get-ChildItem -Path ".\Logs\$($Variables.Branding.ProductLabel)_*.log" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse
     Get-ChildItem -Path ".\Logs\SwitchingLog_*.csv" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse
     Get-ChildItem -Path "$($Variables.ConfigFile)_*.backup" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse
 
@@ -902,47 +903,56 @@ Function Get-CommandLineParameters {
 Function Get-Rate { 
     # Read exchange rates from min-api.cryptocompare.com, use cached data as fallback
 
-    $RatesFile = "Data\Rates.json"
+    $RatesFile = "Cache\Rates.json"
+    $Variables.BalancesCurrencies = @($Variables.Balances.Keys | ForEach-Object { $Variables.Balances.$_.Currency } | Sort-Object -Unique)
 
     Try { 
-        If ($Rates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$((@("BTC") + @($Variables.AllCurrencies | Where-Object { $_ -ne "mBTC" }) | Select-Object -Unique) -join ',')&extraParams=http://nemosminer.com" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) { 
-            $Currencies = ($Rates.BTC | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name
-            $Currencies | Where-Object { $_ -ne "BTC" } | ForEach-Object { 
-                $Currency = $_
-                $Rates | Add-Member $Currency ($Rates.BTC | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) -ErrorAction Ignore
-                ($Rates.$Currency | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object { 
-                    $Rates.$Currency | Add-Member $_ ([Double]$Rates.BTC.$_ / $Rates.BTC.$Currency) -Force
-                }
-            }
-            # Add mBTC
-            $Currencies | ForEach-Object { 
-                $Currency = $_
-                $mCurrency = "m$($Currency)"
-                $Rates | Add-Member $mCurrency ($Rates.$Currency | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json)
-                ($Rates.$mCurrency | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object { 
-                    $Rates.$mCurrency | Add-Member $_ ([Double]$Rates.$Currency.$_ / 1000) -Force
-                }
-            }
-            ($Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object { 
-                $Currency = $_
-                ($Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | Where-Object { $_ -in $Currencies } | ForEach-Object { 
-                    $mCurrency = "m$($_)"
-                    $Rates.$Currency | Add-Member $mCurrency ([Double]$Rates.$Currency.$_ * 1000)
-                }
-            }
-            Write-Message "Loaded currency exchange rates from 'min-api.cryptocompare.com'."
-            $Rates | ConvertTo-Json -Depth 5 | Out-File -FilePath $RatesFile -Encoding utf8NoBOM -Force -ErrorAction SilentlyContinue
-            $Variables.Rates = $Rates
-            $Variables.RatesUpdated = (Get-Date).ToUniversalTime()
+        If (-not $Variables.AllCurrencies -and (Test-Path -Path $RatesFile)) { 
+            $Variables.AllCurrencies = @((Get-Content -Path $RatesFile -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore).PSObject.Properties.Name | ForEach-Object { $_ -replace '^m' } | Sort-Object -Unique )
         }
         Else { 
-            If (Test-Path -Path $RatesFile) { 
-                $Variables.Rates = (Get-Content -Path $RatesFile -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop)
-                $Variables.Updated = "Cached: $((Get-Item -Path $RatesFile).CreationTime.ToUniversalTime())"
-                Write-Message -Level Warn "Could not load exchange rates from CryptoCompare. Using cached data from $((Get-Item -Path $RatesFile).CreationTime)."
+            $Variables.AllCurrencies = @((@($Config.Currency) + @($Config.Wallets.PSObject.Properties.Name) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies)) | Select-Object -Unique)
+        }
+        If (-not $Variables.Rates.BTC.($Config.Currency) -or (Compare-Object @($Variables.Rates.PSObject.Properties.Name | Select-Object) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "=>") -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-(3, $Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum))) { 
+            If ($Rates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$((@("BTC") + @($Variables.AllCurrencies | Where-Object { $_ -ne "mBTC" }) | Select-Object -Unique) -join ',')&extraParams=$($Variables.Branding.BrandWebSite)" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) { 
+                $Currencies = ($Rates.BTC | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name
+                $Currencies | Where-Object { $_ -ne "BTC" } | ForEach-Object { 
+                    $Currency = $_
+                    $Rates | Add-Member $Currency ($Rates.BTC | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) -ErrorAction Ignore
+                    ($Rates.$Currency | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object { 
+                        $Rates.$Currency | Add-Member $_ ([Double]$Rates.BTC.$_ / $Rates.BTC.$Currency) -Force
+                    }
+                }
+                # Add mBTC
+                $Currencies | ForEach-Object { 
+                    $Currency = $_
+                    $mCurrency = "m$($Currency)"
+                    $Rates | Add-Member $mCurrency ($Rates.$Currency | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json)
+                    ($Rates.$mCurrency | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object { 
+                        $Rates.$mCurrency | Add-Member $_ ([Double]$Rates.$Currency.$_ / 1000) -Force
+                    }
+                }
+                ($Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object { 
+                    $Currency = $_
+                    ($Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | Where-Object { $_ -in $Currencies } | ForEach-Object { 
+                        $mCurrency = "m$($_)"
+                        $Rates.$Currency | Add-Member $mCurrency ([Double]$Rates.$Currency.$_ * 1000)
+                    }
+                }
+                Write-Message -Level Info "Loaded currency exchange rates from 'min-api.cryptocompare.com'."
+                $Rates | ConvertTo-Json -Depth 5 | Out-File -FilePath $RatesFile -Encoding utf8NoBOM -Force -ErrorAction SilentlyContinue
+                $Variables.Rates = $Rates
+                $Variables.RatesUpdated = (Get-Date).ToUniversalTime()
             }
             Else { 
-                Write-Message -Level Warn "Could not load exchange rates from CryptoCompare."
+                If (Test-Path -Path $RatesFile) { 
+                    $Variables.Rates = (Get-Content -Path $RatesFile -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop)
+                    $Variables.Updated = "Cached: $((Get-Item -Path $RatesFile).CreationTime.ToUniversalTime())"
+                    Write-Message -Level Warn "Could not load exchange rates from CryptoCompare. Using cached data from $((Get-Item -Path $RatesFile).CreationTime)."
+                }
+                Else { 
+                    Write-Message -Level Warn "Could not load exchange rates from CryptoCompare."
+                }
             }
         }
     }
@@ -966,9 +976,7 @@ Function Write-Message {
         [String]$Message, 
         [Parameter(Mandatory = $false)]
         [ValidateSet("Error", "Warn", "Info", "Verbose", "Debug")]
-        [String]$Level = "Info", 
-        [Parameter(Mandatory = $false)]
-        [Switch]$Console = $false
+        [String]$Level = "Info"
     )
 
     If ($Level -in $Config.LogToScreen) { 
@@ -1021,7 +1029,7 @@ Function Send-MonitoringData {
     If (-not $Config.MonitoringServer) { Return }
     If (-not $Config.MonitoringUser) { Return }
 
-    $Version = "$($Variables.CurrentProduct) $($Variables.CurrentVersion.ToString())"
+    $Version = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version.ToString())"
     $Status = $Variables.NewMiningStatus
     $RunningMiners = $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }
 
@@ -1133,7 +1141,7 @@ Function Get-DonationPoolConfig {
         $PoolConfig = @{ }
         $PoolConfig.EarningsAdjustmentFactor = 1
         $PoolConfig.Region = $Config.PoolsConfig.$_.Region
-        $PoolConfig.WorkerName = "$($Variables.CurrentProduct)-$($Variables.CurrentVersion.ToString())-donate$($Config.Donate)"
+        $PoolConfig.WorkerName = "$($Variables.Branding.ProductLabel)-$($Variables.Branding.Version.ToString())-donate$($Config.Donate)"
         Switch -regex ($_) { 
             "^MiningPoolHub$|^ProHashing$" { 
                 If ($Variables.DonateRandom."$($_)UserName") { # not all devs have a known ProHashing account
@@ -1203,7 +1211,7 @@ Function Read-Config {
         # MinerInstancePerDeviceModel: Default to $true if more than one device model per vendor
         $Config.MinerInstancePerDeviceModel = ($Variables.Devices | Group-Object Vendor  | ForEach-Object { ($_.Group.Model | Sort-Object -Unique).Count } | Measure-Object -Maximum).Maximum -gt 1
 
-        $Config.ConfigFileVersion = $Variables.CurrentVersion.ToString()
+        $Config.ConfigFileVersion = $Variables.Branding.Version.ToString()
     }
 
     # Ensure parameter format
@@ -1287,11 +1295,11 @@ Function Write-Config {
     )
 
     $Header = 
-"// This file was initially generated by $($Variables.CurrentProduct)
+"// This file was initially generated by $($Variables.Branding.ProductLabel)
 // It should still be usable in newer versions, but newer versions might have additional
 // settings or changes
 
-// $($Variables.CurrentProduct) will automatically add / convert / rename / update new settings when updating to a new version
+// $($Variables.Branding.ProductLabel) will automatically add / convert / rename / update new settings when updating to a new version
 "
     If (Test-Path $ConfigFile -PathType Leaf) { 
         Copy-Item -Path $ConfigFile -Destination "$($ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").backup"
@@ -1314,35 +1322,34 @@ Function Edit-File {
         [String]$FileName
     )
 
-    If ($FileWriteTime = (Get-Item -Path $FileName -ErrorAction Ignore).LastWriteTime) { 
-        If (-not ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)"))) { 
-            Notepad.exe $FileName
-        }
-        If ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)")) { 
-            # Check if the window is not already in foreground
-            While ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)")) { 
-                $FGWindowPid  = [IntPtr]::Zero
-                [Void][Win32]::GetWindowThreadProcessId([Win32]::GetForegroundWindow(), [ref]$FGWindowPid)
-                $MainWindowHandle = (Get-Process -Id $NotepadProcess.ProcessId).MainWindowHandle
-                If ($NotepadProcess.ProcessId -ne $FGWindowPid) {
-                    If ([Win32]::GetForegroundWindow() -ne $MainWindowHandle) { 
-                        [Void][Win32]::ShowWindowAsync($MainWindowHandle, 6) # SW_MINIMIZE 
-                        [Void][Win32]::ShowWindowAsync($MainWindowHandle, 9) # SW_RESTORE
-                    }
-                }
-                Start-Sleep -MilliSeconds 100
-            }
-        }
+    $FileWriteTime = (Get-Item -Path $FileName -ErrorAction Ignore).LastWriteTime
 
-        If ($FileWriteTime -ne (Get-Item -Path $FileName -ErrorAction Ignore).LastWriteTime) { 
-            Write-Message -Level Verbose "Saved '$(($FileName))'. Changes will become active in next cycle."
-            Return "Saved '$(($FileName))'`nChanges will become active in next cycle."
-        }
-        Else { 
-            Return "No changes to '$(($FileName))' made."
+    If (-not ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)"))) { 
+        Notepad.exe $FileName
+    }
+    If ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)")) { 
+        # Check if the window is not already in foreground
+        While ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)")) { 
+            $FGWindowPid  = [IntPtr]::Zero
+            [Void][Win32]::GetWindowThreadProcessId([Win32]::GetForegroundWindow(), [ref]$FGWindowPid)
+            $MainWindowHandle = (Get-Process -Id $NotepadProcess.ProcessId).MainWindowHandle
+            If ($NotepadProcess.ProcessId -ne $FGWindowPid) {
+                If ([Win32]::GetForegroundWindow() -ne $MainWindowHandle) { 
+                    [Void][Win32]::ShowWindowAsync($MainWindowHandle, 6) # SW_MINIMIZE 
+                    [Void][Win32]::ShowWindowAsync($MainWindowHandle, 9) # SW_RESTORE
+                }
+            }
+            Start-Sleep -MilliSeconds 100
         }
     }
-    Return "Cannot locate config file '$(($FileName))'."
+
+    If ($FileWriteTime -ne (Get-Item -Path $FileName -ErrorAction Ignore).LastWriteTime) { 
+        Write-Message -Level Verbose "Saved '$(($FileName))'. Changes will become active in next cycle."
+        Return "Saved '$(($FileName))'`nChanges will become active in next cycle."
+    }
+    Else { 
+        Return "No changes to '$(($FileName))' made."
+    }
 }
 
 Function Get-SortedObject { 
@@ -1955,6 +1962,7 @@ Function Get-Device {
         $Type_Index = @{ }
         $Vendor_Index = @{ }
         $Type_Vendor_Index = @{ }
+
         $PlatformId = 0
         $PlatformId_Index = @{ }
         $Type_PlatformId_Index = @{ }
@@ -2017,54 +2025,33 @@ Function Get-Device {
             Get-CimInstance CIM_VideoController | ForEach-Object { 
                 $Device_CIM = $_ | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
 
-                If ([System.Environment]::OSVersion.Version -ge [Version]"10.0.0.0") { 
-                    $Device_PNP = [PSCustomObject]@{ }
-                    Get-PnpDevice $Device_CIM.PNPDeviceID | Get-PnpDeviceProperty | ForEach-Object { $Device_PNP | Add-Member $_.KeyName $_.Data }
-                    $Device_PNP = $Device_PNP | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
+                $Device_PNP = [PSCustomObject]@{ }
+                Get-PnpDevice $Device_CIM.PNPDeviceID | Get-PnpDeviceProperty | ForEach-Object { $Device_PNP | Add-Member $_.KeyName $_.Data }
+                $Device_PNP = $Device_PNP | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
 
-                    $Device_Reg = Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\$($Device_PNP.DEVPKEY_Device_Driver)" -ErrorAction Ignore | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
+                $Device_Reg = Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\$($Device_PNP.DEVPKEY_Device_Driver)" -ErrorAction Ignore | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
 
-                    # Add normalised values
-                    $Variables.Devices += $Device = [PSCustomObject]@{ 
-                        Name   = $null
-                        Model  = $Device_CIM.Name
-                        Type   = "GPU"
-                        Bus    = $(
-                            If ($Device_PNP.DEVPKEY_Device_BusNumber -is [Int64] -or $Device_PNP.DEVPKEY_Device_BusNumber -is [Int32]) { 
-                                [Int64]$Device_PNP.DEVPKEY_Device_BusNumber
-                            }
-                        )
-                        Vendor = $(
-                            Switch -Regex ([String]$Device_CIM.AdapterCompatibility) { 
-                                "Advanced Micro Devices" { "AMD" }
-                                "Intel" { "INTEL" }
-                                "NVIDIA" { "NVIDIA" }
-                                "AMD" { "AMD" }
-                                Default { $Device_CIM.AdapterCompatibility -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
-                            }
-                        )
-                        Memory = [Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize'))
-                        MemoryGB = [Double]([Math]::Round([Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize')) / 0.05GB) / 20) # Round to nearest 50MB
-                    }
-                }
-                Else { 
-                    # Add normalised values
-                    $Variables.Devices += $Device = [PSCustomObject]@{ 
-                        Name   = $null
-                        Model  = $Device_CIM.Name
-                        Type   = "GPU"
-                        Vendor = $(
-                            Switch -Regex ([String]$Device_CIM.AdapterCompatibility) { 
-                                "Advanced Micro Devices" { "AMD" }
-                                "Intel" { "INTEL" }
-                                "NVIDIA" { "NVIDIA" }
-                                "AMD" { "AMD" }
-                                Default { $Device_CIM.AdapterCompatibility -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' -replace '\s+', ' '}
-                            }
-                        )
-                        Memory = [Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize'))
-                        MemoryGB = [Double]([Math]::Round([Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize')) / 0.05GB) / 20) # Round to nearest 50MB
-                    }
+                # Add normalised values
+                $Variables.Devices += $Device = [PSCustomObject]@{ 
+                    Name   = $null
+                    Model  = $Device_CIM.Name
+                    Type   = "GPU"
+                    Bus    = $(
+                        If ($Device_PNP.DEVPKEY_Device_BusNumber -is [Int64] -or $Device_PNP.DEVPKEY_Device_BusNumber -is [Int32]) { 
+                            [Int64]$Device_PNP.DEVPKEY_Device_BusNumber
+                        }
+                    )
+                    Vendor = $(
+                        Switch -Regex ([String]$Device_CIM.AdapterCompatibility) { 
+                            "Advanced Micro Devices" { "AMD" }
+                            "Intel" { "INTEL" }
+                            "NVIDIA" { "NVIDIA" }
+                            "AMD" { "AMD" }
+                            Default { $Device_CIM.AdapterCompatibility -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
+                        }
+                    )
+                    Memory = [Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize'))
+                    MemoryGB = [Double]([Math]::Round([Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize')) / 0.05GB) / 20) # Round to nearest 50MB
                 }
 
                 $Device | Add-Member @{ 
@@ -2628,9 +2615,9 @@ Function Get-NMVersion {
 
     # Check if new version is available
     Try { 
-        $UpdateVersion = Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Minerx117/NemosMiner/testing/Version.txt" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" } | ConvertFrom-Json
+        $UpdateVersion = (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Minerx117/NemosMiner/master/Version.txt" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
 
-        If ($UpdateVersion.Product -eq $Variables.CurrentProduct -and [Version]$UpdateVersion.Version -gt $Variables.CurrentVersion) { 
+        If ($UpdateVersion.Product -eq $Variables.Branding.ProductLabel -and [Version]$UpdateVersion.Version -gt $Variables.Branding.Version) { 
             If ($UpdateVersion.AutoUpdate -eq $true) { 
                 If ($Config.AutoUpdate) { 
                     Initialize-Autoupdate -UpdateVersion $UpdateVersion
@@ -2644,11 +2631,11 @@ Function Get-NMVersion {
             }
         }
         Else { 
-            Write-Message -Level Verbose "Version checker: $($Variables.CurrentProduct) $($Variables.CurrentVersion) is current - no update available."
+            Write-Message -Level Verbose "Version checker: $($Variables.Branding.ProductLabel) $($Variables.Branding.Version) is current - no update available."
         }
     }
     Catch { 
-        Write-Message -Level Warn "Version checker could not contact update server. $($Variables.CurrentProduct) will automatically retry with 24hrs."
+        Write-Message -Level Warn "Version checker could not contact update server. $($Variables.Branding.ProductLabel) will automatically retry with 24hrs."
     }
 }
 
@@ -2666,7 +2653,7 @@ Function Initialize-Autoupdate {
     # GitHub only suppors TLSv1.2 since feb 22 2018
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
-    $NemosMinerFileHash = (Get-FileHash ".\$($Variables.CurrentProduct).ps1").Hash
+    $NemosMinerFileHash = (Get-FileHash ".\$($Variables.Branding.ProductLabel).ps1").Hash
 
     "Version checker: New version $($UpdateVersion.Version) found. " | Tee-Object $UpdateLog | Write-Message -Level Verbose
     "Starting auto update - Logging changes to '.\$($UpdateLog.Replace("$(Convert-Path '.\')\", ''))'." | Tee-Object $UpdateLog | Write-Message -Level Verbose
@@ -2689,7 +2676,7 @@ Function Initialize-Autoupdate {
         Return
     }
 
-    If ($Variables.CurrentVersion -le [System.Version]"3.9.9.17" -and $UpdateVersion.Version -ge [System.Version]"3.9.9.17") { 
+    If ($Variables.Branding.Version -le [System.Version]"3.9.9.17" -and $UpdateVersion.Version -ge [System.Version]"3.9.9.17") { 
         # Balances & earnings files are no longer compatible
         Write-Message -Level Warn "Balances & Earnings files are no longer compatible and will be reset."
     }
@@ -2714,7 +2701,7 @@ Function Initialize-Autoupdate {
     Stop-IdleDetection
     Stop-BalancesTracker
 
-    If ($Variables.CurrentVersion -le [System.Version]"3.9.9.17" -and $UpdateVersion -ge [System.Version]"3.9.9.17") { 
+    If ($Variables.Branding.Version -le [System.Version]"3.9.9.17" -and $UpdateVersion -ge [System.Version]"3.9.9.17") { 
         # Remove balances & earnings files that are no longer compatible
         If (Test-Path -Path ".\Logs\BalancesTrackerData*.*") { Get-ChildItem -Path ".\Logs\BalancesTrackerData*.*" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue} }
         If (Test-Path -Path ".\Logs\DailyEarnings*.*") { Get-ChildItem -Path ".\Logs\DailyEarnings*.*" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue } }
@@ -2822,7 +2809,7 @@ Function Initialize-Autoupdate {
     Get-ChildItem -Path ".\Logs\AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $UpdateLog } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
 
     # Start new instance
-    If ($UpdateVersion.RequireRestart -or $NemosMinerFileHash -ne (Get-FileHash ".\$($Variables.CurrentProduct).ps1").Hash) { 
+    If ($UpdateVersion.RequireRestart -or $NemosMinerFileHash -ne (Get-FileHash ".\$($Variables.Branding.ProductLabel).ps1").Hash) { 
         "Starting updated version..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
         $StartCommand = (Get-Process -Id $PID).CommandLine
         $NewKid = Invoke-CimMethod -ClassName Win32_Process -MethodName "Create" -Arguments @{ CommandLine = "$StartCommand"; CurrentDirectory = $Variables.MainPath }
@@ -2832,7 +2819,7 @@ Function Initialize-Autoupdate {
         $Waited = 0
         While (-not (Get-Process -Id $NewKid.ProcessId -ErrorAction SilentlyContinue) -and ($waited -le 10)) { Start-Sleep -Seconds 1; $waited++ }
         If (-not (Get-Process -Id $NewKid.ProcessId -ErrorAction SilentlyContinue)) { 
-            "Failed to start new instance of $($Variables.CurrentProduct)." | Tee-Object $UpdateLog -Append | Write-Message -Level Error
+            "Failed to start new instance of $($Variables.Branding.ProductLabel)." | Tee-Object $UpdateLog -Append | Write-Message -Level Error
             Return
         }
     }
@@ -2893,10 +2880,12 @@ Function Update-ConfigFile {
                 $Config.Remove($_)
                 $Config.Remove("StartPaused")
             }
+            "AllowedBadShareRatio" { $Config.BadShareRatioThreshold = $Config.$_; $Config.Remove($_) }
             "APIKEY" { $Config.MiningPoolHubAPIKey = $Config.$_; $Config.Remove($_) }
             "BalancesTrackerConfigFile" { $Config.Remove($_) }
+            "DeductRejectedShares" { $Config.SubtractBadShares = $Config.$_; $Config.Remove($_) }
             "EnableEarningsTrackerLog" { $Config.EnableBalancesLog = $Config.$_; $Config.Remove($_) }
-            "IgnoreRejectedShares" { $Config.DeductRejectedShares = $Config.$_; $Config.Remove($_) }
+            "EstimateCorrection" { $Config.Remove($_) }
             "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
             "MPHAPIKey" { $Config.MiningPoolHubAPIKey = $Config.$_; $Config.Remove($_) }
             "MPHUserName"  { $Config.MiningPoolHubUserName = $Config.$_; $Config.Remove($_) }
@@ -2958,26 +2947,29 @@ Function Update-ConfigFile {
 
     # Available regions have changed
     If (-not (Get-Region $Config.Region -List)) { 
+        $OldRegion = $Config.Region
         # Write message about new mining regions
         Switch ($Config.Region) { 
-            "Brazil"   { $Config.Region = "USA West" }
-            "Europe"   { $Config.Region = "Europe West" }
-            "HongKong" { $Config.Region = "Asia" }
-            "India"    { $Config.Region = "Asia" }
-            "Japan"    { $Config.Region = "Japan" }
-            "Russia"   { $Config.Region = "Russia" }
-            "US"       { $Config.Region = "USA West" }
-            Default    { $Config.Region = "Europe West" }
+            "Brazil"      { $Config.Region = "USA West" }
+            "Europe"      { $Config.Region = "Europe West" }
+            "Europe East" { $Config.Region = "Europe North" }
+            "HongKong"    { $Config.Region = "Asia" }
+            "India"       { $Config.Region = "Asia" }
+            "Japan"       { $Config.Region = "Japan" }
+            "Russia"      { $Config.Region = "Russia" }
+            "US"          { $Config.Region = "USA West" }
+            Default       { $Config.Region = "Europe West" }
         }
-        Write-Message -Level Warn "Available mining locations have changed. Please verify your configuration."
+        Write-Message -Level Warn "Available mining locations have changed ($OldRegion -> $($Config.Region)). Please verify your configuration."
+        Remove-Variable OldRegion
     }
 
     # Remove AHashPool
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "AhashPool*" }
 
-    $Config | Add-Member ConfigFileVersion ($Variables.CurrentVersion.ToString()) -Force
+    $Config | Add-Member ConfigFileVersion ($Variables.Branding.Version.ToString()) -Force
     Write-Config -ConfigFile $ConfigFile
-    "Updated configuration file '$($ConfigFile)' to version $($Variables.CurrentVersion.ToString())." | Write-Message -Level Verbose 
+    "Updated configuration file '$($ConfigFile)' to version $($Variables.Branding.Version.ToString())." | Write-Message -Level Verbose 
     Remove-Variable New_Config_Items -ErrorAction Ignore
 }
 
