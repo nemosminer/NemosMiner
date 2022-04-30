@@ -979,7 +979,7 @@ Function Write-Message {
         [String]$Level = "Info"
     )
 
-    If ($Level -in $Config.LogToScreen) { 
+    If ($Config.GetEnumerator() -notcontains "LogToScreen" -or $Level -in $Config.LogToScreen) { 
         # Update status text box in GUI
         If ($Variables.LabelStatus) { 
             $Variables.LabelStatus.Lines += $Message
