@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.0.0.28
-Version date:   30 April 2022
+Version:        4.0.0.29
+Version date:   07 May 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -52,7 +52,7 @@ If ($Wallet) {
 
     $HostSuffix = "nicehash.com"
 
-    $Request.miningAlgorithms | Where-Object speed -GT 0 | Where-Object { $_.algodetails.order -gt 0 } | ForEach-Object { 
+    $Request.miningAlgorithms | Where-Object { $_.algodetails.enabled -and [Double]$_.paying -gt 0 -and [Double]$_.speed -gt 0 } | ForEach-Object { 
         $Algorithm = $_.Algorithm
         $Algorithm_Norm = Get-Algorithm $Algorithm
 

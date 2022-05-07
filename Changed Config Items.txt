@@ -8,6 +8,9 @@ New Config Items
 # If set API will log all requests to this file, to disable leave empty
   "APILogfile": "", 
 
+# NemosMiner will periodically check for a new program version every n days (0 to disable)
+  "AutoUpdateCheckInterval": 1,
+
 # Acceptable bad share threshold ((bad + rejected + stale) / total) as reported by the miner. If the ratio is exceeded the miner will marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
   "BadShareRatioThreshold": 0.05,
 
@@ -182,8 +185,8 @@ New Config Items
 # Always show all miners in miner overview (if $false, only the best miners will be shown except when in benchmark / powerusage measurement)
   "ShowAllMiner": false,
 
-# Show CoinName column in miner overview
-  "ShowCoinName": true,
+# If enabled NemosMiner will show the changelog when an update is available
+  $ShowChangeLog = $true,
 
 # Show Currency column in miner overview
   "ShowCurrency": true,

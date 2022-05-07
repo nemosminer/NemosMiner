@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Trex.ps1
-Version:        4.0.0.28
-Version date:   30 April 2022
+Version:        4.0.0.29
+Version date:   07 May 2022
 #>
 
 class Trex : Miner { 
@@ -64,13 +64,12 @@ class Trex : Miner {
         }
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 
-            $Sample = [PSCustomObject]@{ 
+            Return [PSCustomObject]@{ 
                 Date       = (Get-Date).ToUniversalTime()
                 HashRate   = $HashRate
                 PowerUsage = $PowerUsage
                 Shares     = $Shares
             }
-            Return $Sample
         }
         Return $null
     }

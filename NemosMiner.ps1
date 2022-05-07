@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.28
-Version date:   30 April 2022
+Version:        4.0.0.29
+Version date:   07 May 2022
 #>
 
 [CmdletBinding()]
@@ -34,7 +34,9 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$APIPort = 3999, # TCP Port for API & Web GUI
     [Parameter(Mandatory = $false)]
-    [Boolean]$AutoUpdate = $false, # Autoupdate
+    [Switch]$AutoUpdate = $true, # NemosMiner will automatically update to the new version
+    [Parameter(Mandatory = $false)]
+    [Int]$AutoUpdateCheckInterval = 1, # NemosMiner will periodically check for a new program version every n days (0 to disable)
     [Parameter(Mandatory = $false)]
     [Double]$BadShareRatioThreshold = 0.05, # Allowed ratio of bad shares (total / bad) as reported by the miner. If the ratio exceeds the configured threshold then the miner will get marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
     [Parameter(Mandatory = $false)]
@@ -67,8 +69,6 @@ param(
     [Int]$Donate = 13, # Minutes per Day
     [Parameter(Mandatory = $false)]
     [Double]$EarningsAdjustmentFactor = 1, # Default factor with which multiplies the prices reported by ALL pools. Allowed values: 0.0 - 1.0
-    [Parameter(Mandatory = $false)]
-    [Double]$EthashLowMemMinMemGB = 2GB, # Minimum EthashLowMem MinMem GB (sometimes Pool does not like GPUs with very little VRAM)
     [Parameter(Mandatory = $false)]
     [String[]]$ExcludeDeviceName = @(), # Array of disabled devices, e.g. @("CPU# 00", "GPU# 02");  by default all devices are enabled
     [Parameter(Mandatory = $false)]
@@ -171,11 +171,13 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$ShowAllMiners = $false, # Always show all miners in miner overview (if $false, only the best miners will be shown except when in benchmark / powerusage measurement)
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowEarning = $true, # Show miner earning column in miner overview
+    [Switch]$ShowChangeLog = $true, # If enabled NemosMiner will show the changlog when an update is available
     [Parameter(Mandatory = $false)]
     [Switch]$ShowCoinName = $true, # Show CoinName column in miner overview
     [Parameter(Mandatory = $false)]
     [Switch]$ShowCurrency = $true, # Show Currency column in miner overview
+    [Parameter(Mandatory = $false)]
+    [Switch]$ShowEarning = $true, # Show miner earning column in miner overview
     [Parameter(Mandatory = $false)]
     [Switch]$ShowEarningBias = $true, # Show miner earning bias column in miner overview
     [Parameter(Mandatory = $false)]
@@ -258,7 +260,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.28"
+    Version      = [System.Version]"4.0.0.29"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -505,10 +507,11 @@ If ($Config.WebGUI -eq $true) {
     Start-LogReader # To bring SnakeTail back in focus
 }
 
-If ($Variables.APIVersion -ne "" -and $Variables.FreshConfig -eq $true) { 
+If ($Variables.FreshConfig) { 
     $Variables.Summary = "Change your settings and apply the configuration; then click 'Start mining'."
     $wshell = New-Object -ComObject Wscript.Shell
-    $wshell.Popup("This is the first time you have started $($Variables.Branding.ProductLabel).`n`nUse the configuration editor to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!", 0, "Welcome to $($Variables.Branding.ProductLabel) v$($Variables.Branding.Version)", 4096) | Out-Null
+    $wshell.Popup($Variables.FreshConfigText, 0, "Welcome to $($Variables.Branding.ProductLabel) v$($Variables.Branding.Version)", 4096) | Out-Null
+    $Variables.FreshConfigText = $null
     Remove-Variable wshell
 }
 
@@ -918,10 +921,10 @@ Function Global:TimerUITick {
             Write-Host "Some miners binaries are missing, downloader is installing miner binaries..." -ForegroundColor Yellow
         }
 
-        If ($Variables.Miners | Where-Object Available -EQ $true | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true }) { 
+        If ($Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
             If ($Config.UIStyle -ne "Full") { 
                 $Variables.UIStyle = "Full"
-                Write-Host "Benchmarking / Measuring power usage: Temporarily switched UI style to 'Full' (Information about miners run in the past, failed miners & watchdog timers will $(If ($Variables.UIStyle -eq "Light") { "not " })be shown)" -ForegroundColor Yellow
+                Write-Host "$(If ($Variables.MinersNeedingBenchmark) { "Benchmarking" })$(If ($Variables.MinersNeedingBenchmark -and $Variables.MinersNeedingPowerUsageMeasurement) { " / " })$(If ($Variables.MinersNeedingPowerUsageMeasurement) { "Measuring power usage" }): Temporarily switched UI style to 'Full' (Information about miners run in the past, failed miners & watchdog timers will $(If ($Variables.UIStyle -eq "Light") { "not " })be shown)" -ForegroundColor Yellow
             }
         }
         Else { 

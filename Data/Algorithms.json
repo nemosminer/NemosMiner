@@ -194,6 +194,7 @@
   "theopennetwork": "SHA256ton",
   "toncoin": "SHA256ton",
   "tonpow": "SHA256ton",
+  "ubq": "UbqHash",
   "ubqhash": "UbqHash",
   "verthash": "VertHash",
   "verus": "VerusHash",

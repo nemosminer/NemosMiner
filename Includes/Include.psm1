@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.28
-Version date:   30 April 2022
+Version:        4.0.0.29
+Version date:   07 May 2022
 #>
 
 # Window handling
@@ -105,8 +105,8 @@ Class Pool {
     [String]$Name
     [String]$BaseName
     [String]$Algorithm
-    [Nullable[Int]]$BlockHeight = $null
-    [Nullable[Int64]]$DAGsize = $null
+    [Nullable[Int64]]$BlockHeight = $null
+    [Nullable[Double]]$DAGsizeGB = $null
     [Nullable[Int]]$Epoch = $null
     [String]$Currency = ""
     [String]$CoinName = ""
@@ -422,7 +422,6 @@ Class Miner {
             LastDataSample    = $this.Data | Select-Object -Last 1 | ConvertTo-Json -Compress
         } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
-        $this.WorkersRunning = @()
         $this.StatusMessage = If ($this.Status -eq [MinerStatus]::Idle) { "Idle" } Else { "Failed $($this.Info)" }
     }
 
@@ -901,9 +900,9 @@ Function Get-CommandLineParameters {
 }
 
 Function Get-Rate { 
-    # Read exchange rates from min-api.cryptocompare.com, use cached data as fallback
+    # Read exchange rates from min-api.cryptocompare.com, use stored data as fallback
 
-    $RatesFile = "Cache\Rates.json"
+    $RatesFile = "Data\Rates.json"
     $Variables.BalancesCurrencies = @($Variables.Balances.Keys | ForEach-Object { $Variables.Balances.$_.Currency } | Sort-Object -Unique)
 
     Try { 
@@ -947,8 +946,8 @@ Function Get-Rate {
             Else { 
                 If (Test-Path -Path $RatesFile) { 
                     $Variables.Rates = (Get-Content -Path $RatesFile -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop)
-                    $Variables.Updated = "Cached: $((Get-Item -Path $RatesFile).CreationTime.ToUniversalTime())"
-                    Write-Message -Level Warn "Could not load exchange rates from CryptoCompare. Using cached data from $((Get-Item -Path $RatesFile).CreationTime)."
+                    $Variables.RatesUpdated = "FromFile: $((Get-Item -Path $RatesFile).CreationTime.ToUniversalTime())"
+                    Write-Message -Level Warn "Could not load exchange rates from CryptoCompare. Using stored data from $((Get-Item -Path $RatesFile).CreationTime)."
                 }
                 Else { 
                     Write-Message -Level Warn "Could not load exchange rates from CryptoCompare."
@@ -959,7 +958,7 @@ Function Get-Rate {
     Catch { 
         If (Test-Path -Path $RatesFile) { 
             $Variables.Rates = (Get-Content -Path $RatesFile -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop)
-            $Variables.Updated = "Cached: $((Get-Item -Path $RatesFile).CreationTime.ToUniversalTime())"
+            $Variables.RatesUpdated = "FromFile: $((Get-Item -Path $RatesFile).CreationTime.ToUniversalTime())"
             Write-Message -Level Warn "Could not load exchange rates from CryptoCompare. Using cached data from $((Get-Item -Path $RatesFile).CreationTime)."
         }
         Else { 
@@ -1173,13 +1172,46 @@ Function Read-Config {
         [String]$ConfigFile
     )
 
+    Function Create-DefaultConfig { 
+        $Config.ConfigFileVersion = $Variables.Branding.Version.ToString()
+        $Variables.FreshConfig = $true
+
+        # Add default enabled pools
+        If (Test-Path -Path ".\Data\PoolsConfig-Recommended.json" -PathType Leaf) { 
+            $Temp = (Get-Content ".\Data\PoolsConfig-Recommended.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore)
+            $Config.PoolName = $Temp.PSObject.Properties.Name | Where-Object { $_ -ne "Default" } | ForEach-Object { $Temp.$_.Variant.PSObject.Properties.Name }
+            Remove-Variable Temp
+        }
+
+        # Add default config items
+        $Variables.AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys } | Sort-Object | ForEach-Object { 
+            $Value = $Variables.AllCommandLineParameters.$_
+            If ($Value -is [Switch]) { $Value = [Boolean]$Value }
+            $Config.$_ = $Value
+        }
+        # MinerInstancePerDeviceModel: Default to $true if more than one device model per vendor
+        $Config.MinerInstancePerDeviceModel = ($Variables.Devices | Group-Object Vendor  | ForEach-Object { ($_.Group.Model | Sort-Object -Unique).Count } | Measure-Object -Maximum).Maximum -gt 1
+
+        Write-Message -Level Warn "Use the configuration editor ('http://localhost:$($Config.APIPort)') to create a new configuration file."
+
+        Return $Config
+    }
+
+    # Enforce array
+    $Variables.AllCommandLineParameters.Keys | ForEach-Object { 
+        If ($Variables.AllCommandLineParameters.$_ -is [Array] -and $Config.$_ -isnot [Array]) { $Config.$_ = @($Config.$_ -replace " " -split ",") }
+    }
+
     # Load the configuration
     If (Test-Path -PathType Leaf $ConfigFile) { 
         $Config_Tmp = Get-Content $ConfigFile | ConvertFrom-Json -ErrorAction Ignore | Select-Object
         If ($Config_Tmp.PSObject.Properties.Count -eq 0 -or $Config_Tmp -isnot [PSCustomObject]) { 
-            Copy-Item -Path $ConfigFile "$($ConfigFile).corrupt" -Force
-            Write-Message -Level Warn "Configuration file '$($ConfigFile)' is corrupt."
-            $Config.ConfigFileVersionCompatibility = $null
+            $CorruptConfigFile = "$($ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").corrupt"
+            Move-Item -Path $ConfigFile $CorruptConfigFile -Force
+            $Message = "Configuration file '$ConfigFile' is corrupt and was renamed to '$CorruptConfigFile'."
+            Write-Message -Level Warn $Message
+            $Variables.FreshConfigText = "$Message`n`nUse the configuration editor to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!"
+            $Config = Create-DefaultConfig
         }
         Else { 
             # Fix upper / lower case (Web GUI is case sensitive)
@@ -1188,35 +1220,12 @@ Function Read-Config {
                 $Config.$_ = $Config_Tmp.$_ 
             }
         }
-        Remove-Variable Config_Tmp
+        Remove-Variable Config_Tmp -ErrorAction Ignore
     }
     Else { 
-        Write-Message -Level Warn "No valid configuration file found."
-
-        $Variables.FreshConfig = $true
-        If (Test-Path -Path ".\Data\PoolsConfig-Recommended.json" -PathType Leaf) { 
-            # Add default enabled pools
-            $Temp = (Get-Content ".\Data\PoolsConfig-Recommended.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore)
-            $Config.PoolName = $Temp.PSObject.Properties.Name | Where-Object { $_ -ne "Default" } | ForEach-Object { $Temp.$_.Variant.PSObject.Properties.Name }
-            Remove-Variable Temp
-        }
-
-        # Add config items
-        $Variables.AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys } | Sort-Object | ForEach-Object { 
-            $Value = $Variables.AllCommandLineParameters.$_
-            If ($Value -is [Switch]) { $Value = [Boolean]$Value }
-            $Config.$_ = $Value
-        }
-
-        # MinerInstancePerDeviceModel: Default to $true if more than one device model per vendor
-        $Config.MinerInstancePerDeviceModel = ($Variables.Devices | Group-Object Vendor  | ForEach-Object { ($_.Group.Model | Sort-Object -Unique).Count } | Measure-Object -Maximum).Maximum -gt 1
-
-        $Config.ConfigFileVersion = $Variables.Branding.Version.ToString()
-    }
-
-    # Ensure parameter format
-    $Variables.AllCommandLineParameters.Keys | ForEach-Object { 
-        If ($Variables.AllCommandLineParameters.$_ -is [Array] -and $Config.$_ -isnot [Array]) { $Config.$_ = @($Config.$_ -replace " " -split ",") } # Enforce array
+        Write-Message -Level Warn "No valid configuration file '$ConfigFile' found."
+        $Variables.FreshConfigText = "This is the first time you have started $($Variables.Branding.ProductLabel).`n`nUse the configuration editor to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!"
+        $Config = Create-DefaultConfig
     }
 
     $DefaultPoolData = $Variables.PoolData
@@ -2617,6 +2626,8 @@ Function Get-NMVersion {
     Try { 
         $UpdateVersion = (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Minerx117/NemosMiner/master/Version.txt" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
 
+        $Variables.CheckedForUpdate = (Get-Date).ToUniversalTime()
+
         If ($UpdateVersion.Product -eq $Variables.Branding.ProductLabel -and [Version]$UpdateVersion.Version -gt $Variables.Branding.Version) { 
             If ($UpdateVersion.AutoUpdate -eq $true) { 
                 If ($Config.AutoUpdate) { 
@@ -2629,13 +2640,16 @@ Function Get-NMVersion {
             Else { 
                 Write-Message -Level Verbose "Version checker: New Version is available. $($UpdateVersion.Version) does not support auto-update. You must update manually."
             }
+            If ($Config.ShowChangeLog) { 
+                Start-Process "https://github.com/Minerx117/NemosMiner/releases/tag/v$($UpdateVersion.Version)"
+            }
         }
         Else { 
             Write-Message -Level Verbose "Version checker: $($Variables.Branding.ProductLabel) $($Variables.Branding.Version) is current - no update available."
         }
     }
     Catch { 
-        Write-Message -Level Warn "Version checker could not contact update server. $($Variables.Branding.ProductLabel) will automatically retry with 24hrs."
+        Write-Message -Level Warn "Version checker could not contact update server."
     }
 }
 
@@ -2831,7 +2845,7 @@ Function Initialize-Autoupdate {
     "Successfully updated $($UpdateVersion.Product) to version $($UpdateVersion.Version)." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
 
     # Display changelog
-    Notepad .\ChangeLog.txt
+    If ($Config.ShowChangeLog) { Notepad .\ChangeLog.txt }
 
     If ($NewKid.ProcessId) { 
         # Kill old instance
@@ -2886,6 +2900,7 @@ Function Update-ConfigFile {
             "DeductRejectedShares" { $Config.SubtractBadShares = $Config.$_; $Config.Remove($_) }
             "EnableEarningsTrackerLog" { $Config.EnableBalancesLog = $Config.$_; $Config.Remove($_) }
             "EstimateCorrection" { $Config.Remove($_) }
+            "EthashLowMemMinMemGB" { $Config.Remove($_) }
             "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
             "MPHAPIKey" { $Config.MiningPoolHubAPIKey = $Config.$_; $Config.Remove($_) }
             "MPHUserName"  { $Config.MiningPoolHubUserName = $Config.$_; $Config.Remove($_) }
@@ -2949,16 +2964,16 @@ Function Update-ConfigFile {
     If (-not (Get-Region $Config.Region -List)) { 
         $OldRegion = $Config.Region
         # Write message about new mining regions
-        Switch ($Config.Region) { 
-            "Brazil"      { $Config.Region = "USA West" }
-            "Europe"      { $Config.Region = "Europe West" }
-            "Europe East" { $Config.Region = "Europe North" }
-            "HongKong"    { $Config.Region = "Asia" }
-            "India"       { $Config.Region = "Asia" }
-            "Japan"       { $Config.Region = "Japan" }
-            "Russia"      { $Config.Region = "Russia" }
-            "US"          { $Config.Region = "USA West" }
-            Default       { $Config.Region = "Europe West" }
+        $Config.Region = Switch ($Config.Region) { 
+            "Brazil"      { "USA West" }
+            "Europe"      { "Europe West" }
+            "Europe East" { "Europe North" }
+            "HongKong"    { "Asia" }
+            "India"       { "Asia" }
+            "Japan"       { "Japan" }
+            "Russia"      { "Russia" }
+            "US"          { "USA West" }
+            Default       { "Europe West" }
         }
         Write-Message -Level Warn "Available mining locations have changed ($OldRegion -> $($Config.Region)). Please verify your configuration."
         Remove-Variable OldRegion
@@ -2998,26 +3013,48 @@ Function Get-DAGsize {
 
     Param(
         [Parameter(Mandatory = $false)]
-        [Double]$Block = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400,
+        [Double]$Blockheight = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400,
         [Parameter(Mandatory = $false)]
-        [String]$Coin
+        [String]$Currency
     )
-
-    Switch ($Coin) { 
-        "ETC"   { $Epoch_Length = If ($Block -ge 11700000 ) { 60000 } Else { 30000 } }
-        "RVN"   { $Epoch_Length = 7500 }
-        Default { $Epoch_Length = 30000 }
-    }
 
     $DATASET_BYTES_INIT = [Math]::Pow(2, 30)
     $DATASET_BYTES_GROWTH = [Math]::Pow(2, 23)
     $MIX_BYTES = 128
 
-    $Size = $DATASET_BYTES_INIT + $DATASET_BYTES_GROWTH * [Math]::Floor($Block / $EPOCH_LENGTH)
+    $Size = $DATASET_BYTES_INIT + $DATASET_BYTES_GROWTH * (Get-Epoch -BlockHeight $Blockheight -Currency $Currency)
     $Size -= $MIX_BYTES
     While (-not (Test-Prime ($Size / $MIX_BYTES))) { $Size -= 2 * $MIX_BYTES }
 
     Return [Int64]$Size
+}
+
+Function Get-EpochLength { 
+
+    Param(
+        [Parameter(Mandatory = $false)]
+        [Double]$Blockheight,
+        [Parameter(Mandatory = $false)]
+        [String]$Currency
+    )
+
+    Switch ($Currency) { 
+        "ETC"   { If ($Blockheight -ge 11700000 ) { Return 60000 } Else { Return 30000 } }
+        "RVN"   { Return 7500 }
+        Default { return 30000 }
+    }
+}
+
+Function Get-Epoch { 
+
+    Param(
+        [Parameter(Mandatory = $false)]
+        [Double]$Blockheight,
+        [Parameter(Mandatory = $false)]
+        [String]$Currency
+    )
+
+    Return [Int][Math]::Floor($Blockheight / (Get-EpochLength -Blockheight $Blockheight -Currency $Currency))
 }
 
 Function Out-DataTable { 

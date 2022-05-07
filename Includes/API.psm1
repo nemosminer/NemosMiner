@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.28
-Version date:   30 April 2022
+Version:        4.0.0.29
+Version date:   07 May 2022
 #>
 
 Function Initialize-API { 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.5.2"
+    $APIVersion = "0.4.5.3"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
@@ -159,6 +159,7 @@ Function Start-APIServer {
                 # Set the proper content type, status code and data for each resource
                 Switch ($Path) { 
                     "/functions/api/stop" { 
+                        Write-Message -Level Verbose "API: API stopped!"
                         Return
                     }
                     "/functions/balancedata/remove" { 

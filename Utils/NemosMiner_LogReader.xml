@@ -92,7 +92,7 @@
           <BackColor>#FFFF80</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>Starting NemosMiner|Using configuration file|Web GUI and API.+ running</Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Starting NemosMiner|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Stopping NemosMiner|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Pausing NemosMiner|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Using configuration file|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Web GUI and API.+ running</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>

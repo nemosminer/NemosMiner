@@ -8,7 +8,7 @@ $Path = ".\Bin\$($Name)\kawpowminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = ($Pools."KawPoW".DAGSize + 0.95GB) / 1GB; MinerSet = 2; WarmupTimes = @(30, 15); Arguments = "" } # XmRig-v6.17.0 is faster
+    [PSCustomObject]@{ Algorithm = "KawPoW"; MinMemGB = $Pools."KawPoW".DAGSizeGB; MemReserveGB = 0.42; MinerSet = 2; WarmupTimes = @(30, 15); Arguments = "" } # XmRig-v6.17.0 is faster
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -21,7 +21,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Algorithms | ForEach-Object { 
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $_.MinMemGB) { 
+            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge ($_.MinMemGB + $_.MemReserveGB)) { 
 
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 

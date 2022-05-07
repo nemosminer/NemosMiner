@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0.28
-Version date:   30 April 2022
+Version:        4.0.0.29
+Version date:   07 May 2022
 #>
 
 using module .\Include.psm1
@@ -90,100 +90,105 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             If (-not $Variables.DAGdata) { $Variables.DAGdata = [PSCustomObject][Ordered]@{ } }
             If (-not $Variables.DAGdata.Currency) { $Variables.DAGdata | Add-Member Currency ([Ordered]@{ }) -Force }
+            If (-not $Variables.DAGdata.Updated) { $Variables.DAGdata | Add-Member Updated ([Ordered]@{ }) -Force }
+
+            # Check for new version
+            If ($Config.AutoUpdateCheckInterval -and $Variables.CheckedForUpdate -lt (Get-Date).ToUniversalTime().AddDays(-$Config.AutoUpdateCheckInterval)) { Get-NMVersion }
 
             # Do do once every 24hrs or if unable to get data from all sources
-            If ($Variables.DAGdata.Updated_Minerstat -lt (Get-Date).AddDays(-1)) { 
+            If ($Variables.DAGdata.Updated.Minerstat -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
+                # Get block data from Minerstat
                 Try { 
-                    $Request = Invoke-WebRequest -Uri "https://minerstat.com/dag-size-calculator" -TimeoutSec 5 # PWSH 6+ no longer supports basic parsing -> parse text
-                    $Request.Content -split '\n' -replace '"', "'" | Where-Object { $_ -like "<div class='block' title='Current block height of *" } | ForEach-Object { 
+                    $Url = "https://minerstat.com/dag-size-calculator"
+                    $Response = Invoke-WebRequest -Uri $Url -TimeoutSec 5 # PWSH 6+ no longer supports basic parsing -> parse text
+                    If ($Response.statuscode -eq 200) {
+                        $Response.Content -split '\n' -replace '"', "'" | Where-Object { $_ -like "<div class='block' title='Current block height of *" } | ForEach-Object { 
 
-                        $BlockHeight, $Currency, $DAGsize, $Epoch = $null
+                            $Currency = $_ -replace "^<div class='block' title='Current block height of " -replace "'>.*$"
+                            $BlockHeight = [Int]($_ -replace "^<div class='block' title='Current block height of $Currency'>" -replace "</div>")
 
-                        $Currency = $_ -replace "^<div class='block' title='Current block height of " -replace "'>.*$"
-                        $BlockHeight = [Int]($_ -replace "^<div class='block' title='Current block height of $Currency'>" -replace "</div>")
-                        $DAGsize = Get-DAGsize $BlockHeight $Currency
-                        # Epoch for EtcHash is twice as long
-                        $Epoch = If ($Currency -eq "ETC") { [Int][Math]::Floor($BlockHeight / 60000) } Else { [Int][Math]::Floor($BlockHeight / 30000) }
-
-                        If ($BlockHeight -and $Currency -and $DAGsize -and $Epoch) { 
-                            $Data = [PSCustomObject]@{ 
-                                BlockHeight = [Int]$BlockHeight
-                                CoinName    = Get-CoinName $Currency
-                                DAGsize     = [Int64]$DAGsize
-                                Epoch       = [Int]$Epoch
+                            If ($BlockHeight -and $Currency) { 
+                                $Variables.DAGdata.Currency.Remove($Currency)
+                                $Variables.DAGdata.Currency.Add($Currency, [PSCustomObject]@{ 
+                                    BlockHeight = [Int]$BlockHeight
+                                    CoinName    = Get-CoinName $Currency
+                                    DAGsize     = Get-DAGSize -Block $BlockHeight -Currency $Currency
+                                    Epoch       = Get-Epoch -BlockHeight $BlockHeight -Currency $Currency
+                                })
                             }
-                            $Variables.DAGdata.Currency.Remove($Currency)
-                            $Variables.DAGdata.Currency.Add($Currency, $Data)
                         }
+                        $Variables.DAGdata.Updated.Minerstat = (Get-Date).ToUniversalTime()
+                        Write-Message -Level Info "Loaded DAG block data from '$Url'."
                     }
-                    $Variables.DAGdata | Add-Member Updated_Minerstat (Get-Date).ToUniversalTime() -Force
-                    Write-Message -Level Info "Loaded DAG block data from 'https://minerstat.com'."
+                    Else { 
+                        Write-Message -Level Warn "Failed to load DAG block data from '$Url'."
+                    }
                 }
                 Catch { 
-                    Write-Message -Level Warn "Cannot load DAG block data from 'https://minerstat.com'."
+                    Write-Message -Level Warn "Failed to load DAG block data from '$Url'."
                 }
             }
 
-            If ($Variables.DAGdata.Updated_RavenCoin -lt (Get-Date).AddDays(-1)) { 
+            If ($Variables.DAGdata.Updated.ProHashing -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
                 Try { 
-                    # Get RVN block data
-                    $Request = "https://api.ravencoin.org/api/status"
+                    # Get block data from ProHashing
+                    $Url = "https://prohashing.com/api/v1/currencies"
+                    $Response = Invoke-RestMethod -Uri $Url
 
-                    If ($BlockHeight = [Int](Invoke-RestMethod -Uri $Request -TimeoutSec 5).Info.blocks) { 
-                        $Data = [PSCustomObject][Ordered]@{ 
-                            BlockHeight = [Int]$BlockHeight
-                            CoinName    = Get-CoinName "RVN"
-                            DAGsize     = Get-DAGSize -Block $BlockHeight -Coin "RVN"
-                            Epoch       = [Int][Math]::Floor($BlockHeight / 7500)
+                    If ($Response.code -eq 200) { 
+                        $Response.data.PSObject.Properties.Name | Where-Object { $Response.data.$_.enabled -and $Response.data.$_.height -and ((Get-Algorithm $Response.data.$_.algo) -in @("Autolykos2", "EtcHash", "Ethash", "EthashLowMem", "KawPow", "UbqHash") -or $_ -in @($Variables.DAGdata.Currency.Keys))} | ForEach-Object { 
+                            If ($Response.data.$_.height -gt $Variables.DAGdata.Currency.$_.BlockHeight) { 
+                                $Variables.DAGdata.Currency.Remove($_)
+                                $Variables.DAGdata.Currency.Add($_, [PSCustomObject]@{ 
+                                    BlockHeight = $Response.data.$_.height
+                                    CoinName    = Get-CoinName $_
+                                    DAGsize     = Get-DAGSize -Block $Response.data.$_.height -Currency $_
+                                    Epoch       = Get-Epoch -BlockHeight $Response.data.$_.height -Currency $_
+                                })
+                                $Variables.DAGdata.Updated.ProHashing = (Get-Date).ToUniversalTime()
+                            }
                         }
-                        $Variables.DAGdata.Currency.Remove("RVN")
-                        $Variables.DAGdata.Currency.Add("RVN", $Data)
-                        $Variables.DAGdata | Add-Member Updated_Ravencoin (Get-Date).ToUniversalTime() -Force
-                        Write-Message -Level Info "Loaded RVN DAG block data from 'https://api.ravencoin.org'."
+                        $Variables.EthashLowMemCurrency = $Response.data.PSObject.Properties.Name | Where-Object { $Response.data.$_.enabled -and $Response.data.$_.height -and $Response.data.$_.algo -eq "ethash-lowmemory" } | Sort-Object { $Response.data.$_.height } | Select-Object -First 1
+                        Write-Message -Level Info "Loaded DAG block data from '$Url'."
+                    }
+                    Else { 
+                        Write-Message -Level Info "Failed to load DAG block data from '$Url'."
                     }
                 }
                 Catch { 
-                    Write-Message -Level Warn "Cannot load RVN DAG block data from 'https://api.ravencoin.org'."
+                    Write-Message -Level Info "Failed to load DAG block data from '$Url'."
                 }
             }
 
-            If ($Request) { 
+            If ($Response -and $Variables.DAGdata.Currency.Count -gt 1) { 
                 # Add default '*' (equal to highest)
-                If ($Variables.DAGdata.Currency.Count -gt 1) { 
-                    $Data = [PSCustomObject][Ordered]@{ 
-                        BlockHeight = [Int]($Variables.DAGdata.Currency.Keys | ForEach-Object { $Variables.DAGdata.Currency.$_.BlockHeight } | Measure-Object -Maximum).Maximum
-                        CoinName    = "*"
-                        DAGsize     = [Int64]($Variables.DAGdata.Currency.Keys | ForEach-Object { $Variables.DAGdata.Currency.$_.DAGsize } | Measure-Object -Maximum).Maximum
-                        Epoch       = [Int]($Variables.DAGdata.Currency.Keys | ForEach-Object { $Variables.DAGdata.Currency.$_.Epoch } | Measure-Object -Maximum).Maximum
-                    }
-                    $Variables.DAGdata.Currency.Remove("*")
-                    $Variables.DAGdata.Currency.Add("*", $Data)
-                    $Variables.DAGdata | ConvertTo-Json -ErrorAction Ignore | Out-File -FilePath ".\Data\DagData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-                }
-                ElseIf ((Get-ChildItem -Path ".\Data\DagData.json" -ErrorAction Ignore).LastWriteTime.AddDays(1) -gt (Get-Date)) { 
-                    # Read from file
-                    $Variables.DAGdata = Get-Content ".\Data\DagData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
-                    If ($Variables.DAGdata) { Write-Message -Level Verbose "Loaded DAG block data from cached file '.\Data\DagData.json'." }
-                }
+                $Variables.DAGdata.Currency.Remove("*")
+                $Variables.DAGdata.Currency.Add("*", [PSCustomObject]@{ 
+                    BlockHeight = [Int]($Variables.DAGdata.Currency.Keys | ForEach-Object { $Variables.DAGdata.Currency.$_.BlockHeight } | Measure-Object -Maximum).Maximum
+                    CoinName    = "*"
+                    DAGsize     = [Int64]($Variables.DAGdata.Currency.Keys | ForEach-Object { $Variables.DAGdata.Currency.$_.DAGsize } | Measure-Object -Maximum).Maximum
+                    Epoch       = [Int]($Variables.DAGdata.Currency.Keys | ForEach-Object { $Variables.DAGdata.Currency.$_.Epoch } | Measure-Object -Maximum).Maximum
+                })
 
-                If (-not $Variables.DAGdata.Currency."*") { 
-                    If (-not $Variables.DAGdata.Currency) { 
-                        $Variables.DAGdata = [PSCustomObject][Ordered]@{ }
-                        $Variables.DAGdata | Add-Member Currency ([Ordered]@{ })
-                    }
-
-                    $BlockHeight = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400
-                    Write-Message -Level Warn "Cannot load ethash DAG size information from 'https://minerstat.com', using calculated block height $BlockHeight based on 6400 blocks per day since 30 July 2015."
-                    $Data = [PSCustomObject]@{ 
-                        BlockHeight = [Int]$BlockHeight
-                        CoinName    = "Ethereum"
-                        DAGsize     = Get-DAGSize $BlockHeight
-                        Epoch       = [Int][Math]::Floor($BlockHeight / 30000)
-                    }
-                    $Variables.DAGdata.Currency.Add("*", $Data)
-                }
+                $Variables.DAGdata = $Variables.DAGdata | Get-SortedObject 
+                $Variables.DAGdata | ConvertTo-Json -ErrorAction Ignore | Out-File -FilePath ".\Data\DagData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
             }
-            Remove-Variable BlockHeight, Currency, DAGdata, DAGSize, Data, Epoch, Request -ErrorAction Ignore
+            ElseIf ((Get-ChildItem -Path ".\Data\DagData.json" -ErrorAction Ignore).LastWriteTime.AddDays(-1) -gt (Get-Date)) { 
+                # Read from file
+                If ($Variables.DAGdata = Get-Content ".\Data\DagData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) { Write-Message -Level Verbose "Loaded DAG block data from cached file '.\Data\DagData.json' (Last updated $((Get-ChildItem -Path ".\Data\DagData.json" -ErrorAction Ignore).LastWriteTime))." }
+            }
+
+            If (-not $Variables.DAGdata.Currency."*") { 
+                $BlockHeight = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400
+                Write-Message -Level Warn "Cannot load ethash DAG size information from 'https://minerstat.com', using calculated block height $BlockHeight based on 6400 blocks per day since 30 July 2015."
+                $Variables.DAGdata.Currency.Add("*", [PSCustomObject]@{ 
+                    BlockHeight = [Int]$BlockHeight
+                    CoinName    = "Ethereum"
+                    DAGsize     = Get-DAGSize $BlockHeight
+                    Epoch       = [Int][Math]::Floor($BlockHeight / 30000)
+                })
+            }
+            Remove-Variable BlockHeight, Currency, Response -ErrorAction Ignore
 
             # Use non-donate pool config
             $Variables.NiceHashWalletIsInternal = $Config.NiceHashWalletIsInternal
@@ -261,6 +266,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 }
                 $NewPools_Jobs = @(
                     $PoolNames | ForEach-Object { 
+                        If ($ReadPools) { $TmpPools = Get-ChildItemContent ".\Pools\$((Get-PoolBaseName $_) -replace "^NiceHash .*", "NiceHash").*" -Parameters @{ Config = $Config; PoolsConfig = $PoolsConfig; PoolVariant = $_; Variables = $Variables } -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object Type -EQ "CPU") { "Normal" }) }
                         Get-ChildItemContent ".\Pools\$((Get-PoolBaseName $_) -replace "^NiceHash .*", "NiceHash").*" -Parameters @{ Config = $Config; PoolsConfig = $PoolsConfig; PoolVariant = $_; Variables = $Variables } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object Type -EQ "CPU") { "Normal" })
                     }
                 )
@@ -419,20 +425,20 @@ While ($Variables.NewMiningStatus -eq "Running") {
                         $_.Workers                  = $Pool.Workers
                     }
 
-                    If ($Variables.DAGdata.Currency.($_.Currency).BlockHeight) { 
+                    If ($_.Algorithm -eq "EthashLowMem" -and $Variables.EthashLowMemCurrency) { 
+                        $_.BlockHeight = $Variables.DAGdata.Currency.($Variables.EthashLowMemCurrency).BlockHeight
+                        $_.Epoch       = $Variables.DAGdata.Currency.($Variables.EthashLowMemCurrency).Epoch
+                        $_.DAGSizeGB   = $Variables.DAGdata.Currency.($Variables.EthashLowMemCurrency).DAGsize / 1GB 
+                    }
+                    ElseIf ($Variables.DAGdata.Currency.($_.Currency).BlockHeight) { 
                         $_.BlockHeight = $Variables.DAGdata.Currency.($_.Currency).BlockHeight
                         $_.Epoch       = $Variables.DAGdata.Currency.($_.Currency).Epoch
-                        $_.DAGSize     = $Variables.DAGdata.Currency.($_.Currency).DAGsize
-                    }
-                    ElseIf ($_.Algorithm -eq "EthashLowMem") { 
-                        $_.BlockHeight = 0
-                        $_.Epoch       = 0
-                        $_.DAGSize     = $Config.EthashLowMemMinMemGB # ProHashing sometimes does not like GPUs with very little VRAM
+                        $_.DAGSizeGB   = $Variables.DAGdata.Currency.($_.Currency).DAGsize / 1GB 
                     }
                     ElseIf ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW", "ProgPoW", "UbqHash")) { 
                         $_.BlockHeight = $Variables.DAGdata.Currency."*".BlockHeight
                         $_.Epoch       = $Variables.DAGdata.Currency."*".Epoch
-                        $_.DAGSize     = $Variables.DAGdata.Currency."*".DAGsize
+                        $_.DAGSizeGB   = $Variables.DAGdata.Currency."*".DAGsize / 1GB
                     }
                 }
                 Remove-Variable Factor, Pool -ErrorAction Ignore
@@ -933,8 +939,8 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
         If ($Variables.Rates."BTC") { 
             $Variables.Summary = ""
-            If ([Double]::IsNaN($Variables.MiningEarning)) { 
-                $Variables.Summary += "Earning / day: n/a (Benchmarking: $(($Variables.Miners | Where-Object Available | Where-Object Benchmark).Count) $(If (($Variables.Miners | Where-Object Available | Where-Object Benchmark).Count -eq 1) { "miner" } Else { "miners"}) left)"
+            If ($Variables.MinersNeedingBenchmark.Count) { 
+                $Variables.Summary += "Earning / day: n/a (Benchmarking: $($Variables.MinersNeedingBenchmark.Count) $(If ($Variables.MinersNeedingBenchmark.Count -eq 1) { "miner" } Else { "miners" }) left$(If (($Variables.EnabledDevices | Sort-Object -Property { [String]$_.DeviceName }).Count -gt 1) { " [$(($Variables.MinersNeedingBenchmark | Group-Object -Property { [String]$_.DeviceName } | Sort-Object Name | ForEach-Object { "$($_.Name): $($_.Count)" }) -join '; ')]"}))"
             }
             ElseIf ($Variables.MiningEarning -gt 0) { 
                 $Variables.Summary += "Earning / day: {1:N} {0}" -f $Config.Currency, ($Variables.MiningEarning * $Variables.Rates."BTC".($Config.Currency))
@@ -943,8 +949,8 @@ While ($Variables.NewMiningStatus -eq "Running") {
             If ($Variables.CalculatePowerCost -eq $true) { 
                 If ($Variables.Summary -ne "") { $Variables.Summary += "&ensp;&ensp;&ensp;" }
 
-                If ([Double]::IsNaN($Variables.MiningEarning) -or [Double]::IsNaN($Variables.MiningPowerCost)) { 
-                    $Variables.Summary += "Profit / day: n/a (Measuring: $(($Variables.Miners | Where-Object Available | Where-Object MeasurePowerUsage).Count) $(If (($Variables.Miners | Where-Object Available | Where-Object MeasurePowerUsage).Count -eq 1) { "miner" } Else { "miners"}) left)"
+                If ($Variables.MinersNeedingPowerUsageMeasurement.Count -or [Double]::IsNaN($Variables.MiningPowerCost)) { 
+                    $Variables.Summary += "Profit / day: n/a (Measuring power usage: $($Variables.MinersNeedingPowerUsageMeasurement.Count) $(If (($Variables.MinersNeedingPowerUsageMeasurement).Count -eq 1) { "miner" } Else { "miners" }) left$(If (($Variables.EnabledDevices | Sort-Object -Property { [String]$_.DeviceName }).Count -gt 1) { " [$(($Variables.MinersNeedingPowerUsageMeasurement | Group-Object -Property { [String]$_.DeviceName } | Sort-Object Name | ForEach-Object { "$($_.Name): $($_.Count)" }) -join '; ')]"}))"
                 }
                 ElseIf ($Variables.MiningPowerUsage -gt 0) { 
                     $Variables.Summary += "Profit / day: {1:N} {0}" -f $Config.Currency, (($Variables.MiningProfit - $Variables.BasePowerCostBTC) * $Variables.Rates."BTC".($Config.Currency))
@@ -957,13 +963,13 @@ While ($Variables.NewMiningStatus -eq "Running") {
                     If ($Variables.Summary -ne "") { $Variables.Summary += "&ensp;&ensp;&ensp;" }
 
                     If ([Double]::IsNaN($Variables.MiningEarning) -or [Double]::IsNaN($Variables.MiningPowerCost)) { 
-                        $Variables.Summary += "Power Cost / day: n/a&ensp;(Miner$(If ($Variables.BestMiners_Combo.Count -gt 1) { "s" }): n/a; Base: {1:N} {0} [{2:0}W])" -f $Config.Currency, ($Variables.BasePowerCostBTC * $Variables.Rates."BTC".($Config.Currency)), $Config.IdlePowerUsageW
+                        $Variables.Summary += "Power Cost / day: n/a&ensp;[Miner$(If ($Variables.BestMiners_Combo.Count -gt 1) { "s" }): n/a; Base: {1:N} {0} ({2:0}W)]" -f $Config.Currency, ($Variables.BasePowerCostBTC * $Variables.Rates."BTC".($Config.Currency)), $Config.IdlePowerUsageW
                     }
                     ElseIf ($Variables.MiningPowerUsage -gt 0) { 
-                        $Variables.Summary += "Power Cost / day: {1:N} {0}&ensp;(Miner$(If ($Variables.BestMiners_Combo.Count -gt 1) { "s" }): {2:N} {0} [{3:0} W]; Base: {4:N} {0} [{5:0} W])" -f $Config.Currency, (($Variables.MiningPowerCost + $Variables.BasePowerCostBTC) * $Variables.Rates."BTC".($Config.Currency)), ($Variables.MiningPowerCost * $Variables.Rates."BTC".($Config.Currency)), $Variables.MiningPowerUsage, ($Variables.BasePowerCostBTC * $Variables.Rates."BTC".($Config.Currency)), $Config.IdlePowerUsageW
+                        $Variables.Summary += "Power Cost / day: {1:N} {0}&ensp;[Miner$(If ($Variables.BestMiners_Combo.Count -gt 1) { "s" }): {2:N} {0} ({3:0} W); Base: {4:N} {0} ({5:0} W)]" -f $Config.Currency, (($Variables.MiningPowerCost + $Variables.BasePowerCostBTC) * $Variables.Rates."BTC".($Config.Currency)), ($Variables.MiningPowerCost * $Variables.Rates."BTC".($Config.Currency)), $Variables.MiningPowerUsage, ($Variables.BasePowerCostBTC * $Variables.Rates."BTC".($Config.Currency)), $Config.IdlePowerUsageW
                     }
                     Else { 
-                        $Variables.Summary += "Power Cost / day: n/a&ensp;(Miner: n/a; Base: {1:N} {0} [{2:0} W])" -f $Config.Currency, ($Variables.BasePowerCostBTC * $Variables.Rates.BTC.($Config.Currency)), $Config.IdlePowerUsageW
+                        $Variables.Summary += "Power Cost / day: n/a&ensp;[Miner: n/a; Base: {1:N} {0} ({2:0} W)]" -f $Config.Currency, ($Variables.BasePowerCostBTC * $Variables.Rates.BTC.($Config.Currency)), $Config.IdlePowerUsageW
                     }
                 }
             }
@@ -994,7 +1000,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 $Miner.Info = ""
                 $Miner.WorkersRunning = @()
             }
-            ElseIf ($Miner.Best -eq $false -or $Miner.Restart -eq $true -or $Miner.SideIndicator -eq "<=") { 
+            ElseIf ($Miner.Best -ne $true -or $Miner.Restart -eq $true -or $Miner.SideIndicator -eq "<=" -or $Variables.NewMiningStatus -ne "Running") { 
                 ForEach ($Worker in $Miner.WorkersRunning) { 
                     If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object PoolRegion -EQ $Worker.Pool.Region | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceName -EQ $Miner.DeviceName)) { 
                         # Remove Watchdog timers
@@ -1086,7 +1092,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                     }
                 }
                 # Add extra time when CPU mining and miner requires DAG creation
-                If ($Miner.Workers.Pool.DAGsize -and ($Variables.Miners | Where-Object Best -EQ $true).Devices.Type -contains "CPU") { $Miner.WarmupTimes[0] += 15 <# seconds #>}
+                If ($Miner.Workers.Pool.DAGsizeGB -and ($Variables.Miners | Where-Object Best -EQ $true).Devices.Type -contains "CPU") { $Miner.WarmupTimes[0] += 15 <# seconds #>}
 
                 $Miner.DataCollectInterval = $DataCollectInterval
                 $Miner.SetStatus([MinerStatus]::Running)
@@ -1192,14 +1198,14 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
                         If ((Get-Date) -gt $Miner.Process.PSBeginTime.AddSeconds($Miner.WarmupTimes[0])) { 
                             # We must have data samples by now
-                            If (($Miner.Data | Select-Object -Last 1).Date -lt $Miner.Process.PSBeginTime.ToUniversalTime()) { 
+                            If (($Miner.Data | Select-Object -Last 1).Date -lt $Miner.BeginTime) { 
                                 # Miner has not provided first sample on time
                                 $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' has not provided first data sample in $($Miner.WarmupTimes[0]) seconds."
                                 $Miner.SetStatus([MinerStatus]::Failed)
                                 Break
                             }
                             ElseIf (($Miner.Data | Select-Object -Last 1).Date.AddSeconds(3.5 * $Miner.DataCollectInterval) -lt (Get-Date).ToUniversalTime()) { 
-                                # Miner stuck - no sample 10 seconds
+                                # Miner stuck - no sample received in last few data collect intervals
                                 $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' has not updated data for more than $([Int](3.5 * $Miner.DataCollectInterval)) seconds."
                                 $Miner.SetStatus([MinerStatus]::Failed)
                                 Break
@@ -1208,9 +1214,9 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
                         If ($Sample.Hashrate) { 
                             $Miner.Speed_Live = $Sample.Hashrate.PSObject.Properties.Value
-                            If (-not ($Miner.Data | Where-Object Date -GT $Miner.Process.PSBeginTime.ToUniversalTime().AddSeconds($Miner.WarmupTimes[1]))) { 
+                            If (-not ($Miner.Data | Where-Object Date -GT $Miner.BeginTime.AddSeconds($Miner.WarmupTimes[1]))) { 
                                 Write-Message -Level Verbose "$($Miner.Name) data sample discarded [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$($_): $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Config.BadShareRatioThreshold) { " / Shares Total: $($Sample.Shares.$_[2]), Rejected: $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power usage: $($Sample.PowerUsage.ToString("N2"))W" })] (miner is warming up)."
-                                $Miner.Data = @($Miner.Data | Where-Object Date -LT $Miner.Process.PSBeginTime.ToUniversalTime())
+                                $Miner.Data = @($Miner.Data | Where-Object Date -LT $Miner.BeginTime)
                             }
                             Else { 
                                 If ($Miner.StatusMessage -notlike "Mining *") { 

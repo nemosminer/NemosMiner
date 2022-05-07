@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -eq "AMD")) { Return }
 
-$Uri = "https://github.com/fancyIX/sgminer-phi2-branch/releases/download/0.9.2-0/sgminer-fancyIX-win64-0.9.2.zip"
+$Uri = "https://github.com/fancyIX/sgminer-phi2-branch/releases/download/0.9.4/sgminer-fancyIX-win64-0.9.4.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\sgminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
@@ -12,7 +12,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "HeavyHash";     MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 0); Arguments = " --scan-time 1 --gpu-threads 1 --worksize 256 --intensity 23 --kernel heavyhash" }
     [PSCustomObject]@{ Algorithm = "Neoscrypt";     MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 0); Arguments = " --scan-time 1 --gpu-threads 1 --worksize 256 --intensity 17 --kernel neoscrypt" }
     [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 0); Arguments = " --scan-time 1 --gpu-threads 1 --worksize 256 --intensity 17 --kernel neoscrypt-xaya" }
-    # [PSCustomObject]@{ Algorithm = "YescryptR16";   MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 0); Arguments = " --scan-time 1 --gpu-threads 1 --worksize 256 --intensity 17 --kernel yescryptr16" } # High number of bad shares
+    [PSCustomObject]@{ Algorithm = "YescryptR16";   MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 0); Arguments = " --scan-time 1 --gpu-threads 1 --worksize 256 --intensity 20 --pool-nfactor 100 --kernel yescryptr16" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -28,8 +28,6 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $_.MinMemGB) { 
 
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
-
-                If (-not ($Devices.Model -match "^Radeon RX [56]\d\d\d" -and $Devices.Model -notmatch "^Radeon RX [56]\d\d\d") -and $AvailableMiner_Devices.Model -match "^Radeon RX [56]\d\d\d") { $_.Arguments += "_navi" } # Current code cannot auto handle both navi and pre-navi cards (https://github.com/fancyIX/sgminer-phi2-branch/issues/251)
 
                 # Get arguments for available miner devices
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator

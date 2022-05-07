@@ -99,9 +99,9 @@
       "ZEN"
     ],
     "Region": [
-      "Asia",
-      "EU",
-      "US"
+      "asia",
+      "europe",
+      "us-east"
     ],
     "Variant": {
       "MiningPoolHub": {

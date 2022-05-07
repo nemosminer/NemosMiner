@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Brains.ps1
-version:        4.0.0.28
-version date:   30 April 2022
+version:        4.0.0.29
+version date:   07 May 2022
 #>
 
 Set-Location ($args[0])
@@ -27,33 +27,10 @@ Set-Location ($args[0])
 # Set Process priority
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
-Function Get-Trendline { 
-    Param(
-        $Data
-    )
-
-    $n = $Data.count
-    If ($n -le 1) { Return 0 }
-    $SumX = 0
-    $SumX2 = 0
-    $SumXY = 0
-    $SumY = 0
-    For ($i = 1; $i -le $n; $i++) { 
-        $SumX += $i
-        $SumX2 += [Math]::Pow($i, 2)
-        $SumXY += $i * ($Data[$i - 1])
-        $SumY += $Data[$i - 1]
-    }
-    $b = [math]::Round(($SumXY - $SumX * $SumY / $n) / ($SumX2 - $SumX * $SumX / $n), 15)
-    $a = [math]::Round($SumY / $n - $b * ($SumX / $n), 15)
-    Return @($a, $b)
-}
-
 Function Get-Median { 
     Param(
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
-        [Double[]]
-        $Number
+        [Double[]]$Number
     )
 
     $NumberSeries += @()
@@ -116,10 +93,10 @@ While (Test-Path -Path ".\BrainConfig.xml" -PathType Leaf) {
                 Date               = $CurDate
                 Name               = $AlgoData.$Algo.name
                 Port               = $AlgoData.$Algo.port
-                Currencies         = $AlgoData.$Algo.Coins
-                Fees               = $AlgoData.$Algo.Fees
-                Hashrate           = $AlgoData.$Algo.Hashrate
-                Workers            = $AlgoData.$Algo.Workers
+                Currencies         = $AlgoData.$Algo.coins
+                Fees               = $AlgoData.$Algo.fees
+                Hashrate           = $AlgoData.$Algo.hashrate
+                Workers            = $AlgoData.$Algo.workers
                 estimate_current   = $AlgoData.$Algo.estimate_current -as [Double]
                 estimate_last24h   = $AlgoData.$Algo.estimate_last24h
                 actual_last24h     = $BasePrice
