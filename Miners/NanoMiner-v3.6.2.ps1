@@ -11,7 +11,7 @@ $Path = ".\Bin\$($Name)\nanominer.exe"
 $DeviceEnumerator = "Slot"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Autolykos2";    Type = "AMD"; Fee = 0.025; MinMemGB = 3;                               MemReserveGB = 0;    MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 20); Coin = "ERG" } # NBMiner-v40.1 is fastest
+    [PSCustomObject]@{ Algorithm = "Autolykos2";    Type = "AMD"; Fee = 0.025; MinMemGB = 3;                               MemReserveGB = 0;    MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 20); Coin = "ERG" } # NBMiner-v41.0 is fastest
     [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.01;  MinMemGB = $Pools."EtcHash".DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 45); Coin = "ETC" } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01;  MinMemGB = $Pools."Ethash".DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 45); Coin = "ETH" } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "AMD"; Fee = 0.01;  MinMemGB = $Pools."EthashLowMem".DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 45); Coin = "ETH" } # PhoenixMiner-v6.2c is fastest
@@ -29,7 +29,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; Fee = 0.01;  MinMemGB = $Pools."EthashLowMem".DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(55, 0);  Coin = "ETH" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = "FiroPoW";      Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 5;                               MemReserveGB = 0;    MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(55, 0);  Coin = "FIRO" }
     [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "NVIDIA"; Fee = 0.02;  MinMemGB = $Pools."KawPoW".DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(75, 0);  Coin = "RVN" } # Trex-v0.25.15 is fastest
-    [PSCustomObject]@{ Algorithm = "Octopus";      Type = "NVIDIA"; Fee = 0.02;  MinMemGB = 6;                               MemReserveGB = 0;    MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(125, 0); Coin = "CFX" } # NBMiner-v40.1 is faster
+    [PSCustomObject]@{ Algorithm = "Octopus";      Type = "NVIDIA"; Fee = 0.02;  MinMemGB = 6;                               MemReserveGB = 0;    MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(125, 0); Coin = "CFX" } # NBMiner-v41.0 is faster
     [PSCustomObject]@{ Algorithm = "UbqHash";      Type = "NVIDIA"; Fee = 0.01;  MinMemGB = $Pools."UbqHash".DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(55, 0);  Coin = "UBQ" } # PhoenixMiner-v6.2c is fastest
 )
 

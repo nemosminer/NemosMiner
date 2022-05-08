@@ -37,7 +37,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
     # Always get the latest config
     Read-Config -ConfigFile $Variables.ConfigFile
 
-    If ($Config.MineWhenIdle -and $Variables.IdleRunspace -and $Variables.IdleRunspace.NewMiningStatus -eq "Mining" -and $Variables.NewMiningStatus -eq "Running") { 
+    If ($Config.IdleDetection -and $Variables.IdleRunspace -and $Variables.IdleRunspace.NewMiningStatus -eq "Mining" -and $Variables.NewMiningStatus -eq "Running") { 
         $Variables.IdleRunspace | Add-Member MiningStatus "Mining" -Force
         Write-Message -Level Info "Started new cycle (System was idle for $($Config.IdleSec) seconds)."
     }
@@ -45,7 +45,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
         Write-Message -Level Info "Started new cycle."
     }
 
-    If ($Config.MineWhenIdle) { 
+    If ($Config.IdleDetection) { 
         If (-not $Variables.IdleRunspace) { 
             Start-IdleDetection
         }
@@ -343,7 +343,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
             }
             $Variables.PowerPricekWh = [Double]($Config.PowerPricekWh.(($Config.PowerPricekWh | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | Sort-Object | Where-Object { $_ -lt (Get-Date -Format HH:mm).ToString() } | Select-Object -Last 1))
             $Variables.PowerCostBTCperW = [Double](1 / 1000 * 24 * $Variables.PowerPricekWh / $Variables.Rates."BTC".($Config.Currency))
-            $Variables.BasePowerCostBTC = [Double]($Config.IdlePowerUsageW / 1000 * 24 * $Variables.PowerPricekWh / $Variables.Rates."BTC".($Config.Currency))
+            $Variables.BasePowerCostBTC = [Double]($Config.PowerUsageIdleSystemW / 1000 * 24 * $Variables.PowerPricekWh / $Variables.Rates."BTC".($Config.Currency))
 
             # Load unprofitable algorithms
             Try { 
@@ -963,13 +963,13 @@ While ($Variables.NewMiningStatus -eq "Running") {
                     If ($Variables.Summary -ne "") { $Variables.Summary += "&ensp;&ensp;&ensp;" }
 
                     If ([Double]::IsNaN($Variables.MiningEarning) -or [Double]::IsNaN($Variables.MiningPowerCost)) { 
-                        $Variables.Summary += "Power Cost / day: n/a&ensp;[Miner$(If ($Variables.BestMiners_Combo.Count -gt 1) { "s" }): n/a; Base: {1:N} {0} ({2:0}W)]" -f $Config.Currency, ($Variables.BasePowerCostBTC * $Variables.Rates."BTC".($Config.Currency)), $Config.IdlePowerUsageW
+                        $Variables.Summary += "Power Cost / day: n/a&ensp;[Miner$(If ($Variables.BestMiners_Combo.Count -gt 1) { "s" }): n/a; Base: {1:N} {0} ({2:0}W)]" -f $Config.Currency, ($Variables.BasePowerCostBTC * $Variables.Rates."BTC".($Config.Currency)), $Config.PowerUsageIdleSystemW
                     }
                     ElseIf ($Variables.MiningPowerUsage -gt 0) { 
-                        $Variables.Summary += "Power Cost / day: {1:N} {0}&ensp;[Miner$(If ($Variables.BestMiners_Combo.Count -gt 1) { "s" }): {2:N} {0} ({3:0} W); Base: {4:N} {0} ({5:0} W)]" -f $Config.Currency, (($Variables.MiningPowerCost + $Variables.BasePowerCostBTC) * $Variables.Rates."BTC".($Config.Currency)), ($Variables.MiningPowerCost * $Variables.Rates."BTC".($Config.Currency)), $Variables.MiningPowerUsage, ($Variables.BasePowerCostBTC * $Variables.Rates."BTC".($Config.Currency)), $Config.IdlePowerUsageW
+                        $Variables.Summary += "Power Cost / day: {1:N} {0}&ensp;[Miner$(If ($Variables.BestMiners_Combo.Count -gt 1) { "s" }): {2:N} {0} ({3:0} W); Base: {4:N} {0} ({5:0} W)]" -f $Config.Currency, (($Variables.MiningPowerCost + $Variables.BasePowerCostBTC) * $Variables.Rates."BTC".($Config.Currency)), ($Variables.MiningPowerCost * $Variables.Rates."BTC".($Config.Currency)), $Variables.MiningPowerUsage, ($Variables.BasePowerCostBTC * $Variables.Rates."BTC".($Config.Currency)), $Config.PowerUsageIdleSystemW
                     }
                     Else { 
-                        $Variables.Summary += "Power Cost / day: n/a&ensp;[Miner: n/a; Base: {1:N} {0} ({2:0} W)]" -f $Config.Currency, ($Variables.BasePowerCostBTC * $Variables.Rates.BTC.($Config.Currency)), $Config.IdlePowerUsageW
+                        $Variables.Summary += "Power Cost / day: n/a&ensp;[Miner: n/a; Base: {1:N} {0} ({2:0} W)]" -f $Config.Currency, ($Variables.BasePowerCostBTC * $Variables.Rates.BTC.($Config.Currency)), $Config.PowerUsageIdleSystemW
                     }
                 }
             }
@@ -1277,7 +1277,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
         Write-Message -Level Verbose $Variables.Summary
         Do { 
             Start-Sleep -Seconds 1
-        } While ($Variables.NewMiningStatus -eq "Running" -and $Config.MineWhenIdle -and $Variables.IdleRunspace.NewMiningStatus -eq "Idle")
+        } While ($Variables.NewMiningStatus -eq "Running" -and $Config.IdleDetection -and $Variables.IdleRunspace.NewMiningStatus -eq "Idle")
     }
 
     $Error.Clear()
