@@ -591,7 +591,6 @@ While ($Variables.NewMiningStatus -eq "Running") {
             Write-Message -Level Verbose "Loading miners..."
             $NewMiners_Jobs = @(
                 Get-ChildItemContent ".\Miners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Variables = $Variables } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" })
-                If (Test-Path -Path ".\CustomMiners\.ps1" -PathType Leaf) { Get-ChildItemContent ".\CustomMiners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Variables = $Variables } -Threaded -Priority $(If ($Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" }) }
             )
             Remove-Variable PoolsPrimaryAlgorithm, PoolsSecondaryAlgorithm
         }
