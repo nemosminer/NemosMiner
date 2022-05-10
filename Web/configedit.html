@@ -326,7 +326,7 @@
                   </div>
                   <br>
 
-                  <!-- main text window Display Settings -->
+                  <!-- Main Text Window Display Settings -->
                   <legend class=h6 title="These Settings will not affect the information available in the in Web GUI"><b>Main Text Window Display Settings</b></legend>
                   <div title="'Light' will not show information about previously run & failed miners and watchdog timers&#10;except while benchmarking or measuring power usage&#10;Can be toggled by pressing 's' in the text window while waiting for the next cycle"> UI Style
                     <select name="UIStyle" id="UIStyle">
@@ -623,7 +623,7 @@
                   document.getElementById('NiceHashWalletIsInternal').disabled = !(document.getElementById(poolname).checked);
                   document.getElementById('NiceHashOrganizationId').disabled = !(document.getElementById(poolname).checked);
                 };
-                if (poolname.match('pool-prohashing(24hr|coins|coins24hr|coinsplus|plus)$')) {
+                if (poolname.match('pool-prohashing(|24hr|coins|coins24hr|coinsplus|plus)$')) {
                   document.getElementById('ProHashingUserName').disabled = !(document.getElementById(poolname).checked);
                   document.getElementById('ProHashingAPIKey').disabled = !(document.getElementById(poolname).checked);
                   document.getElementById('ProHashingMiningMode').disabled = !(document.getElementById(poolname).checked);
@@ -742,7 +742,7 @@
               if (config.SubtractBadShares) document.getElementById('SubtractBadShares').checked = true;
               if (config.IgnoreMinerFee) document.getElementById('IgnoreMinerFee').checked = true;
 
-              // main text window Display Settings
+              // Main Text Window Display Settings
               if (config.UIStyle.trim().toLowerCase() == "full") document.getElementById('UIStyle').value = 'Full';
               else document.getElementById('UIStyle').value = 'Light';
               if (config.ShowPowerCost) document.getElementById('ShowPowerCost').checked = true;
@@ -1137,7 +1137,7 @@
                   config.BadShareRatioThreshold = parseFloat(document.getElementById('BadShareRatioThreshold').value) / 100;
                   config.SubtractBadShares = document.getElementById('SubtractBadShares').checked;
 
-                  // main text window Display Settings
+                  // Main Text Window Display Settings
                   config.UIStyle = document.getElementById('UIStyle').value;
                   config.ShowPowerCost = document.getElementById('ShowPowerCost').checked;
                   config.ShowPowerUsage = document.getElementById('ShowPowerUsage').checked;
