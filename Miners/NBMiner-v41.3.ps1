@@ -3,7 +3,7 @@ using module ..\Includes\Include.psm1
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -in @("AMD", "NVIDIA"))) { Return }
 
 $Uri = Switch ($Variables.DriverVersion.CUDA) { 
-    { $_ -ge "10.0" } { "https://github.com/NebuTech/NBMiner/releases/download/v41.0/NBMiner_41.0_Win.zip"; Break }
+    { $_ -ge "10.0" } { "https://github.com/NebuTech/NBMiner/releases/download/v41.3/NBMiner_41.3_Win.zip"; Break }
     Default { Return }
 }
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
@@ -17,9 +17,9 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "AMD"; Fee = 0.01; MinMemGB = $Pools."EthashLowMem".DAGSizeGB; MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinerSet = 1; WarmupTimes = @(60, 35); Arguments = " --algo ethash --platform 2 --enable-dag-cache" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "AMD"; Fee = 0.02; MinMemGB = $Pools."KawPoW".DAGSizeGB;       MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinerSet = 1; WarmupTimes = @(45, 15); Arguments = " --algo kawpow --platform 2" } # XmRig-v6.17.0 is almost as fast but has no fee
  
+    [PSCustomObject]@{ Algorithm = "Autolykos2";   Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3;                               MemReserveGB = 0;    AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -mt 1 --algo ergo --platform 1" }
     [PSCustomObject]@{ Algorithm = "BeamV3";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3;                               MemReserveGB = 0;    AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -mt 1 --algo beamv3 --platform 1" }
     [PSCustomObject]@{ Algorithm = "Cuckoo29";     Type = "NVIDIA"; Fee = 0.02; MinMemGB = 5;                               MemReserveGB = 0;    AdditionalWin10MemGB = 1; MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(30, 0);  Arguments = " -mt 1 --algo cuckoo_ae --platform 1" } # GMiner-v2.91 is fastest
-    [PSCustomObject]@{ Algorithm = "Ergo";         Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3;                               MemReserveGB = 0;    AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -mt 1 --algo ergo --platform 1" }
     [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "NVIDIA"; Fee = 0.01; MinMemGB = $Pools."EtcHash".DAGSizeGB;      MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " -mt 1 --algo etchash --platform 1 --enable-dag-cache" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; Fee = 0.01; MinMemGB = $Pools."Ethash".DAGSizeGB;       MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " -mt 1 --algo ethash --platform 1 --enable-dag-cache" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = $Pools."EthashLowMem".DAGSizeGB; MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(60, 15); Arguments = " -mt 1 --algo ethash --platform 1 --enable-dag-cache" } # TTMiner-v5.0.3 is fastest
