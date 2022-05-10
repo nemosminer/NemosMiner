@@ -15,7 +15,7 @@ Core:
 
 Miner updates:
 - lolMiner-v1.49
-- NBMiner-v41.3 (For 100% LHR unlock run NemosMiner with admin priviledges)
+- NBMiner-v41.3 (For 100% LHR unlock run NemosMiner with admin privileges)
 
 Fixes:
 - Core: Get-Device: Ignore "Remote Display Adapters 0GB" when incrementing slot numbers
