@@ -78,9 +78,9 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$GPUMinerProcessPriority = "-1", # Process priority for GPU miners
     [Parameter(Mandatory = $false)]
-    [Double]$IdlePowerUsageW = 60, # Watt, Powerusage of idle system. Part of profit calculation.
+    [Switch]$IdleDetection = $false, # If true will start mining only if system is idle for $IdleSec seconds
     [Parameter(Mandatory = $false)]
-    [Int]$IdleSec = 120, # seconds the system must be idle before mining starts (if MineWhenIdle -eq $true)
+    [Int]$IdleSec = 120, # seconds the system must be idle before mining starts (if IdleDetection -eq $true)
     [Parameter(Mandatory = $false)]
     [Switch]$IgnoreMinerFee = $false, # If true will ignore miner fee for earning & profit calculation
     [Parameter(Mandatory = $false)]
@@ -108,8 +108,6 @@ param(
     [Int]$MinerSet = 1, # 0: Benchmark best miner per algorithm and device only; 1: Benchmark optimal miners (more than one per algorithm and device); 2: Benchmark all miners per algorithm and device;
     [Parameter(Mandatory = $false)]
     [Double]$MinerSwitchingThreshold = 10, # Will not switch miners unless another miner has n% higher earnings / profit
-    [Parameter(Mandatory = $false)]
-    [Switch]$MineWhenIdle = $false, # If true will start mining only if system is idle for $IdleSec seconds
     [Parameter(Mandatory = $false)]
     [String]$MinerWindowStyle = "minimized", # "minimized": miner window is minimized (default), but accessible; "normal": miner windows are shown normally; "hidden": miners will run as a hidden background task and are not accessible (not recommended)
     [Parameter(Mandatory = $false)]
@@ -153,6 +151,8 @@ param(
     [Parameter(Mandatory = $false)]
     [Hashtable]$PowerUsage = @{ }, # Static power usage per device in W, e.g. @{ "GPU#03" = 25, "GPU#04 = 55" } (in case HWiNFO cannot read power usage)
     [Parameter(Mandatory = $false)]
+    [Double]$PowerUsageIdleSystemW = 60, # Watt, Powerusage of idle system. Part of profit calculation.
+    [Parameter(Mandatory = $false)]
     [Double]$ProfitabilityThreshold = -99, # Minimum profit threshold, if profit is less than the configured value (in $Currency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
     [Parameter(Mandatory = $false)]
     [String]$ProHashingAPIKey = "", # ProHashing API Key (required to retrieve balance information)
@@ -163,7 +163,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$Proxy = "", # i.e http://192.0.0.1:8080
     [Parameter(Mandatory = $false)]
-    [String]$Region = "Europe West", # Used to determine pool nearest to you.
+    [String]$Region = "Europe West", # Used to determine pool nearest to you. One of "Asia", "Europe North", "Europe West", "HongKong", "Japan", "Russia", "USA East", "USA West"
     [Parameter(Mandatory = $false)]
     [Switch]$ReportToServer = $false, # I)f true will report worker status to central monitoring server
     [Parameter(Mandatory = $false)]

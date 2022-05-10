@@ -2902,6 +2902,8 @@ Function Update-ConfigFile {
             "EstimateCorrection" { $Config.Remove($_) }
             "EthashLowMemMinMemGB" { $Config.Remove($_) }
             "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
+            "IdleDetection" { $Config.IdleDetection = $Config.$_; $Config.Remove($_) }
+            "IdlePowerUsageW" { $Config.PowerUsageIdleSystemW = $Config.$_; $Config.Remove($_) }
             "MPHAPIKey" { $Config.MiningPoolHubAPIKey = $Config.$_; $Config.Remove($_) }
             "MPHUserName"  { $Config.MiningPoolHubUserName = $Config.$_; $Config.Remove($_) }
             "NoDualAlgoMining" { $Config.DisableDualAlgoMining = $Config.$_; $Config.Remove($_) }
