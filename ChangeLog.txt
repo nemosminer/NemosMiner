@@ -6,6 +6,22 @@ Breaking changes (from 3.8.x.x code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+ChangeLog NemosMiner 4.0.0.30 10.05.2022
+========================================
+
+Core:
+- Renamed config item 'IdlePowerUsageW' to 'PowerUsageIdleSystemW'
+- Renamed config item 'MineWhenIdle' to 'IdleDetection'
+
+Miner updates:
+- lolMiner-v1.49
+- NBMiner-v41.3 (For 100% LHR unlock run NemosMiner with admin priviledges)
+
+Fixes:
+- Core: Get-Device: Ignore "Remote Display Adapters 0GB" when incrementing slot numbers
+- Web GUI / Config Editor: ProHashing pool config settings not getting disabled when disabling 'ProHashing' pool
+
+
 Changelog NemosMiner 4.0.0.29 07.05.2022
 ========================================
 
@@ -17,7 +33,7 @@ Enhancements:
 - Dynamic EthashLowMem memory limit calculation; data taken from prohashing API
 - Function 'Read-Config' rewritten to work better with broken config files
 - Miner APIs: Minor code optimization
-- Use DAG data from 'minerstat.com' & 'prohashing.com'
+- Use DAG data from 'MinerStat.com' & 'ProHashing.com'
 
 Fixes:
 - Endless benchmarking loop when miner does not provide data sample in time

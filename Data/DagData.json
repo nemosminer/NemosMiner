@@ -1,40 +1,40 @@
 {
   "Currency": {
     "*": {
-      "BlockHeight": 15078791,
+      "BlockHeight": 15094808,
       "CoinName": "*",
-      "DAGsize": 5184157568,
-      "Epoch": 490
+      "DAGsize": 5192543872,
+      "Epoch": 491
     },
     "AKA": {
-      "BlockHeight": 6990434,
+      "BlockHeight": 7006833,
       "CoinName": "Akroma",
       "DAGsize": 3028287104,
       "Epoch": 233
     },
     "ATH": {
-      "BlockHeight": 5557532,
+      "BlockHeight": 5567482,
       "CoinName": "Atheios",
       "DAGsize": 2625631616,
       "Epoch": 185
     },
     "CLO": {
-      "BlockHeight": 9847975,
+      "BlockHeight": 9864079,
       "CoinName": "Callisto",
       "DAGsize": 3825204608,
       "Epoch": 328
     },
     "DBIX": {
-      "BlockHeight": 1727886,
+      "BlockHeight": 1728025,
       "CoinName": "DubaiCoin",
       "DAGsize": 1551892096,
       "Epoch": 57
     },
     "EGEM": {
-      "BlockHeight": 10407318,
+      "BlockHeight": 10423932,
       "CoinName": "EtherGem",
-      "DAGsize": 3976200064,
-      "Epoch": 346
+      "DAGsize": 3984588416,
+      "Epoch": 347
     },
     "ERE": {
       "BlockHeight": 484111,
@@ -43,28 +43,28 @@
       "Epoch": 16
     },
     "ERG": {
-      "BlockHeight": 744397,
+      "BlockHeight": 745956,
       "CoinName": "Ergo",
       "DAGsize": 1275067264,
       "Epoch": 24
     },
     "ESN": {
-      "BlockHeight": 6347119,
+      "BlockHeight": 6347562,
       "CoinName": "EtherSocial",
       "DAGsize": 2843734144,
       "Epoch": 211
     },
     "ETC": {
-      "BlockHeight": 15078791,
+      "BlockHeight": 15094808,
       "CoinName": "Ethereum Classic",
       "DAGsize": 3179280256,
       "Epoch": 251
     },
     "ETH": {
-      "BlockHeight": 14728983,
+      "BlockHeight": 14744193,
       "CoinName": "Ethereum",
-      "DAGsize": 5184157568,
-      "Epoch": 490
+      "DAGsize": 5192543872,
+      "Epoch": 491
     },
     "ETHO": {
       "BlockHeight": 8709768,
@@ -73,46 +73,46 @@
       "Epoch": 290
     },
     "ETP": {
-      "BlockHeight": 6599020,
+      "BlockHeight": 6608908,
       "CoinName": "Metaverse",
-      "DAGsize": 2910843008,
-      "Epoch": 219
+      "DAGsize": 2919234688,
+      "Epoch": 220
     },
     "EXP": {
-      "BlockHeight": 6236709,
+      "BlockHeight": 6246357,
       "CoinName": "Expanse",
-      "DAGsize": 2810182016,
-      "Epoch": 207
+      "DAGsize": 2818571648,
+      "Epoch": 208
     },
     "MOAC": {
-      "BlockHeight": 9124915,
+      "BlockHeight": 9141277,
       "CoinName": "Moac",
       "DAGsize": 3623877248,
       "Epoch": 304
     },
     "NILU": {
-      "BlockHeight": 6168676,
+      "BlockHeight": 6170021,
       "CoinName": "Nilu",
       "DAGsize": 2793401984,
       "Epoch": 205
     },
     "NUKO": {
-      "BlockHeight": 7681080,
+      "BlockHeight": 7692979,
       "CoinName": "Nekonium",
       "DAGsize": 3221224064,
       "Epoch": 256
     },
     "PGC": {
-      "BlockHeight": 4594099,
+      "BlockHeight": 4599914,
       "CoinName": "PegasCoin",
       "DAGsize": 2357196416,
       "Epoch": 153
     },
     "QKC": {
-      "BlockHeight": 9709975,
+      "BlockHeight": 9731306,
       "CoinName": "QuarkChain",
-      "DAGsize": 3783260032,
-      "Epoch": 323
+      "DAGsize": 3791650432,
+      "Epoch": 324
     },
     "REOSC": {
       "BlockHeight": 7114083,
@@ -121,24 +121,26 @@
       "Epoch": 237
     },
     "RVN": {
-      "BlockHeight": 2265582,
+      "BlockHeight": 2269034,
       "CoinName": "RavenCoin",
       "DAGsize": 3607098752,
       "Epoch": 302
     },
     "TSF": {
-      "BlockHeight": 2272716,
+      "BlockHeight": 2277502,
       "CoinName": "TransactionServiceFee",
       "DAGsize": 1702886272,
       "Epoch": 75
     },
     "UBQ": {
-      "BlockHeight": 2254607,
+      "BlockHeight": 2264362,
       "CoinName": "UBIQ",
       "DAGsize": 1702886272,
       "Epoch": 75
     }
   },
-  "Updated_Minerstat": "2022-05-07T09:25:51.9024432Z",
-  "Updated_ProHashing": "2022-05-07T09:26:19.5900778Z"
+  "Updated": {
+    "Minerstat": "2022-05-09T19:30:31.4428927Z",
+    "ProHashing": "2022-05-09T19:30:34.358096Z"
+  }
 }

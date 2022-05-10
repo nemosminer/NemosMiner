@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.29
-Version date:   07 May 2022
+Version:        4.0.0.30
+Version date:   10 May 2022
 #>
 
 # Window handling
@@ -2069,7 +2069,7 @@ Function Get-Device {
                     Vendor_Id      = [Int]$Vendor_Id.($Device.Vendor)
                     Type_Vendor_Id = [Int]$Type_Vendor_Id.($Device.Type).($Device.Vendor)
                 }
-                #Unsupported devices start with DeviceID 100 (to not disrupt device order when running in a Citrix / RDP session)
+                #Unsupported devices start with DeviceID 100 (to not disrupt device order when running in a Citrix or RDP session)
                 If ($Device.Vendor -in $Variables."Supported$($Device.Type)DeviceVendors") { 
                     $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
                 }
@@ -2143,7 +2143,7 @@ Function Get-Device {
                         Vendor_Id      = [Int]$Vendor_Id.($Device.Vendor)
                         Type_Vendor_Id = [Int]$Type_Vendor_Id.($Device.Type).($Device.Vendor)
                     }
-                    #Unsupported devices get DeviceID 100 (to not disrupt device order when running in a Citrix / RDP session)
+                    #Unsupported devices get DeviceID 100 (to not disrupt device order when running in a Citrix or RDP session)
                     If ($Device.Vendor -in $Variables."Supported$($Device.Type)DeviceVendors") { 
                         $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
                     }
@@ -2210,7 +2210,7 @@ Function Get-Device {
                 $PlatformId++
             }
 
-            $Variables.Devices | Where-Object Vendor -ne "CitrixSystemsInc" | Where-Object Bus -Is [Int64] | Sort-Object Bus | ForEach-Object { 
+            $Variables.Devices | Where-Object Model -ne "Remote Display Adapter 0GB" | Where-Object Vendor -ne "CitrixSystemsInc" | Where-Object Bus -Is [Int64] | Sort-Object Bus | ForEach-Object { 
                 $_ | Add-Member @{ 
                     Slot             = [Int]$Slot
                     Type_Slot        = [Int]$Type_Slot.($_.Type)

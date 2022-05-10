@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash Internal.ps1
-Version:        4.0.0.29
-Version date:   07 May 2022
+Version:        4.0.0.30
+Version date:   10 May 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -30,7 +30,6 @@ $Wallet = $Config.PoolsConfig.NiceHash.Variant.$Name.Wallets.$PayoutCurrency
 $Key = $Config.NiceHashAPIKey
 $OrganizationID = $Config.NiceHashOrganizationID
 $Secret = $Config.NiceHashAPISecret
-$Url = "https://www.nicehash.com/my/mining/rigs/$($Config.PoolsConfig.NiceHash.WorkerName)"
 
 Function Get-NiceHashRequest { 
     Param(
@@ -92,7 +91,7 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.NiceHashAPIKey -and
             Unpaid     = [Double]($APIResponse.totalBalance)
             Withdrawal = [Double]($APIResponse.pendingDetails.withdrawal)
             #Total      = [Double]($APIResponse.pendingDetails.totalBalance)
-            Url        = $Url
+            Url        = "https://www.nicehash.com/my/mining/rigs/$($Config.PoolsConfig.NiceHash.WorkerName)"
         }
     }
     Else { 

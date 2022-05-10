@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.0.0.29
-Version date:   07 May 2022
+Version:        4.0.0.30
+Version date:   10 May 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -27,8 +27,6 @@ using module ..\Includes\Include.psm1
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PayoutCurrency = $Config.PoolsConfig.$Name.Wallets.Keys | Select-Object -First 1
 $Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
-$Url = "https://zergpool.com/?address=$Wallet"
-
 $RetryCount = 3
 $RetryDelay = 15
 
@@ -57,7 +55,7 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Wallet) {
             # Paid            = [Double]$APIResponse.PaidTotal
             # Total           = [Double]$APIResponse.Unpaid + [Double]$APIResponse.PaidTotal
             PayoutThreshold = [Double]($(If ($Config.PoolsConfig.$Name.PayoutThreshold.$PayoutCurrency -gt $APIResponse.MinPay) { $Config.PoolsConfig.$Name.PayoutThreshold.$PayoutCurrency } Else { $APIResponse.MinPay } ))
-            Url             = $Url
+            Url             = "https://zergpool.com/?address=$Wallet"
         }
     }
     Else { 

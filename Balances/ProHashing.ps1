@@ -18,11 +18,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.0.0.29
-Version date:   07 May 2022
+Version:        4.0.0.30
+Version date:   10 May 2022
 #>
 
-#using module ..\Includes\Include.psm1
+using module ..\Includes\Include.psm1
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Url = "https://prohashing.com/customer/dashboard"
@@ -55,7 +55,7 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.ProHashingAPIKey) {
                     Unpaid   = [Double]($APIResponse.data.balances.$_.Unpaid)
                     Paid     = [Double]($APIResponse.data.balances.$_.paid24h)
                     # Total    = [Double]($APIResponse.data.balances.$_.total) # total unpaid + total paid, reset after payout
-                    Url      = "$($Url)"
+                    Url      = $Url
                 }
             }
         }

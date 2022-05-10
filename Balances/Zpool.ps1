@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Zpool.ps1
-Version:        4.0.0.29
-Version date:   07 May 2022
+Version:        4.0.0.30
+Version date:   10 May 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -27,8 +27,6 @@ using module ..\Includes\Include.psm1
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PayoutCurrency = $Config.PoolsConfig.$Name.Wallets.Keys | Select-Object -First 1
 $Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
-$Url = "https://zpool.ca/wallet/$Wallet"
-
 $RetryCount = 3
 $RetryDelay = 15
 
@@ -55,7 +53,7 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Wallet) {
             Unpaid   = [Double]($APIResponse.unpaid) # Balance + unsold (pending)
             # Paid     = [Double]($APIResponse.total) # Reset after payout
             # Total    = [Double]($APIResponse.unpaid + $APIResponse.total) # Reset after payout
-            Url      = $Url
+            Url      = "https://zpool.ca/wallet/$Wallet"
         }
     }
     Else { 
