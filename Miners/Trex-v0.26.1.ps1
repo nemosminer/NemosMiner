@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "NVIDIA")) { Return }
 
-$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.25.15/t-rex-0.25.15-win.zip"
+$Uri = "https://github.com/trexminer/T-Rex/releases/download/0.26.1/t-rex-0.26.1-win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\t-rex.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
