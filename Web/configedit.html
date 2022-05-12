@@ -656,7 +656,7 @@
                   document.getElementById('ProHashingMiningMode').disabled = !(document.getElementById(poolname).checked);
                 };
               });
-              $.each(Array(config.PoolName), function (key, value) {
+              $.each([config.PoolName].flat(), function (key, value) {
                 if (document.getElementById(('pool-' + value).toString().toLowerCase())) document.getElementById(('pool-' + value).toString().toLowerCase()).checked = true;
               });
               document.getElementById('WorkerName').value = config.WorkerName.trim();
