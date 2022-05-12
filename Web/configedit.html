@@ -499,27 +499,27 @@
               // Mining Pool Hub
               document.getElementById('MiningPoolHubUserName').value = config.MiningPoolHubUserName;
               $(document.getElementById('MiningPoolHubUserName')).change(function (event) {
-                document.getElementById('RegisterMiningPoolHub').hidden = (document.getElementById('MiningPoolHubUserName').value != '');
+                document.getElementById('RegisterMiningPoolHub').hidden = Boolean(document.getElementById('MiningPoolHubUserName').value);
               });
               document.getElementById('MiningPoolHubAPIKey').value = config.MiningPoolHubAPIKey;
               // NiceHash
               document.getElementById('NiceHashWallet').value = config.NiceHashWallet;
               $(document.getElementById('NiceHashWallet')).change(function (event) {
-                document.getElementById('RegisterNiceHash').hidden = (document.getElementById('NiceHashWallet').value != '');
+                document.getElementById('RegisterNiceHash').hidden = Boolean(document.getElementById('NiceHashWallet').value);
               });
               document.getElementById('NiceHashAPIKey').value = config.NiceHashAPIKey;
               document.getElementById('NiceHashAPISecret').value = config.NiceHashAPISecret;
               document.getElementById('NiceHashWalletIsInternal').checked = config.NiceHashWalletIsInternal;
               // NiceHashWalletIsInternal
               $(document.getElementById('NiceHashWallet')).change(function (event) {
-                document.getElementById('NiceHashWalletIsInternal').checked = (document.getElementById('NiceHashWallet').value != '');
+                document.getElementById('NiceHashWalletIsInternal').checked = Boolean(document.getElementById('NiceHashWallet').value);
                 document.getElementById('NiceHashWalletIsInternal').disabled = (document.getElementById('NiceHashWallet')).value.notmatch(/^[0-9A-Za-z]{34}$/);
               });
               document.getElementById('NiceHashOrganizationId').value = config.NiceHashOrganizationId;
               // ProHashing
               document.getElementById('ProHashingUserName').value = config.ProHashingUserName;
               $(document.getElementById('ProHashingUserName')).change(function (event) {
-                document.getElementById('RegisterProHashing').hidden = (document.getElementById('ProHashingUserName').value != '');
+                document.getElementById('RegisterProHashing').hidden = Boolean(document.getElementById('ProHashingUserName').value);
               });
               document.getElementById('ProHashingAPIKey').value = config.ProHashingAPIKey;
               if (config.ProHashingMiningMode === "PPLNS") document.getElementById('ProHashingMiningMode').value = config.ProHashingMiningMode;
@@ -553,9 +553,7 @@
               if (parseInt(document.getElementById('Donate').value) <= 0) {
                 $('.modal-title').html('&#128546  Donation duration set to 0 minutes  &#128546');
                 $('.modal-body').html('Please help support the great team behind NemosMiner by leaving mining donations turned on.&#10;&#10;Thank you!');
-                $('#myModal').modal({ 
-                  show: true
-                });
+                $('#myModal').modal({ show: true });
               };
               document.getElementById('Interval').value = parseInt(config.Interval);
               document.getElementById('MinDataSamples').value = parseInt(config.MinDataSamples);
@@ -1183,18 +1181,22 @@
                   // Web GUI Display Settings
                   config.WebGUIUseColor = document.getElementById('WebGUIUseColor').checked;
 
-                  //Write current config
-                  var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
-                  $('.modal-body').load($command, function () {
-
+                  if (config.PoolName.length >= 1) {
+                    // Write current config
+                    var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
+                    $('.modal-body').load($command, function () {
+                      document.body.style.cursor = 'default'
+                      $('.modal-title').text('Apply configuration');
+                      $('#myModal').modal({ show: true });
+                      $('#myModal').on('hidden.bs.modal', function () { location.reload(true) })
+                    });
+                  } else {
+                    // No pool selected
                     document.body.style.cursor = 'default'
-
-                    $('.modal-title').text('Apply configuration');
+                    $('.modal-title').html('Error: Invalid configuration');
+                    $('.modal-body').html('Cannot apply configuration - you must select at least one pool.');
                     $('#myModal').modal({ show: true });
-                    $('#myModal').on('hidden.bs.modal', function () {
-                      location.reload(true);
-                    })
-                  });
+                  }
                 }
               });
             });
