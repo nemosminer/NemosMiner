@@ -24,15 +24,25 @@
                     <label for="WorkerName">Worker name</label>
                     <input type="text" id="WorkerName" name="WorkerName" maxlength=33 size=38 value="Workername">
                   </div>
-                  <div style="padding-top: 0.7rem" title="Your MiningPoolHub username as registered with MiningPoolHub&#10;(min. 2 and max. 32 characters)">
-                    <label for="MiningPoolHubUserName">MiningPoolHub user name</label>
+                  <br>
+
+                  <legend class=h6 title="You must have a registered account with Mining Pool Hub">Mining Pool Hub
+                    <a id="RegisterMiningPoolHub" href="https://miningpoolhub.com/index.php?page=register" target="_blank" hidden style="float: right;" title="Click here to go to the pool registration web site to register an account">Goto registration page</a>
+                  </legend>
+                  <div style="padding-top: 0.2rem" title="Your username as registered with Mining Pool Hub&#10;(min. 2 and max. 32 characters)">
+                    <label for="MiningPoolHubUserName">Mining Pool Hub user name</label>
                     <input type="text" id="MiningPoolHubUserName" name="MiningPoolHubUserName" maxlength=33 size=38>
                   </div>
-                  <div title="Your MiningPoolHub API Key&#10;taken from your MiningPoolHub account settings&#10;If left empty NemosMiner cannot retrieve balance data from MiningPoolHub">
-                    <label for="MiningPoolHubAPIKey">MiningPoolHub API key</label>
+                  <div title="Your Mining Pool Hub API Key&#10;taken from your Mining Pool Hub account settings&#10;If left empty NemosMiner cannot retrieve balance data from MiningPoolHub">
+                    <label for="MiningPoolHubAPIKey">Mining Pool Hub API key</label>
                     <input type="text" id="MiningPoolHubAPIKey" name="MiningPoolHubAPIKey" maxlength=65 size=70>
                   </div>
-                  <div style="padding-top: 0.7rem" title="Your NiceHash Bitcoin wallet address (must be 34 chars long)&#10;configure only if different from Bitcoin wallet address &#10">
+                  <br>
+
+                  <legend class=h6 title="You must have a registered account with NiceHash">NiceHash
+                    <a id="RegisterNiceHash" href="https://www.nicehash.com/my/register" target="_blank" hidden style="float: right;" title="Click here to go to the pool registration web site to register an account">Goto registration page</a>
+                  </legend>
+                  <div style="padding-top: 0.2rem" title="Your NiceHash Bitcoin wallet address (must be 34 chars long)&#10;configure only if different from main Bitcoin wallet address">
                     <label for="NiceHashWallet">NiceHash Bitcoin wallet address</label>
                     <input type="text" id="NiceHashWallet" name="NiceHashWallet" maxlength=35 size=40>
                     <input title="Tick if NiceHash wallet is a NiceHash internal address&#10;&#10;Note: NiceHash internal wallets have lower pool fees" type="checkbox" class="toggle-switch" id="NiceHashWalletIsInternal" name="NiceHashWalletIsInternal">
@@ -50,7 +60,12 @@
                     <label for="NiceHashOrganizationId">NiceHash organization Id</label>
                     <input type="text" id="NiceHashOrganizationId" name="NiceHashOrganizationId" maxlength=37 size=42>
                   </div>
-                  <div style="padding-top: 0.7rem" title="Your ProHashing username as registered with ProHashing" for="ProHashingUserName">
+                  <br>
+
+                  <legend class=h6 title="You must have a registered account with ProHashing">ProHashing
+                    <a id="RegisterProHashing" href="https://prohashing.com?r=3pH68Dhj" target="_blank" hidden style="float: right;" title="Click here to go to the pool registration web site to register an account">Goto registration page</a>
+                  </legend>
+                  <div style="padding-top: 0.2rem" title="Your username as registered with ProHashing" for="ProHashingUserName">
                     <label for="ProHashingUserName">ProHashing user name</label>
                     <input type="text" id="ProHashingUserName" name="ProHashingUserName" maxlength=37 size=42>
                   </div>
@@ -481,20 +496,32 @@
                 $('<option/>', { value: key, text: key }).appendTo(payoutcurrencycontainer);
               })
               document.getElementById('WorkerName').value = config.WorkerName.trim();
-              document.getElementById('MiningPoolHubAPIKey').value = config.MiningPoolHubAPIKey;
+              // Mining Pool Hub
               document.getElementById('MiningPoolHubUserName').value = config.MiningPoolHubUserName;
+              $(document.getElementById('MiningPoolHubUserName')).change(function (event) {
+                document.getElementById('RegisterMiningPoolHub').hidden = (document.getElementById('MiningPoolHubUserName').value != '');
+              });
+              document.getElementById('MiningPoolHubAPIKey').value = config.MiningPoolHubAPIKey;
+              // NiceHash
+              document.getElementById('NiceHashWallet').value = config.NiceHashWallet;
+              $(document.getElementById('NiceHashWallet')).change(function (event) {
+                document.getElementById('RegisterNiceHash').hidden = (document.getElementById('NiceHashWallet').value != '');
+              });
               document.getElementById('NiceHashAPIKey').value = config.NiceHashAPIKey;
               document.getElementById('NiceHashAPISecret').value = config.NiceHashAPISecret;
               document.getElementById('NiceHashWalletIsInternal').checked = config.NiceHashWalletIsInternal;
               // NiceHashWalletIsInternal
               $(document.getElementById('NiceHashWallet')).change(function (event) {
-                if (document.getElementById('NiceHashWallet').value == '') document.getElementById('NiceHashWalletIsInternal').checked = false;
-                document.getElementById('NiceHashWalletIsInternal').disabled = !((document.getElementById('NiceHashWallet')).value.match(/^[0-9A-Za-z]{34}$/));
+                document.getElementById('NiceHashWalletIsInternal').checked = (document.getElementById('NiceHashWallet').value != '');
+                document.getElementById('NiceHashWalletIsInternal').disabled = (document.getElementById('NiceHashWallet')).value.notmatch(/^[0-9A-Za-z]{34}$/);
               });
-              document.getElementById('NiceHashWallet').value = config.NiceHashWallet;
               document.getElementById('NiceHashOrganizationId').value = config.NiceHashOrganizationId;
-              document.getElementById('ProHashingAPIKey').value = config.ProHashingAPIKey;
+              // ProHashing
               document.getElementById('ProHashingUserName').value = config.ProHashingUserName;
+              $(document.getElementById('ProHashingUserName')).change(function (event) {
+                document.getElementById('RegisterProHashing').hidden = (document.getElementById('ProHashingUserName').value != '');
+              });
+              document.getElementById('ProHashingAPIKey').value = config.ProHashingAPIKey;
               if (config.ProHashingMiningMode === "PPLNS") document.getElementById('ProHashingMiningMode').value = config.ProHashingMiningMode;
               else document.getElementById('ProHashingMiningMode').value = "PPS";
 
@@ -629,7 +656,7 @@
                   document.getElementById('ProHashingMiningMode').disabled = !(document.getElementById(poolname).checked);
                 };
               });
-              $.each(config.PoolName, function (key, value) {
+              $.each(Array(config.PoolName), function (key, value) {
                 if (document.getElementById(('pool-' + value).toString().toLowerCase())) document.getElementById(('pool-' + value).toString().toLowerCase()).checked = true;
               });
               document.getElementById('WorkerName').value = config.WorkerName.trim();
@@ -865,7 +892,7 @@
                     pattern: "^[A-Z0-9]{3,4}"
                   },
                   ExtraCurrencies: {
-                    required: true,
+                    required: false,
                     minlength: 3,
                     maxlength: 64,
                     pattern: "^([A-Za-z0-9]{3,4}?)+(?:,([A-Za-z0-9]{3,4})+)*$"
@@ -1020,9 +1047,6 @@
                   }
                 },
                 submitHandler: function (form) {
-                  config.PoolName = [];
-                  config.ExcludeDeviceName = [];
-
                   document.body.style.cursor = 'wait'
 
                   // Wallet addresses and user names
@@ -1045,7 +1069,8 @@
 
                   // Currency settings
                   config.Currency = document.getElementById('Currency').value.trim();
-                  config.ExtraCurrencies = document.getElementById('ExtraCurrencies').value.replace(" ", "").split(',');
+                  config.ExtraCurrencies = []; // Enforce array
+                  if (document.getElementById('ExtraCurrencies').value) config.ExtraCurrencies = (document.getElementById('ExtraCurrencies').value).replace(" ", "").split(",");
                   config.UsemBTC = document.getElementById('UsemBTC').checked;
                   config.PayoutCurrency = document.getElementById('PayoutCurrency').value;
 
@@ -1076,11 +1101,13 @@
                   config.BalancesKeepAlive = document.getElementById('BalancesKeepAlive').checked;
 
                   // Select mining devices
+                  config.ExcludeDeviceName = [];
                   $.each(devices, function (key, value) {
                     if (document.getElementById(('device-' + value.Name.toLowerCase())).checked == false && value.State != 2) (config.ExcludeDeviceName).push(value.Name);
                   });
 
                   // Select one or more pools
+                  config.PoolName = [];
                   $.each(poolvariants, function (key, value) {
                     if (document.getElementById(('pool-' + value.toLowerCase())).checked == true) (config.PoolName).push(value);
                   });
@@ -1097,8 +1124,10 @@
                   config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
                   config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
                   config.MinerSet = parseInt(document.getElementById('MinerSet').value);
-                  config.ExcludeMinerName = (document.getElementById('ExcludeMinerName').value).replace(" ", "").split(",");
-                  config.Algorithm = (document.getElementById('Algorithm').value).replace(" ", "").split(',');
+                  config.ExcludeMinerName = []; // Enforce array
+                  if (document.getElementById('ExcludeMinerName').value) config.ExcludeMinerName = (document.getElementById('ExcludeMinerName').value).replace(" ", "").split(",");
+                  config.Algorithm = []; // Enforce array
+                  if (document.getElementById('Algorithm').value) config.Algorithm = (document.getElementById('Algorithm').value).replace(" ", "").split(",");
 
                   // Miner Runtime Settings
                   if (document.getElementById('MinerWindowStyleHidden').checked) config.MinerWindowStyle = "hidden";

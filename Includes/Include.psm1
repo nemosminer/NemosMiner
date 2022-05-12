@@ -781,7 +781,7 @@ Function Start-BrainJob {
     # Starts Brains if necessary
     $JobNames = @()
 
-    $Jobs | ForEach-Object { 
+    $Jobs | Select-Object | ForEach-Object { 
         If (-not $Variables.BrainJobs.$_) { 
             $BrainPath = "$($Variables.MainPath)\Brains\$(Get-PoolBaseName $_)"
             $BrainName = "$BrainPath\Brains.ps1"
@@ -805,7 +805,7 @@ Function Stop-BrainJob {
         $JobNames = @()
 
         # Stop Brains if necessary
-        $Jobs | ForEach-Object { 
+        $Jobs | Select-Object | ForEach-Object { 
             $Variables.BrainJobs.$_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
             $Variables.BrainJobs.Remove($_)
             $JobNames += $_
@@ -1197,11 +1197,6 @@ Function Read-Config {
         Return $Config
     }
 
-    # Enforce array
-    $Variables.AllCommandLineParameters.Keys | ForEach-Object { 
-        If ($Variables.AllCommandLineParameters.$_ -is [Array] -and $Config.$_ -isnot [Array]) { $Config.$_ = @($Config.$_ -replace " " -split ",") }
-    }
-
     # Load the configuration
     If (Test-Path -PathType Leaf $ConfigFile) { 
         $Config_Tmp = Get-Content $ConfigFile | ConvertFrom-Json -ErrorAction Ignore | Select-Object
@@ -1218,6 +1213,9 @@ Function Read-Config {
             $Config_Tmp.PSObject.Properties.Name | ForEach-Object { 
                 $Config.Remove($_)
                 $Config.$_ = $Config_Tmp.$_ 
+
+                # Enforce array
+                If ($Variables.AllCommandLineParameters.$_ -is [Array] -and $Config.$_ -isnot [Array]) { $Config.$_ = @($Config.$_ -replace " " -split ",") }
             }
         }
         Remove-Variable Config_Tmp -ErrorAction Ignore
