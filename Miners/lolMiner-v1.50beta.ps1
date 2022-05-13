@@ -2,14 +2,14 @@
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -in @("AMD", "NVIDIA"))) { Return }
 
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.49/lolMiner_v1.49_Win64.zip"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.50_beta/lolMiner_v1.50_beta_Win64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\lolminer.exe"
 $DeviceEnumerator = "Bus"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = @("Blake3");                    Type = "AMD"; Fee = @(0.015);      MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --algo ALEPHIUM" }
     [PSCustomObject]@{ Algorithm = @("Autolykos2");                Type = "AMD"; Fee = @(0.015);      MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --algo AUTOLYKOS2" }
+    [PSCustomObject]@{ Algorithm = @("Blake3");                    Type = "AMD"; Fee = @(0.015);      MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --algo ALEPHIUM" }
     [PSCustomObject]@{ Algorithm = @("BeamV3");                    Type = "AMD"; Fee = @(0.01);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 45); Arguments = " --algo BEAM-III" }
     [PSCustomObject]@{ Algorithm = @("Cuckoo29");                  Type = "AMD"; Fee = @(0.02);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --algo C29AE" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29B");               Type = "AMD"; Fee = @(0.02);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 45); Arguments = " --algo CR29-40" }
@@ -19,8 +19,8 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("CuckarooM29");               Type = "AMD"; Fee = @(0.01);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 45); Arguments = " --algo C29M" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31");                Type = "AMD"; Fee = @(0.02);       MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(60, 60); Arguments = " --algo C31" } # TeamRedMiner-v0.9.4.2 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");                Type = "AMD"; Fee = @(0.02);       MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 60); Arguments = " --algo C32" }
-    [PSCustomObject]@{ Algorithm = @("Equihash1445");              Type = "AMD"; Fee = @(0.01);       MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 30); Arguments = " --coin AUTO144_5" } # GMiner-v2.91 is fastest, but des not support Navi
-    [PSCustomObject]@{ Algorithm = @("Equihash1927");              Type = "AMD"; Fee = @(0.01);       MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 45); Arguments = " --coin AUTO192_7" } # GMiner-v2.91 is fastest, but des not support Navi
+    [PSCustomObject]@{ Algorithm = @("Equihash1445");              Type = "AMD"; Fee = @(0.01);       MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 30); Arguments = " --coin AUTO144_5" } # GMiner-v2.93 is fastest, but des not support Navi
+    [PSCustomObject]@{ Algorithm = @("Equihash1927");              Type = "AMD"; Fee = @(0.01);       MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 45); Arguments = " --coin AUTO192_7" } # GMiner-v2.93 is fastest, but des not support Navi
     [PSCustomObject]@{ Algorithm = @("Equihash2109");              Type = "AMD"; Fee = @(0.01);       MinMemGB = 2.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 45); Arguments = " --algo EQUI210_9" }
     [PSCustomObject]@{ Algorithm = @("Equihash1254");              Type = "AMD"; Fee = @(0.01);       MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 45); Arguments = " --coin ZEL" }
     [PSCustomObject]@{ Algorithm = @("EtcHash");                   Type = "AMD"; Fee = @(0.007);      MinMemGB = $Pools."Etchash".DAGSizeGB;      MemReserveGB = 0;    MinerSet = 2; WarmupTimes = @(45, 45); Arguments = " --algo ETCHASH" } # Ethereum Classic, PhoenixMiner-v6.2c is faster
@@ -37,14 +37,14 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("UbqHash", "Blake3");         Type = "AMD"; Fee = @(0.01, 0.01); MinMemGB = $Pools."UbqHash".DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 2; WarmupTimes = @(30, 60); Arguments = " --algo UBQHASH --dualmode ALEPHDUAL" }
     [PSCustomObject]@{ Algorithm = @("UbqHash", "SHA256ton");      Type = "AMD"; Fee = @(0.01, 0.01); MinMemGB = $Pools."UbqHash".DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 2; WarmupTimes = @(30, 60); Arguments = " --algo UBQHASH --dualmode TONDUAL" }
 
-    [PSCustomObject]@{ Algorithm = @("Blake3");                    Type = "NVIDIA"; Fee = @(0.015);      MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " --algo ALEPHIUM" }
     [PSCustomObject]@{ Algorithm = @("Autolykos2");                Type = "NVIDIA"; Fee = @(0.015);      MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " --algo AUTOLYKOS2" }
-    [PSCustomObject]@{ Algorithm = @("BeamV3");                    Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 45); Arguments = " --algo BEAM-III" } # NBMiner-v41.3 is fastest
+    [PSCustomObject]@{ Algorithm = @("Blake3");                    Type = "NVIDIA"; Fee = @(0.015);      MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " --algo ALEPHIUM" }
+    [PSCustomObject]@{ Algorithm = @("BeamV3");                    Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 45); Arguments = " --algo BEAM-III" } # NBMiner-v41.5 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckoo29");                  Type = "NVIDIA"; Fee = @(0.02);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --algo C29AE" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29B");               Type = "NVIDIA"; Fee = @(0.02);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 45); Arguments = " --algo CR29-40" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29S");               Type = "NVIDIA"; Fee = @(0.02);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 45); Arguments = " --algo CR29-32" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo30CTX");             Type = "NVIDIA"; Fee = @(0.025);      MinMemGB = 8.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 45); Arguments = " --algo C30CTX" }
-    [PSCustomObject]@{ Algorithm = @("CuckarooD29");               Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 45); Arguments = " --algo C29D" } # GMiner-v2.91 is fastest
+    [PSCustomObject]@{ Algorithm = @("CuckarooD29");               Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 45); Arguments = " --algo C29D" } # GMiner-v2.93 is fastest
     [PSCustomObject]@{ Algorithm = @("CuckarooM29");               Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 45); Arguments = " --algo C29M" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31");                Type = "NVIDIA"; Fee = @(0.02);       MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 60); Arguments = " --algo C31" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");                Type = "NVIDIA"; Fee = @(0.02);       MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 60); Arguments = " --algo C32" }
