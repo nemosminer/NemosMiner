@@ -6,6 +6,31 @@ Breaking changes (from 3.8.x.x code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+ChangeLog NemosMiner 4.0.0.31 14.05.2022
+========================================
+
+Core:
+- Removed 'CustomMiners' folder support
+
+Enhancements
+- New config item 'ShowUser' to toggle pool user column visibility in main text window
+
+Fixes:
+- Core: Single valued arrays in config were stored as string
+
+Miner updates:
+- GMiner-v2.94 (For 100% LHR unlock run NemosMiner with admin priviledges)
+- lolMiner-v1.50beta (For 100% LHR unlock run NemosMiner with admin priviledges)
+- NBMiner-v41.5 (For 100% LHR unlock run NemosMiner with admin priviledges)
+- Trex-v0.26.1 (For 100% LHR unlock run NemosMiner with admin priviledges)
+
+Web GUI:
+- Config Editor: Add hyperlinks for registration with Mining Pool Hub, NiceHash & ProHashing
+- Config Editor: Single valued arrays in config were stored as string
+- Config Editor: Display error when trying to save config with no pool selected
+- Miners: Change worker icon
+
+
 ChangeLog NemosMiner 4.0.0.30 10.05.2022
 ========================================
 
@@ -15,7 +40,7 @@ Core:
 
 Miner updates:
 - lolMiner-v1.49
-- NBMiner-v41.3 (For 100% LHR unlock run NemosMiner with admin privileges)
+- NBMiner-v41.3 (For 100% LHR unlock run NemosMiner with admin priviledges)
 
 Fixes:
 - Core: Get-Device: Ignore "Remote Display Adapters 0GB" when incrementing slot numbers

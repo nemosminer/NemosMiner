@@ -157,7 +157,7 @@
                   <fieldset>
                     <legend class=h6><b>Auto Update Settings</b></legend>
                     <div style="padding-top: 0.3rem" title="NemosMiner will periodically check for a new program version&#10;(min=0; max=30; [Default: 1, 0 to disable] days)"> Check for new version every
-                      <input type="number" id="AutoUpdateCheckInterval" name="AutoUpdateCheckInterval" length=2 min=0 max=50 step=1 value=15> days
+                      <input type="number" id="AutoUpdateCheckInterval" name="AutoUpdateCheckInterval" min=0 max=50 step=1 value=15> days
                     </div>
                     <div style="padding-top: 0.5rem" title="Automatically update NemosMiner to the latest realeased program version&#10;NemosMiner will check for a new verwsion on each start&#10;and approx. every 24hrs">
                       <input type="checkbox" class="toggle-switch" id="AutoUpdate" name="AutoUpdate"> Auto update
@@ -216,15 +216,6 @@
                   <div style="padding-top: 0.3rem" title="NemosMiner will run separate miner instances per GPU device model.&#10;Recommended for rigs with mixed GPU device models of the same vendor installed, e.g. GTX 1060 & GTX 1070&#10;This will increase profitability&#10;&#10;Note: AMD & NVIDIA cards will always run as separate instances.">
                     <input type="checkbox" class="toggle-switch" id="MinerInstancePerDeviceModel" name="MinerInstancePerDeviceModel"> Run miner Instance per GPU device model
                   </div>
-                  <div style="padding-top: 0.7rem" title="NemosMiner will disable all miners which contain fees">
-                    <input type="checkbox" class="toggle-switch" id="DisableMinersWithFee" name="DisableMinersWithFee"> Disable miners which contain miner fees
-                  </div>
-                  <div style="padding-top: 0.7rem" title="NemosMiner will disable all dual algorithm miners&#10;(Note: This will enable single algorithm mining)">
-                    <input type="checkbox" class="toggle-switch" id="DisableDualAlgoMining" name="DisableDualAlgoMining"> Disable dual algorithm miners
-                  </div>
-                  <div style="padding-top: 0.7rem" title="NemosMiner will disable all single algorithm miners&#10;(Note: This will enable dual algorithm mining)">
-                    <input type="checkbox" class="toggle-switch" id="DisableSingleAlgoMining" name="DisableSingleAlgoMining"> Disable single algorithm miners
-                  </div>
                   <div style="padding-top: 0.3rem" title="Select miner set to be used by NemosMiner">Use
                     <select name="" id="MinerSet" width="10">
                       <option title="The best miners chosen by the developers may not be the best miners for you" value=0>only best miner per algorithm and per device</option>
@@ -238,6 +229,15 @@
                   <div  style="padding-top: 0.2rem" title="'+[Algorithm]' to enable algorithm&#10;'-[Algorithm]' to disable algorithm&#10;Values must be sparated by commas&#10;Leave empty to use ALL available algorithms (not recommended as it may cause more switching)&#10;&#10;If '+' is used, then only the explicitly enabled algorithms are used&#10;If '-' is used, then all algorithms are used except the disabled ones&#10;You can either use '+' or '-'; you cannot combine both&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')"> Algorithms
                     <input type="text" id="Algorithm" name="Algorithm" size=50>
                     <button type="button" class="btn btn-light btn-sm" id="DefaultAlgorithm" name="DefaultAlgorithm" title="Load the default algorithm list&#10;for the selected pools">Load default algorithms</button>
+                  </div>
+                  <div style="padding-top: 0.7rem" title="NemosMiner will disable all miners which contain fees">
+                    <input type="checkbox" class="toggle-switch" id="DisableMinersWithFee" name="DisableMinersWithFee"> Disable miners which contain miner fees
+                  </div>
+                  <div style="padding-top: 0.7rem" title="NemosMiner will disable all dual algorithm miners&#10;(Note: This will enable single algorithm mining)">
+                    <input type="checkbox" class="toggle-switch" id="DisableDualAlgoMining" name="DisableDualAlgoMining"> Disable dual algorithm miners
+                  </div>
+                  <div style="padding-top: 0.7rem" title="NemosMiner will disable all single algorithm miners&#10;(Note: This will enable dual algorithm mining)">
+                    <input type="checkbox" class="toggle-switch" id="DisableSingleAlgoMining" name="DisableSingleAlgoMining"> Disable single algorithm miners
                   </div>
                   <br>
 
@@ -349,40 +349,47 @@
                       <option value='Light' title="Information about miners run in the past, failed miners & watchdog timers will not be shown">light</option>
                     </select>
                   </div>
-                  <div style="padding-top: 0.5rem" title="Show the 'PowerCost' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'c' in the text window while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowPowerCost" name="ShowPowerCost"> Show power cost in main text window
+                  <br>
+
+                  <div title="Show the 'PowerCost' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'c' in the text window while waiting for the next cycle">
+                    <input type="checkbox" class="toggle-switch" id="ShowPowerCost" name="ShowPowerCost"> Show power cost column
                   </div>
-                  <div style="padding-top: 0.5rem" title="Show the 'PowerUsage' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'u' in the text window while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowPowerUsage" name="ShowPowerUsage"> Show power usage in main text window
+                  <div style="padding-top: 0.5rem" title="Show the 'PowerUsage' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'w' in the text window while waiting for the next cycle">
+                    <input type="checkbox" class="toggle-switch" id="ShowPowerUsage" name="ShowPowerUsage"> Show power usage column
                   </div>
                   <div style="padding-top: 0.5rem" title="Show the 'Profit' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 't' in the text window while waiting for the next cycle&#10;">
-                    <input type="checkbox" class="toggle-switch" id="ShowProfit" name="ShowProfit"> Show profit in main text window
+                    <input type="checkbox" class="toggle-switch" id="ShowProfit" name="ShowProfit"> Show profit column
                   </div>
                   <div style="padding-top: 0.5rem" title="Show the 'Profit Bias' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'r' in the text window while waiting for the next cycle&#10;">
-                    <input type="checkbox" class="toggle-switch" id="ShowProfitBias" name="ShowProfitBias"> Show profit bias in main text window
-                  </div>
-                  <div style="padding-top: 0.5rem" title="When unticked only the best 5 miners per device are shown&#10;except while not benchmarking or measuring power usage&#10;&#10;Can be toggled by pressing 'l' in the text window while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowAllMiners" name="ShowAllMiners"> Show all miners in main text window
+                    <input type="checkbox" class="toggle-switch" id="ShowProfitBias" name="ShowProfitBias"> Show profit bias column
                   </div>
                   <div style="padding-top: 0.5rem" title="Show the 'Earning' column in the text window&#10;&#10;Can be toggled by pressing 'e' in the text window while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowEarning" name="ShowEarning"> Show earning in main text window
+                    <input type="checkbox" class="toggle-switch" id="ShowEarning" name="ShowEarning"> Show earning column
                   </div>
                   <div style="padding-top: 0.5rem" title="Show the 'Earning Bias' column in the text window&#10;&#10;Can be toggled by pressing 'i' in the text window while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowEarningBias" name="ShowEarningBias"> Show earning bias in main text window
+                    <input type="checkbox" class="toggle-switch" id="ShowEarningBias" name="ShowEarningBias"> Show earning bias column
                   </div>
                   <div style="padding-top: 0.5rem" title="Show the 'Accuracy' column in the text window&#10;&#10;Can be toggled by pressing 'a' in the text window while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowAccuracy" name="ShowAccuracy"> Show accuracy in main text window
+                    <input type="checkbox" class="toggle-switch" id="ShowAccuracy" name="ShowAccuracy"> Show accuracy column
                   </div>
                   <div style="padding-top: 0.5rem" title="Show the 'CoinName' column in the text window&#10;&#10;Can be toggled by pressing 'n' in the text window while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowCoinName" name="ShowCoinName"> Show coin name in main text window
+                    <input type="checkbox" class="toggle-switch" id="ShowCoinName" name="ShowCoinName"> Show coin name column 
                   </div>
                   <div style="padding-top: 0.5rem" title="Show the 'Currency' column in the text window&#10;&#10;Can be toggled by pressing 'y' in the text window while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowCurrency" name="ShowCurrency"> Show currency in main text window
+                    <input type="checkbox" class="toggle-switch" id="ShowCurrency" name="ShowCurrency"> Show currency column
+                  </div>
+                  <div style="padding-top: 0.5rem" title="Show the 'User' column in the text window&#10;&#10;Can be toggled by pressing 'u' in the text window while waiting for the next cycle">
+                    <input type="checkbox" class="toggle-switch" id="ShowUser" name="ShowUser"> Show user column
+                  </div>
+                  <br>
+
+                  <div title="When unticked only the best 5 miners per device are shown&#10;except while not benchmarking or measuring power usage&#10;&#10;Can be toggled by pressing 'v' in the text window while waiting for the next cycle">
+                    <input type="checkbox" class="toggle-switch" id="ShowAllMiners" name="ShowAllMiners"> Show all miners
                   </div>
                   <div style="padding-top: 0.5rem" title="Show the Pool Balances in the text windows&#10;(requires 'Poll Pools for Balances & Earnings every n minutes' to be > 0)&#10;&#10;Can be toggled by pressing 'b' in the text windows while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowPoolBalances" name="ShowPoolBalances" > Show pool balances in main text window
+                    <input type="checkbox" class="toggle-switch" id="ShowPoolBalances" name="ShowPoolBalances" > Show pool balances
                   </div>
-                   <br>
+                  <br>
 
                   <!-- Web GUI Display Settings -->
                   <legend class=h6 title="These Settings will not affect the information available in the in the main text window"><b>Web GUI Display Settings</b></legend>
@@ -688,16 +695,6 @@
 
               // Miner and Algorithm Selection
               if (config.MinerInstancePerDeviceModel) document.getElementById('MinerInstancePerDeviceModel').checked = true;
-              if (config.DisableMinersWithFee) document.getElementById('DisableMinersWithFee').checked = true;
-              if (config.DisableDualAlgoMining) document.getElementById('DisableDualAlgoMining').checked = true;
-              if (config.DisableSingleAlgoMining) document.getElementById('DisableSingleAlgoMining').checked = true;
-              // Dual AND single algorithm mining cannot be disabled at the same time
-              $(document.getElementById('DisableDualAlgoMining')).click(function (event) {
-                if (document.getElementById('DisableDualAlgoMining').checked) document.getElementById('DisableSingleAlgoMining').checked = false;
-              });
-              $(document.getElementById('DisableSingleAlgoMining')).click(function (event) {
-                if (document.getElementById('DisableSingleAlgoMining').checked) document.getElementById('DisableDualAlgoMining').checked = false;
-              });
               if (parseInt(config.MinerSet) >= 0 && parseInt(config.MinerSet) <= 2) document.getElementById('MinerSet').value = config.MinerSet;
               else document.getElementById('MinerSet').value = 1;
               if (config.ExcludeMinerName) document.getElementById('ExcludeMinerName').value = (config.ExcludeMinerName).toString().trim();
@@ -710,6 +707,16 @@
                     Algorithm.value = "+" + result.join(",+");
                   }
                 });
+              });
+              if (config.DisableMinersWithFee) document.getElementById('DisableMinersWithFee').checked = true;
+              if (config.DisableDualAlgoMining) document.getElementById('DisableDualAlgoMining').checked = true;
+              if (config.DisableSingleAlgoMining) document.getElementById('DisableSingleAlgoMining').checked = true;
+              // Dual AND single algorithm mining cannot be disabled at the same time
+              $(document.getElementById('DisableDualAlgoMining')).click(function (event) {
+                if (document.getElementById('DisableDualAlgoMining').checked) document.getElementById('DisableSingleAlgoMining').checked = false;
+              });
+              $(document.getElementById('DisableSingleAlgoMining')).click(function (event) {
+                if (document.getElementById('DisableSingleAlgoMining').checked) document.getElementById('DisableDualAlgoMining').checked = false;
               });
 
               // Miners Runtime Settings
@@ -774,12 +781,13 @@
               if (config.ShowPowerUsage) document.getElementById('ShowPowerUsage').checked = true;
               if (config.ShowProfit) document.getElementById('ShowProfit').checked = true;
               if (config.ShowProfitBias) document.getElementById('ShowProfitBias').checked = true;
-              if (config.ShowAllMiners) document.getElementById('ShowAllMiners').checked = true;
               if (config.ShowEarning) document.getElementById('ShowEarning').checked = true;
               if (config.ShowEarningBias) document.getElementById('ShowEarningBias').checked = true;
               if (config.ShowAccuracy) document.getElementById('ShowAccuracy').checked = true;
               if (config.ShowCoinName) document.getElementById('ShowCoinName').checked = true;
               if (config.ShowCurrency) document.getElementById('ShowCurrency').checked = true;
+              if (config.ShowUser) document.getElementById('ShowUser').checked = true;
+              if (config.ShowAllMiners) document.getElementById('ShowAllMiners').checked = true;
               if (config.ShowPoolBalances) document.getElementById('ShowPoolBalances').checked = true;
               // CalculatePowerCost click
               $(document.getElementById('CalculatePowerCost')).click(function (event) {
@@ -1118,14 +1126,14 @@
 
                   // Miner and Algorithm Selection
                   config.MinerInstancePerDeviceModel = document.getElementById('MinerInstancePerDeviceModel').checked;
-                  config.DisableMinersWithFee = document.getElementById('DisableMinersWithFee').checked;
-                  config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
-                  config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
                   config.MinerSet = parseInt(document.getElementById('MinerSet').value);
                   config.ExcludeMinerName = []; // Enforce array
                   if (document.getElementById('ExcludeMinerName').value) config.ExcludeMinerName = (document.getElementById('ExcludeMinerName').value).replace(" ", "").split(",");
                   config.Algorithm = []; // Enforce array
                   if (document.getElementById('Algorithm').value) config.Algorithm = (document.getElementById('Algorithm').value).replace(" ", "").split(",");
+                  config.DisableMinersWithFee = document.getElementById('DisableMinersWithFee').checked;
+                  config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
+                  config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
 
                   // Miner Runtime Settings
                   if (document.getElementById('MinerWindowStyleHidden').checked) config.MinerWindowStyle = "hidden";
@@ -1170,13 +1178,14 @@
                   config.ShowPowerUsage = document.getElementById('ShowPowerUsage').checked;
                   config.ShowProfit = document.getElementById('ShowProfit').checked;
                   config.ShowProfitBias = document.getElementById('ShowProfitBias').checked;
-                  config.ShowAllMiners = document.getElementById('ShowAllMiners').checked;
                   config.ShowEarning = document.getElementById('ShowEarning').checked;
                   config.ShowEarningBias = document.getElementById('ShowEarningBias').checked;
                   config.ShowAccuracy =  document.getElementById('ShowAccuracy').checked;
                   config.ShowCoinName =  document.getElementById('ShowCoinName').checked;
                   config.ShowCurrency =  document.getElementById('ShowCurrency').checked;
+                  config.ShowUser =  document.getElementById('ShowUser').checked;
                   config.ShowPoolBalances = document.getElementById('ShowPoolBalances').checked;
+                  config.ShowAllMiners = document.getElementById('ShowAllMiners').checked;
 
                   // Web GUI Display Settings
                   config.WebGUIUseColor = document.getElementById('WebGUIUseColor').checked;

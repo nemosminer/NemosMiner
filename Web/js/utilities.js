@@ -31,6 +31,7 @@ function formatMiners(data) {
         if (item.Workers[0].Pool) {
           item.tPrimaryPool = item.Workers[0].Pool.Name;
           item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
+          item.tPrimaryPoolUser = item.Workers[0].Pool.User;
         }
       }
       else {
@@ -45,6 +46,7 @@ function formatMiners(data) {
         if (item.Workers[1].Pool) {
           item.tSecondaryPool = item.Workers[1].Pool.Name;
           item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
+          item.tSecondaryPoolUser = item.Workers[1].Pool.User;
         }
       }
       else {

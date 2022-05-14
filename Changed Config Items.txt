@@ -215,6 +215,9 @@ New Config Items
 # Show Power usage column in miner overview (if power price is available, see PowerPricekWh)
   "ShowPowerUsage": true,
 
+# Show pool user name column in miner overview
+  "ShowUser": $true,
+
 # Path to optional external log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
   "SnakeTailExe": ".\Utils\SnakeTail.exe",
 
