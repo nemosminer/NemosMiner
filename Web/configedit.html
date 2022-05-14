@@ -90,12 +90,12 @@
                     <label title="Extra currencies to be shown in balances summary.&#10;Values must be separated by commas.&#10;&#10;Enter 'real-world' or crypto currencies&#10;mBTC (milli BTC) is also supported" style="margin-left:20px" for="ExtraCurrencies">Extra currencies</label>
                     <input title="Extra currencies to be shown in balances summary. &#10;Values must be separated by commas. &#10;&#10;Enter 'real-world' or crypto currencies&#10;mBTC (milli BTC) is also supported" type="text" id="ExtraCurrencies" name="ExtraCurrencies" maxlength=45 size=50 value="USD, ETC">
                   </div>
-                  <div style="padding-top: 0.4rem" title="If ticked NemosMiner will display BTC values in milli BTC">
-                    <input type="checkbox" class="toggle-switch" id="UsemBTC" name="UsemBTC"> Show BTC values in mBTC (BTC/1000)
-                  </div>
-                  <div style="padding-top: 0.5rem" title="Default payout currency for all pools&#10;Important: Not all pools allow payouts in other currencies than BTC.&#10;Consult the pool API information for more information&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
+                  <div title="Default payout currency for all pools&#10;Important: Not all pools allow payouts in other currencies than BTC.&#10;Consult the pool API information for more information&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
                     <label for="PayoutCurrency">Default payout currency</label>
                     <select name="" id="PayoutCurrency"></select>
+                  </div>
+                  <div style="padding-top: 0.3rem" title="If ticked NemosMiner will display BTC values in milli BTC">
+                    <input type="checkbox" class="toggle-switch" id="UsemBTC" name="UsemBTC"> Show BTC values in mBTC (BTC/1000)
                   </div>
                   <br>
 
@@ -349,9 +349,7 @@
                       <option value='Light' title="Information about miners run in the past, failed miners & watchdog timers will not be shown">light</option>
                     </select>
                   </div>
-                  <br>
-
-                  <div title="Show the 'PowerCost' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'c' in the text window while waiting for the next cycle">
+                  <div style="padding-top: 1rem" title="Show the 'PowerCost' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'c' in the text window while waiting for the next cycle">
                     <input type="checkbox" class="toggle-switch" id="ShowPowerCost" name="ShowPowerCost"> Show power cost column
                   </div>
                   <div style="padding-top: 0.5rem" title="Show the 'PowerUsage' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'w' in the text window while waiting for the next cycle">
@@ -535,8 +533,8 @@
               // Currency Settings
               document.getElementById('Currency').value = config.Currency.trim();
               document.getElementById('ExtraCurrencies').value = config.ExtraCurrencies.toString().trim();
-              if (config.UsemBTC) document.getElementById('UsemBTC').checked = true;
               document.getElementById('PayoutCurrency').value = config.PayoutCurrency;
+              if (config.UsemBTC) document.getElementById('UsemBTC').checked = config.UsemBTC;
 
               // General Runtime Settings
               if (config.StartupMode === "Idle" || config.StartupMode === "Paused" || config.StartupMode === "Running") document.getElementById('StartupMode').value = config.StartupMode;
@@ -1077,8 +1075,8 @@
                   config.Currency = document.getElementById('Currency').value.trim();
                   config.ExtraCurrencies = []; // Enforce array
                   if (document.getElementById('ExtraCurrencies').value) config.ExtraCurrencies = (document.getElementById('ExtraCurrencies').value).replace(" ", "").split(",");
-                  config.UsemBTC = document.getElementById('UsemBTC').checked;
                   config.PayoutCurrency = document.getElementById('PayoutCurrency').value;
+                  config.UsemBTC = document.getElementById('UsemBTC').checked;
 
                   // Runtime Settings
                   if (document.getElementById('StartupMode').value.match("Idle|Paused|Running")) config.StartupMode = document.getElementById('StartupMode').value;
