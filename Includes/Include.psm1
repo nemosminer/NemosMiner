@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.30
-Version date:   10 May 2022
+Version:        4.0.0.31
+Version date:   14 May 2022
 #>
 
 # Window handling
@@ -1243,7 +1243,7 @@ Function Read-Config {
 
     # Build in memory pool config
     $PoolsConfig = [Ordered]@{ }
-    (Get-PoolBasename $Config.PoolName) -replace " Internal$| External$" | ForEach-Object { 
+    (Get-ChildItem .\Pools\*.ps1 -File).BaseName | Sort-Object -Unique | ForEach-Object { 
         $PoolName = $_
         If ($PoolConfig = $DefaultPoolData.$PoolName) { 
             # Merge default pool data with custom pool config

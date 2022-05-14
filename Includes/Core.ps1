@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0.30
-Version date:   10 May 2022
+Version:        4.0.0.31
+Version date:   14 May 2022
 #>
 
 using module .\Include.psm1
@@ -939,7 +939,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
         If ($Variables.Rates."BTC") { 
             $Variables.Summary = ""
             If ($Variables.MinersNeedingBenchmark.Count) { 
-                $Variables.Summary += "Earning / day: n/a (Benchmarking: $($Variables.MinersNeedingBenchmark.Count) $(If ($Variables.MinersNeedingBenchmark.Count -eq 1) { "miner" } Else { "miners" }) left$(If (($Variables.EnabledDevices | Sort-Object -Property { [String]$_.DeviceName }).Count -gt 1) { " [$(($Variables.MinersNeedingBenchmark | Group-Object -Property { [String]$_.DeviceName } | Sort-Object Name | ForEach-Object { "$($_.Name): $($_.Count)" }) -join '; ')]"}))"
+                $Variables.Summary += "Earning / day: n/a (Benchmarking: $($Variables.MinersNeedingBenchmark.Count) $(If ($Variables.MinersNeedingBenchmark.Count -eq 1) { "miner" } Else { "miners" }) left$(If (($Variables.EnabledDevices | Sort-Object -Property { $_.DeviceName -join ', ' }).Count -gt 1) { " [$(($Variables.MinersNeedingBenchmark | Group-Object -Property { $_.DeviceName -join ',' } | Sort-Object Name | ForEach-Object { "$($_.Name): $($_.Count)" }) -join '; ')]"}))"
             }
             ElseIf ($Variables.MiningEarning -gt 0) { 
                 $Variables.Summary += "Earning / day: {1:N} {0}" -f $Config.Currency, ($Variables.MiningEarning * $Variables.Rates."BTC".($Config.Currency))
@@ -949,7 +949,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 If ($Variables.Summary -ne "") { $Variables.Summary += "&ensp;&ensp;&ensp;" }
 
                 If ($Variables.MinersNeedingPowerUsageMeasurement.Count -or [Double]::IsNaN($Variables.MiningPowerCost)) { 
-                    $Variables.Summary += "Profit / day: n/a (Measuring power usage: $($Variables.MinersNeedingPowerUsageMeasurement.Count) $(If (($Variables.MinersNeedingPowerUsageMeasurement).Count -eq 1) { "miner" } Else { "miners" }) left$(If (($Variables.EnabledDevices | Sort-Object -Property { [String]$_.DeviceName }).Count -gt 1) { " [$(($Variables.MinersNeedingPowerUsageMeasurement | Group-Object -Property { [String]$_.DeviceName } | Sort-Object Name | ForEach-Object { "$($_.Name): $($_.Count)" }) -join '; ')]"}))"
+                    $Variables.Summary += "Profit / day: n/a (Measuring power usage: $($Variables.MinersNeedingPowerUsageMeasurement.Count) $(If (($Variables.MinersNeedingPowerUsageMeasurement).Count -eq 1) { "miner" } Else { "miners" }) left$(If (($Variables.EnabledDevices | Sort-Object -Property { $_.DeviceName -join ',' }).Count -gt 1) { " [$(($Variables.MinersNeedingPowerUsageMeasurement | Group-Object -Property { $_.DeviceName -join ',' } | Sort-Object Name | ForEach-Object { "$($_.Name): $($_.Count)" }) -join '; ')]"}))"
                 }
                 ElseIf ($Variables.MiningPowerUsage -gt 0) { 
                     $Variables.Summary += "Profit / day: {1:N} {0}" -f $Config.Currency, (($Variables.MiningProfit - $Variables.BasePowerCostBTC) * $Variables.Rates."BTC".($Config.Currency))
@@ -1165,7 +1165,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
             Do { 
                 ForEach ($Miner in $RunningMiners) { 
                     # Set window title
-                    $WindowTitle = "$(($Miner.Devices.Name | Sort-Object) -join "; "): $($Miner.Name) $($Miner.Info)"
+                    $WindowTitle = "$(($Miner.Devices.Name | Sort-Object) -join ","): $($Miner.Name) $($Miner.Info)"
                     If ($Miner.Benchmark -eq $true -or $Miner.MeasurePowerUsage -eq $true) { 
                         $WindowTitle += " ("
                         If ($Miner.Benchmark -eq $true) { $WindowTitle += "Benchmarking" }

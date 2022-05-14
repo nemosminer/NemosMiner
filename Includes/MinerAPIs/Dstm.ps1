@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Dstm.ps1
-Version:        4.0.0.30
-Version date:   10 May 2022
+Version:        4.0.0.31
+Version date:   14 May 2022
 #>
 
 class Dstm : Miner { 
