@@ -1061,7 +1061,7 @@ Function Global:TimerUITick {
             }
         }
 
-        $StatusMessage = "Last refresh: $($Variables.Timer.ToLocalTime().ToString('G'))   |   Next refresh: $($Variables.EndLoopTime.ToLocalTime().ToString('G'))   |   Hot Keys: $(If ($Variables.CalculatePowerCost) { "[abceilmnprstuwy]" } Else { "[abeilmnpswy]" })   |   Press 'h' for help"
+        $StatusMessage = "Last refresh: $($Variables.Timer.ToLocalTime().ToString('G'))   |   Next refresh: $($Variables.EndLoopTime.ToLocalTime().ToString('G'))   |   Hot Keys: $(If ($Variables.CalculatePowerCost) { "[abceimnprstuvwy]" } Else { "[abeimnpsvwy]" })   |   Press 'h' for help"
         Write-Host ("-" * $StatusMessage.Length)
         Write-Host -ForegroundColor Yellow $StatusMessage
         Remove-Variable StatusMessage
