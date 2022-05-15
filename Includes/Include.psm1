@@ -761,7 +761,7 @@ Function Stop-MiningProcess {
         While (($Variables.CoreRunspace.MiningStatus -eq "Running" -and -not $Variables.IdleRunspace) -and (Get-Date) -le $Timestamp) { 
             Start-Sleep -Seconds 1
         }
-        $Variables.Miners | Where-Object ProcessID | ForEach-Object { 
+        $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { 
             $_.Info = ""
             $_.Best = $false
             $_.SetStatus([MinerStatus]::Idle)
