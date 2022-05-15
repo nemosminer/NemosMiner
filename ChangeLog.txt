@@ -6,6 +6,23 @@ Breaking changes (from 3.8.x.x code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+ChangeLog NemosMiner 4.0.0.32 15.05.2022
+========================================
+
+Enhancements:
+- Core: Improve failed miner detection
+
+Fixes:
+- Core: 'No miners found' in some scenarios
+
+Miner updates:
+- lolMiner-v1.50
+- MiniZ-v1.8z2
+
+Web GUI:
+- Config editor: Re-arranged some items
+
+
 ChangeLog NemosMiner 4.0.0.31 14.05.2022
 ========================================
 
