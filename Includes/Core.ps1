@@ -588,7 +588,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             # Get new miners
             If (-not ($Variables.Pools -and $Variables.Miners)) { $Variables.Summary = "Loading miners..." }
-            Write-Message -Level Verbose "Loading miners..."
+            Write-Message -Level Verbose $Variables.Summary
             $NewMiners_Jobs = @(
                 Get-ChildItemContent ".\Miners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Variables = $Variables } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" })
             )
@@ -739,9 +739,11 @@ While ($Variables.NewMiningStatus -eq "Running") {
         $NewMiners_Jobs | ForEach-Object { $_ | Remove-Job -ErrorAction Ignore -Force }
         Remove-Variable Algorithm, MinerPools, NewMiners_Jobs -ErrorAction Ignore
 
-        $CompareMiners = Compare-Object -PassThru @($Miners | Select-Object) @($NewMiners | Select-Object) -Property Arguments, Name, Pool -IncludeEqual
-        # Remove gone miners
-        $Miners = $CompareMiners | Where-Object SideIndicator -NE "<=" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ }
+        If ($NewMiners) { # Sometimes there are no miners loaded, keep existing
+            $CompareMiners = Compare-Object -PassThru @($Miners | Select-Object) @($NewMiners | Select-Object) -Property Arguments, Name, Pool -IncludeEqual
+            # Remove gone miners
+            $Miners = $CompareMiners | Where-Object SideIndicator -NE "<=" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ }
+        }
 
         If ($Miners) { 
             $Miners | Select-Object | ForEach-Object { 
@@ -1156,7 +1158,8 @@ While ($Variables.NewMiningStatus -eq "Running") {
         If ((Get-Date).ToUniversalTime() -le $Variables.EndLoopTime) { 
             Write-Message -Level Info "Collecting miner data while waiting for next cycle..."
 
-            $RunningMiners = @($Variables.Miners | Where-Object WorkersRunning | Sort-Object -Descending Benchmark, MeasurePowerUsage) # All miners with WorkersRunning should be running
+            $RunningMiners = @($Variables.Miners | Where-Object Best | Sort-Object -Descending Benchmark, MeasurePowerUsage) # All best miners should be running
+            $FailedMiners = @()
 
             # End loop when
             # - a miner crashed (and no other miners are benchmarking or measuring power usage)
@@ -1179,11 +1182,13 @@ While ($Variables.NewMiningStatus -eq "Running") {
                         # Miner crashed
                         $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
                         $Miner.SetStatus([MinerStatus]::Failed)
+                        $FailedMiners += $Miner
                     }
                     ElseIf ($Miner.DataReaderJob.State -ne [MinerStatus]::Running) { 
                         # Miner data reader process failed
                         $Miner.StatusMessage = "Miner data reader '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
                         $Miner.SetStatus([MinerStatus]::Failed)
+                        $FailedMiners += $Miner
                     }
                     ElseIf ($Miner.DataReaderJob.HasMoreData) { 
                         # Set miner priority, some miners reset priority on their own
@@ -1201,12 +1206,14 @@ While ($Variables.NewMiningStatus -eq "Running") {
                                 # Miner has not provided first sample on time
                                 $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' has not provided first data sample in $($Miner.WarmupTimes[0]) seconds."
                                 $Miner.SetStatus([MinerStatus]::Failed)
+                                $FailedMiners += $Miner
                                 Break
                             }
                             ElseIf (($Miner.Data | Select-Object -Last 1).Date.AddSeconds(3.5 * $Miner.DataCollectInterval) -lt (Get-Date).ToUniversalTime()) { 
                                 # Miner stuck - no sample received in last few data collect intervals
                                 $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' has not updated data for more than $([Int](3.5 * $Miner.DataCollectInterval)) seconds."
                                 $Miner.SetStatus([MinerStatus]::Failed)
+                                $FailedMiners += $Miner
                                 Break
                             }
                         }
@@ -1228,8 +1235,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                     }
                 }
 
-                $FailedMiners = @($RunningMiners | Where-Object { $_.Status -ne [MinerStatus]::Running })
-                $RunningMiners = @($RunningMiners | Where-Object { $_.Status -eq [MinerStatus]::Running })
+                $RunningMiners = @($RunningMiners | Where-Object { $_-notin $FailedMiners })
                 $BenchmarkingOrMeasuringMiners = @($RunningMiners | Where-Object { $_.Benchmark -eq $true -or $_.MeasurePowerUsage -eq $true })
 
                 If ($FailedMiners -and -not $BenchmarkingOrMeasuringMiners) { 
