@@ -736,7 +736,7 @@ Function Stop-Mining {
 
     If ($Variables.CoreRunspace) { 
 
-        If ($Variables.MiningStatus -eq "Running") { Write-Message -Level Info "Exiting cycle." }
+        If ($Variables.MiningStatus -eq "Running") { Write-Message -Level Info "Ending cycle." }
 
         Stop-MiningProcess
 
