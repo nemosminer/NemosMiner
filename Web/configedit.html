@@ -156,7 +156,7 @@
                   <!-- Auto Update Settings -->
                   <fieldset>
                     <legend class=h6><b>Auto Update Settings</b></legend>
-                    <div style="padding-top: 0.3rem" title="NemosMiner will periodically check for a new program version&#10;(min=0; max=30; [Default: 1, 0 to disable] days)"> Check for new version every
+                    <div style="padding-top: 0.3rem" title="NemosMiner will periodically check for a new program version&#10;(min=0; max=30; [Default: 1; 0 to disable] days)"> Check for new version every
                       <input type="number" id="AutoUpdateCheckInterval" name="AutoUpdateCheckInterval" min=0 max=50 step=1 value=15> days
                     </div>
                     <div style="padding-top: 0.5rem" title="Automatically update NemosMiner to the latest realeased program version&#10;NemosMiner will check for a new verwsion on each start&#10;and approx. every 24hrs">
@@ -170,7 +170,7 @@
                   <!-- Balance Tracker Settings -->
                   <fieldset>
                     <legend class=h6><b>Balance Tracker Settings</b></legend>
-                      <div style="padding-top: 0.3rem" title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;(min=10; max=60; [Default: 15, 0 to disable] minutes)&#10;&#10;Note: If set to 0 it will also disable pool balances summary in the Web GUI dashboard and API"> Poll pools for balances & earnings every
+                      <div style="padding-top: 0.3rem" title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;(min=10; max=60; [Default: 15; 0 to disable] minutes)&#10;&#10;Note: If set to 0 it will also disable pool balances summary in the Web GUI dashboard and API"> Poll pools for balances & earnings every
                         <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60 step=1 value=15> minutes
                       <div style="padding-top: 0.7rem" title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">
                         <input type="checkbox" class="toggle-switch" id="BalancesTrackerLog" name="BalancesTrackerLog" style="margin-left:20px"> Write balances tracker log
