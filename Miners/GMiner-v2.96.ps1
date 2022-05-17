@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.Type -eq"NVIDIA" })) { Return }
 
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.94/gminer_2_94_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.96/gminer_2_96_windows64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\miner.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -22,7 +22,6 @@ $Algorithms = [PSCustomObject[]]@(
 
     [PSCustomObject]@{ Algorithm = @("BeamV3");                    Type = "NVIDIA";Fee = @(0.02);  MinMemGB = 3.0;                             MemReserveGB = 0;    Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(30, 0); Arguments = " --algo beamhashIII --cuda 1 --opencl 0" } # NBMiner-v41.5 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckaroo30CTX");             Type = "NVIDIA";Fee = @(0.05);  MinMemGB = 8.0;                             MemReserveGB = 0;    Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo cortex --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithm = @("Cuckoo29");                  Type = "NVIDIA";Fee = @(0.02);  MinMemGB = 4.0;                             MemReserveGB = 0;    Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo cuckoo29 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Equihash1254");              Type = "NVIDIA";Fee = @(0.02);  MinMemGB = 3.0;                             MemReserveGB = 0;    Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(45, 0); Arguments = " --algo equihash125_4 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.8z2 is fastest
     [PSCustomObject]@{ Algorithm = @("Equihash1445");              Type = "NVIDIA";Fee = @(0.02);  MinMemGB = 2.1;                             MemReserveGB = 0;    Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(45, 0); Arguments = " --algo equihash144_5 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.8z2 is fastest
     [PSCustomObject]@{ Algorithm = @("Equihash2109");              Type = "NVIDIA";Fee = @(0.02);  MinMemGB = 1.0;                             MemReserveGB = 0;    Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo equihash210_9 --cuda 1 --opencl 0" }
@@ -66,7 +65,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 }
                 Else { 
                     $_.Arguments += " --server $($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) --user $($Pools.($_.Algorithm[0]).User) --pass $($Pools.($_.Algorithm[0]).Pass)$(If ($Pools.($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm[0] -eq "EthashLowMem") { ",l=$(((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB) * 1GB / 1000000000)" })"
-                    If ($Pools.($_.Algorithm[0]).DAGsizeGB -ne $null -and $Pools.($_.Algorithm[0]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { $_.Arguments += " --proto stratum" }
+                    If ($Pools.($_.Algorithm[0]).DAGsizeGB -ne $null -and $Pools.($_.Algorithm[0]).BaseName -in @("MiningPoolHub", "NiceHash")) { $_.Arguments += " --proto stratum" }
                     If ($Pools.($_.Algorithm[0]).SSL) { $_.Arguments += " --ssl 1" }
                 }
 
