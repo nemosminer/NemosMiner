@@ -7,9 +7,9 @@
       "LTC"
     ],
     "PayoutThreshold": {
-      "mBTC": 1.65,
-      "LTC": 0.05,
-      "DODGE": 20,
+      "mBTC": 2.5, // From pool: BTC Payouts are made automatically every 24 hours for balances above 0.0025
+      "LTC": 0.05, // From pool: LTC Payouts are made automatically every 4 hours hours for balances above 0.10, and 0.05 on Sundays
+      "DODGE": 20, // From pool: DOGE Payouts are made automatically every 4 hours hours for balances above 20
       "*": "0.01 mBTC" // From pool: All other coins is paid once you reach the coin equivalent to 0.0001 BTC every 4 hours or 0.00001 BTC on Sundays
     },
     "PayoutCurrency": "[Default]",
