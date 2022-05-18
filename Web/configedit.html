@@ -108,7 +108,7 @@
                     <option value="Running" title="Initiate application and start mining&#10;&#10;Same as pressing the 'Start Mining' button">running</option>
                   </select>
                   <label for="StartupMode" title="Defines NemosMiner startup mode">mode</label>
-                  <div title="Start mining when system is idle, e.g. no mouse or keyboard activity is detected&#10;and stop mining when computer is used&#10;(min=0, max=3600 [default=120] seconds)">
+                  <div title="Mining will start when system is idle, e.g. no mouse&#10;or keyboard activity is detected for n seconds&#10;&#10;(min=0, max=3600 [default=120] seconds)&#10;&#10;Mining will stop when mouse or keyboard activity is detected.">
                     <input type="checkbox" class="toggle-switch" id="IdleDetection" name="IdleDetection"> Idle detection: Start mining when system is idle for
                     <input type="number" id="IdleSec" name="IdleSec" min=0 max=3600 value=120 step=1 size=4> seconds
                   </div>
@@ -744,7 +744,7 @@
               document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
               document.getElementById('PowerPricekWhCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0] + ' per kW/h';
               document.getElementById('PowerPricekWhTitle').title = 'Price of power in ' + document.getElementById('Currency').value.split(',')[0] + ' per kW⋅h, valid from HH:mm (24hr format)\nData must be in compressed JSON format\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom 00:00h to 12:00h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom 12:00h to 23:59h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h'
-              document.getElementById('ProfitabilityThresholdTitle').title = "If profit (earnings - power cost) is less than the configured value\n(e.g. " + document.getElementById('Currency').value.split(',')[0] + " 1.00) then mining will stop\n(except for benchmarking & power usage measuring)\n\nHint: Use negative numbers to allow mining at loss"
+              document.getElementById('ProfitabilityThresholdTitle').title = "Mining will stop when profit (earnings - power cost) is less than the configured value\n(e.g. " + document.getElementById('Currency').value.split(',')[0] + " 1.00)\n(except for benchmarking & power usage measuring)\n\nHint: Use negative numbers to allow mining at loss"
               // CalculatePowerCost click
               $(document.getElementById('CalculatePowerCost')).click(function (event) {
                 document.getElementById('PowerPricekWh').disabled = !(document.getElementById('CalculatePowerCost').checked);
