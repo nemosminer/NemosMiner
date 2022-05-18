@@ -3,6 +3,21 @@ body {
   font-size: 1rem;
 }
 
+/*
+* Footer
+*/
+footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  text-align: right;
+  padding-left: 30px;
+  padding-right: 30px;
+  z-index: 99;
+  background-color: whitesmoke;
+}
+
 /* .detail-icon:before {
   content: "\00B1";
 } */
@@ -185,19 +200,6 @@ legend {
 }
 .miner-measuring {
   background-color: rgb(248, 239, 223);
-}
-
-/*
-* Footer
-*/
-.footer {
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  text-align: right;
-  padding-right: 40px;
-  z-index: -1;
 }
 
 /*
