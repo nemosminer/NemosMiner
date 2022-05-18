@@ -1111,7 +1111,7 @@ Function MainForm_Load {
                         "h" { 
                             Write-Host "Hot key legend:"
                             Write-Host "a: Toggle " -NoNewline; Write-Host "A" -ForegroundColor Cyan -NoNewline; Write-Host "ccuracy column visibility (currently $(If ($Variables.ShowAccuracy) { "on" } Else { "off" } ))"
-                            Write-Host "b: Toggle Listing Pool " -NoNewline; Write-Host "B" -ForegroundColor Cyan -NoNewline; Write-Host "alances visibility (currently $(If ($Variables.ShowPoolBalances) { "on" } Else { "off" } ))"
+                            Write-Host "b: Toggle List Pool " -NoNewline; Write-Host "B" -ForegroundColor Cyan -NoNewline; Write-Host "alances (currently $(If ($Variables.ShowPoolBalances) { "on" } Else { "off" } ))"
                             If ($Variables.CalculatePowerCost) { 
                                 Write-Host "c: Toggle Power " -NoNewline; Write-Host "C" -ForegroundColor Cyan -NoNewline; Write-Host "ost column visibility (currently $(If ($Variables.ShowPowerCost) { "on" } Else { "off" } ))"
                             }
@@ -1128,7 +1128,7 @@ Function MainForm_Load {
                                 Write-Host "t: Toggle Profi" -NoNewline; Write-Host "t" -ForegroundColor Cyan -NoNewline; Write-Host " column visibility (currently $(If ($Variables.ShowProfit) { "on" } Else { "off" } ))"
                             }
                             Write-Host "u: Toggle " -NoNewline; Write-Host "U" -ForegroundColor Cyan -NoNewline; Write-Host "ser column visibility (currently $(If ($Variables.ShowUser) { "on" } Else { "off" } ))"
-                            Write-Host "v: Toggle Listing all a" -NoNewline; Write-Host "v" -ForegroundColor Cyan -NoNewline; Write-Host "ailable miners visibility (currently $(If ($Variables.ShowCurrency) { "on" } Else { "off" } ))"
+                            Write-Host "v: Toggle List all a" -NoNewline; Write-Host "v" -ForegroundColor Cyan -NoNewline; Write-Host "ailable miners (currently $(If ($Variables.ShowAllMiners) { "on" } Else { "off" } ))"
                             If ($Variables.CalculatePowerCost) { 
                                 Write-Host "w: Toggle Po" -NoNewline; Write-Host "w" -ForegroundColor Cyan -NoNewline; Write-Host "er usage column visibility (currently $(If ($Variables.ShowPowerUsage) { "on" } Else { "off" } ))"
                             }
@@ -1188,7 +1188,7 @@ Function MainForm_Load {
                         }
                         "v" { 
                             $Variables.ShowAllMiners = -not $Variables.ShowAllMiners
-                            Write-Host "'Show All a" -NoNewline; Write-Host "v" -ForegroundColor Cyan -NoNewline; Write-Host "ailable miners' set to " -NoNewline; If ($Variables.ShowCurrency) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                            Write-Host "'Show All a" -NoNewline; Write-Host "v" -ForegroundColor Cyan -NoNewline; Write-Host "ailable miners' set to " -NoNewline; If ($Variables.ShowAllMiners) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
                             $Variables.RefreshNeeded = $true
                             Start-Sleep -Seconds 2
                         }
