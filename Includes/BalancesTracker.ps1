@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.0.32
-Version date:   15 May 2022
+Version:        4.0.0.33
+Version date:   18 May 2022
 #>
 
 # Start transcript log
@@ -44,13 +44,11 @@ $PoolData = If (Test-Path -Path ".\Data\PoolData.json" -PathType Leaf) { Get-Con
 # Read existing earning data, use data from last file
 ForEach ($Filename in (Get-ChildItem ".\Data\BalancesTrackerData*.json" | Sort-Object -Descending)) { 
     $AllBalanceObjects = (Get-Content $Filename | ConvertFrom-Json) | Where-Object Balance -NE $null
-    If ($AllBalanceObjects.Count -gt ($PoolData.Count / 2)) { 
-        $Variables.BalanceData = $AllBalanceObjects
-        Break
-    }
+    If ($AllBalanceObjects.Count -gt ($PoolData.Count / 2)) { Break }
 }
 If ($AllBalanceObjects -isnot [Array]) { $AllBalanceObjects = @() }
-Else { $AllBalanceObjects | ForEach-Object { $_.DateTime = [DateTime]$_.DateTime } }
+$AllBalanceObjects | ForEach-Object { $_.DateTime = [DateTime]$_.DateTime }
+$Variables.BalanceData = $AllBalanceObjects
 
 # Read existing earning data, use data from last file
 ForEach($Filename in (Get-ChildItem ".\Data\DailyEarnings*.csv" | Sort-Object -Descending)) { 
@@ -83,7 +81,7 @@ While ($true) {
         $PoolsToTrack | ForEach-Object { $BalanceObjects += @(& ".\Balances\$($_).ps1") }
 
         # Keep most recent balance objects, keep empty balances for 7 days
-        $BalanceObjects = @(@($BalanceObjects + $AllBalanceObjects) | Where-Object Pool -notin @($Config.BalancesTrackerIgnorePool) | Where-Object { $_.Unpaid -gt 0 -or (($_.Pending -gt 0 -or $_.Balance -gt 0) -and $_.DateTime -gt $Now.AddDays(-7)) } | Where-Object { $_.Wallet } | Group-Object Pool, Currency, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
+        $BalanceObjects = @(@($BalanceObjects + $AllBalanceObjects) | Where-Object Pool -notin @($Config.BalancesTrackerIgnorePool) | Where-Object { $_.Unpaid -gt 0 -or $_.DateTime -gt $Now.AddDays(-7) } | Where-Object { $_.Wallet } | Group-Object Pool, Currency, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
 
         # Fix for pool reporting incorrect currency, e.g ZergPool ZER instead of BTC
         $BalanceObjects = @($BalanceObjects | Where-Object { $_.Pool -match "^MiningPoolHub(|Coins)$|^ProHashing(|24h)$" }) + @($BalanceObjects | Where-Object { $_.Pool -notmatch "^MiningPoolHub(|Coins)$|^ProHashing(|24h)$" } | Group-Object Pool, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
@@ -360,10 +358,13 @@ While ($true) {
         # At least 31 days are needed for Growth720
         If ($AllBalanceObjects.Count -gt 1) { 
             $AllBalanceObjects = @(
-                $AllBalanceObjects | Where-Object DateTime -GE $Now.AddDays(-31) | Sort-Object DateTime | ForEach-Object { 
-                    If ($_.Delta -ne 0 -or $_.DateTime.Date -eq $Now.Date) { $_ } # keep with delta <> 0
-                    ElseIf ($Record -and $_.DateTime.Date -ne $Record.DateTime.Date) { $_ } # keep the newest one per day
-                    $Record = $_
+                $AllBalanceObjects | Where-Object DateTime -GE $Now.AddDays(-31) | Group-Object Pool, Currency | ForEach-Object { 
+                    $Record = $null
+                    $_.Group | Sort-Object DateTime | ForEach-Object {
+                        If ($_.DateTime -ge $Now.AddDays(-1)) { $_ } # Keep all records for 1 day
+                        ElseIf ($_.DateTime -ge $Now.AddDays(-7) -and $_.Delta -gt 0) { $_ } # Keep all records of the last 7 days with delta
+                        ElseIf ($_.DateTime.Date -ne $Record.DateTime.Date) { $Record = $_; $_ } # Keep the newest one per day
+                    }
                 }
             ) | Sort-Object DateTime -Descending
         }
