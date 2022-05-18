@@ -1,7 +1,6 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 1rem;
-  /* zoom: 0.9; */
 }
 
 /* .detail-icon:before {
@@ -32,10 +31,9 @@ body {
 .sidebar-sticky {
   position: relative;
   top: 0;
-  height: calc(110vh - 75px); /* zoom 0.9 */
   height: calc(100vh - 75px);
   padding-top: 1.5rem;
-  overflow-x: hidden;
+  overflow-x: auto;
   overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
   padding-bottom: 1.1rem;
   padding-left: 1rem;
@@ -101,12 +99,15 @@ body {
 
 .navbar-summary {
   position: absolute;
-  padding-top: 1.2rem;
-  padding-bottom: 1.1rem;
   padding-right: 20px;
   left: 770px;
   color: white;
   font-size: 1.2rem;
+  height: 75px;
+  display : flex;
+  align-items : center;
+  justify-content : center;
+  overflow-y: auto;
 }
 
 /*
