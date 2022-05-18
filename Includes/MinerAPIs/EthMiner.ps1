@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           EthMiner.ps1
-Version:        4.0.0.32
-Version date:   15 May 2022
+Version:        4.0.0.33
+Version date:   18 May 2022
 #>
 
 class EthMiner : Miner { 

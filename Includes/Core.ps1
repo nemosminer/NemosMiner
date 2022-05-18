@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0.32
-Version date:   15 May 2022
+Version:        4.0.0.33
+Version date:   18 May 2022
 #>
 
 using module .\Include.psm1
@@ -588,7 +588,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             # Get new miners
             If (-not ($Variables.Pools -and $Variables.Miners)) { $Variables.Summary = "Loading miners..." }
-            Write-Message -Level Verbose $Variables.Summary
+            Write-Message -Level Verbose "Loading miners..."
             $NewMiners_Jobs = @(
                 Get-ChildItemContent ".\Miners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Variables = $Variables } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceName -like "CPU#*" }) { "Normal" })
             )
