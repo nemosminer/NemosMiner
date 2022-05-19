@@ -26,13 +26,13 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Hmq1725";     Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo hmq1725" } # CryptoDredge-v0.26.0 is fastest
     # [PSCustomObject]@{ Algorithm = "Honeycomb";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo honeycomb" } # Algo broken, last working version is 0.17.6
     [PSCustomObject]@{ Algorithm = "JeongHash";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo glt-jeonghash" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "AMD"; Fee = @(0.01); MinMemGB = $Pools."KawPoW".DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo kawpow" } # TeamRedMiner-v0.9.4.2 is fastest on Navi
-    [PSCustomObject]@{ Algorithm = "Lyra2RE3";    Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo lyra2v3" } # TeamRedMiner-v0.9.4.2 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "AMD"; Fee = @(0.01); MinMemGB = $Pools."KawPoW".DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo kawpow" } # TeamRedMiner-v0.10.0 is fastest on Navi
+    [PSCustomObject]@{ Algorithm = "Lyra2RE3";    Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo lyra2v3" } # TeamRedMiner-v0.10.0 is fastest
     [PSCustomObject]@{ Algorithm = "Lyra2TDC";    Type = "AMD"; Fee = @(0.02); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo lyra2tdc" }
     [PSCustomObject]@{ Algorithm = "MegaBtx";     Type = "AMD"; Fee = @(0.02); MinMemGB = 1;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 15); Arguments = " --algo megabtx" }
     [PSCustomObject]@{ Algorithm = "MegaMec";     Type = "AMD"; Fee = @(0.01); MinMemGB = 1;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo megamec" }
     [PSCustomObject]@{ Algorithm = "Minotaur";    Type = "AMD"; Fee = @(0.05); MinMemGB = 1;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo minotaur" }
-    [PSCustomObject]@{ Algorithm = "MTP";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo mtp" } # TeamRedMiner-v0.9.4.2 is fastest
+    [PSCustomObject]@{ Algorithm = "MTP";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo mtp" } # TeamRedMiner-v0.10.0 is fastest
     [PSCustomObject]@{ Algorithm = "MTPTrc";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo mtp-trc" }
     [PSCustomObject]@{ Algorithm = "PadiHash";    Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo glt-padihash" }
     [PSCustomObject]@{ Algorithm = "PawelHash";   Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo glt-pawelhash" }
@@ -49,13 +49,13 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Timetravel";  Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo timetravel" }
     [PSCustomObject]@{ Algorithm = "Tribus";      Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo tribus" }
     [PSCustomObject]@{ Algorithm = "X11k";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo x11k" }
-    [PSCustomObject]@{ Algorithm = "X16r";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo x16r" } # TeamRedMiner-v0.9.4.2 is fastest
+    [PSCustomObject]@{ Algorithm = "X16r";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo x16r" } # TeamRedMiner-v0.10.0 is fastest
     [PSCustomObject]@{ Algorithm = "X16rt";       Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo x16rt" }
     [PSCustomObject]@{ Algorithm = "X16rv2";      Type = "AMD"; Fee = @(0.01); MinMemGB = 3;                         MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo x16rv2" }
     [PSCustomObject]@{ Algorithm = "X16s";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo x16s" }
     [PSCustomObject]@{ Algorithm = "X17";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo x17" }
     [PSCustomObject]@{ Algorithm = "X17r";        Type = "AMD"; Fee = @(0.02); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo x17r --protocol ufo2" }
-    [PSCustomObject]@{ Algorithm = "X21s";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo x21s" } # TeamRedMiner-v0.9.4.2 is fastest
+    [PSCustomObject]@{ Algorithm = "X21s";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo x21s" } # TeamRedMiner-v0.10.0 is fastest
     # [PSCustomObject]@{ Algorithm = "X22i";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo x22i" } # No results
     [PSCustomObject]@{ Algorithm = "X33";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo x33" }
     [PSCustomObject]@{ Algorithm = "WildKeccak";  Type = "AMD"; Fee = @(0.02); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo wildkeccak" }
@@ -119,7 +119,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Miner_Devices = $Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model
 
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) * 2 + 1)
+        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 

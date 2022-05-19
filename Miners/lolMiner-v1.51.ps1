@@ -2,7 +2,7 @@
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -in @("AMD", "NVIDIA"))) { Return }
 
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.50/lolMiner_v1.50_Win64.zip"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.51/lolMiner_v1.51_Win64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\lolminer.exe"
 $DeviceEnumerator = "Bus"
@@ -15,9 +15,9 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29B");               Type = "AMD"; Fee = @(0.02);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 45); Arguments = " --algo CR29-40" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29S");               Type = "AMD"; Fee = @(0.02);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 45); Arguments = " --algo CR29-32" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo30CTX");             Type = "AMD"; Fee = @(0.025);      MinMemGB = 7.8;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 45); Arguments = " --algo C30CTX" }
-    [PSCustomObject]@{ Algorithm = @("CuckarooD29");               Type = "AMD"; Fee = @(0.01);       MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 45); Arguments = " --algo C29D" } # TeamRedMiner-v0.9.4.2 is fastest, keep enabled because TeamRed does not support algo on Navi
+    [PSCustomObject]@{ Algorithm = @("CuckarooD29");               Type = "AMD"; Fee = @(0.01);       MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 45); Arguments = " --algo C29D" } # TeamRedMiner-v0.10.0 is fastest, keep enabled because TeamRed does not support algo on Navi
     [PSCustomObject]@{ Algorithm = @("CuckarooM29");               Type = "AMD"; Fee = @(0.01);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 45); Arguments = " --algo C29M" }
-    [PSCustomObject]@{ Algorithm = @("Cuckatoo31");                Type = "AMD"; Fee = @(0.02);       MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(60, 60); Arguments = " --algo C31" } # TeamRedMiner-v0.9.4.2 is fastest
+    [PSCustomObject]@{ Algorithm = @("Cuckatoo31");                Type = "AMD"; Fee = @(0.02);       MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(60, 60); Arguments = " --algo C31" } # TeamRedMiner-v0.10.0 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");                Type = "AMD"; Fee = @(0.02);       MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 60); Arguments = " --algo C32" }
     [PSCustomObject]@{ Algorithm = @("Equihash1445");              Type = "AMD"; Fee = @(0.01);       MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 30); Arguments = " --coin AUTO144_5" } # GMiner-v2.96 is fastest, but des not support Navi
     [PSCustomObject]@{ Algorithm = @("Equihash1927");              Type = "AMD"; Fee = @(0.01);       MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 45); Arguments = " --coin AUTO192_7" } # GMiner-v2.96 is fastest, but des not support Navi
@@ -73,7 +73,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Miner_Devices = $Devices | Where-Object Type -eq $_.Type | Where-Object Model -EQ $_.Model
 
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) * 2 + 1)
+        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
         $Algorithms | Where-Object Type -EQ $_.Type | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
 
