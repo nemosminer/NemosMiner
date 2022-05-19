@@ -174,7 +174,7 @@ Function Start-APIServer {
                                 $Data += "`n`n$Message"
                             }
                             Else { 
-                                $Data = "`nNo matching entries found."
+                                $Data = "No matching entries found."
                             }
                             $Data = "<pre>$Data</pre>"
                             Break
@@ -184,7 +184,7 @@ Function Start-APIServer {
                         ForEach ($Key in $Parameters.Keys) {
                             If ($Values = @($Parameters.$Key -split ',' | Where-Object { $_ -notin $Config.ExcludeDeviceName })) { 
                                 Try { 
-                                    $Data = "`nDevice configuration changed`n`nOld values:"
+                                    $Data = "Device configuration changed`n`nOld values:"
                                     $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
                                     $Config.ExcludeDeviceName = @((@($Config.ExcludeDeviceName) + $Values) | Sort-Object -Unique)
                                     $Data += "`n`nNew values:"
@@ -215,7 +215,7 @@ Function Start-APIServer {
                         ForEach ($Key in $Parameters.Keys) {
                             If ($Values = @($Parameters.$Key -split ',' | Where-Object { $_ -in $Config.ExcludeDeviceName })) { 
                                 Try { 
-                                    $Data = "`nDevice configuration changed`n`nOld values:"
+                                    $Data = "Device configuration changed`n`nOld values:"
                                     $Data += "`nExcludeDeviceName: '[$($Config."ExcludeDeviceName" -join ', ')]'"
                                     $Config.ExcludeDeviceName = @($Config.ExcludeDeviceName | Where-Object { $_ -notin $Values } | Sort-Object -Unique)
                                     $Data += "`n`nNew values:"
@@ -346,7 +346,7 @@ Function Start-APIServer {
                                         $_.Reason += $Reason
                                         $_.Available = $false
                                     }
-                                    $Data += "`n$Algorithm@$PoolName ($((($Variables.Pools | Where-Object Name -EQ $PoolName | Where-Object Algorithm -EQ $Algorithm).Region | Sort-Object -Unique) -join ', '))"
+                                    $Data += "$Algorithm@$PoolName ($((($Variables.Pools | Where-Object Name -EQ $PoolName | Where-Object Algorithm -EQ $Algorithm).Region | Sort-Object -Unique) -join ', '))`n"
                                 }
 
                                 If ($AlgorithmList) { $PoolConfig | Add-Member Algorithm (($AlgorithmList | Sort-Object) -join ',' -replace "^,+") -Force } Else { $PoolConfig.PSObject.Properties.Remove('Algorithm') }
@@ -358,7 +358,7 @@ Function Start-APIServer {
                                 $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Set-Content -Path $Variables.PoolsConfigFile -Force -ErrorAction Ignore
                                 $Message = "$DisabledPoolsCount $(If ($DisabledPoolsCount -eq 1) { "algorithm" } Else { "algorithms" }) disabled."
                                 Write-Message -Level Verbose "Web GUI: $Message"
-                                $Data += "`n`n$Message"
+                                $Data += "`n$Message"
                             }
                             Break
                         }
@@ -383,7 +383,7 @@ Function Start-APIServer {
                                         $_.Reason = @($_.Reason | Where-Object { $_ -ne $Reason })
                                         If (-not $_.Reason) { $_.Available = $true }
                                     }
-                                    $Data += "`n$Algorithm@$PoolName ($((($Variables.Pools | Where-Object Name -EQ $PoolName | Where-Object Algorithm -EQ $Algorithm).Region | Sort-Object -Unique) -join ', '))"
+                                    $Data += "$Algorithm@$PoolName ($((($Variables.Pools | Where-Object Name -EQ $PoolName | Where-Object Algorithm -EQ $Algorithm).Region | Sort-Object -Unique) -join ', '))`n"
                                 }
 
                                 If ($AlgorithmList) { $PoolConfig | Add-Member Algorithm (($AlgorithmList | Sort-Object) -join ',' -replace "^,+") -Force } Else { $PoolConfig.PSObject.Properties.Remove('Algorithm') }
@@ -395,7 +395,7 @@ Function Start-APIServer {
                                 $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Set-Content -Path $Variables.PoolsConfigFile -Force -ErrorAction Ignore
                                 $Message = "$EnabledPoolsCount $(If ($EnabledPoolsCount -eq 1) { "algorithm" } Else { "algorithms" }) enabled."
                                 Write-Message -Level Verbose "Web GUI: $Message"
-                                $Data += "`n`n$Message"
+                                $Data += "`n$Message"
                             }
                             Break
                         }
@@ -405,16 +405,16 @@ Function Start-APIServer {
 
                         If ($TempStats) { 
                             If ($null -ne $Parameters.Value) { 
-                                $TempStats | Sort-Object Name | ForEach-Object { $Data += "`n$($_.Name -replace "_$($Parameters.Type)")" }
-                                If ($Parameters.Type -eq "Hashrate") { $Data += "`n`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)H/s $($Parameters.Type)." }
-                                ElseIf ($Parameters.Type -eq "PowerUsage") { $Data += "`n`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)W $($Parameters.Type)." }
+                                $TempStats | Sort-Object Name | ForEach-Object { $Data += "$($_.Name -replace "_$($Parameters.Type)")`n" }
+                                If ($Parameters.Type -eq "Hashrate") { $Data += "`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)H/s $($Parameters.Type)." }
+                                ElseIf ($Parameters.Type -eq "PowerUsage") { $Data += "`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)W $($Parameters.Type)." }
                             }
                             Else { 
                                 $Data = $TempStats | ConvertTo-Json
                             }
                         }
                         Else { 
-                            $Data = "`nNo matching stats found."
+                            $Data = "No matching stats found."
                         }
                         Break
                     }
@@ -423,7 +423,7 @@ Function Start-APIServer {
                             $Data = $StatNames | ConvertTo-Json
                         }
                         Else { 
-                            $Data = "`nNo matching stats found."
+                            $Data = "No matching stats found."
                         }
                         Break
                     }
@@ -432,7 +432,7 @@ Function Start-APIServer {
                             If ($Pools = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Algorithm, Currency, Name, Region)) { 
                                 $Pools | Sort-Object Name | ForEach-Object { 
                                     $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
-                                    $Data += "`n$($Stat_Name) ($($_.Region))"
+                                    $Data += "$($Stat_Name) ($($_.Region))`n"
                                     Remove-Stat -Name "$($Stat_Name)_Profit"
                                     $_.Reason = [String[]]@()
                                     $_.Price = $_.Price_Bias = $_.StablePrice = $_.Accuracy = [Double]::Nan
@@ -441,10 +441,10 @@ Function Start-APIServer {
                                 }
                                 $Message = "Reset pool stats for $($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" })."
                                 Write-Message -Level Verbose "Web GUI: $Message"
-                                $Data += "`n`n$Message"
+                                $Data += "`n$Message"
                             }
                             Else { 
-                                $Data = "`nNo matching pool stats found."
+                                $Data = "No matching pool stats found."
                             }
                             Break
                         }
@@ -458,7 +458,7 @@ Function Start-APIServer {
                                     $_.Benchmark = $true
                                     $_.Restart = $true
                                     $_.Workers | ForEach-Object { $_.Speed = [Double]::NaN }
-                                    $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
+                                    $Data += "$($_.Name) ($($_.Algorithm -join " & "))`n"
                                     ForEach ($Algorithm in $_.Algorithm) { 
                                         Remove-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
                                         $_.Disabled = $false
@@ -474,10 +474,10 @@ Function Start-APIServer {
                                     If ($_.Status -eq "Running") { $Variables.EndLoopTime = (Get-Date).ToUniversalTime() } # End loop immediately
                                 }
                                 Write-Message -Level Verbose "Web GUI: Re-benchmark triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })."
-                                $Data += "`n`n$(If ($Miners.Count -eq 1) { "The miner" } Else { "$($Miners.Count) miners" }) will re-benchmark."
+                                $Data += "`n$(If ($Miners.Count -eq 1) { "The miner" } Else { "$($Miners.Count) miners" }) will re-benchmark."
                             }
                             Else { 
-                                $Data = "`nNo matching hashrate stats found."
+                                $Data = "No matching hashrate stats found."
                             }
                             Break
                         }
@@ -490,17 +490,17 @@ Function Start-APIServer {
                                         $_.Activated = 0 # To allow 3 attempts
                                     }
                                     $Stat_Name = "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })"
-                                    $Data += "`n$Stat_Name"
+                                    $Data += "$Stat_Name`n"
                                     Remove-Stat -Name "$($Stat_Name)_PowerUsage"
                                     $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
 
                                     If ($_.Status -eq "Running") { $Variables.EndLoopTime = (Get-Date).ToUniversalTime() } # End loop immediately
                                 }
                                 Write-Message -Level Verbose "Web GUI: Re-measure power usage triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })." -Verbose
-                                $Data += "`n`n$(If ($Miners.Count -eq 1) { "The miner" } Else { "$($Miners.Count) miners" }) will re-measure power usage."
+                                $Data += "`n$(If ($Miners.Count -eq 1) { "The miner" } Else { "$($Miners.Count) miners" }) will re-measure power usage."
                             }
                             Else { 
-                                $Data = "`nNo matching power usage stats found."
+                                $Data = "No matching power usage stats found."
                             }
                             Break
                         }
@@ -509,15 +509,15 @@ Function Start-APIServer {
                         If ($TempStats) {
                             $TempStats | Sort-Object Name | ForEach-Object { 
                                 Remove-Stat -Name $_.Name
-                                $Data += "`n$($_.Name -replace "_$($Parameters.Type)")"
+                                $Data += "$($_.Name -replace "_$($Parameters.Type)")`n"
                             }
                             Write-Message -Level Info "Web GUI: Removed $($TempStats.Count) $($Parameters.Type) stat file$(If ($TempStats.Count -ne 1) { "s" })."
-                            If ($Parameters.Type -eq "Hashrate") { $Data += "`n`nReset $($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)H/s $($Parameters.Type)." }
-                            ElseIf ($Parameters.Type -eq "PowerUsage") { $Data += "`n`nReset $($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)W $($Parameters.Type)." }
-                            ElseIf ($Parameters.Type -eq "Profit") { $Data += "`n`nReset $($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" })." }
+                            If ($Parameters.Type -eq "Hashrate") { $Data += "`nReset $($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)H/s $($Parameters.Type)." }
+                            ElseIf ($Parameters.Type -eq "PowerUsage") { $Data += "`nReset $($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)W $($Parameters.Type)." }
+                            ElseIf ($Parameters.Type -eq "Profit") { $Data += "`nReset $($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" })." }
                         }
                         Else { 
-                            $Data = "`nNo matching stats found."
+                            $Data = "No matching stats found."
                         }
                         Break
                     }
@@ -527,7 +527,7 @@ Function Start-APIServer {
                                 $Miners | Sort-Object Name, Algorithm | ForEach-Object {
                                     $_.Data = @()
                                     If ($Parameters.Value -le 0 -and $Parameters.Type -eq "Hashrate") { $_.Available = $false; $_.Disabled = $true }
-                                    $Data += "`n$($_.Name) ($($_.Algorithm -join " & "))"
+                                    $Data += "$($_.Name) ($($_.Algorithm -join " & "))`n"
                                     ForEach ($Algorithm in $_.Algorithm) { 
                                         $Stat_Name = "$($_.Name)_$($Algorithm)_$($Parameters.Type)"
                                         If ($Parameters.Value -eq 0) { # Miner failed
@@ -550,7 +550,7 @@ Function Start-APIServer {
                                     }
                                 }
                                 Write-Message -Level Verbose "Web GUI: Disabled $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })." -Verbose
-                                $Data += "`n`n$(If ($Miners.Count -eq 1) { "The miner is" } Else { "$($Miners.Count) miners are" }) $(If ($Parameters.Value -eq 0) { "marked as failed" } ElseIf ($Parameters.Value -eq -1) { "disabled" } Else { "set to value $($Parameters.Value)" } )." 
+                                $Data += "`n$(If ($Miners.Count -eq 1) { "The miner is" } Else { "$($Miners.Count) miners are" }) $(If ($Parameters.Value -eq 0) { "marked as failed" } ElseIf ($Parameters.Value -eq -1) { "disabled" } Else { "set to value $($Parameters.Value)" } )." 
                             }
                             Break
                         }
@@ -575,7 +575,7 @@ Function Start-APIServer {
                             If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $WatchdogTimer.Name | Where-Object { $_.Algorithm -eq $WatchdogTimer.Algorithm -or $WatchdogTimer.Reason -eq "Miner suspended by watchdog (all algorithms)" })) {
                                 # Remove Watchdog timers
                                 $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
-                                $Data += "`n$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}"
+                                $Data += "$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}`n"
 
                                 # Update miner
                                 $Variables.Miners | Where-Object Name -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm | ForEach-Object { 
@@ -588,7 +588,7 @@ Function Start-APIServer {
                             If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object PoolName -EQ $WatchdogTimer.Name | Where-Object { $_.Algorithm -EQ $WatchdogTimer.Algorithm -or $WatchdogTimer.Reason -eq "Pool suspended by watchdog" })) {
                                 # Remove Watchdog timers
                                 $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
-                                $Data += "`n$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}"
+                                $Data += "$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}`n"
 
                                 # Update pool
                                 $Variables.Pools | Where-Object Name -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm | ForEach-Object { 
@@ -601,10 +601,10 @@ Function Start-APIServer {
                         If ($WatchdogTimers) { 
                             $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
                             Write-Message -Level Verbose "Web GUI: $Message"
-                            $Data += "`n`n$Message"
+                            $Data += "`n$Message"
                         }
                         Else { 
-                            $Data = "`nNo matching watchdog timers found."
+                            $Data = "No matching watchdog timers found."
                         }
                         Break
                     }
@@ -613,7 +613,7 @@ Function Start-APIServer {
                         $Variables.Miners | ForEach-Object { $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Miner suspended by watchdog *" }); $_ } | Where-Object { -not $_.Reason } | ForEach-Object { $_.Available = $true }
                         $Variables.Pools | ForEach-Object { $_.Reason = @($_.Reason | Where-Object { $_ -notlike "*Pool suspended by watchdog" }); $_ } | Where-Object { -not $_.Reason } | ForEach-Object { $_.Available = $true }
                         Write-Message -Level Verbose "Web GUI: All watchdog timers reset."
-                        $Data = "`nWatchdog timers will be recreated in next cycle."
+                        $Data = "Watchdog timers will be recreated in next cycle."
                         Break
                     }
                     "/algorithms" { 
