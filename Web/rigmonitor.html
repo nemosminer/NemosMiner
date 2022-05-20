@@ -9,14 +9,11 @@
             <label for="MonitoringServer">Monitoring Server</label>
             <input type="text" id="MonitoringServer" name="MonitoringServer" value="https://nemosminer.com" size=64>
           </div>
-
           <div title="Monitoring userID &#10;must be identical on each monitored mining rig">
             <label for="MonitoringUser">Monitoring UserID</label>
             <input type="text" id="MonitoringUser" name="MonitoringUser" value="" pattern="[0-9A-Fa-f\-]{36}" size=36>
             <button id="new-guid" class="btn btn-secondary btn-sm" title="">Generate new UserID</button>
           </div>
-          <br>
-
           <div title="Tick to enable reporting rig status to monitoring server">
             <input type="checkbox" class="toggle-switch" id="ReportToServer" name="ReportToServer">
             <label for="ReportToServer">Report this Rig Status to Monitoring Server</label>
@@ -26,10 +23,9 @@
             <input type="checkbox" class="toggle-switch" id="ShowWorkerStatus" name="ShowWorkerStatus">
             <label for="ShowWorkerStatus">Show Rig Status</label>
           </div>
-          <br>
-
           <button id="save-button" class="btn btn-success">Apply Configuration</button>
-          <br><br>
+          <br>
+          <br>
 
           <div id="workerlist" style="visibility:hidden">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
@@ -86,6 +82,10 @@
 
             $('#workers thead tr th').each(function () {
               $(this).addClass('align-top');
+            });
+            
+            $table.bootstrapTable({
+              height: ($(window).height()) - $('h1').outerHeight(true) - 560
             });
 
             $(document).ready(function () {
