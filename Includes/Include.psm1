@@ -761,11 +761,11 @@ Function Stop-MiningProcess {
         While (($Variables.CoreRunspace.MiningStatus -eq "Running" -and -not $Variables.IdleRunspace) -and (Get-Date) -le $Timestamp) { 
             Start-Sleep -Seconds 1
         }
-        $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { 
-            $_.Info = ""
-            $_.Best = $false
-            $_.SetStatus([MinerStatus]::Idle)
-        }
+        $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { $_.SetStatus([MinerStatus]::Idle) }
+        $Variables.Miners | ForEach-Object { $_.Info = ""; $_.Best = $false }
+
+        $Variables.BestMiners = @()
+
         $Variables.WatchdogTimers = @()
     }
     $Variables.MiningStatus = "Idle"
@@ -2905,6 +2905,7 @@ Function Update-ConfigFile {
             "ShowMinerWindows" { $Config.MinerWindowStyle = $Config.$_; $Config.Remove($_) }
             "ShowMinerWindowsNormalWhenBenchmarking" { $Config.MinerWindowStyleNormalWhenBenchmarking = $Config.$_; $Config.Remove($_) }
             "SSL" { $Config.Remove($_) }
+            "UIStyle" { $Config.$_ = $Config.$_.ToLower() }
             "UserName" { 
                 If (-not $Config.MiningPoolHubUserName) { $Config.MiningPoolHubUserName = $Config.$_ }
                 If (-not $Config.ProHashingUserName) { $Config.ProHashingUserName = $Config.$_ }
