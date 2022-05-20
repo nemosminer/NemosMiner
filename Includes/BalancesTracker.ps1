@@ -379,8 +379,6 @@ While ($true) {
         If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File -FilePath ".\Data\BalancesTrackerData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
         $Variables.BalanceData = $AllBalanceObjects
 
-        If ($ReadBalances) { Return } # Debug stuff
-
         # Sleep until next update (at least 1 minute, maximum 60 minutes)
         While ((Get-Date).ToUniversalTime() -le $Now.AddMinutes((60, (1, [Int]$Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum | Measure-Object -Minimum).Minimum)) { Start-Sleep -Seconds 5 }
     }
