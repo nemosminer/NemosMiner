@@ -13,7 +13,7 @@ footer {
   width: 100%;
   text-align: right;
   padding-left: 30px;
-  padding-right: 40px;
+  padding-right: 35px;
   padding-top: 5px;
   z-index: 99;
   background-color: whitesmoke;
@@ -40,7 +40,7 @@ footer {
 
 @media (min-width: 768px) {
   .main {
-    padding-right: 35px;
+    padding-right: 30px;
     padding-left: 290px;
   }
 }
