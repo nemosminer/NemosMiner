@@ -1102,7 +1102,7 @@ Function MainForm_Load {
                             Start-Sleep -Seconds 2
                         }
                         "h" { 
-                            Write-Host "Hot key legend:"
+                            Write-Host "`nHot key legend:"
                             Write-Host "a: Toggle " -NoNewline; Write-Host "A" -ForegroundColor Cyan -NoNewline; Write-Host "ccuracy column visibility (currently " -NoNewline; If ($Variables.ShowAccuracy) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
                             Write-Host "b: Toggle List Pool " -NoNewline; Write-Host "B" -ForegroundColor Cyan -NoNewline; Write-Host "alances (currently " -NoNewline; If ($Variables.ShowPoolBalances) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
                             If ($Variables.CalculatePowerCost) { 
