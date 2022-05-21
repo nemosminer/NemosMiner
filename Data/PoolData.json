@@ -117,11 +117,7 @@
       "BTC" // Required here for donation
     ],
     "Region": [
-      "N/A (Anycast)",
-      "eu-west",
-      "eu-north",
-      "usa-west",
-      "usa-east"
+      "N/A (Anycast)"
     ],
     "Variant": {
       "NiceHash External": {
