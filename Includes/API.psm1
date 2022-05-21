@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.33
-Version date:   18 May 2022
+Version:        4.0.0.34
+Version date:   21 May 2022
 #>
 
 Function Initialize-API { 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.5.3"
+    $APIVersion = "0.4.5.4"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
@@ -171,7 +171,7 @@ Function Start-APIServer {
                                 $Variables.BalanceData | ConvertTo-Json | Out-File ".\Logs\BalancesTrackerData.json" -ErrorAction Ignore
                                 $Message = "$($BalanceDataEntries.Count) $(If ($BalanceDataEntries.Count -eq 1) { "balance data entry" } Else { "balance data entries" }) removed."
                                 Write-Message -Level Verbose "Web GUI: $Message"
-                                $Data += "`n`n$Message"
+                                $Data = $Message
                             }
                             Else { 
                                 $Data = "No matching entries found."
@@ -201,7 +201,7 @@ Function Start-APIServer {
                                     Write-Message -Level Verbose "Web GUI: Device$(If ($Values.Count -ne 1) { "s" } ) '$($Values -join '; ')' disabled. Config file '$($Variables.ConfigFile)' updated."
                                 }
                                 Catch { 
-                                    $Data = "<pre>Error saving config file`n'$($Variables.ConfigFile) $($Error[0])'.</pre>"
+                                    $Data = "Error saving config file`n'$($Variables.ConfigFile) $($Error[0])'."
                                 }
                             }
                             Else { 
@@ -230,7 +230,7 @@ Function Start-APIServer {
                                     Write-Message -Level Verbose "Web GUI: Device$(If ($Values.Count -ne 1) { "s" } ) '$($Values -join '; ')' enabled. Config file '$($Variables.ConfigFile)' updated."
                                 }
                                 Catch { 
-                                    $Data = "<pre>Error saving config file`n'$($Variables.ConfigFile) $($Error[0])'.</pre>"
+                                    $Data = "Error saving config file`n'$($Variables.ConfigFile) $($Error[0])'."
                                 }
                             }
                             Else {
@@ -557,7 +557,7 @@ Function Start-APIServer {
                     }
                     "/functions/switchinglog/clear" { 
                         Get-ChildItem -Path ".\Logs\switchinglog.csv" -File | Remove-Item -Force
-                        $Data = "<pre>Switching log '.\Logs\switchinglog.csv' cleared.</pre>"
+                        $Data = "Switching log '.\Logs\switchinglog.csv' cleared."
                         Break
                     }
                     "/functions/variables/get" { 
