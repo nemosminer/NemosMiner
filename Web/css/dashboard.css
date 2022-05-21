@@ -20,10 +20,6 @@ footer {
   height: 35px;
 }
 
-/* .detail-icon:before {
-  content: "\00B1";
-} */
-
 /*
  * Sidebar
  */
@@ -40,6 +36,7 @@ footer {
 
 @media (min-width: 768px) {
   .main {
+    top: 10px;
     padding-right: 30px;
     padding-left: 290px;
   }

@@ -1,6 +1,6 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 id="title" data-navbaractive="navdashboard" class="h2">Dashboard</h1>
+            <h2 id="title" data-navbaractive="navdashboard">Dashboard</h2>
           </div>
 
           <div id="toolbar">
@@ -76,9 +76,11 @@
               </tr>
             </thead>
           </table>
+          <br>
+          <br>
 
           <div id="balances" style ="display:none">
-            <h3 class="mt-4">Balances</h3>
+            <h3>Balances</h3>
 
             <div id="balanceboxes" class="card-deck"></div>
 
@@ -184,6 +186,13 @@
             $('#miners tr:eq(0) th:eq(8)').html("Profit Bias<br>(" + maincurrency + ")");
             $('#miners tr:eq(0) th:eq(9)').html("Power Cost<br>(" + maincurrency + ")");
 
+            $table.on('all.bs.table', function () {
+              document.getElementById('re-benchmark').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+              document.getElementById('re-measure').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+              document.getElementById('failed').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+              document.getElementById('disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+            });
+
             $(document).ready(function () {
               $(function(){
                 if (config.CalculatePowerCost == true) {
@@ -281,7 +290,7 @@
               });
             });
 
-            $('#miners').on('all.bs.table', function () {
+            $('#miners').on('post-body.bs.table', function () {
               try { 
                 if ($('#miners').bootstrapTable('getSelections').length >= 1) {
                   document.getElementById('re-benchmark').disabled = false;

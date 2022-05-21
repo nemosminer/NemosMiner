@@ -181,9 +181,53 @@ function formatArrayAsString(value) {
   return value.sort().join('; <br>');
 };
 
+function formatDigits1(value) {
+  if (value > 0) return (value).toFixed(1);
+  return '';
+};
+
+function formatDigits2(value) {
+  if (value > 0) return (value).toFixed(2);
+  return '';
+};
 
 function formatDigits3(value) {
   if (value > 0) return (value).toFixed(3);
+  return '';
+};
+
+function formatDigits4(value) {
+  if (value > 0) return (value).toFixed(4);
+  return '';
+};
+
+function formatDigits5(value) {
+  if (value > 0) return (value).toFixed(5);
+  return '';
+};
+
+function formatDigits6(value) {
+  if (value > 0) return (value).toFixed(6);
+  return '';
+};
+
+function formatDigits7(value) {
+  if (value > 0) return (value).toFixed(7);
+  return '';
+};
+
+function formatDigits8(value) {
+  if (value > 0) return (value).toFixed(8);
+  return '';
+};
+
+function formatDigits9(value) {
+  if (value > 0) return (value).toFixed(9);
+  return '';
+};
+
+function formatDigits10(value) {
+  if (value > 0) return (value).toFixed(10);
   return '';
 };
 

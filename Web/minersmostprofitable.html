@@ -1,6 +1,6 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 id="title" class="h2" data-navbaractive="navminersmostprofitable">Most Profitable Miners</h1>
+            <h2 id="title" data-navbaractive="navminersmostprofitable">Most Profitable Miners</h2>
           </div>
 
           <div class="alert alert-info" role="alert">These are the most profitable miners per algorithm and device.</div>
@@ -87,12 +87,6 @@
             var $table = $('#miners');
             var $querysize = 20000;
 
-            $('#miners tr:eq(0) th:eq(8)').html("Earning Bias<br>(" + maincurrency + ")");
-            $('#miners tr:eq(0) th:eq(9)').html("Earning<br>(" + maincurrency + ")");
-            $('#miners tr:eq(0) th:eq(10)').html("Profit Bias<br>(" + maincurrency + ")");
-            $('#miners tr:eq(0) th:eq(11)').html("Profit<br>(" + maincurrency + ")");
-            $('#miners tr:eq(0) th:eq(12)').html("Power Cost<br>(" + maincurrency + ")");
-
             // get BTC rate of first currency
             $.ajax({
               async: false,
@@ -104,48 +98,48 @@
               }
             });
 
-            $table.bootstrapTable({
-              // refresh once per interval
-              autoRefreshInterval: (parseInt(config.Interval / 2)),
-              height: ($(window).height()) - $('h1').outerHeight(true) - 185
+            $('#miners tr:eq(0) th:eq(9)').html("Earning Bias<br>(" + maincurrency + ")");
+            $('#miners tr:eq(0) th:eq(10)').html("Earning<br>(" + maincurrency + ")");
+            $('#miners tr:eq(0) th:eq(11)').html("Profit Bias<br>(" + maincurrency + ")");
+            $('#miners tr:eq(0) th:eq(12)').html("Profit<br>(" + maincurrency + ")");
+            $('#miners tr:eq(0) th:eq(13)').html("Power Cost<br>(" + maincurrency + ")");
+
+            $table.on('pre-body.bs.table', function () {
+              if (config.CalculatePowerCost == true) {
+                $table.bootstrapTable('showColumn', 'Profit_Bias');
+                $table.bootstrapTable('showColumn', 'Profit');
+                $table.bootstrapTable('showColumn', 'PowerUsage');
+                $table.bootstrapTable('showColumn', 'PowerCost');
+              } else {
+                $table.bootstrapTable('hideColumn', 'Profit_Bias');
+                $table.bootstrapTable('hideColumn', 'Profit');
+                $table.bootstrapTable('hideColumn', 'PowerUsage');
+                $table.bootstrapTable('hideColumn', 'PowerCost');
+              }
+
+              $('#miners thead tr th').each(function () {
+                $(this).addClass('align-top');
+              });
             });
 
-            if (config.CalculatePowerCost == true) {
-              $table.bootstrapTable('showColumn', 'Profit_Bias');
-              $table.bootstrapTable('showColumn', 'Profit');
-              $table.bootstrapTable('showColumn', 'PowerUsage');
-              $table.bootstrapTable('showColumn', 'PowerCost');
-            } else {
-              $table.bootstrapTable('hideColumn', 'Profit_Bias');
-              $table.bootstrapTable('hideColumn', 'Profit');
-              $table.bootstrapTable('hideColumn', 'PowerUsage');
-              $table.bootstrapTable('hideColumn', 'PowerCost');
-            }
-
-            $('#miners thead tr th').each(function () {
-              $(this).addClass('align-top');
-            });
-
-            $table.on('all.bs.table', function () {
-              try {
-                if ($table.bootstrapTable('getSelections').length >= 1) {
-                  document.getElementById('re-benchmark').disabled = false;
-                  document.getElementById('re-measure').disabled = false;
-                  document.getElementById('failed').disabled = false;
-                  document.getElementById('disable').disabled = false;
-                } else {
-                  document.getElementById('re-benchmark').disabled = true;
-                  document.getElementById('re-measure').disabled = true;
-                  document.getElementById('failed').disabled = true;
-                  document.getElementById('disable').disabled = true;
-                }
-              } catch {}
-
+            $table.on('post-body.bs.table', function () {
               if (config.WebGUIUseColor == true) {
                 $('#miners td:nth-child(5)').each(function () {
                   $(this).parent('tr').addClass('miner-' + this.innerText.toLowerCase());
                 });
               };
+            });
+
+            $table.on('all.bs.table', function () {
+              document.getElementById('re-benchmark').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+              document.getElementById('re-measure').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+              document.getElementById('failed').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+              document.getElementById('disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+            });
+
+            $table.bootstrapTable({
+              autoRefreshInterval: (parseInt(config.Interval / 2)), // refresh once per interval
+              height: $(window).height() - $("#miners").offset().top + 35
             });
 
             $(document).ready(function () {

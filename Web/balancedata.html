@@ -1,6 +1,6 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 id="title" data-navbaractive="navbalancedata" class="h2">Balance Data</h1>
+            <h2 id="title" data-navbaractive="navbalancedata">Balance Data</h2>
           </div>
 
           <div id="balancedata" class="alert alert-info" role="alert">This is the balance data for the last 30 days that was collected by the balance tracker.</div>
@@ -37,14 +37,14 @@
                 <th data-field="Pool" data-sortable="true" data-filter-control="select">Pool</th>
                 <th data-field="Wallet" data-sortable="true" data-visible="true" data-filter-control="select">Account</th>
                 <th data-field="Currency" data-sortable="true" data-filter-control="select">Currency</th>
-                <th data-field="Pending" data-sortable="true" data-visible="true">Pending</th>
-                <th data-field="Balance" data-sortable="true">Balance</th>
-                <th data-field="Unpaid" data-sortable="true" data-visible="true">Unpaid</th>
-                <th data-field="Earnings" data-sortable="true" data-visible="true">Earnings</th>
-                <th data-field="Delta" data-sortable="true" data-visible="true">Delta</th>
-                <th data-field="Payout" data-sortable="true" data-visible="true">Payout</th>
-                <th data-field="Paid" data-sortable="true" data-visible="true">Paid</th>
-                <th data-field="HiddenPending" data-sortable="true" data-visible="true">Hidden Pending</th>
+                <th data-field="Pending" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Pending</th>
+                <th data-field="Balance" data-sortable="true" data-formatter="formatDigits10">Balance</th>
+                <th data-field="Unpaid" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Unpaid</th>
+                <th data-field="Earnings" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Earnings</th>
+                <th data-field="Delta" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Delta</th>
+                <th data-field="Payout" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Payout</th>
+                <th data-field="Paid" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Paid</th>
+                <th data-field="HiddenPending" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Hidden Pending</th>
               </tr>
             </thead>
           </table>
@@ -56,11 +56,15 @@
             $table.bootstrapTable({
               // refresh once per pool balance update interval
               autoRefreshInterval: (parseInt(config.PoolBalancesUpdateInterval * 1000 * 60)),
-              height: ($(window).height()) - $('h1').outerHeight(true) - 220
+              height: $(window).height() - $("#balanceobjects").offset().top - 10
             });
 
             $('#balanceobjects thead tr th').each(function () {
               $(this).addClass('align-top');
+            });
+
+            $table.on('all.bs.table', function () {
+              document.getElementById('remove-entry').disabled = !Boolean($table.bootstrapTable('getSelections').length);
             });
 
             $(document).ready(function () {
@@ -82,7 +86,7 @@
                 }
               });
 
-              $('#balanceobjects').on('all.bs.table', function () {
+              $('#balanceobjects').on('post-body.bs.table', function () {
                 try {
                   if ($('#balanceobjects').bootstrapTable('getSelections').length >= 1) {
                     document.getElementById('remove-entry').disabled = false;

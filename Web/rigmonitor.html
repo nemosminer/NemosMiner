@@ -1,38 +1,39 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 id="title" data-navbaractive="navrigmonitor" class="h2">Monitoring Settings</h1>
+            <h2 id="title" data-navbaractive="navrigmonitor">Rig Monitor</h2>
           </div>
 
-          <div id="configfilename" class="alert alert-info" role="alert"> </div>
+          <h3>Monitor Settings</h3>
 
-          <div title="Monitoring Server host name">
-            <label for="MonitoringServer">Monitoring Server</label>
-            <input type="text" id="MonitoringServer" name="MonitoringServer" value="https://nemosminer.com" size=64>
-          </div>
-          <div title="Monitoring userID &#10;must be identical on each monitored mining rig">
-            <label for="MonitoringUser">Monitoring UserID</label>
-            <input type="text" id="MonitoringUser" name="MonitoringUser" value="" pattern="[0-9A-Fa-f\-]{36}" size=36>
-            <button id="new-guid" class="btn btn-secondary btn-sm" title="">Generate new UserID</button>
-          </div>
-          <div title="Tick to enable reporting rig status to monitoring server">
-            <input type="checkbox" class="toggle-switch" id="ReportToServer" name="ReportToServer">
-            <label for="ReportToServer">Report this Rig Status to Monitoring Server</label>
-          </div>
+          <div id="configfilename" class="alert alert-info" role="alert"></div>
 
-          <div title="Show status for all reporting mining rigs&#10;`Report to Monitoring Server` must be enabled on these rigs&#10;using the same userID">
-            <input type="checkbox" class="toggle-switch" id="ShowWorkerStatus" name="ShowWorkerStatus">
-            <label for="ShowWorkerStatus">Show Rig Status</label>
-          </div>
-          <button id="save-button" class="btn btn-success">Apply Configuration</button>
-          <br>
-          <br>
-
-          <div id="workerlist" style="visibility:hidden">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-              <h1 id="title" data-navbaractive="navrigmonitor" class="h2">Rig Monitor</h1>
+          <form id="configuration">
+            <input name="submit" type="submit" id="save-button" value="Apply configuration" class="btn btn-success" alt="Submit" title="Apply configuration&#10;It will become active in next cycle.">
+            <input name="reset" type="reset" id="reset-button" value="Reset" class="btn btn-warning" alt="Reset" title="Reset configuration data to previous values">
+            <div>
+              <br>
             </div>
 
-            <div class="alert alert-info" role="alert">Shows status of all reporting rigs</div>
+            <div title="Monitoring Server host name">Monitoring Server 
+              <input style="margin-left: 5px;" type="text" id="MonitoringServer" name="MonitoringServer" value="https://nemosminer.com" size=64>
+            </div>
+            <div style="padding-top: 0.5rem;" title="Monitoring UserID &#10;must be identical on each monitored mining rig">Monitoring UserID
+              <input style="margin-left: 3px; padding-top: 0.1rem;" type="text" id="MonitoringUser" name="MonitoringUser" pattern="[0-9A-Fa-f\-]{36}" size=36>
+              <button style="margin-bottom: 0.1rem;" id="new-guid" class="btn btn-secondary btn-sm" title="UserID must be identical on each monitored mining rig">Generate new UserID</button>
+            </div>
+            <div style="padding-top: 0.5rem;" title="Tick to enable reporting rig status to monitoring server">
+              <input type="checkbox" class="toggle-switch" id="ReportToServer" name="ReportToServer">
+              <label for="ReportToServer">Report this Rig Status to Monitoring Server</label>
+            </div>
+            <div title="Show status for all reporting mining rigs&#10;`Report to Monitoring Server` must be enabled on these rigs&#10;using the same userID">
+              <input type="checkbox" class="toggle-switch" id="ShowWorkerStatus" name="ShowWorkerStatus">
+              <label for="ShowWorkerStatus">Show Rig Status for all reporting Mining Rigs</label>
+            </div>
+          </form>
+          <div id="workerlist" style="visibility:hidden">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+              <h2 id="title" class="mt-4" data-navbaractive="navrigmonitor">Rig Status</h2>
+            </div>
 
             <table id="workers" class="table"
               data-icons="icons"
@@ -75,17 +76,33 @@
           <script type="text/javascript">
             var $table = $('#workers');
 
-            // refresh once per cycle
-            window.setInterval(function() { 
-              $table.bootstrapTable("refresh");
-            }, parseInt(config.Interval) * 1000 * 60);
-
-            $('#workers thead tr th').each(function () {
-              $(this).addClass('align-top');
+            $table.on('pre-body.bs.table', function () {
+              $("#workers thead tr th").each(function () {
+                $(this).addClass('align-top');
+              });
             });
-            
+
+            $table.on('post-body.bs.table', function () {
+              if (config.WebGUIUseColor == true) {
+                $("#workers td:nth-child(3)").each(function () {
+                  switch(this.innerHTML) {
+                    case this.innerHTML.match(/^Offline/)?.input:
+                      $(this).parent("tr").addClass('miner-failed');
+                      break;
+                    case this.innerHTML.match(/^Paused/)?.input:
+                      $(this).parent("tr").addClass('miner-disabled');
+                      break;
+                    case this.innerHTML.match(/^Running/)?.input:
+                      $(this).parent("tr").addClass('miner-running');
+                      break;
+                  };
+                });
+              };
+            });
+
             $table.bootstrapTable({
-              height: ($(window).height()) - $('h1').outerHeight(true) - 560
+              autoRefreshInterval: (parseInt(config.Interval / 2)), // refresh once per interval
+              height: $(window).height() - $("#workers").offset().top - 30
             });
 
             $(document).ready(function () {
@@ -104,7 +121,6 @@
 
               if (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '' || document.getElementById('ShowWorkerStatus').checked != true) document.getElementById('workerlist').style.visibility="hidden";
               else document.getElementById('workerlist').style.visibility="visible";
-
 
               $(document.getElementById('MonitoringServer')).change(function (event) {
                 document.getElementById('ReportToServer').disabled = (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '');
@@ -125,42 +141,33 @@
                 else document.getElementById('workerlist').style.visibility="visible";
               });
 
-              $('#save-button').click(function () {
-                config.ReportToServer = document.getElementById('ReportToServer').checked;
-                if ((document.getElementById('MonitoringServer').value).toString().trim() == "") document.getElementById('MonitoringServer').value = 'https://nemosminer.com';
-                config.MonitoringServer = document.getElementById('MonitoringServer').value;
-                config.MonitoringUser = document.getElementById('MonitoringUser').value;
-                config.ShowWorkerStatus = document.getElementById('ShowWorkerStatus').checked;
-
-                //Write current config
-                var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
-                $('.modal-body').load($command, function() {
-                  $('.modal-title').text($('#save-button').text());
-                  $('#myModal').modal({show:true});
-                });
-              });
-
-              //Get new guid
+              // Get new guid
               $('#new-guid').click(function () {
                 document.getElementById('MonitoringUser').value = createUUID();
               });
 
-              $('#workerlist').on('all.bs.table', function () {
-                if (config.WebGUIUseColor == true) {
-                  $("#workerlist td:nth-child(3)").each(function () {
-                    switch(this.innerText) {
-                      case this.innerText.match(/^Offline/)?.input:
-                        $(this).parent("tr").addClass('miner-failed');
-                        break;
-                      case this.innerText.match(/^Paused/)?.input:
-                        $(this).parent("tr").addClass('miner-disabled');
-                        break;
-                      case this.innerText.match(/^Running/)?.input:
-                        $(this).parent("tr").addClass('miner-running');
-                        break;
-                    };
+              $("#configuration").bind("reset", function () {
+                location.reload(true);
+              });
+
+              $("#configuration").validate({
+                submitHandler: function (form) {
+                  document.body.style.cursor = 'wait'
+
+                  config.ReportToServer = document.getElementById('ReportToServer').checked;
+                  if ((document.getElementById('MonitoringServer').value).toString().trim() == "") document.getElementById('MonitoringServer').value = 'https://nemosminer.com';
+                  config.MonitoringServer = document.getElementById('MonitoringServer').value;
+                  config.MonitoringUser = document.getElementById('MonitoringUser').value;
+                  config.ShowWorkerStatus = document.getElementById('ShowWorkerStatus').checked;
+
+                  // Write current config
+                  var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
+                  $('.modal-body').load($command, function() {
+                    document.body.style.cursor = 'default'
+                    $('.modal-title').text($('#save-button').text());
+                    $('#myModal').modal({show:true});
                   });
-                };
+                }
               });
             });
           </script>

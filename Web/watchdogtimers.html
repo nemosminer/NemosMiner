@@ -1,6 +1,6 @@
 ﻿<!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 id="title" data-navbaractive="navwatchdogtimers" class="h2">Watchdog Timers</h1>
+            <h2 id="title" data-navbaractive="navwatchdogtimers">Watchdog Timers</h2>
           </div>
 
           <div id="watchdog" class="alert alert-info" role="alert"></div>
@@ -47,12 +47,13 @@
           </table>
 <!-- Start of page scripts 'watchdogtimers.html' -->
           <script type="text/javascript">
+
+            $('#watchdogtimers').bootstrapTable({
+              autoRefreshInterval: (parseInt(config.Interval)), // refresh once per interval
+              height: $(window).height() - $("#watchdogtimers").offset().top - 35
+            })
+
             $(document).ready(function () {
-              $('#watchdogtimers').bootstrapTable({
-                // refresh once per interval
-                autoRefreshInterval: (parseInt(config.Interval)),
-                height: ($(window).height()) - $('h1').outerHeight(true) - 220
-              })
 
               // Get watchdog expiry time
               $.ajax({

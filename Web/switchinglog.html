@@ -1,6 +1,6 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 id="title" class="h2" data-navbaractive="navswitchinglog">Switching Log</h1>
+            <h2 id="title" data-navbaractive="navswitchinglog">Switching Log</h2>
           </div>
 
           <div class="alert alert-info" role="alert">Lists the executed miners and the command lines used (last 1000 entries).</div>
@@ -59,18 +59,17 @@
             var $table = $('#switchinglog')
 
             $table.bootstrapTable({
-              // refresh once per interval
-              autoRefreshInterval: (parseInt(config.Interval / 2)),
-              height: ($(window).height()) - $('h1').outerHeight(true) - 210
+              autoRefreshInterval: (parseInt(config.Interval / 2)), // refresh once per interval
+              height: $(window).height() - $("#switchinglog").offset().top + 10
             });
 
-            $('#switchinglog').on('all.bs.table', function () {
+            $('#switchinglog').on('post-body.bs.table', function () {
               $('#switchinglog thead tr th').each(function () {
                 $(this).addClass('align-top');
               });
 
               if (config.WebGUIUseColor == true) {
-                $('#switchinglog').on('all.bs.table', function () {
+                $('#switchinglog').on('post-body.bs.table', function () {
                   $("#switchinglog td:nth-child(3)").each(function () {
                     switch(this.innerText) {
                       case this.innerText.match('Launched')?.input:

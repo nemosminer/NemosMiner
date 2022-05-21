@@ -17,7 +17,7 @@
                 <td>
                   <!-- Wallet Addresses and User Names -->
                   <legend title="Define your wallet and user names.&#10;All your earnings will be sent to the accounts defined here.&#10;Correct data is essential." class=h6><b>Wallet Addresses and User Names</b></legend>
-                  <fieldset  style="padding-top: 0.3rem" title="Set your wallet addresses&#10;To add more currencies you need to edit pools config file manually.">
+                  <fieldset style="padding-top: 0.3rem" title="Set your wallet addresses&#10;To add more currencies you need to edit pools config file manually.">
                     <div id="Wallets"></div>
                   </fieldset>
                   <div style="padding-top: 0.7rem" title="Identifies your worker&#10;e.g. Computername&#10;(min. 2 and max. 32 characters)">
@@ -199,11 +199,11 @@
                     <br>
 
                     <!-- Select the Region closest to your Location -->
-                    <fieldset title="NemosMiner will prefer pools from the selected region">
+                    <fieldset title="Note: Region is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
                       <legend class=h6><b>Select the Region closest to your Location</b></legend>
                       <div style="padding-top: 0.2rem;line-height:125%" id="Regions"></div>
                     </fieldset>
-                    <div style="padding-top: 0.2rem" title="Pools establish fastest network route based on your location&#10;Currently only NiceHash & ZergPool support this feature.&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
+                    <div style="padding-top: 0.2rem" title="Pools establish fastest network route based on your location&#10;Currently only ZergPool support this feature.&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
                       <input type="checkbox" class="toggle-switch" id="UseAnycast" name="UseAnycast"> Use anycast for best network performance and ping times
                     </div>
                     <br>
@@ -343,10 +343,10 @@
 
                   <!-- Main Text Window Display Settings -->
                   <legend class=h6 title="These Settings will not affect the information available in the in Web GUI"><b>Main Text Window Display Settings</b></legend>
-                  <div title="'Light' will not show information about previously run & failed miners and watchdog timers&#10;except while benchmarking or measuring power usage&#10;Can be toggled by pressing 's' in the text window while waiting for the next cycle"> UI Style
+                  <div title="'light' will not show information about previously run & failed miners and watchdog timers&#10;except while benchmarking or measuring power usage&#10;Can be toggled by pressing 's' in the text window while waiting for the next cycle"> UI Style
                     <select name="UIStyle" id="UIStyle">
-                      <option value='Full' title="Information about miners run in the past, failed miners & watchdog timers will be shown">full</option>
-                      <option value='Light' title="Information about miners run in the past, failed miners & watchdog timers will not be shown">light</option>
+                      <option value='full' title="Information about miners run in the past, failed miners & watchdog timers will be shown">full</option>
+                      <option value='light' title="Information about miners run in the past, failed miners & watchdog timers will not be shown">light</option>
                     </select>
                   </div>
                   <div style="padding-top: 1rem" title="Show the 'PowerCost' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'c' in the text window while waiting for the next cycle">
@@ -773,8 +773,8 @@
               if (config.IgnoreMinerFee) document.getElementById('IgnoreMinerFee').checked = true;
 
               // Main Text Window Display Settings
-              if (config.UIStyle.trim().toLowerCase() == "full") document.getElementById('UIStyle').value = 'Full';
-              else document.getElementById('UIStyle').value = 'Light';
+              if (config.UIStyle.trim().toLowerCase() == "full") document.getElementById('UIStyle').value = 'full';
+              else document.getElementById('UIStyle').value = 'light';
               if (config.ShowPowerCost) document.getElementById('ShowPowerCost').checked = true;
               if (config.ShowPowerUsage) document.getElementById('ShowPowerUsage').checked = true;
               if (config.ShowProfit) document.getElementById('ShowProfit').checked = true;

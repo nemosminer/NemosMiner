@@ -1,6 +1,6 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 id="title" class="h2" data-navbaractive="navallpools">All Pools</h1>
+            <h2 id="title" data-navbaractive="navallpools">All Pools</h2>
           </div>
 
           <div class="alert alert-info" role="alert">This is the pool data of all configured pools.</div>
@@ -70,28 +70,21 @@
             var $table = $('#pools');
             var $querysize = 20000;
 
-            $table.bootstrapTable({
-              // refresh once per interval
-              autoRefreshInterval: (parseInt(config.Interval / 2)),
-              height: ($(window).height()) - $('h1').outerHeight(true) - 220
-            })
-
-            $table.on('all.bs.table', function () {
-              try {
-                if ($table.bootstrapTable('getSelections').length >= 1) {
-                  document.getElementById('reset-data').disabled = false;
-                  document.getElementById('enable').disabled = false;
-                  document.getElementById('disable').disabled = false;
-                } else {
-                  document.getElementById('reset-data').disabled = true;
-                  document.getElementById('enable').disabled = true;
-                  document.getElementById('disable').disabled = true;
-                }
-              } catch {}
+            $table.on('pre-body.bs.table', function () {
+              $("#pools thead tr th").each(function () {
+                $(this).addClass('align-top');
+              });
             });
 
-            $("#pools thead tr th").each(function () {
-              $(this).addClass('align-top');
+            $table.on('all.bs.table', function () {
+              document.getElementById('reset-data').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+              document.getElementById('enable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+              document.getElementById('disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+            });
+
+            $table.bootstrapTable({
+              autoRefreshInterval: (parseInt(config.Interval / 2)), // refresh once per interval
+              height: $(window).height() - $("#pools").offset().top - 10
             });
 
             $(document).ready(function () {
