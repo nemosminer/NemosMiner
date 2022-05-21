@@ -762,12 +762,11 @@ Function Stop-MiningProcess {
             Start-Sleep -Seconds 1
         }
         $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { $_.SetStatus([MinerStatus]::Idle) }
-        $Variables.Miners | ForEach-Object { $_.Info = ""; $_.Best = $false }
-
-        $Variables.BestMiners = @()
-
-        $Variables.WatchdogTimers = @()
     }
+
+    $Variables.BestMiners = @()
+    $Variables.WatchdogTimers = @()
+
     $Variables.MiningStatus = "Idle"
 }
 
