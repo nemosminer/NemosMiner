@@ -8,6 +8,9 @@ New Config Items
 # If set API will log all requests to this file, to disable leave empty
   "APILogfile": "", 
 
+# If true will reboot computer when a miner is completely dead, eg. unresponsive
+  "AutoReboot": true, 
+
 # NemosMiner will periodically check for a new program version every n days (0 to disable)
   "AutoUpdateCheckInterval": 1,
 
