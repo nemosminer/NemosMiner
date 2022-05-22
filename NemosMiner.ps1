@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.33
-Version date:   18 May 2022
+Version:        4.0.0.34
+Version date:   22 May 2022
 #>
 
 [CmdletBinding()]
@@ -35,6 +35,8 @@ param(
     [Int]$APIPort = 3999, # TCP Port for API & Web GUI
     [Parameter(Mandatory = $false)]
     [Switch]$AutoUpdate = $true, # NemosMiner will automatically update to the new version
+    [Parameter(Mandatory = $false)]
+    [Switch]$AutoReboot = $true, # If true will reboot computer when a miner is completely dead, eg. unresponsive
     [Parameter(Mandatory = $false)]
     [Int]$AutoUpdateCheckInterval = 1, # NemosMiner will periodically check for a new program version every n days (0 to disable)
     [Parameter(Mandatory = $false)]
@@ -262,7 +264,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.33"
+    Version      = [System.Version]"4.0.0.34"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
