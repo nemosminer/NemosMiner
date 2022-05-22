@@ -6,6 +6,38 @@ Breaking changes (from 3.8.x.x code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+ChangeLog NemosMiner 4.0.0.34 21.05.2022
+========================================
+
+Core:
+- All miners: Use one TCP port per miner (revert 2 TCP ports per miner introduced in 4.0.0.19)
+- Xgminer API: Support dual algorithm mining (TeamRedMiner)
+
+Enhancements:
+- New config item 'AutoReboot'
+- Main Text Window: Update hotkey legend text for 'List Pool Balances' & 'List all available miners'
+- Main Text Window: Add colors to hotkey legend status
+ 
+Fixes:
+- Core: 'MinersNeedingBenchmark' & 'MinersNeedingPowerUsageMeasurement' also included failed miners
+- Core: UIStyle set by hotkey in main text window would always get reset to config value
+- Main Text Window: Hotkey status for 'List all available miners'
+
+Miner updates:
+- lolMiner-v1.51a
+- NanoMiner-v3.6.3
+- TeamRedMiner-v0.10.0
+- Trex-v0.26.4
+
+Pools:
+- NiceHash: Use 'Anycast N/A' only (AUTO location will replace all 4 of the current mining location URLs ends June 2022)
+
+Web GUI:
+- Dashboard: Add 'Running Time' column to launched miners
+- Dashboard: Add hidden 'BeginTime' column to launched miners
+- Fine-tuned margins and formatting
+
+
 ChangeLog NemosMiner 4.0.0.33 18.05.2022
 ========================================
 

@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.0.33
-Version date:   18 May 2022
+Version:        4.0.0.34
+Version date:   22 May 2022
 #>
 
 # Start transcript log
@@ -43,7 +43,7 @@ $PoolData = If (Test-Path -Path ".\Data\PoolData.json" -PathType Leaf) { Get-Con
 
 # Read existing earning data, use data from last file
 ForEach ($Filename in (Get-ChildItem ".\Data\BalancesTrackerData*.json" | Sort-Object -Descending)) { 
-    $AllBalanceObjects = (Get-Content $Filename | ConvertFrom-Json) | Where-Object Balance -NE $null
+    $AllBalanceObjects = (Get-Content $Filename | ConvertFrom-Json)
     If ($AllBalanceObjects.Count -gt ($PoolData.Count / 2)) { Break }
 }
 If ($AllBalanceObjects -isnot [Array]) { $AllBalanceObjects = @() }

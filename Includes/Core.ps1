@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0.33
-Version date:   18 May 2022
+Version:        4.0.0.34
+Version date:   22 May 2022
 #>
 
 using module .\Include.psm1
@@ -786,8 +786,8 @@ While ($Variables.NewMiningStatus -eq "Running") {
             If ($Config.DisableDualAlgoMining) { $Miners | Where-Object Workers.Count -EQ 2 | ForEach-Object { $_.Reason += "Config.DisableDualAlgoMining" } }
             If ($Config.DisableSingleAlgoMining) { $Miners | Where-Object Workers.Count -EQ 1 | ForEach-Object { $_.Reason += "Config.DisableSingleAlgoMining" } }
 
-            $Variables.MinersNeedingBenchmark = @($Miners | Where-Object Disabled -NE $true | Where-Object Benchmark -EQ $true)
-            $Variables.MinersNeedingPowerUsageMeasurement = @($Miners | Where-Object Disabled -NE $true | Where-Object MeasurePowerUsage -EQ $true)
+            $Variables.MinersNeedingBenchmark = @($Miners | Where-Object Available -EQ $true | Where-Object Benchmark -EQ $true)
+            $Variables.MinersNeedingPowerUsageMeasurement = @($Miners | Where-Object Available -EQ $true | Where-Object MeasurePowerUsage -EQ $true)
 
             # Detect miners with unreal earning (> x times higher than average of the next best 10% or at least 5 miners)
             If ($Config.UnrealMinerEarningFactor -gt 1) { 
@@ -1022,11 +1022,18 @@ While ($Variables.NewMiningStatus -eq "Running") {
             Start-Sleep -MilliSeconds 500
             $Loops ++
             If ($Loops -gt 100) { 
-                Start-Sleep -Seconds 10
-                Write-Message -Level Error "Error stopping stray miner$(If($StrayMiners.Count -gt 1) { "s" }): $(($StrayMiners | ForEach-Object { (Get-Process -Id $_ -FileVersionInfo).FileName.Replace("$($Variables.MainPath)\", '') }) -join '; ')."
+                $Message = "Error stopping miner."
+                If ($Config.AutoReboot) { 
+                    Write-Message -Level Error "$Message Restarting computer in 10 seconds..."
+                    Restart-Computer -Delay 10
+                }
+                Else { 
+                    Write-Message -Level Error $Message
+                    Start-Sleep -Seconds 10
+                }
             }
         }
-        Remove-Variable Loops, StrayMiners
+        Remove-Variable Loops, StuckMiners
 
         # Faster shutdown
         If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.NewMiningStatus -eq "Idle") { Break }
@@ -1278,6 +1285,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
     If ($Variables.IdleRunspace.NewMiningStatus -eq "Idle") { 
         Stop-MiningProcess
+
         $Variables.Summary = "Mining is suspended until system is idle again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" })..."
         Write-Message -Level Verbose $Variables.Summary
         Do { 
