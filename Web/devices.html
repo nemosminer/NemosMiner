@@ -236,19 +236,27 @@
               return data;
             };
 
-            $('#enableddevices').on('all.bs.table', function () {
-              if ($('#enableddevices').bootstrapTable('getSelections').length >= 1) {
-                document.getElementById('disable-device').disabled = false;
-              } else {
-                document.getElementById('disable-device').disabled = true;
+            $('#enableddevices').bootstrapTable({
+              onAll: function () {
+                try {
+                  if ($('#enableddevices').bootstrapTable('getSelections').length >= 1) {
+                    document.getElementById('disable-device').disabled = false;
+                  } else {
+                    document.getElementById('disable-device').disabled = true;
+                  }
+                } catch {}
               }
             });
 
-            $('#disableddevices').on('all.bs.table', function () {
-              if ($('#disableddevices').bootstrapTable('getSelections').length >= 1) {
-                document.getElementById('enable-device').disabled = false;
-              } else {
-                document.getElementById('enable-device').disabled = true;
+            $('#disableddevices').bootstrapTable({
+              onAll: function () {
+                try {
+                  if ($('#disableddevices').bootstrapTable('getSelections').length >= 1) {
+                    document.getElementById('enable-device').disabled = false;
+                  } else {
+                    document.getElementById('enable-device').disabled = true;
+                  }
+                } catch {}
               }
             });
 
