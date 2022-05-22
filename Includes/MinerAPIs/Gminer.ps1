@@ -44,15 +44,15 @@ class Gminer : Miner {
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
         $Shares = [PSCustomObject]@{ }
-        $Shares_Accepted = [Int64]($Data.total_accepted_shares)
-        $Shares_Rejected = [Int64]($Data.total_rejected_shares)
+        $Shares_Accepted = [Int64]$Data.total_accepted_shares
+        $Shares_Rejected = [Int64]$Data.total_rejected_shares
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
 
         If ($this.Algorithm[1]) {
             $HashRate_Name = [String]$this.Algorithm[1]
             $HashRate_Value = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
-            $Shares_Accepted = [Int64]($Data.total_accepted_shares2)
-            $Shares_Rejected = [Int64]($Data.total_rejected_shares2)
+            $Shares_Accepted = [Int64]$Data.total_accepted_shares2
+            $Shares_Rejected = [Int64]$Data.total_rejected_shares2
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
 
             $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
@@ -62,7 +62,7 @@ class Gminer : Miner {
             $PowerUsage = $this.GetPowerUsage()
         }
 
-        If ($HashRate.PSObject.Properties.Value) { 
+        If ($HashRate.PSObject.Properties.Value -gt 0) { 
             Return [PSCustomObject]@{ 
                 Date       = (Get-Date).ToUniversalTime()
                 HashRate   = $HashRate
