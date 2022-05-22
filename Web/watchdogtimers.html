@@ -47,14 +47,19 @@
           </table>
 <!-- Start of page scripts 'watchdogtimers.html' -->
           <script type="text/javascript">
+            var $table = $('#watchdogtimers');
 
-            $('#watchdogtimers').bootstrapTable({
+            $table.bootstrapTable({
+              onPostBody: function () {
+                $('#watchdogtimers thead tr th').each(function () {
+                  $(this).addClass('align-top');
+                });
+              },
               autoRefreshInterval: (parseInt(config.Interval)), // refresh once per interval
-              height: $(window).height() - $("#watchdogtimers").offset().top - 35
-            })
+              height: $(window).height() - $table.offset().top - 35
+            });
 
             $(document).ready(function () {
-
               // Get watchdog expiry time
               $.ajax({
                 url: '/watchdogexpiration',
@@ -63,10 +68,6 @@
                   $('#watchdog').text("Shows all watchdog timers (watchdog timers expire after " + formatTime(minutes) + ").");
                 }
               });
-
-            $('#watchdogtimers thead tr th').each(function () {
-              $(this).addClass('align-top');
-            });
 
               $("#removewatchdogs").click(function () {
                 $command = '/functions/watchdogtimers/reset';

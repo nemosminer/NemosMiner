@@ -54,17 +54,19 @@
             var $querysize = 16000;
 
             $table.bootstrapTable({
+              onPostBody: function () {
+                $('#balanceobjects thead tr th').each(function () {
+                  $(this).addClass('align-top');
+                })
+              },
+
+              onAll: function () {
+                document.getElementById('remove-entry').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+              },
+
               // refresh once per pool balance update interval
               autoRefreshInterval: (parseInt(config.PoolBalancesUpdateInterval * 1000 * 60)),
               height: $(window).height() - $("#balanceobjects").offset().top - 10
-            });
-
-            $('#balanceobjects thead tr th').each(function () {
-              $(this).addClass('align-top');
-            });
-
-            $table.on('all.bs.table', function () {
-              document.getElementById('remove-entry').disabled = !Boolean($table.bootstrapTable('getSelections').length);
             });
 
             $(document).ready(function () {

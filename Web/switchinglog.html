@@ -56,26 +56,21 @@
           </table>
 <!-- Start of page scripts 'switchinglog.html' -->
           <script type="text/javascript">
-            var $table = $('#switchinglog')
+            var $table = $('#switchinglog');
 
             $table.bootstrapTable({
-              autoRefreshInterval: (parseInt(config.Interval / 2)), // refresh once per interval
-              height: $(window).height() - $("#switchinglog").offset().top + 10
-            });
+              onPostBody: function () {
+                $('#switchinglog thead tr th').each(function () {
+                  $(this).addClass('align-top');
+                });
 
-            $('#switchinglog').on('post-body.bs.table', function () {
-              $('#switchinglog thead tr th').each(function () {
-                $(this).addClass('align-top');
-              });
-
-              if (config.WebGUIUseColor == true) {
-                $('#switchinglog').on('post-body.bs.table', function () {
+                if (config.WebGUIUseColor == true) {
                   $("#switchinglog td:nth-child(3)").each(function () {
                     switch(this.innerText) {
                       case this.innerText.match('Launched')?.input:
                         $(this).parent("tr").addClass('miner-running');
                         break;
-                        case this.innerText.match('Stopped')?.input:
+                      case this.innerText.match('Stopped')?.input:
                         $(this).parent("tr").addClass('miner-idle');
                         break;
                       case this.innerText.match('Failed')?.input:
@@ -83,8 +78,11 @@
                         break;
                     };
                   });
-                });
-              };
+                };
+              },
+
+              autoRefreshInterval: (parseInt(config.Interval / 2)), // refresh once per interval
+              height: $(window).height() - $table.offset().top + 15
             });
 
             $(document).ready(function () {
@@ -95,7 +93,7 @@
                   $('#myModal').modal({show:true});
                 });
                 $('#myModal').on('hidden.bs.modal', function () {
-                  $table.bootstrapTable('refresh');
+                  $('#switchinglog').bootstrapTable('refresh');
                 });
               });
             });

@@ -1,6 +1,6 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 id="title" class="h2" data-navbaractive="navpoolsbest">Best Pools</h1>
+            <h2 id="title" data-navbaractive="navpoolsbest">Best Pools</h2>
           </div>
 
           <div class="alert alert-info" role="alert">This is the pool data of the best paying pool per algorithm.</div>
@@ -70,22 +70,22 @@
             var $table = $('#pools');
             var $querysize = 20000;
 
-            $table.on('pre-body.bs.table', function () {
-              $("#pools thead tr th").each(function () {
-                $(this).addClass('align-top');
-              });
-            });
-
-            $table.on('all.bs.table', function () {
-              document.getElementById('reset-data').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-              document.getElementById('enable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-              document.getElementById('disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-            });
-
             $table.bootstrapTable({
+              onPostBody: function () {
+                $('#pools thead tr th').each(function () {
+                  $(this).addClass('align-top');
+                })
+              },
+
+              onAll: function () {
+                document.getElementById('reset-data').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                document.getElementById('enable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                document.getElementById('disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+              },
+
               autoRefreshInterval: (parseInt(config.Interval / 2)), // refresh once per interval
-              height: $(window).height() - $("#pools").offset().top - 10
-            });
+              height: $(window).height() - $table.offset().top - 10
+            })
 
             $(document).ready(function () {
               $('#reset-data').click(function () {

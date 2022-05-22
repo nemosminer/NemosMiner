@@ -104,42 +104,41 @@
             $('#miners tr:eq(0) th:eq(12)').html("Profit<br>(" + maincurrency + ")");
             $('#miners tr:eq(0) th:eq(13)').html("Power Cost<br>(" + maincurrency + ")");
 
-            $table.on('pre-body.bs.table', function () {
-              if (config.CalculatePowerCost == true) {
-                $table.bootstrapTable('showColumn', 'Profit_Bias');
-                $table.bootstrapTable('showColumn', 'Profit');
-                $table.bootstrapTable('showColumn', 'PowerUsage');
-                $table.bootstrapTable('showColumn', 'PowerCost');
-              } else {
-                $table.bootstrapTable('hideColumn', 'Profit_Bias');
-                $table.bootstrapTable('hideColumn', 'Profit');
-                $table.bootstrapTable('hideColumn', 'PowerUsage');
-                $table.bootstrapTable('hideColumn', 'PowerCost');
-              }
-
-              $('#miners thead tr th').each(function () {
-                $(this).addClass('align-top');
-              });
-            });
-
-            $table.on('post-body.bs.table', function () {
-              if (config.WebGUIUseColor == true) {
-                $('#miners td:nth-child(5)').each(function () {
-                  $(this).parent('tr').addClass('miner-' + this.innerText.toLowerCase());
-                });
-              };
-            });
-
-            $table.on('all.bs.table', function () {
-              document.getElementById('re-benchmark').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-              document.getElementById('re-measure').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-              document.getElementById('failed').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-              document.getElementById('disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-            });
-
             $table.bootstrapTable({
+              onPreBody: function () { 
+                if (config.CalculatePowerCost == true) {
+                  $table.bootstrapTable('showColumn', 'Profit_Bias');
+                  $table.bootstrapTable('showColumn', 'Profit');
+                  $table.bootstrapTable('showColumn', 'PowerUsage');
+                  $table.bootstrapTable('showColumn', 'PowerCost');
+                } else {
+                  $table.bootstrapTable('hideColumn', 'Profit_Bias');
+                  $table.bootstrapTable('hideColumn', 'Profit');
+                  $table.bootstrapTable('hideColumn', 'PowerUsage');
+                  $table.bootstrapTable('hideColumn', 'PowerCost');
+                }
+              },
+
+              onPostBody: function () {
+                if (config.WebGUIUseColor == true) {
+                  $('#miners td:nth-child(5)').each(function () {
+                    $(this).parent('tr').addClass('miner-' + this.innerText.toLowerCase());
+                  });
+                };
+                $('#miners thead tr th').each(function () {
+                  $(this).addClass('align-top');
+                })
+              },
+
+              onAll: function () {
+                document.getElementById('re-benchmark').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                document.getElementById('re-measure').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                document.getElementById('failed').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                document.getElementById('disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+              },
+
               autoRefreshInterval: (parseInt(config.Interval / 2)), // refresh once per interval
-              height: $(window).height() - $("#miners").offset().top + 35
+              height: $(window).height() - $table.offset().top + 35
             });
 
             $(document).ready(function () {

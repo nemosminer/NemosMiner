@@ -71,23 +71,23 @@
             var $table = $('#pools');
             var $querysize = 20000;
 
-            $table.on('pre-body.bs.table', function () {
-              $("#pools thead tr th").each(function () {
-                $(this).addClass('align-top');
-              });
-            });
-
-            $table.on('all.bs.table', function () {
-              document.getElementById('reset-data').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-              document.getElementById('remove-watchdog').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-              document.getElementById('enable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-              document.getElementById('disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-            });
-
             $table.bootstrapTable({
+              onPostBody: function () {
+                $('#pools thead tr th').each(function () {
+                  $(this).addClass('align-top');
+                })
+              },
+
+              onAll: function () {
+                document.getElementById('reset-data').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                document.getElementById('remove-watchdog').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                document.getElementById('enable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                document.getElementById('disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+              },
+
               autoRefreshInterval: (parseInt(config.Interval / 2)), // refresh once per interval
-              height: $(window).height() - $("#pools").offset().top - 10
-            });
+              height: $(window).height() - $table.offset().top - 10
+            })
 
             $(document).ready(function () {
               $('#remove-watchdog').click(function () {

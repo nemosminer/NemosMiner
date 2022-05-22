@@ -1,6 +1,6 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 id="title" data-navbaractive="navconfigedit" class="h2">Edit Configuration</h1>
+            <h2 id="title" data-navbaractive="navconfigedit">Edit Configuration</h2>
           </div>
 
           <div id="configfilenames" class="alert alert-info" role="alert">&ensp;</div>
@@ -117,6 +117,9 @@
                   </div>
                   <div style="padding-top: 0.7rem" title="Watchdog will monitor pools & miners for frequent failures&#10;and suspend failing pools or miners for some cycles.">
                     <input type="checkbox" class="toggle-switch" id="Watchdog" name="Watchdog"> Activate watchdog (recommended)
+                  </div>
+                  <div style="padding-top: 0.7rem" title="Computer will restart when a dead miner is detected&#10;(e.g. miner cannot get stopped gracefully)">
+                    <input type="checkbox" class="toggle-switch" id="AutoReboot" name="AutoReboot"> Restart computer on dead miners
                   </div>
                   <div style="padding-top: 0.5rem" title="Donation duration per day&#10;&#10;Please help support the great team behind NemosMiner&#10;by leaving mining donations turned on&#10;(min=0, max=60 [default 13 &#8792; 0.9%] minutes)"> Donation 
                     <input type="number" id="Donate" name="Donate" min=0 max=60 value=13> minutes per day
@@ -553,6 +556,7 @@
               });
               if (config.StartGUIMinimized) document.getElementById('StartGUIMinimized').checked = true;
               if (config.Watchdog) document.getElementById('Watchdog').checked = true;
+              if (config.AutoReboot) document.getElementById('AutoReboot').checked = true;
               if (Number.isInteger(config.Donate)) document.getElementById('Donate').value = parseInt(config.Donate);
               // Donation nag
               if (parseInt(document.getElementById('Donate').value) <= 0) {
@@ -1085,6 +1089,7 @@
                   config.IdleSec = parseInt(document.getElementById('IdleSec').value);
                   config.StartGUIMinimized = document.getElementById('StartGUIMinimized').checked;
                   config.Watchdog = document.getElementById('Watchdog').checked;
+                  config.AutoReboot = document.getElementById('AutoReboot').checked;
                   config.Donate = parseInt(document.getElementById('Donate').value);
                   config.Interval = parseInt(document.getElementById('Interval').value);
                   config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);

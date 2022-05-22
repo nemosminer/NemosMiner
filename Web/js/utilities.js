@@ -116,15 +116,15 @@ function formatTime(seconds) {
 }
 
 function formatHashrateValue(value) {
-  if (value == null) return ''
-  if (value === 0) return '0 H/s'
+  if (value == null) return '';
+  if (value === 0) return '0 H/s';
   if (value > 0) {
-    if (value <= 1) return value.toFixed(2) + ' H/s';
-    else  {
-      var sizes = ['H/s', 'kH/s', 'MH/s', 'GH/s', 'TH/s', 'PH/s', 'EH/s', 'ZH/s', 'YH/s'];
-      var i = Math.floor(Math.log(value) / Math.log(1000));
-      return parseFloat((value / Math.pow(1000, i)).toFixed(2)) + ' ' + sizes[i];
-    }
+    var sizes = ['H/s', 'kH/s', 'MH/s', 'GH/s', 'TH/s', 'PH/s', 'EH/s', 'ZH/s', 'YH/s'];
+    var i = Math.floor(Math.log(value) / Math.log(1000));
+    unitvalue = value / Math.pow(1000, i);
+    if (i = 0) i = 1;
+    if (unitvalue < 10) return unitvalue.toFixed(3) + ' ' + sizes[i];
+    return unitvalue.toFixed(2) + ' ' + sizes[i];
   }
   return 'N/A';
 };
