@@ -6,7 +6,7 @@ Breaking changes (from 3.8.x.x code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
-ChangeLog NemosMiner 4.0.0.34 21.05.2022
+ChangeLog NemosMiner 4.0.0.34 22.05.2022
 ========================================
 
 Core:
