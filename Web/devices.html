@@ -145,7 +145,7 @@
           <div id="unsupporteddevices" style="visibility: hidden">
             <h3>Unsupported Devices</h3>
 
-            <table id="tableunsupporteddevices" class="table"
+            <table id="unsupporteddevices" class="table"
             data-click-to-select="true"
             data-cache="true"
             data-toggle="table"
@@ -234,16 +234,22 @@
                 item.tState = enumstatus[item.State];
               });
               return data;
-            }
+            };
 
-            $('#enableddevices').bootstrapTable({ });
             $('#enableddevices').on('all.bs.table', function () {
-              document.getElementById('disable-device').disabled = !Boolean($('#enableddevices').bootstrapTable('getSelections').length);
+              if ($('#enableddevices').bootstrapTable('getSelections').length >= 1) {
+                document.getElementById('disable-device').disabled = false;
+              } else {
+                document.getElementById('disable-device').disabled = true;
+              }
             });
 
-            $('#disableddevices').bootstrapTable({ });
             $('#disableddevices').on('all.bs.table', function () {
-              document.getElementById('enable-device').disabled = !Boolean($('#disableddevices').bootstrapTable('getSelections').length);
+              if ($('#disableddevices').bootstrapTable('getSelections').length >= 1) {
+                document.getElementById('enable-device').disabled = false;
+              } else {
+                document.getElementById('enable-device').disabled = true;
+              }
             });
 
             $(document).ready(function () {
@@ -281,26 +287,6 @@
                     }
                   }
                 });
-              });
-
-              $('#enableddevices').on('post-body.bs.table', function () {
-                try {
-                  if ($('#enableddevices').bootstrapTable('getSelections').length >= 1) {
-                    document.getElementById('disable-device').disabled = false;
-                  } else {
-                    document.getElementById('disable-device').disabled = true;
-                  }
-                } catch {}
-              });
-
-              $('#disableddevices').on('post-body.bs.table', function () {
-                try {
-                  if ($('#disableddevices').bootstrapTable('getSelections').length >= 1) {
-                    document.getElementById('enable-device').disabled = false;
-                  } else {
-                    document.getElementById('enable-device').disabled = true;
-                  }
-                } catch {}
               });
             });
           </script>
