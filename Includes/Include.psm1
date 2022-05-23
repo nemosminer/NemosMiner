@@ -55,6 +55,7 @@ Class Device {
     [Int64]$Memory
     [Double]$MemoryGB
     [String]$Type
+    [String]$Architecture
     [PSCustomObject]$CIM
     [PSCustomObject]$PNP
     [PSCustomObject]$Reg
@@ -212,8 +213,8 @@ Class Miner {
     [String]$WindowStyle = "minimized"
     [String[]]$EnvVars = @()
     [Int]$MinDataSamples # for safe hashrate values
-    [PSCustomObject]$LastSample # last hash rate sample
-    [Int[]]$WarmupTimes # First value: time (in seconds) until first hash rate sample is valid (default 0, accept first sample), second value: time (in seconds) the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed (default 15)
+    [PSCustomObject]$LastSample # last hashrate sample
+    [Int[]]$WarmupTimes # First value: time (in seconds) until first hashrate sample is valid (default 0, accept first sample), second value: time (in seconds) the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed (default 15)
     [DateTime]$BeginTime
     [DateTime]$EndTime
     [TimeSpan]$TotalMiningDuration # derived from pool and stats
@@ -866,7 +867,7 @@ Function Initialize-Application {
     $Variables.ScriptStartDate = (Get-Date).ToUniversalTime()
     If ([Net.ServicePointManager]::SecurityProtocol -notmatch [Net.SecurityProtocolType]::Tls12) { [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12 }
 
-    # Set process priority to BelowNormal to avoid hash rate drops on systems with weak CPUs
+    # Set process priority to BelowNormal to avoid hashrate drops on systems with weak CPUs
     (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
     If ($Config.Proxy -eq "") { $PSDefaultParameterValues.Remove("*:Proxy") }
@@ -1019,7 +1020,7 @@ Function Write-Message {
     }
 }
 
-Function Send-MonitoringData { 
+Function Update-MonitoringData { 
 
     # Updates a remote monitoring server, sending this worker's data and pulling data about other workers
 
@@ -1075,9 +1076,9 @@ Function Send-MonitoringData {
     }
 }
 
-Function Receive-MonitoringData { 
+Function Read-MonitoringData { 
 
-    If ($Config.ShowWorkerStatus -and $Config.MonitoringUser -and $Config.MonitoringServer) { 
+    If ($Config.ShowWorkerStatus -and $Config.MonitoringUser -and $Config.MonitoringServer -and $Variables.WorkersLastUpdated -lt (Get-Date).AddSeconds(-30)) { 
         Try { 
             $Workers = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/workers.php" -Method Post -Body @{ user = $Config.MonitoringUser } -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop
             # Calculate some additional properties and format others
@@ -1089,8 +1090,8 @@ Function Receive-MonitoringData {
                 $TimeSinceLastReport = New-TimeSpan -Start $_.date -End (Get-Date)
                 If ($TimeSinceLastReport.TotalMinutes -gt 10) { $_.status = "Offline" }
             }
-            $Variables | Add-Member -Force @{ Workers = $Workers }
-            $Variables | Add-Member -Force @{ WorkersLastUpdated = (Get-Date) }
+            $Variables.Workers = $Workers
+            $Variables.WorkersLastUpdated = (Get-Date)
 
             Remove-Variable Workers
 
@@ -1450,7 +1451,7 @@ Function Set-Stat {
 
         If ($Value -gt 0 -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded -and $Stat.Week -gt 0) { 
             If ($Name -match ".+_Hashrate$") { 
-                Write-Message -Level Warn "Error saving hash rate for '$($Name -replace '_Hashrate$')'. $(($Value | ConvertTo-Hash) -replace '\s+', '') is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Iteration $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
+                Write-Message -Level Warn "Error saving hashrate for '$($Name -replace '_Hashrate$')'. $(($Value | ConvertTo-Hash) -replace '\s+', '') is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Iteration $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
             }
             ElseIf ($Name -match ".+_PowerUsage") { 
                 Write-Message -Level Warn "Error saving power usage for '$($Name -replace '_PowerUsage$')'. $($Value.ToString("N2"))W is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [Iteration $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
@@ -1568,15 +1569,16 @@ Function Get-Stat {
         $Global:Stats = [Hashtable]::Synchronized(@{ })
     }
 
+    If (-not (Test-Path -Path "Stats" -PathType Container)) { 
+        New-Item "Stats" -ItemType "directory" -Force | Out-Null
+    }
+
     $Name | ForEach-Object { 
         $Stat_Name = $_
 
         If ($Stats.$Stat_Name -isnot [Hashtable] -or -not $Global:Stats.$Stat_Name.IsSynchronized) { 
             # Reduce number of errors
             If (-not (Test-Path -Path "Stats\$Stat_Name.txt" -PathType Leaf)) { 
-                If (-not (Test-Path -Path "Stats" -PathType Container)) { 
-                    New-Item "Stats" -ItemType "directory" -Force | Out-Null
-                }
                 Return
             }
 
@@ -1912,6 +1914,20 @@ Function Get-CpuId {
     }
 }
 
+Function Get-NvidiaArchitecture {
+    [CmdLetBinding()]
+    param(
+        [String]$Model,
+        [String]$ComputeCapability = ""
+    )
+
+    $ComputeCapability = $ComputeCapability -replace "[^\d\.]"
+    If     ($ComputeCapability -in @("8.0","8.6") -or $Model -match "^RTX30\d{2}" -or $Model -match "^RTXA\d{4}"  -or $Model -match "^AM") {"Ampere"}
+    ElseIf ($ComputeCapability -in @("7.5")       -or $Model -match "^RTX20\d{2}" -or $Model -match "^GTX16\d{2}" -or $Model -match "^TU") {"Turing"}
+    ElseIf ($ComputeCapability -in @("6.0","6.1") -or $Model -match "^GTX10\d{2}" -or $Model -match "^GTXTitanX"  -or $Model -match "^GP" -or $Model -match "^P" -or $Model -match "^GT1030") {"Pascal"}
+    Else   {"Other"}
+}
+
 Function Get-Device { 
 
     Param(
@@ -2208,6 +2224,28 @@ Function Get-Device {
             }
 
             $Variables.Devices | Where-Object Model -ne "Remote Display Adapter 0GB" | Where-Object Vendor -ne "CitrixSystemsInc" | Where-Object Bus -Is [Int64] | Sort-Object Bus | ForEach-Object { 
+                If ($_.Type -eq "GPU") { 
+                    If ($_.Vendor -eq "NVIDIA") { 
+                        $_ | Add-Member "Architecture" (Get-NvidiaArchitecture $_.Model $_.OpenCL.DeviceCapability)
+                    } 
+                    ElseIf ($_.Vendor -eq "AMD") {
+                        $_ | Add-Member "Architecture" $(
+                            Switch -Regex ($_.Reg.InfSection -replace "ati2mtag_") { 
+                                "Lexa.*"      { "CGN4" }
+                                "Ellesmere.*" { "CGN4" }
+                                "Polaris.*"   { "CGN4" }
+                                "Vega.*"      { "CGN5" }
+                                "Navi1.*"     { "RDNA" }
+                                "Nav12.*"     { "RDNA2" }
+                                Default       { "Other" }
+                            }
+                        )
+                    }
+                    Else { 
+                        $_ | Add-Member "Architecture" "Other"
+                    }
+                }
+
                 $_ | Add-Member @{ 
                     Slot             = [Int]$Slot
                     Type_Slot        = [Int]$Type_Slot.($_.Type)
@@ -2248,10 +2286,13 @@ Function Get-Device {
 
 Filter ConvertTo-Hash { 
 
-    $Units = " kMGTPEZY " # k(ilo) in small letters, see https://en.wikipedia.org/wiki/Metric_prefix
+    $Units = " kMGTPEZY" # k(ilo) in small letters, see https://en.wikipedia.org/wiki/Metric_prefix
+
     $Base1000 = [Math]::Truncate([Math]::Log([Math]::Abs([Double]$_), [Math]::Pow(1000, 1)))
     $Base1000 = [Math]::Max([Double]0, [Math]::Min($Base1000, $Units.Length - 1))
-    "{0:n2} $($Units[$Base1000])H" -f ($_ / [Math]::Pow(1000, $Base1000))
+    $UnitValue = $_ / [Math]::Pow(1000, $Base1000)
+    $Digits = If ($UnitValue -lt 10 ) { 3 } Else { 2 }
+    "{0:n$($Digits)} $($Units[$Base1000])H" -f $UnitValue
 }
 
 Function Get-DigitsFromValue { 
@@ -2770,31 +2811,21 @@ Function Initialize-Autoupdate {
         }
     }
 
-    # Remove OrphanedMinerStats; must be done after new miner files habe veen unpacked
-    Remove-OrphanedMinerStats | Out-Null
-
     # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
     Start-LogReader
 
-    # Remove any obsolete miner file (ie. not in new version Miners or OptionalMiners)
+    # Remove any obsolete miner files
     If (Test-Path -Path ".\Miners" -PathType Container) { Get-ChildItem -Path ".\Miners" -File | Where-Object { $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\Miners" -File).name -and $_.name -notin (Get-ChildItem -Path ".\$UpdateFilePath\OptionalMiners" -File).name } | ForEach-Object { Remove-Item -Path $_.FullName -Recurse -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue } }
 
-    # Get all miner names and remove obsolete stat files from miners that no longer exist
-    $MinerNames = @( )
-    If (Test-Path -Path ".\Miners" -PathType Container) { Get-ChildItem -Path ".\Miners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension } }
-    If (Test-Path -Path ".\OptionalMiners" -PathType Container) { Get-ChildItem -Path ".\OptionalMiners" -File | ForEach-Object { $MinerNames += $_.Name -replace $_.Extension } }
-    If (Test-Path -Path ".\Stats" -PathType Container) { 
-        Get-ChildItem -Path ".\Stats\*_Hashrate.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames } | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
-        Get-ChildItem -Path ".\Stats\*_PowerUsage.txt" -File | Where-Object { (($_.name -Split '-' | Select-Object -First 2) -Join '-') -notin $MinerNames } | ForEach-Object { Remove-Item -Path $_ -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
-    }
-
-    If ($ObsoleteStatFiles.Count -gt 0) { 
+    # Remove obsolete miner stat files; must be done after new miner files have been unpacked
+    If ($ObsoleteStatFiles = @($Global:Stats.Keys | Where-Object { $_ -match "_Hashrate$|_PowerUsage$" } | Where-Object { (($_ -split "-" | Select-Object -First 2) -join "-") -notin @(Get-ChildItem ".\Miners\*.ps1").BaseName })) { 
         "Removing obsolete stat files from miners that no longer exist..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
         $ObsoleteStatFiles | ForEach-Object { 
-            Remove-Item -Path $_ -Force
+            Remove-Item -Path ".\Stats\$($_).txt" -Force -ErrorAction Ignore
             "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
         }
     }
+    Remove-Variable ObsoleteStatFiles
 
     # Remove temp files
     "Removing temporary files..." | Tee-Object -FilePath $UpdateLog -Append | Write-Message -Level Verbose
@@ -2957,22 +2988,24 @@ Function Update-ConfigFile {
         $OldRegion = $Config.Region
         # Write message about new mining regions
         $Config.Region = Switch ($Config.Region) { 
-            "Brazil"      { "USA West" }
-            "Europe"      { "Europe West" }
-            "Europe East" { "Europe North" }
-            "HongKong"    { "Asia" }
-            "India"       { "Asia" }
-            "Japan"       { "Japan" }
-            "Russia"      { "Russia" }
-            "US"          { "USA West" }
-            Default       { "Europe West" }
+            "Brazil"       { "USA West" }
+            "Europe"       { "Europe West" }
+            "Europe East"  { "Europe West" }
+            "Europe North" { "Europe West" }
+            "HongKong"     { "Asia" }
+            "India"        { "Asia" }
+            "Japan"        { "Japan" }
+            "Russia"       { "Russia" }
+            "US"           { "USA West" }
+            Default        { "Europe West" }
         }
         Write-Message -Level Warn "Available mining locations have changed ($OldRegion -> $($Config.Region)). Please verify your configuration."
         Remove-Variable OldRegion
     }
 
-    # Remove AHashPool
+    # Remove AHashPool config & stat data
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "AhashPool*" }
+    Remove-ChildItem ".\Stats\AhashPool*.txt" -Force -ErrorAction Ignore
 
     $Config | Add-Member ConfigFileVersion ($Variables.Branding.Version.ToString()) -Force
     Write-Config -ConfigFile $ConfigFile
@@ -2980,13 +3013,12 @@ Function Update-ConfigFile {
     Remove-Variable New_Config_Items -ErrorAction Ignore
 }
 
-Function Remove-OrphanedMinerStats { 
+Function Get-ObsoleteMinerStats { 
+
+    Get-Stat | Out-Null
 
     $MinerNames = @(Get-ChildItem ".\Miners\*.ps1").BaseName
-    $TempStatNames = @($Stats.Keys | Where-Object { $_ -match "_Hashrate$|_PowerUsage$" } | Where-Object { (($_ -split "-" | Select-Object -First 2) -join "-") -notin $MinerNames})
-    If ($TempStatNames) { $TempStatNames | ForEach-Object { Remove-Stat $_ } }
-
-    $TempStatNames
+    @($Global:Stats.Keys | Where-Object { $_ -match "_Hashrate$|_PowerUsage$" } | Where-Object { (($_ -split "-" | Select-Object -First 2) -join "-") -notin $MinerNames})
 }
 
 Function Test-Prime { 
