@@ -1,14 +1,11 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 id="title" data-navbaractive="navbalancedata">Balance Data</h2>
+            <h2 data-navbaractive="navbalancedata">Balance Data</h2>
           </div>
-
           <div id="balancedata" class="alert alert-info" role="alert">This is the balance data for the last 30 days that was collected by the balance tracker.</div>
-
           <div id="toolbar">
             <button id="remove-entry" class="btn btn-warning">Delete entry</button>
           </div>
-
           <table id="balanceobjects" class="table"
             data-toolbar="#toolbar"
             data-click-to-select="true"
@@ -29,7 +26,6 @@
             data-auto-refresh-status="false"
             data-url="/balancedata"
             >
-
             <thead>
               <tr>
                 <th data-field="state" data-checkbox="true"></th>

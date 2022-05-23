@@ -47,7 +47,7 @@ footer {
   top: 0;
   height: calc(100vh - 75px);
   padding-top: 1.5rem;
-  overflow-x: auto;
+  overflow-x: auto; /* Scrollable contents if viewport is narrower than content. */
   overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
   padding-bottom: 1.1rem;
   padding-left: 1rem;

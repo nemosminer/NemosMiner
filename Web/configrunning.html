@@ -1,18 +1,15 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 id="title" data-navbaractive="navconfigrunning">Running Configuration</h2>
+            <h2 data-navbaractive="navconfigrunning">Running Configuration</h2>
           </div>
-
           <div id="configrunning" class="alert alert-info" role="alert">This is the full configuration NemosMiner is currently using</div>
-
           <div id="toolbar">
             <button type="button" class="btn btn-primary" id="editconfig-button" name="editconfig-button" title="Edit configuration file&#10;It will become active in next cycle.">Edit Config file</button>
             <button type="button" class="btn btn-primary" id="editpoolsconfig-button" name="editpoolsconfig-button" title="Edit pools config file&#10;It will become active in next cycle.">Edit PoolsConfig file</button>
           </div>
           <br>
 
-          <pre id="config"></pre>
-          <br>
+          <pre id="config" style="height: calc(100vh - 350px); overflow:auto;"></pre>
           <br>
 <!-- Start of page scripts 'configrunning.html' -->
           <script type="text/javascript">

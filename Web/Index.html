@@ -1,17 +1,14 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 id="title" data-navbaractive="navdashboard">Dashboard</h2>
+            <h2 data-navbaractive="navdashboard">Dashboard</h2>
           </div>
-
           <div id="toolbar">
             <button id="re-benchmark" class="btn btn-primary" disabled title="The marked miners will re-benchmark&#10;Use this if the recorded hashrate is unreal or to re-enable disabled miners">Re-benchmark</button>
             <button id="re-measure" class="btn btn-primary" disabled title="The marked miners will re-measure power usage&#10;Use this if the recorded power usage is unreal">Re-measure Power Usage</button>
             <button id="failed" class="btn btn-danger" disabled title="The marked miners will be marked as failed&#10;Use this if the miners fail benchmarking or produce unpredictable results">Mark as failed</button>
             <button id="disable" class="btn btn-warning" disabled title="The marked miners will be marked as disabled&#10;To re-enable trigger re-benchmarking">Disable</button>
           </div>
-
           <h3>Launched Miners</h3>
-
           <table id="miners" class="table"
             data-toolbar="#toolbar"
             data-click-to-select="true"
@@ -36,7 +33,6 @@
             data-maintain-meta-data="true"
             data-undefined-text=""
             >
-
             <thead>
               <tr>
                 <th data-field="state" data-checkbox="true"></th>
@@ -81,9 +77,7 @@
 
           <div id="balances" style ="display:none">
             <h3>Balances</h3>
-
             <div id="balanceboxes" class="card-deck"></div>
-
             <script id="poolbalance_template" type="text/x-handlebars-template">
               <div class="card m-3 rounded {{#if total}}text-white bg-primary{{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}300px{{/if}}">
                 <div class="card-header text-center">
@@ -95,7 +89,7 @@
                         <th style="text-align:center">Earnings last 6 hours</th>
                         <th style="text-align:center">Earnings last 24 hours</th>
                         <th style="text-align:center">Earnings last 7 days</th>
-                        <th style="text-align:center">Earnings last 30 days</th>
+                       <th style="text-align:center">Earnings last 30 days</th>
                       </tr>
                       <tr>
                         <td style="text-align:center">{{formatCurrency growth1sum}} {{firstcurrency}}</td>
@@ -415,8 +409,8 @@
                                       rates: rates
                                     };
 
-                                    // Add warning symbol if data was not updated in last poll, add one minute to ensure completion of balance poll
-                                    if ((new Date() - new Date(item.LastUpdated)) / 1000 > parseInt(config.PoolBalancesUpdateInterval + 1) * 60) {
+                                    // Add warning symbol if data was not updated in last poll, add one minute to ensure completion of balance poll, ignore ProHashing
+                                    if ((item.Pool != "ProHashing" && new Date() - new Date(item.LastUpdated)) / 1000 > parseInt(config.PoolBalancesUpdateInterval + 1) * 60) {
                                       outdatedicon = " &#9888;&#65039;";
                                       data.updated += outdatedicon;
                                     }

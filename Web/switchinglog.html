@@ -1,14 +1,11 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 id="title" data-navbaractive="navswitchinglog">Switching Log</h2>
+            <h2 data-navbaractive="navswitchinglog">Switching Log</h2>
           </div>
-
           <div class="alert alert-info" role="alert">Lists the executed miners and the command lines used (last 1000 entries).</div>
-
           <div id="toolbar">
             <button id="clear-log" class="btn btn-warning">Clear Switching Log</button>
           </div>
-
           <table id="switchinglog" class="table"
             data-toolbar="#toolbar"
             data-click-to-select="true"
@@ -31,7 +28,6 @@
             data-sort-name="Date"
             data-sort-order="desc"
             >
-
             <thead>
               <tr>
                 <th data-field="DateTime" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatDate">Date & Time</th>

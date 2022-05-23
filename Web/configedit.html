@@ -1,17 +1,14 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 id="title" data-navbaractive="navconfigedit">Edit Configuration</h2>
+            <h2 data-navbaractive="navconfigedit">Edit Configuration</h2>
           </div>
-
           <div id="configfilenames" class="alert alert-info" role="alert">&ensp;</div>
-
           <form id="configuration">
             <input name="submit" type="submit" id="save-button" value="Apply configuration" class="btn btn-success" alt="Submit" title="Apply configuration&#10;It will become active in next cycle.">
             <input name="reset" type="reset" id="reset-button" value="Reset" class="btn btn-warning" alt="Reset" title="Reset configuration data to previous values">
             <div>
               <br>
             </div>
-
             <table>
               <tr style="vertical-align: top; line-height: 125%">
                 <td>
@@ -184,7 +181,6 @@
                     </div>
                   </fieldset>
                 </td>
-
                 <td>
                   <div style="line-height:100%" class="col-md-12">
                     <!-- Select Mining Devices -->
@@ -206,13 +202,12 @@
                       <legend class=h6><b>Select the Region closest to your Location</b></legend>
                       <div style="padding-top: 0.2rem;line-height:125%" id="Regions"></div>
                     </fieldset>
-                    <div style="padding-top: 0.2rem" title="Pools establish fastest network route based on your location&#10;Currently only ZergPool support this feature.&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
+                    <div style="padding-top: 0.2rem" title="Pools establish fastest network route based on your location&#10;Currently only ZergPool supports this feature.&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
                       <input type="checkbox" class="toggle-switch" id="UseAnycast" name="UseAnycast"> Use anycast for best network performance and ping times
                     </div>
                     <br>
                   </div>
                 </td>
-
                 <td>
                   <!-- Miner and Algorithm Selection -->
                   <legend title="" class=h6><b>Miner and Algorithm Selection</b></legend>
@@ -258,7 +253,7 @@
                   <div style="padding-top: 0.5rem" title="This is helpful to check the miner output for errors">
                     <input type="checkbox" class="toggle-switch" id="MinerWindowStyleNormalWhenBenchmarking" name="MinerWindowStyleNormalWhenBenchmarking"> Run in normal window while benchmarking
                   </div>
-                  <div style="padding-top: 0.3rem" title="Select the process priority for CPU miners&#10;Higher priorities may lead to fluctuating hash rates with GPU miners">
+                  <div style="padding-top: 0.3rem" title="Select the process priority for CPU miners&#10;Higher priorities may lead to fluctuating hashrates with GPU miners">
                     <label for="CPUMinerProcessPriority">Run CPU miners with</label>
                     <select name="" id="CPUMinerProcessPriority">
                       <option value=1>above normal</option>
@@ -268,7 +263,7 @@
                     </select>
                     <label for="CPUMinerProcessPriority">process priority</label>
                   </div>
-                  <div title="Select the process priority for GPU miners&#10;Higher priorities may lead to fluctuating hash rates with CPU miners">
+                  <div title="Select the process priority for GPU miners&#10;Higher priorities may lead to fluctuating hashrates with CPU miners">
                     <label for="GPUMinerProcessPriority">Run GPU miners with</label>
                     <select name="" id="GPUMinerProcessPriority">
                       <option value=1>above normal</option>

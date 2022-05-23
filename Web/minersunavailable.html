@@ -1,10 +1,8 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 id="title" data-navbaractive="navminersunavailable">Unavailable Miners</h2>
+            <h2 data-navbaractive="navminersunavailable">Unavailable Miners</h2>
           </div>
-
           <div class="alert alert-info" role="alert">These are all unavailable miners. The column 'Reason' shows the filter criteria(s) that made the miner unavailable.</div>
-
           <div id="toolbar">
             <button id="re-benchmark" class="btn btn-primary" disabled title="The marked miners will re-benchmark&#10;Use this if the recorded hashrate is unreal or to re-enable disabled miners">Re-benchmark</button>
             <button id="re-measure" class="btn btn-primary" disabled title="The marked miners will re-measure power usage&#10;Use this if the recorded power usage is unreal">Re-measure Power Usage</button>
@@ -12,7 +10,6 @@
             <button id="failed" class="btn btn-danger" disabled title="The marked miners will be marked as failed&#10;Use this if the miners fail benchmarking or produce unpredictable results">Mark as failed</button>
             <button id="disable" class="btn btn-warning" disabled title="The marked miners will be marked as disabled&#10;To re-enable trigger re-benchmarking">Disable</button>
           </div>
-
           <table id="miners" class="table"
             data-toolbar="#toolbar"
             data-click-to-select="true"
@@ -38,7 +35,6 @@
             data-maintain-meta-data="true"
             data-show-fullscreen="true"
             >
-
             <thead>
               <tr>
                 <th data-field="state" data-checkbox="true"></th>

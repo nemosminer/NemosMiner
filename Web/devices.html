@@ -1,15 +1,12 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 id="title" data-navbaractive="navdevices">Devices</h2>
+            <h2 data-navbaractive="navdevices">Devices</h2>
           </div>
           <div class="alert alert-info" role="alert">These are the devices (GPUs and CPUs) detected by NemosMiner. Configuration changes made will become active in the next cycle.</div>
-
           <div id="toolbarenableddevices">
             <button id="disable-device" class="btn btn-danger" disabled>Disable Device</button>
           </div>
-
           <h3>Enabled Devices</h3>
-
           <table id="enableddevices" class="table"
             data-toolbar="#toolbarenableddevices"
             data-click-to-select="true"
@@ -30,7 +27,6 @@
             data-sort-name="Name"
             data-sort-order="asc"
             >
-
             <thead>
               <tr>
                 <th data-field="state" data-checkbox="true"></th>
@@ -45,6 +41,7 @@
                 <th data-field="tDriverVersionCIM">Driver Version (CIM)</th>
                 <th data-field="tDriverVersionOpenCL">Driver Version (OpenCL)</th>
                 <th data-field="CUDAVersion">CUDA Version</th>
+                <th data-field="tArchitecture">Architecture</th>
                 <th data-field="ConfiguredPowerUsage" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt">Configured Power Usage</th>
                 <th data-field="Bus" data-visible="false" data-sortable="true">PCI Bus Id</th>
                 <th data-field="Bus_Index" data-visible="false" data-sortable="true">Bus_Index</th>
@@ -74,11 +71,9 @@
           <br>
 
           <h3>Disabled Devices</h3>
-
           <div id="toolbardisableddevices">
               <button id="enable-device" class="btn btn-success" disabled>Enable Device</button>
           </div>
-
           <table id="disableddevices" class="table"
             data-toolbar="#toolbardisableddevices"
             data-click-to-select="true"
@@ -99,7 +94,6 @@
             data-sort-name="Name"
             data-sort-order="asc"
             >
-
             <thead>
               <tr>
                 <th data-field="state" data-checkbox="true"></th>
@@ -114,6 +108,7 @@
                 <th data-field="tDriverVersionCIM">Driver Version (CIM)</th>
                 <th data-field="tDriverVersionOpenCL">Driver Version (OpenCL)</th>
                 <th data-field="CUDAVersion">CUDA Version</th>
+                <th data-field="tArchitecture">Architecture</th>
                 <th data-field="ConfiguredPowerUsage" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt">Configured Power Usage</th>
                 <th data-field="Bus" data-visible="false" data-sortable="true">PCI Bus Id</th>
                 <th data-field="Bus_Index" data-visible="false" data-sortable="true">Bus_Index</th>
@@ -144,27 +139,25 @@
 
           <div id="unsupporteddevices" style="visibility: hidden">
             <h3>Unsupported Devices</h3>
-
             <table id="unsupporteddevices" class="table"
-            data-click-to-select="true"
-            data-cache="true"
-            data-toggle="table"
-            data-icons="icons"
-            data-show-button-text="true"
-            data-filter-control="true"
-            data-disable-control-when-search="true"
-            data-show-search-clear-button="true"
-            data-show-columns="true"
-            data-show-toggle="true"
-            data-show-refresh="true"
-            data-detail-view="true"
-            data-detail-formatter="detailFormatter"
-            data-url="/devices/unsupported"
-            data-response-handler="formatDevices"
-            data-sort-name="Name"
-            data-sort-order="asc"
-            >
-
+              data-click-to-select="true"
+              data-cache="true"
+              data-toggle="table"
+              data-icons="icons"
+              data-show-button-text="true"
+              data-filter-control="true"
+              data-disable-control-when-search="true"
+              data-show-search-clear-button="true"
+              data-show-columns="true"
+              data-show-toggle="true"
+              data-show-refresh="true"
+              data-detail-view="true"
+              data-detail-formatter="detailFormatter"
+              data-url="/devices/unsupported"
+              data-response-handler="formatDevices"
+              data-sort-name="Name"
+              data-sort-order="asc"
+              >
               <thead>
                 <tr>
                   <th data-field="state" data-checkbox="true"></th>
@@ -178,6 +171,7 @@
                   <th data-field="tDriverVersionCIM">Driver Version (CIM)</th>
                   <th data-field="tDriverVersionOpenCL">Driver Version (OpenCL)</th>
                   <th data-field="CUDAVersion">CUDA Version</th>
+                  <th data-field="tArchitecture">Architecture</th>
                   <th data-field="ConfiguredPowerUsage" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt">Configured Power Usage</th>
                   <th data-field="Bus" data-visible="false" data-sortable="true">PCI Bus Id</th>
                   <th data-field="Bus_Index" data-visible="false" data-sortable="true">Bus_Index</th>
@@ -228,6 +222,9 @@
                 if (item.OpenCL) item.tCores = item.OpenCL.MaxComputeUnits;
                 else if (item.CIM) item.tCores = item.CIM.NumberOfLogicalProcessors;
                 else item.tCores = 'N/A';
+
+                if (item.Architecture) item.tArchitecture = item.Architecture;
+                else item.tArchitecture = 'N/A';
 
                 // Format device state
                 const enumstatus = ["Enabled", "Disabled", "Unsupported"];

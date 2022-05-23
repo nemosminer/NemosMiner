@@ -1,18 +1,15 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 id="title" data-navbaractive="navearningschart">Earnings Chart</h2>
+            <h2 data-navbaractive="navearningschart">Earnings Chart</h2>
           </div>
-
           <div class="alert alert-info" role="alert">Consolidated earnings of the last 30 active mining days<br>The data is taken from the pools APIs and may not yet include results from recent mining</div>
-
           <canvas id="EarningsChart" width="400" height="200" role="img"></canvas>
-<!--  -->
 <!-- Start of page scripts -->
           <script type="text/javascript">
-
             var canvas = document.getElementById('EarningsChart');
+
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - 150;
+            canvas.height = window.innerHeight - 175;
 
             Chart.defaults.color = 'black';
             Chart.defaults.font.size = 16;
@@ -121,7 +118,7 @@
                       display: true,
                       font: {
                         family: 'Arial, Helvetica, sans-serif',
-                        size: 32,
+                        size: 28,
                         weight: 'normal'
                       },
                       text: 'Daily Mining Earnings'

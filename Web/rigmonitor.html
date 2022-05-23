@@ -1,19 +1,16 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 id="title" data-navbaractive="navrigmonitor">Rig Monitor</h2>
+            <h2 data-navbaractive="navrigmonitor">Rig Monitor</h2>
           </div>
-
           <h3>Monitor Settings</h3>
-
           <div id="configfilename" class="alert alert-info" role="alert"></div>
-
           <form id="configuration">
             <input name="submit" type="submit" id="save-button" value="Apply configuration" class="btn btn-success" alt="Submit" title="Apply configuration&#10;It will become active in next cycle.">
             <input name="reset" type="reset" id="reset-button" value="Reset" class="btn btn-warning" alt="Reset" title="Reset configuration data to previous values">
             <div>
               <br>
-            </div>
 
+            </div>
             <div title="Monitoring Server host name">Monitoring Server 
               <input style="margin-left: 5px;" type="text" id="MonitoringServer" name="MonitoringServer" value="https://nemosminer.com" size=64>
             </div>
@@ -25,9 +22,9 @@
               <input type="checkbox" class="toggle-switch" id="ReportToServer" name="ReportToServer">
               <label for="ReportToServer">Report this Rig Status to Monitoring Server</label>
             </div>
-            <div title="Show status for all reporting mining rigs&#10;`Report to Monitoring Server` must be enabled on these rigs&#10;using the same userID">
+            <div title="Show status of all reporting mining rigs&#10;`Report to Monitoring Server` must be enabled on these rigs&#10;using the same UserID">
               <input type="checkbox" class="toggle-switch" id="ShowWorkerStatus" name="ShowWorkerStatus">
-              <label for="ShowWorkerStatus">Show Rig Status for all reporting Mining Rigs</label>
+              <label for="ShowWorkerStatus">Show Rig Status of all reporting Mining Rigs</label>
             </div>
           </form>
           <br>
@@ -36,7 +33,6 @@
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
               <h3>Rig Status</h3>
             </div>
-
             <table id="workers" class="table"
               data-icons="icons"
               data-url="/displayworkers"
@@ -55,7 +51,6 @@
               data-click-to-select="true"
               data-detail-formatter="detailFormatter"
               >
-
               <thead>
                 <tr>
                   <th data-field="Worker" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Worker</th>
