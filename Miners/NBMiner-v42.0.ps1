@@ -3,7 +3,7 @@ using module ..\Includes\Include.psm1
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -in @("AMD", "NVIDIA"))) { Return }
 
 $Uri = Switch ($Variables.DriverVersion.CUDA) { 
-    { $_ -ge "10.0" } { "https://github.com/NebuTech/NBMiner/releases/download/v41.5/NBMiner_41.5_Win.zip"; Break }
+    { $_ -ge "10.0" } { "https://github.com/NebuTech/NBMiner/releases/download/v42.0/NBMiner_42.0_Win.zip"; Break }
     Default { Return }
 }
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
