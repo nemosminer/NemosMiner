@@ -34,9 +34,9 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$APIPort = 3999, # TCP Port for API & Web GUI
     [Parameter(Mandatory = $false)]
-    [Switch]$AutoUpdate = $true, # NemosMiner will automatically update to the new version
-    [Parameter(Mandatory = $false)]
     [Switch]$AutoReboot = $true, # If true will reboot computer when a miner is completely dead, eg. unresponsive
+    [Parameter(Mandatory = $false)]
+    [Switch]$AutoUpdate = $true, # NemosMiner will automatically update to the new version
     [Parameter(Mandatory = $false)]
     [Int]$AutoUpdateCheckInterval = 1, # NemosMiner will periodically check for a new program version every n days (0 to disable)
     [Parameter(Mandatory = $false)]
@@ -101,7 +101,7 @@ param(
     [ValidateRange(0, 1)]
     [Double]$MinAccuracy = 0.5, # Use only pools with price accuracy greater than the configured value. Allowed values: 0.0 - 1.0 (0% - 100%)
     [Parameter(Mandatory = $false)]
-    [Int]$MinDataSamples = 20, # Minimum number of hash rate samples required to store hash rate
+    [Int]$MinDataSamples = 20, # Minimum number of hashrate samples required to store hashrate
     [Parameter(Mandatory = $false)]
     [Hashtable]$MinDataSamplesAlgoMultiplier = @{ "X16r" = 3 }, # Per algorithm multiply MinDataSamples by this value
     [Parameter(Mandatory = $false)]
@@ -167,7 +167,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$Region = "Europe West", # Used to determine pool nearest to you. One of "Asia", "Europe North", "Europe West", "HongKong", "Japan", "Russia", "USA East", "USA West"
     [Parameter(Mandatory = $false)]
-    [Switch]$ReportToServer = $false, # I)f true will report worker status to central monitoring server
+    [Switch]$ReportToServer = $false, # If true will report worker status to central monitoring server
     [Parameter(Mandatory = $false)]
     [Switch]$ShowAccuracy = $true, # Show pool data accuracy column in miner overview
     [Parameter(Mandatory = $false)]
@@ -697,7 +697,7 @@ Function Update-TabControl {
         }
         "Rig Monitoring" { 
 
-            Receive-MonitoringData
+            Read-MonitoringData
 
             If ([Boolean]$Variables.APIRunspace) { 
                 $ConfigMonitoring.Text = "To edit the monitoring settings use the Web GUI"
@@ -729,10 +729,10 @@ Function Update-TabControl {
                     @{ Name = "Version"; Expression = { $_.version } }, 
                     @{ Name = "Est. Profit $($Config.Currency)/day"; Expression = { [Decimal]($_.Profit * ($Variables.Rates.BTC.($Config.Currency))) } }, 
                     @{ Name = "Miner"; Expression = { $_.data.Name -join $nl } }, 
-                    @{ Name = "Pool"; Expression = { ($_.data | ForEach-Object { ($_.Pool -join " & ") } -join $nl) } }, 
+                    @{ Name = "Pool"; Expression = { ($_.data | ForEach-Object { $_.Pool -join " & " }) -join $nl } }, 
                     @{ Name = "Algorithm"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join $nl } }, 
-                    @{ Name = "Live Hashrate"; Expression = { If ($_.data.CurrentSpeed) { ($_.data | ForEach-Object { ($_.CurrentSpeed | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " }) -join $nl } Else { "" } } }, 
-                    @{ Name = "Benchmark Hashrate"; Expression = { If ($_.data.EstimatedSpeed) { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " }) -join $nl } Else { "" } } }
+                    @{ Name = "Live Hashrate"; Expression = { ($_.data | ForEach-Object { ($_.CurrentSpeed | ForEach-Object { If ([Double]$_ -gt 0) { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " } Else { "-" } }) -join " & " }) -join $nl } }, 
+                    @{ Name = "Benchmark Hashrate"; Expression = { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { If ([Double]$_ -gt 0) { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " } Else { "-" } }) -join " & " }) -join $nl } }
                 ) | Sort-Object "Worker" | Out-DataTable
 
                 # Set row color
@@ -826,7 +826,7 @@ Function Global:TimerUITick {
                     Stop-BrainJob
                     Stop-IdleDetection
                     Stop-BalancesTracker
-                    Send-MonitoringData
+                    Update-MonitoringData
 
                     $LabelMiningStatus.Text = "Stopped | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Red
@@ -855,7 +855,7 @@ Function Global:TimerUITick {
                         Initialize-Application
                         Start-BalancesTracker
                     }
-                    Send-MonitoringData
+                    Update-MonitoringData
 
                     $LabelMiningStatus.Text = "Paused | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Blue
