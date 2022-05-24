@@ -2,41 +2,22 @@
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h2 data-navbaractive="navtaillog">System Log</h2>
           </div>
-          <div class="alert alert-info" role="alert">Shows the last lines of the NemosMiner log</div>
-          <div id="logtext">
-            <pre id="thePlace"></pre>
-            <div id="theEnd"></div>
-          </div>
+          <div class="alert alert-info" role="alert">Shows the last 100 lines of the NemosMiner log</div>
+          <pre id="logtext" style="font-size: 16px; line-height: 20px; height: calc(100vh - 280px); overflow: auto; display: flex; flex-direction: column-reverse;"></pre>
+          <br>
 <!-- Start of page scripts 'logviewer.html' -->
           <script type="text/javascript">
             // Substitute the URL for your server log file here...
-            var url = "/functions/log/get?lines=45";
-
-            if (typeof XMLHttpRequest == "undefined") {
-              // this is only for really ancient browsers
-              XMLHttpRequest = function () {
-                try { return new ActiveXObject("Msxml2.xmlHttp.6.0"); }
-                catch (e1) {}
-                try { return new ActiveXObject("Msxml2.xmlHttp.3.0"); }
-                catch (e2) {}
-                try { return new ActiveXObject("Msxml2.xmlHttp"); }
-                catch (e3) {}
-                throw new Error("This browser does not support xmlHttpRequest.");
-              };
-            }
+            var request = "/functions/log/get?lines=100";
 
             function tailf() {
-              var ajax = new XMLHttpRequest();
-              ajax.open("POST", url, true);
-
-              ajax.onreadystatechange = function() {
-                if(ajax.status == 200 && ajax.readyState == 4){
-                  document.getElementById("thePlace").innerHTML = ajax.responseText;
-                  document.getElementById("theEnd").scrollIntoView()
+              $.ajax({url: request, 
+                dataType: 'text',
+                success: function(result) {
+                  document.getElementById("logtext").innerHTML = result;
                 }
-              }
-              ajax.send(null);
-            }
+              });
+            };
 
             tailf();
             setInterval("tailf()", 1000);
