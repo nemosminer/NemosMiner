@@ -6,6 +6,29 @@ Breaking changes (from 3.8.x.x code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+ChangeLog NemosMiner 4.0.0.35 24.05.2022
+========================================
+
+Enhancements:
+- Core / Read-MonitoringData: Do not request worker data from monitoring server if data is less than 30 seconds old (limit number of web requests)
+- Core / Update-Config: remove AHashPool stat files (pool is dead)
+- Core / Update-Config: remove obsolete miner stat files
+- Core / Devices: Add 'Architecture' property
+- Core: 3 digits for hashrate values < 10
+- Web GUI / Log viewer: Make output scrollable
+
+Fixes:
+- Core / Update-Config: Region change broken if previous region was set to 'Europe North'
+- GMiner API: Ignore 0 hash rate samples
+- GMiner: Remove dual algorithm mining ETC/EH & TON with AMD cards (not supported)
+- Legacy GUI / Rig Monitoring: Pool column empty
+- Rig Monitoring: NaN hashrate (Legacy & web GUI)
+
+Miner updates:
+- NBMiner-v42.0
+- SRBMinerMulti-v0.9.5
+
+
 ChangeLog NemosMiner 4.0.0.34 22.05.2022
 ========================================
 

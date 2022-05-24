@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.0.34
-Version date:   22 May 2022
+Version:        4.0.0.35
+Version date:   24 May 2022
 #>
 
 # Start transcript log
@@ -76,7 +76,6 @@ While ($true) {
         $PoolsToTrack = @(Get-PoolBaseName (Get-ChildItem ".\Balances\*.ps1" -File).BaseName) | Sort-Object -Unique | Where-Object { $_ -notin $Config.BalancesTrackerIgnorePool }
 
         # Fetch balances data from pools
-        $BalanceObjects = @($BalanceObjects | Where-Object { $_.Pool -ne "ProHashing" -or $_.DateTime -gt $Now.AddHours((Get-TimeZone -ID "Eastern Standard Time").BaseUtcOffset.totalhours).Date }) # ProHashing does not send balance if all is paid -> remove from balances
         If ($PoolsToTrack) { Write-Message -Level Info "Balances Tracker is requesting data from pool$(If ($PoolsToTrack.Count -gt 1) { "s" }) '$($PoolsToTrack -join ', ')'..." }
         $PoolsToTrack | ForEach-Object { $BalanceObjects += @(& ".\Balances\$($_).ps1") }
 

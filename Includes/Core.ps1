@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0.34
-Version date:   22 May 2022
+Version:        4.0.0.35
+Version date:   24 May 2022
 #>
 
 using module .\Include.psm1
@@ -356,7 +356,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
             }
 
             # Send data to monitoring server
-            If ($Config.ReportToServer) { Send-MonitoringData }
+            If ($Config.ReportToServer) { Update-MonitoringData }
 
             # Read all stats, will remove those from memory that no longer exist as file
             Get-Stat
@@ -674,13 +674,13 @@ While ($Variables.NewMiningStatus -eq "Running") {
                         $Factor = 1
                         $Stat_Name = "$($Miner.Name)_$($Algorithm)_Hashrate"
                         $LastSharesData = ($Miner.Data | Select-Object -Last 1).Shares
-                        If ($Miner.Data.Count -gt $Miner.MinDataSamples -and -not $Miner.Benchmark -and $Config.SubtractBadShares -and $LastSharesData -and $LastSharesData.$Algorithm[1] -gt 0) { # Need $Miner.MinDataSamples shares before adjusting hash rate
+                        If ($Miner.Data.Count -gt $Miner.MinDataSamples -and -not $Miner.Benchmark -and $Config.SubtractBadShares -and $LastSharesData -and $LastSharesData.$Algorithm[1] -gt 0) { # Need $Miner.MinDataSamples shares before adjusting hashrate
                             $Factor = $(1 - $LastSharesData.$Algorithm[1] / $LastSharesData.$Algorithm[2])
                             $Miner_Speeds.$Algorithm *= $Factor
                         }
                         $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Speeds.$Algorithm -Duration $Stat_Span -FaultDetection ($Miner.Data.Count -ge $Miner.MinDataSamples) -ToleranceExceeded ($Variables.WatchdogCount + 1)
                         If ($Stat.Updated -gt $Miner.StatStart) { 
-                            Write-Message -Level Info "Saved hash rate for '$($Stat_Name -replace '_Hashrate$')': $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' ')$(If ($Factor -le 0.999) { " (adjusted by factor $($Factor.ToString('N3')) [Shares total: $($LastSharesData.$Algorithm[2]), rejected: $($LastSharesData.$Algorithm[1])])" })$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
+                            Write-Message -Level Info "Saved hashrate for '$($Stat_Name -replace '_Hashrate$')': $(($Miner_Speeds.$Algorithm | ConvertTo-Hash) -replace ' ')$(If ($Factor -le 0.999) { " (adjusted by factor $($Factor.ToString('N3')) [Shares total: $($LastSharesData.$Algorithm[2]), rejected: $($LastSharesData.$Algorithm[1])])" })$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
                             $Miner.StatStart = $Miner.StatEnd
                             $Variables.PoolsLastUsed.(Get-PoolBaseName $Worker.Pool.Name) = $Stat.Updated # most likely this will count at the pool to keep balances alive
                         }
@@ -988,7 +988,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
         # Stop running miners
         ForEach ($Miner in @(@($Miners | Where-Object Info) + @($CompareMiners | Where-Object { $_.Info -and $_.SideIndicator -EQ "<=" } <# miner object is gone #>))) { 
             If ($Miner.Status -eq [MinerStatus]::Failed) { 
-                If ($Miner.ProcessID) {  # Stop miner (may be set as failed in miner.refresh() because of 0 hash rate)
+                If ($Miner.ProcessID) {  # Stop miner (may be set as failed in miner.refresh() because of 0 hashrate)
                     $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
                     $Miner.SetStatus([MinerStatus]::Failed)
                 }

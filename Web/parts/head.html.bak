@@ -21,8 +21,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.20.1/bootstrap-table.min.js" integrity="sha512-59jswwLd3zdUX4Z7UVbqvXYmtFu+bdGKbA54IBs5COkUaPVAXeYpz7izxj7MXuiQavvZH1mABbf5KauzpUEN2g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.20.1/extensions/auto-refresh/bootstrap-table-auto-refresh.min.js" integrity="sha512-wC+9s7PhagOYikK7kXsLe2qtJUhZy2NRFHC+MJ3AD0BKAgfA23Tkj0e1whbUNzjdnAPlvPxa8Kx5L4YCllfVmw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/extensions/filter-control/bootstrap-table-filter-control.min.js" integrity="sha512-nrE3yoRxAz6j1ZhkE59hXcSKV0cewPN+8ZEXJZnsz2qofCEOwmctecuKrBnWQUj7UA5dOnI+Cam52/AdvB6HKQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.20.1/extensions/resizable/bootstrap-table-resizable.min.js" integrity="sha512-xRmNHFB3ih1dHMzgrxyv0TukE42Q7Nc0vPNXdeyPruBEUgmpdgEaYCDbaZzS2hmU2BKgX3GAUwGBWs8sDcvUOw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js" integrity="sha512-6PM0qYu5KExuNcKt5bURAoT6KCThUmHRewN3zUFNaoI6Di7XJPTMoT6K0nsagZKk2OB4L7E3q1uQKHNHd4stIQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
