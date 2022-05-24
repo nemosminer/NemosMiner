@@ -3005,7 +3005,7 @@ Function Update-ConfigFile {
 
     # Remove AHashPool config & stat data
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "AhashPool*" }
-    Remove-ChildItem ".\Stats\AhashPool*.txt" -Force -ErrorAction Ignore
+    Remove-Item ".\Stats\AhashPool*.txt" -Force -ErrorAction Ignore
 
     $Config | Add-Member ConfigFileVersion ($Variables.Branding.Version.ToString()) -Force
     Write-Config -ConfigFile $ConfigFile
