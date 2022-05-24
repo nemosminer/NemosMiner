@@ -122,7 +122,7 @@ function formatHashrateValue(value) {
     var sizes = ['H/s', 'kH/s', 'MH/s', 'GH/s', 'TH/s', 'PH/s', 'EH/s', 'ZH/s', 'YH/s'];
     var i = Math.floor(Math.log(value) / Math.log(1000));
     unitvalue = value / Math.pow(1000, i);
-    if (i = 0) i = 1;
+    if (i == 0) i = 1;
     if (unitvalue < 10) return unitvalue.toFixed(3) + ' ' + sizes[i];
     return unitvalue.toFixed(2) + ' ' + sizes[i];
   }
@@ -136,17 +136,17 @@ function formatHashrate(value) {
 
 function formatmBTC(value) {
   if (value == null) return ''
-  if (value > 0) return parseFloat(value * rates / 1000).toFixed(8);
+  if (value > 0) return parseFloat(value * rate / 1000).toFixed(parseInt(rate).toString().length + 2);
   if (value == 0) return (0).toFixed(8);
-  if (value < 0) return parseFloat(value * rate / 1000).toFixed(8);
+  if (value < 0) return parseFloat(value * rate / 1000).toFixed(parseInt(rate).toString().length + 2);
   return 'N/A';
 };
 
 function formatBTC(value) {
   if (value == null) return ''
-  if (value > 0) return parseFloat(value * rate).toFixed(8);
+  if (value > 0) return parseFloat(value * rate).toFixed(parseInt(rate).toString().length + 2);
   if (value == 0) return (0).toFixed(8);
-  if (value < 0) return parseFloat(value * rate).toFixed(8);
+  if (value < 0) return parseFloat(value * rate).toFixed(parseInt(rate).toString().length + 2);
   return 'N/A';
 };
 
