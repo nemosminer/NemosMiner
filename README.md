@@ -251,7 +251,7 @@ Easy configuration, easy start:
 
 PowerShell Version 7.x is required:
 
-[Download Installer for version 7.2.3](https://github.com/PowerShell/PowerShell/releases/download/v7.2.3/PowerShell-7.2.3-win-x64.msi)
+[Download Installer for version 7.2.4](https://github.com/PowerShell/PowerShell/releases/download/v7.2.4/PowerShell-7.2.4-win-x64.msi)
 
 **Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file**
 
@@ -267,7 +267,7 @@ When running multiple cards its recommended to increase Virtual Memory. 64GB is 
 
 **Recommended/optimal Windows AMD driver**
 
-[Windows 10 AMD GPU Driver 22.2.2](https://www.amd.com/en/support)
+[Windows 10 AMD GPU Driver 22.3.2](https://www.amd.com/en/support)
 
    NemosMiner is currently tested on the following Rigs: 
 
