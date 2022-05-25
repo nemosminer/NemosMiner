@@ -6,6 +6,8 @@
           <form id="configuration">
             <input name="submit" type="submit" id="save-button" value="Apply configuration" class="btn btn-success" alt="Submit" title="Apply configuration&#10;It will become active in next cycle.">
             <input name="reset" type="reset" id="reset-button" value="Reset" class="btn btn-warning" alt="Reset" title="Reset configuration data to previous values">
+            <button type="button" class="btn btn-primary" id="editconfig-button" name="editconfig-button" title="Edit Config file&#10;It will become active in next cycle.">Edit Config file</button>
+            <button type="button" class="btn btn-primary" id="editpoolsconfig-button" name="editpoolsconfig-button" title="Edit PoolsConfig file&#10;It will become active in next cycle.">Edit PoolsConfig file</button>
             <div>
               <br>
             </div>
@@ -144,15 +146,6 @@
                   </div>
                   <br>
 
-                  <!-- Edit Config Files -->
-                  <legend class=h6><b>Edit Configuration Files</b></legend>
-                  <div style="padding-top: 0.2rem; padding-bottom: 0.3rem">
-                    <button type="button" class="btn btn-primary btn-sm" id="editconfig-button" name="editconfig-button" title="Edit Config file&#10;It will become active in next cycle.">Edit Config file</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="editpoolsconfig-button" name="editpoolsconfig-button" title="Edit PoolsConfig file&#10;It will become active in next cycle.">Edit PoolsConfig file</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="editunprofitablealgorithms-button" name="editunprofitablealgorithms-button" title="Edit 'Data\UnprofitableAlgorithms.json' file&#10;It will become active in next cycle.">Edit Unprofitable Algorithms file</button>
-                  </div>
-                  <br>
-
                   <!-- Auto Update Settings -->
                   <fieldset>
                     <legend class=h6><b>Auto Update Settings</b></legend>
@@ -167,6 +160,7 @@
                     </div>
                     </fieldset>
                   <br>
+
                   <!-- Balance Tracker Settings -->
                   <fieldset>
                     <legend class=h6><b>Balance Tracker Settings</b></legend>
@@ -417,7 +411,6 @@
               $('#editconfig-button').click(function () {
                 document.getElementById('editconfig-button').disabled = true;
                 document.getElementById('editpoolsconfig-button').disabled = true;
-                document.getElementById('editunprofitablealgorithms-button').disabled = true;
                 $('.modal-body').load('/functions/file/edit?FileName=' + configfile, function () {
                   if (this.outerText) {
                     $('.modal-title').text('Edit Config file');
@@ -430,7 +423,6 @@
                   }
                   document.getElementById('editconfig-button').disabled = false;
                   document.getElementById('editpoolsconfig-button').disabled = false;
-                  document.getElementById('editunprofitablealgorithms-button').disabled = false;
                 });
               });
 
@@ -438,7 +430,6 @@
               $('#editpoolsconfig-button').click(function () {
                 document.getElementById('editconfig-button').disabled = true;
                 document.getElementById('editpoolsconfig-button').disabled = true;
-                document.getElementById('editunprofitablealgorithms-button').disabled = true;
                 $('.modal-body').load('/functions/file/edit?FileName=' + poolsconfigfile, function () {
                   if (this.outerText) {
                     $('.modal-title').text('Edit PoolsConfig file');
@@ -448,25 +439,6 @@
                   }
                   document.getElementById('editconfig-button').disabled = false;
                   document.getElementById('editpoolsconfig-button').disabled = false;
-                  document.getElementById('editunprofitablealgorithms-button').disabled = false;
-                });
-              });
-
-              //Edit unprofitablealgorithms file
-              $('#editunprofitablealgorithms-button').click(function () {
-                document.getElementById('editconfig-button').disabled = true;
-                document.getElementById('editpoolsconfig-button').disabled = true;
-                document.getElementById('editunprofitablealgorithms-button').disabled = true;
-                $('.modal-body').load('/functions/file/edit?FileName=.\\Data\\UnprofitableAlgorithms.json', function () {
-                  if (this.outerText) {
-                    $('.modal-title').text('Edit Unprofitable Algorithms file');
-                    $('#myModal').modal({ 
-                      show: true
-                    });
-                  }
-                  document.getElementById('editconfig-button').disabled = false;
-                  document.getElementById('editpoolsconfig-button').disabled = false;
-                  document.getElementById('editunprofitablealgorithms-button').disabled = false;
                 });
               });
 
