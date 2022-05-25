@@ -2,38 +2,38 @@
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h2 data-navbaractive="navrigmonitor">Rig Monitor</h2>
           </div>
-          <h3>Monitor Settings</h3>
-          <div id="configfilename" class="alert alert-info" role="alert"></div>
-          <form id="configuration">
-            <input name="submit" type="submit" id="save-button" value="Apply configuration" class="btn btn-success" alt="Submit" title="Apply configuration&#10;It will become active in next cycle.">
-            <input name="reset" type="reset" id="reset-button" value="Reset" class="btn btn-warning" alt="Reset" title="Reset configuration data to previous values">
-            <div>
-              <br>
+          <div id="settings" class="collapse out" style="transition: max-height 0.2s ease-out;">
+            <h3>Monitor Settings</h3>
+            <div id="configfilename" class="alert alert-info" role="alert"></div>
 
-            </div>
-            <div title="Monitoring Server host name">Monitoring Server 
-              <input style="margin-left: 5px;" type="text" id="MonitoringServer" name="MonitoringServer" value="https://nemosminer.com" size=64>
-            </div>
-            <div style="padding-top: 0.5rem;" title="Monitoring UserID &#10;must be identical on each monitored mining rig">Monitoring UserID
-              <input style="margin-left: 3px; padding-top: 0.1rem;" type="text" id="MonitoringUser" name="MonitoringUser" pattern="[0-9A-Fa-f\-]{36}" size=36>
-              <button style="margin-bottom: 0.1rem;" id="new-guid" class="btn btn-secondary btn-sm" title="UserID must be identical on each monitored mining rig">Generate new UserID</button>
-            </div>
-            <div style="padding-top: 0.5rem;" title="Tick to enable reporting rig status to monitoring server">
-              <input type="checkbox" class="toggle-switch" id="ReportToServer" name="ReportToServer">
-              <label for="ReportToServer">Report this Rig Status to Monitoring Server</label>
-            </div>
-            <div title="Show status of all reporting mining rigs&#10;`Report to Monitoring Server` must be enabled on these rigs&#10;using the same UserID">
-              <input type="checkbox" class="toggle-switch" id="ShowWorkerStatus" name="ShowWorkerStatus">
-              <label for="ShowWorkerStatus">Show Rig Status of all reporting Mining Rigs</label>
-            </div>
-          </form>
-          <br>
-
+            <form id="configuration">
+              <input name="submit" type="submit" id="save-button" value="Apply configuration" class="btn btn-success" alt="Submit" title="Apply configuration&#10;It will become active in next cycle.">
+              <input name="reset" type="reset" id="reset-button" value="Reset" class="btn btn-warning" alt="Reset" title="Reset configuration data to previous values">
+              <div style="padding-top: 1rem;" title="Monitoring Server host name">Monitoring Server 
+                <input style="margin-left: 5px;" type="text" id="MonitoringServer" name="MonitoringServer" value="https://nemosminer.com" size=64>
+              </div>
+              <div style="padding-top: 0.5rem;" title="Monitoring UserID &#10;must be identical on each monitored mining rig">Monitoring UserID
+                <input style="margin-left: 3px; padding-top: 0.1rem;" type="text" id="MonitoringUser" name="MonitoringUser" pattern="[0-9A-Fa-f\-]{36}" size=36>
+                <button style="margin-bottom: 0.1rem;" id="new-guid" class="btn btn-secondary btn-sm" title="UserID must be identical on each monitored mining rig">Generate new UserID</button>
+              </div>
+              <div style="padding-top: 0.5rem;" title="Tick to enable reporting rig status to monitoring server">
+                <input type="checkbox" class="toggle-switch" id="ReportToServer" name="ReportToServer">
+                <label for="ReportToServer">Report this Rig Status to Monitoring Server</label>
+              </div>
+              <div title="Show status of all reporting mining rigs&#10;`Report to Monitoring Server` must be enabled on these rigs&#10;using the same UserID">
+                <input type="checkbox" class="toggle-switch" id="ShowWorkerStatus" name="ShowWorkerStatus">
+                <label for="ShowWorkerStatus">Show Rig Status of all reporting Mining Rigs</label>
+              </div>
+            </form>
+            <br>
+          </div>
           <div id="workerlist" style="visibility:hidden">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-              <h3>Rig Status</h3>
+            <div class="alert alert-info" role="alert">These are all reporting mining rigs. Rigs get removed when they haven't reported in for 3 days.</div>
+            <div id="toolbar">
+              <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#settings">Monitor Settings</button>
             </div>
             <table id="workers" class="table"
+              data-toolbar="#toolbar"
               data-icons="icons"
               data-url="/displayworkers"
               data-cache="false"
@@ -99,7 +99,7 @@
 
             $table.bootstrapTable({
               autoRefreshInterval: (parseInt(config.Interval / 2)), // refresh once per interval
-              height: $(window).height() - $("#workers").offset().top - 30
+              height: $(window).height() - $("#workers").offset().top + 20
             });
 
             $(document).ready(function () {
@@ -137,6 +137,8 @@
                 if (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '' || document.getElementById('ShowWorkerStatus').checked != true) document.getElementById('workerlist').style.visibility="hidden";
                 else document.getElementById('workerlist').style.visibility="visible";
               });
+
+              if (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '' || document.getElementById('ShowWorkerStatus').checked != true) $("#settings").collapse("show");
 
               // Get new guid
               $('#new-guid').click(function () {
