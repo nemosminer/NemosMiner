@@ -1,6 +1,6 @@
 # NemosMiner
 
-NemosMiner monitors mining pools in real-time in order to find the most profitable Algo
+NemosMiner monitors mining pools in real-time in order to find the most profitable algorithm
 
 Updated 24 May 2022
 
@@ -214,34 +214,34 @@ Easy configuration, easy start:
 
    Algorithm switching log
 
-      Simple algo switching log as csv (switching.log file found in Logs folder).
+      Simple algo switching log as csv (switching.csv file found in Logs folder).
       You can easily track switching rate.
 
    Console Display Options
 
-      Use -UIStyle Light or -UIStyle Full in config.json
+      Use -UIStyle light or -UIStyle full in config.json
          Full = Usual display (Default)
          Light = Show only current mining info
-      UIStyle automatically switches to Full during benchmarking.
+      UIStyle automatically switches to full during benchmarking.
       Press key 's' in the console window to switch UIStyle.
 
    In session console the following keys are supported
 
-      a: Toggle Accuracy column
-      b: Toggle Pool Balances
-      c: Toggle Cost column
-      e: Toggle Earnings column
-      i: Toggle Earning Bias column
-      l: Toggle listing all available miners
-      m: Toggle Miner Fees column
-      n: Toggle Coin Name column
-      p: Toggle Pool Fees column
-      r: Toggle Profit Bias column
-      s: Toggle Style (full or light)
-      t: Toggle Profit column
-      u: Toggle Power Usage column
-      y: Toggle Currency column
-      Will toggle display at next refresh
+   a: Toggle Accuracy column visibility
+   b: Toggle List Pool Balances
+   c: Toggle Power Cost column visibility
+   e: Toggle Earnings column visibility
+   i: Toggle Earning Bias column visibility
+   m: Toggle Miner Fees column visibility
+   n: Toggle CoinName column visibility
+   p: Toggle Pool Fees column visibility
+   r: Toggle Profit Bias column visibility
+   s: Toggle UI Style [full or light]
+   t: Toggle Profit column visibility
+   u: Toggle User column visibility
+   v: Toggle List all available miners
+   w: Toggle Power usage column visibility
+   y: Toggle Currency column visibility
 
    New version notification (Available since version 3.9.9.10)
 
