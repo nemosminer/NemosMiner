@@ -8,7 +8,7 @@ $Path = ".\Bin\$($Name)\miniZ.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = [PSCustomObject[]]@(
-    # [PSCustomObject]@{ Algorithm = "BeamV3";       Type = "AMD"; Fee = 0.02;   MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); GPUArchitecture = @(""); Arguments = " --par=beam3 --pers=Beam-PoW --ocX" } # NBMiner-v42.1 is fastest
+    # [PSCustomObject]@{ Algorithm = "BeamV3";       Type = "AMD"; Fee = 0.02;   MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); GPUArchitecture = @(""); Arguments = " --par=beam3 --pers=Beam-PoW --ocX" } # NBMiner-v42.2 is fastest
     # [PSCustomObject]@{ Algorithm = "Equihash1254"; Type = "AMD"; Fee = 0.02;   MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); GPUArchitecture = @(""); Arguments = " --par=125,4 --smart-pers --ocX" }
     # [PSCustomObject]@{ Algorithm = "Equihash1445"; Type = "AMD"; Fee = 0.02;   MinMemGB = 2.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); GPUArchitecture = @(""); Arguments = " --par=144,5 --smart-pers --ocX" }
     # [PSCustomObject]@{ Algorithm = "Equihash1505"; Type = "AMD"; Fee = 0.02;   MinMemGB = 2.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); GPUArchitecture = @(""); Arguments = " --par=150,5 --smart-pers --ocX" }
@@ -26,7 +26,7 @@ $Algorithms = [PSCustomObject[]]@(
     # [PSCustomObject]@{ Algorithm = "Veriblock";    Type = "AMD"; Fee = 0.01;   MinMemGB = 8.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); GPUArchitecture = @(""); Arguments = " --par=ProgPowZ --pers=zano --ocX" }
     # [PSCustomObject]@{ Algorithm = "Zano";         Type = "AMD"; Fee = 0.01;   MinMemGB = 2.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); GPUArchitecture = @(""); Arguments = " --par=vProgPow --pers=VeriBlock --ocX" }
 
-    [PSCustomObject]@{ Algorithm = "BeamV3";       Type = "NVIDIA"; Fee = 0.02;   MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --par=beam3 --pers=Beam-PoW --ocX" } # NBMiner-v42.1 is fastest
+    [PSCustomObject]@{ Algorithm = "BeamV3";       Type = "NVIDIA"; Fee = 0.02;   MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --par=beam3 --pers=Beam-PoW --ocX" } # NBMiner-v42.2 is fastest
     [PSCustomObject]@{ Algorithm = "Equihash1254"; Type = "NVIDIA"; Fee = 0.02;   MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=125,4 --smart-pers --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1445"; Type = "NVIDIA"; Fee = 0.02;   MinMemGB = 2.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=144,5 --smart-pers --ocX" }
     [PSCustomObject]@{ Algorithm = "Equihash1505"; Type = "NVIDIA"; Fee = 0.02;   MinMemGB = 2.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --par=150,5 --smart-pers --ocX" }
