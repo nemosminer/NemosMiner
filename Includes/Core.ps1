@@ -61,7 +61,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
         # Prepare devices
         $Variables.EnabledDevices = $Variables.Devices | Where-Object { $_.State -eq [DeviceState]::Enabled } | ConvertTo-Json -Depth 10 | ConvertFrom-Json
-        # For GPUs set type AMD or NVIDIA
+        # For GPUs set type equal to vendor
         $Variables.EnabledDevices | Where-Object Type -EQ "GPU" | ForEach-Object { $_.Type = $_.Vendor }
         # Remove model information from devices -> will create only one miner instance
         If (-not $Config.MinerInstancePerDeviceModel) { $Variables.EnabledDevices | ForEach-Object { $_.Model = $_.Vendor } }
@@ -716,7 +716,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
             $NewMiners_Jobs | ForEach-Object { $_ | Get-Job -ErrorAction Ignore | Wait-Job -Timeout 60 | Receive-Job } | Where-Object { $_.Content.API } | ForEach-Object { 
                 [PSCustomObject]@{ 
                     Name        = [String]$_.Content.Name
-                    BaseName    = [String]($_.Content.Name -split '-' | Select-Object -First 1)
+                    BaseName    = [String]($_.Content.Name -split '-' | Select-Object -Index 0)
                     Version     = [String]($_.Content.Name -split '-' | Select-Object -Index 1)
                     Path        = [String]$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Content.Path)
                     Algorithm   = [String[]]$_.Content.Algorithm
@@ -1015,17 +1015,17 @@ While ($Variables.NewMiningStatus -eq "Running") {
             }
         }
 
-        # Kill stray miners
+        # Kill stuck miners
         $Loops = 0
-        While ($StrayMiners = @((Get-CimInstance CIM_Process | Where-Object ExecutablePath | Where-Object { @($Variables.Miners.Path | Sort-Object -Unique) -contains $_.ExecutablePath } | Where-Object { $Variables.Miners.ProcessID -notcontains $_.ProcessID }).ProcessID)) { 
-            $StrayMiners | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }
+        While ($StuckMiners = @((Get-CimInstance CIM_Process | Where-Object ExecutablePath | Where-Object { @($Variables.Miners.Path | Sort-Object -Unique) -contains $_.ExecutablePath } | Where-Object { $Variables.Miners.ProcessID -notcontains $_.ProcessID }).ProcessID)) { 
+            $StuckMiners | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }
             Start-Sleep -MilliSeconds 500
             $Loops ++
             If ($Loops -gt 100) { 
                 $Message = "Error stopping miner."
                 If ($Config.AutoReboot) { 
                     Write-Message -Level Error "$Message Restarting computer in 10 seconds..."
-                    Restart-Computer -Delay 10
+                    shutdown.exe /r /t 15 /c "NemosMiner detected stuck miner$(If ($StuckMiners.Count -gt 1) { "s" }) and will reboot the computer in 15 seconds."
                 }
                 Else { 
                     Write-Message -Level Error $Message
@@ -1175,7 +1175,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
             Do { 
                 ForEach ($Miner in $RunningMiners) { 
                     # Set window title
-                    $WindowTitle = "$(($Miner.Devices.Name | Sort-Object) -join ","): $($Miner.Name) $($Miner.Info)"
+                    $WindowTitle = "$($Miner.Devices.Name -join ","): $($Miner.Name) $($Miner.Info)"
                     If ($Miner.Benchmark -eq $true -or $Miner.MeasurePowerUsage -eq $true) { 
                         $WindowTitle += " ("
                         If ($Miner.Benchmark -eq $true) { $WindowTitle += "Benchmarking" }
@@ -1285,7 +1285,6 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
     If ($Variables.IdleRunspace.NewMiningStatus -eq "Idle") { 
         Stop-MiningProcess
-
         $Variables.Summary = "Mining is suspended until system is idle again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" })..."
         Write-Message -Level Verbose $Variables.Summary
         Do { 
