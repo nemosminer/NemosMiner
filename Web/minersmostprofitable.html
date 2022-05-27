@@ -83,17 +83,6 @@
             var $table = $('#miners');
             var $querysize = 20000;
 
-            // get BTC rate of first currency
-            $.ajax({
-              async: false,
-              dataType: 'json',
-              timeout: 10,
-              url: '/btc',
-              success: function(result) {
-                rate = result;
-              }
-            });
-
             $('#miners tr:eq(0) th:eq(9)').html("Earning Bias<br>(" + maincurrency + ")");
             $('#miners tr:eq(0) th:eq(10)').html("Earning<br>(" + maincurrency + ")");
             $('#miners tr:eq(0) th:eq(11)').html("Profit Bias<br>(" + maincurrency + ")");

@@ -50,7 +50,7 @@
                 <th data-field="PowerCost" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Power Cost</th>
                 <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt" class="text-nowrap" data-title-tooltip="per 24hrs (estimated)">Power<br>Usage</th>
                 <th data-field="tTotalMiningDuration" data-sortable="true" data-visible="false">Total Mining Duration</th>
-                <th data-field="tEarningAccuracy" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Accuracy</th>
+                <th data-field="tEarningAccuracy" data-sortable="true">Accuracy</th>
                 <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Primary Algorithm</th>
                 <th data-field="tPrimarySpeed" data-align="right" data-sortable="true" data-formatter="formatHashrateValue" class="text-nowrap">Primary<br>Hashrate</th>
                 <th data-field="tPrimaryPool" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Primary Pool</th>
@@ -86,17 +86,6 @@
           <script type='text/javascript'>
             var $table = $('#miners');
             var $querysize = 20000;
-
-            // get BTC rate of first currency
-            $.ajax({
-              async: false,
-              dataType: 'json',
-              timeout: 10,
-              url: '/btc',
-              success: function(result) {
-                rate = result;
-              }
-            });
 
             $('#miners tr:eq(0) th:eq(9)').html("Earning Bias<br>(" + maincurrency + ")");
             $('#miners tr:eq(0) th:eq(10)').html("Earning<br>(" + maincurrency + ")");

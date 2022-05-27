@@ -66,17 +66,6 @@
             var $table = $('#pools');
             var $querysize = 20000;
 
-            // get BTC rate of first currency
-            $.ajax({
-              async: false,
-              dataType: 'json',
-              timeout: 10,
-              url: '/btc',
-              success: function(result) {
-                rate = result;
-              }
-            });
-
             $table.bootstrapTable({
               onPostBody: function () {
                 $('#pools thead tr th').each(function () {
