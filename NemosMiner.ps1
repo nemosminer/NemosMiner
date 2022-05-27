@@ -44,6 +44,8 @@ param(
     [Parameter(Mandatory = $false)]
     [Boolean]$BalancesKeepAlive = $true, # If true will force mining at a pool to protect your earnings (some pools auto-purge the wallet after longer periods of inactivity, see '\Data\PoolData.Json' BalancesKeepAlive properties)
     [Parameter(Mandatory = $false)]
+    [Boolean]$BalancesShowInAllCurrencies = $true, # If true pool balances will be shown in all currencies (main & extra currencies) in web dashboard
+    [Parameter(Mandatory = $false)]
     [String[]]$BalancesTrackerIgnorePool = @(), # Balances tracker will not track these pools
     [Parameter(Mandatory = $false)]
     [Switch]$BalancesTrackerLog = $false, # If true will store all balance tracker data in .\Logs\EarningTrackerLog.csv
@@ -330,7 +332,7 @@ If (-not $Variables.PoolsLastUsed.Keys) { $Variables.PoolsLastUsed = @{ } }
 If (Test-Path -Path ".\Data\EarningsChartData.json" -PathType Leaf) { $Variables.EarningsChartData = Get-Content ".\Data\EarningsChartData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore }
 
 $Variables.AllCommandLineParameters = [Ordered]@{ }
-$MyInvocation.MyCommand.Parameters.Keys | Where-Object { Get-Variable $_ -ErrorAction Ignore } | Sort-Object | ForEach-Object { 
+$MyInvocation.MyCommand.Parameters.Keys | Where-Object { Get-Variable $_ -ErrorAction Ignore } | ForEach-Object { 
     $Variables.AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly -ErrorAction Ignore
     If ($Variables.AllCommandLineParameters.$_ -is [Switch]) { $Variables.AllCommandLineParameters.$_ = [Boolean]$Variables.AllCommandLineParameters.$_ }
     Remove-Variable $_ -ErrorAction Ignore
@@ -338,6 +340,11 @@ $MyInvocation.MyCommand.Parameters.Keys | Where-Object { Get-Variable $_ -ErrorA
 
 # Read configuration
 Read-Config -ConfigFile $Variables.ConfigFile
+
+# Update config file to include all new config items
+If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.Branding.Version) { 
+    Update-ConfigFile -ConfigFile $Variables.ConfigFile
+}
 
 # Start transcript log
 If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\$((Get-Item $MyInvocation.MyCommand.Path).BaseName)-Transcript_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
@@ -410,12 +417,6 @@ If (Get-Item .\* -Stream Zone.*) {
     If ((Get-Command "Get-MpPreference" -ErrorAction Ignore) -and (Get-MpComputerStatus -ErrorAction Ignore) -and (Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) { 
         Start-Process "pwsh" "-Command Import-Module Defender; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
     }
-}
-
-# Update config file to include all new config items
-$Variables.AvailableCommandLineParameters = @($AllCommandLineParameters.Keys | Sort-Object)
-If ($Variables.AllCommandLineParameters -and (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.Branding.Version)) { 
-    Update-ConfigFile -ConfigFile $Variables.ConfigFile
 }
 
 If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) { 

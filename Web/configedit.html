@@ -169,11 +169,15 @@
                       <div style="padding-top: 0.7rem" title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">
                         <input type="checkbox" class="toggle-switch" id="BalancesTrackerLog" name="BalancesTrackerLog" style="margin-left:20px"> Write balances tracker log
                       </div>
-                      <div style="padding-top: 0.7rem" title="Most pools clear pending balances after a longer period of inactivity.&#10;To avoid forfeiting pool balances NemosMiner will enforce mining&#10;at the pool the day before it would clear the balance.&#10;(one cycle only, even if it is not the most profitable pool).&#10;(requires 'Poll Pools for Balances & Earnings every n minutes' to be > 0)">
+                      <div style="padding-top: 0.7rem" title="Most pools clear pending balances after a longer period of inactivity.&#10;To avoid forfeiting pool balances NemosMiner will enforce mining&#10;at the pool the day before it would clear the balance.&#10;(one cycle only, even if it is not the most profitable pool).&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
                         <input type="checkbox" class="toggle-switch" id="BalancesKeepAlive" name="BalancesKeepAlive" style="margin-left:20px"> Keep pool balances alive
                       </div>
                     </div>
-                  </fieldset>
+                    <div style="padding-top: 0.7rem" title="Pool balances will be shown in all currencies (main & extra currencies) in web dashboard&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
+                      <input type="checkbox" class="toggle-switch" id="BalancesShowInAllCurrencies" name="BalancesShowInAllCurrencies" style="margin-left:20px"> Show pool balances in all currencies
+                    </div>
+                  </div>
+                </fieldset>
                 </td>
                 <td>
                   <div style="line-height:100%" class="col-md-12">
@@ -376,7 +380,7 @@
                   <div title="When unticked only the best 5 miners per device are shown&#10;except while not benchmarking or measuring power usage&#10;&#10;Can be toggled by pressing 'v' in the text window while waiting for the next cycle">
                     <input type="checkbox" class="toggle-switch" id="ShowAllMiners" name="ShowAllMiners"> Show all miners
                   </div>
-                  <div style="padding-top: 0.5rem" title="Show the Pool Balances in the text windows&#10;(requires 'Poll Pools for Balances & Earnings every n minutes' to be > 0)&#10;&#10;Can be toggled by pressing 'b' in the text windows while waiting for the next cycle">
+                  <div style="padding-top: 0.5rem" title="Show the Pool Balances in the text windows&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)&#10;&#10;Can be toggled by pressing 'b' in the text windows while waiting for the next cycle">
                     <input type="checkbox" class="toggle-switch" id="ShowPoolBalances" name="ShowPoolBalances" > Show pool balances
                   </div>
                   <br>
@@ -556,11 +560,13 @@
                 document.getElementById('BalancesTrackerLog').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
                 document.getElementById('BalancesKeepAlive').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
                 document.getElementById('ShowPoolBalances').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
+                document.getElementById('BalancesShowInAllCurrencies').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
               });
               if (parseInt(config.BalancesTrackerPollInterval) == 0) {
                 document.getElementById('BalancesTrackerLog').disabled = true;
+                document.getElementById('BalancesTrackerLog').disabled = true;
                 document.getElementById('BalancesKeepAlive').disabled = true;
-                document.getElementById('ShowPoolBalances').disabled = true;
+                document.getElementById('BalancesShowInAllCurrencies').disabled = true;
               }
               if (config.BalancesTrackerLog) document.getElementById('BalancesTrackerLog').checked = true;
               if (config.BalancesKeepAlive) document.getElementById('BalancesKeepAlive').checked = true;
@@ -758,6 +764,7 @@
               if (config.ShowUser) document.getElementById('ShowUser').checked = true;
               if (config.ShowAllMiners) document.getElementById('ShowAllMiners').checked = true;
               if (config.ShowPoolBalances) document.getElementById('ShowPoolBalances').checked = true;
+              if (config.BalancesShowInAllCurrencies) document.getElementById('BalancesShowInAllCurrencies').checked = true;
               // CalculatePowerCost click
               $(document.getElementById('CalculatePowerCost')).click(function (event) {
                 document.getElementById('ShowPowerCost').disabled = !(document.getElementById('CalculatePowerCost').checked);
@@ -1075,7 +1082,8 @@
                   config.BalancesTrackerPollInterval = parseInt(document.getElementById('BalancesTrackerPollInterval').value);
                   config.BalancesTrackerLog = document.getElementById('BalancesTrackerLog').checked;
                   config.BalancesKeepAlive = document.getElementById('BalancesKeepAlive').checked;
-
+                  config.BalancesShowInAllCurrencies = document.getElementById('BalancesShowInAllCurrencies').checked;
+                  
                   // Select mining devices
                   config.ExcludeDeviceName = [];
                   $.each(devices, function (key, value) {

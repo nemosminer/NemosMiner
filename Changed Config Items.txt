@@ -17,10 +17,13 @@ New Config Items
 # Acceptable bad share threshold ((bad + rejected + stale) / total) as reported by the miner. If the ratio is exceeded the miner will marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
   "BadShareRatioThreshold": 0.05,
 
+# If true pool balances will be shown in all currencies (main & extra currencies) in web dashboard
+  "BalancesShowInAllCurrencies": false,
+
 # Balances tracker will not track these pools (use pool base name without 24hr/Coins/Plus etc.)
-    "BalancesTrackerIgnorePool": [
-      "AHashPool",
-    ], 
+  "BalancesTrackerIgnorePool": [
+    "AHashPool",
+  ], 
 
 # If true NemosMiner will store all balance tracker data in .\Logs\EarningTrackerLog.csv
   "BalancesTrackerLog": false,
