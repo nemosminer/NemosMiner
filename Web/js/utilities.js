@@ -7,73 +7,83 @@ window.icons = {
 };
 
 function formatMiners(data) {
-    // This function can alter the returned data before building the table, formatting it in a way
-    // that is easier to display and manipulate in a table
-    $.each(data, function(index, item) {
-      // Format miner link
-      if (item.MinerUri) item.tName = "<a href='" + item.MinerUri + "' target ='_blank'>" + item.Name + "</a>";
-      else item.tName = item.Name;
+  // This function can alter the returned data before building the table, formatting it in a way
+  // that is easier to display and manipulate in a table
+  $.each(data, function(index, item) {
+    // Format miner link
+    if (item.MinerUri) item.tName = "<a href='" + item.MinerUri + "' target ='_blank'>" + item.Name + "</a>";
+    else item.tName = item.Name;
 
-      // Format the device(s)
-      if (item.DeviceName) item.tDevices = item.DeviceName.toString();
-      else item.tDevices = '';
+    // Format the device(s)
+    if (item.DeviceName) item.tDevices = item.DeviceName.toString();
+    else item.tDevices = '';
 
-      // Format the algorithm data
-      if (item.Algorithm.length > 0) item.tPrimaryAlgorithm = item.Algorithm[0];
-      else item.tPrimaryAlgorithm = "";
-      if (item.Algorithm.length > 1) item.tSecondaryAlgorithm = item.Algorithm[1];
-      else item.tSecondaryAlgorithm = "";
- 
-      // Format the pool data
-      if (item.Workers.length > 0) {
-        item.tPrimaryMinerFee = item.Workers[0].Fee;
-        item.tPrimarySpeed = item.Workers[0].Speed;
-        if (item.Workers[0].Pool) {
-          item.tPrimaryPool = item.Workers[0].Pool.Name;
-          item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
-          item.tPrimaryPoolUser = item.Workers[0].Pool.User;
-        }
+    // Format the pool and algorithm data
+    if (item.Workers.length > 0) {
+      item.tPrimaryMinerFee = item.Workers[0].Fee;
+      item.tPrimarySpeed = item.Workers[0].Speed;
+      if (item.Workers[0].Pool) {
+        item.tPrimaryAlgorithm = item.Workers[0].Pool.Algorithm;
+        item.tPrimaryPool = item.Workers[0].Pool.Name;
+        item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
+        item.tPrimaryPoolUser = item.Workers[0].Pool.User;
       }
-      else {
-        item.tSecondaryMinerFee = '';
-        item.tPrimaryPool = '';
-        item.tPrimaryPoolFee = '';
-      }
-
       if (item.Workers.length > 1) {
         item.tSecondarySpeed = item.Workers[1].Speed;
         item.tSecondaryMinerFee = item.Workers[1].Fee;
         if (item.Workers[1].Pool) {
+          item.tSecondaryAlgorithm = item.Workers[1].Pool.Algorithm;
           item.tSecondaryPool = item.Workers[1].Pool.Name;
           item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
           item.tSecondaryPoolUser = item.Workers[1].Pool.User;
         }
       }
-      else {
-        item.tSecondaryMinerFee = '';
-        item.tSecondaryPool = '';
-        item.tSecondaryPoolFee = '';
+    }
+
+    try {
+      if (item.WorkersRunning.length > 0) {
+        item.tPrimaryMinerFee = item.WorkersRunning[0].Fee;
+        item.tPrimarySpeed = item.WorkersRunning[0].Speed;
+        if (item.WorkersRunning[0].Pool) {
+          item.tPrimaryAlgorithm = item.WorkersRunning[0].Pool.Algorithm;
+          item.tPrimaryPool = item.WorkersRunning[0].Pool.Name;
+          item.tPrimaryPoolFee = item.WorkersRunning[0].Pool.Fee;
+          item.tPrimaryPoolUser = item.WorkersRunning[0].Pool.User;
+        }
+
+        if (item.WorkersRunning.length > 1) {
+          item.tSecondarySpeed = item.WorkersRunning[1].Speed;
+          item.tSecondaryMinerFee = item.WorkersRunning[1].Fee;
+          if (item.WorkersRunning[1].Pool) {
+            item.tSecondaryAlgorithm = item.WorkersRunning[1].Pool.Algorithm;
+            item.tSecondaryPool = item.WorkersRunning[1].Pool.Name;
+            item.tSecondaryPoolFee = item.WorkersRunning[1].Pool.Fee;
+            item.tSecondaryPoolUser = item.WorkersRunning[1].Pool.User;
+          }
+        }
       }
+    }
+    catch (error) { }
 
-      // Format margin of error
-      item.tEarningAccuracy = formatPercent(item.Earning_Accuracy);
+    // Format margin of error
+    item.tEarningAccuracy = formatPercent(item.Earning_Accuracy);
 
-      // Format the live speed(s)
-      if (item.Speed_Live) {
-        if (item.Speed_Live.length > 0) item.tPrimarySpeedLive = item.Speed_Live[0];
-        if (item.Speed_Live.length > 1) item.tSecondarySpeedLive = item.Speed_Live[1];
-      }
+    // Format the live speed(s)
+    if (item.Speed_Live) {
+      if (item.Speed_Live.length > 0) item.tPrimarySpeedLive = item.Speed_Live[0];
+      if (item.Speed_Live.length > 1) item.tSecondarySpeedLive = item.Speed_Live[1];
+    }
 
-      // Format Total Mining Duration (TimeSpan)
-      item.tTotalMiningDuration = formatTimeSpan(item.TotalMiningDuration);
+    // Format Total Mining Duration (TimeSpan)
+    item.tTotalMiningDuration = formatTimeSpan(item.TotalMiningDuration);
 
-      // Format Mining Duration (TimeSpan)
-      item.tMiningDuration = formatTimeSince(item.BeginTime).replace(" ago", "");
+    // Format Mining Duration (TimeSpan)
+    item.tMiningDuration = formatTimeSince(item.BeginTime).replace(" ago", "");
 
-      // Format status
-      const enumstatus = ["Running", "Idle", "Failed", "Disabled"];
-      item.tStatus = enumstatus[item.Status];
-  });
+    // Format status
+    const enumstatus = ["Running", "Idle", "Failed", "Disabled"];
+    item.tStatus = enumstatus[item.Status];
+});
   return data;
 }
 
