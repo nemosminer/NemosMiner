@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.Type -eq"NVIDIA" })) { Return }
 
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.96/gminer_2_96_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.98/gminer_2_98_windows64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\miner.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -20,7 +20,6 @@ $Algorithms = [PSCustomObject[]]@(
     # [PSCustomObject]@{ Algorithm = @("EthashLowMem", "SHA256ton"); Type = "AMD"; Fee = @(0.015); MinMemGB = $Pools."EthashLowMem".DAGSizeGB; MemReserveGB = 0.41; Tuning = ""; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo eth --dalgo ton --cuda 0 --opencl 1" } # 0 Hashrate on TON; https://github.com/develsoftware/GMinerRelease/issues/690
     [PSCustomObject]@{ Algorithm = @("KawPoW");                    Type = "AMD"; Fee = @(0.01);  MinMemGB = $Pools."KawPoW".DAGSizeGB;       MemReserveGB = 0.41; Tuning = ""; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo kawpow --cuda 0 --opencl 1" }
 
-    [PSCustomObject]@{ Algorithm = @("BeamV3");                    Type = "NVIDIA";Fee = @(0.02);  MinMemGB = 3.0;                             MemReserveGB = 0;    Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(30, 0); Arguments = " --algo beamhashIII --cuda 1 --opencl 0" } # NBMiner-v42.2 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckaroo30CTX");             Type = "NVIDIA";Fee = @(0.05);  MinMemGB = 8.0;                             MemReserveGB = 0;    Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo cortex --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithm = @("Equihash1254");              Type = "NVIDIA";Fee = @(0.02);  MinMemGB = 3.0;                             MemReserveGB = 0;    Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(45, 0); Arguments = " --algo equihash125_4 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.8z2 is fastest
     [PSCustomObject]@{ Algorithm = @("Equihash1445");              Type = "NVIDIA";Fee = @(0.02);  MinMemGB = 2.1;                             MemReserveGB = 0;    Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(45, 0); Arguments = " --algo equihash144_5 --pers auto --cuda 1 --opencl 0" } # MiniZ-v1.8z2 is fastest
