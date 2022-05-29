@@ -15,12 +15,12 @@ ElseIf ($AvailableMiner_Devices.CpuFeatures -match "sse2")   { $Path = ".\Bin\$(
 Else { Return }
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Hmq1725";   MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo hmq1725" }
-    [PSCustomObject]@{ Algorithm = "Lyra2z330"; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo lyra2z330" }
-    [PSCustomObject]@{ Algorithm = "m7m";       MinerSet = 2; WarmupTimes = @(30, 0);  Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
-    [PSCustomObject]@{ Algorithm = "SHA3d";     MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo SHA3d" }
-    [PSCustomObject]@{ Algorithm = "ScryptN11"; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo scrypt(N,1,1)" }
-    [PSCustomObject]@{ Algorithm = "VertHash";  MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo verthash" }
+    [PSCustomObject]@{ Algorithm = "HMQ1725";   MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo hmq1725" }
+    [PSCustomObject]@{ Algorithm = "Lyra2z330"; MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo lyra2z330" }
+    [PSCustomObject]@{ Algorithm = "m7m";       MinerSet = 2; WarmupTimes = @(45, 40); Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
+    [PSCustomObject]@{ Algorithm = "SHA3d";     MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo SHA3d" }
+    [PSCustomObject]@{ Algorithm = "ScryptN11"; MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo scrypt(N,1,1)" }
+    [PSCustomObject]@{ Algorithm = "VertHash";  MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo verthash" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 

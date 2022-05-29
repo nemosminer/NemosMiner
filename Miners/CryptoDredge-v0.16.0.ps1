@@ -15,7 +15,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Allium";    Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(45, 0); Arguments = " --algo allium --intensity 8" } # CryptoDredge v0.26.0 is fastest
     [PSCustomObject]@{ Algorithm = "Exosis";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo exosis --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Dedal";     Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo dedal --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Hmq1725";   Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(60, 0); Arguments = " --algo hmq1725 --intensity 8" } # CryptoDredge v0.26.0 is fastest
+    [PSCustomObject]@{ Algorithm = "HMQ1725";   Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(60, 0); Arguments = " --algo hmq1725 --intensity 8" } # CryptoDredge v0.26.0 is fastest
     [PSCustomObject]@{ Algorithm = "Neoscrypt"; Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(30, 0); Arguments = " --algo neoscrypt --intensity 6" } # CryptoDredge v0.26.0 is fastest
     [PSCustomObject]@{ Algorithm = "Phi";       Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo phi --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Phi2";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo phi2 --intensity 8" }

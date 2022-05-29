@@ -30,7 +30,7 @@ $Algorithms = [PSCustomObject[]]@(
     # [PSCustomObject]@{ Algorithm = "Groestl";       MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo groestl" } # ASIC
     [PSCustomObject]@{ Algorithm = "HeavyHash";     MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo heavyhash" }
     [PSCustomObject]@{ Algorithm = "Hex";           MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo hex" }
-    [PSCustomObject]@{ Algorithm = "Hmq1725";       MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo hmq1725" }
+    [PSCustomObject]@{ Algorithm = "HMQ1725";       MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo hmq1725" }
     [PSCustomObject]@{ Algorithm = "Hodl";          MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo hodl" }
     [PSCustomObject]@{ Algorithm = "Honeycomb";     MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo honeycomb" }
     [PSCustomObject]@{ Algorithm = "Jha";           MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo jha" }
