@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.36
+Version:        4.0.0.37
 Version date:   29 May 2022
 #>
 
@@ -133,7 +133,7 @@ Class Pool {
 Class Worker { 
     [Pool]$Pool
     [Double]$Fee
-    [Double]$Speed
+    [Double]$Hashrate
     [Double]$Earning
     [Double]$Earning_Bias
     [Double]$Earning_Accuracy
@@ -533,8 +533,8 @@ Class Miner {
 
         $this.Workers | ForEach-Object { 
             If ($Stat = Get-Stat "$($this.Name)_$($_.Pool.Algorithm)_Hashrate") { 
-                $_.Speed = $Stat.Hour
-                $Factor = [Double]($_.Speed * (1 - $_.Fee) * (1 - $_.Pool.Fee))
+                $_.Hashrate = $Stat.Hour
+                $Factor = [Double]($_.Hashrate * (1 - $_.Fee) * (1 - $_.Pool.Fee))
                 $_.Earning = [Double]($_.Pool.Price * $Factor)
                 $_.Earning_Bias = [Double]($_.Pool.Price_Bias * $Factor)
                 $_.Earning_Accuracy = [Double]$_.Pool.Accuracy
@@ -545,7 +545,7 @@ Class Miner {
             }
             Else { 
                 $_.Disabled = $false
-                $_.Speed = [Double]::NaN
+                $_.Hashrate = [Double]::NaN
             }
             If ($_.Pool.Reasons -contains "Prioritized by BalancesKeepAlive") { $this.Prioritize = $true }
         }
@@ -555,13 +555,13 @@ Class Miner {
             $this.Available = $false
             $this.Disabled = $true
         }
-        ElseIf ($this.Workers | Where-Object { [Double]::IsNaN($_.Speed) }) { 
+        ElseIf ($this.Workers | Where-Object { [Double]::IsNaN($_.Hashrate) }) { 
             $this.Benchmark = $true
             $this.Earning = [Double]::NaN
             $this.Earning_Bias = [Double]::NaN
             $this.Earning_Accuracy = [Double]::NaN
         }
-        ElseIf ($this.Workers[0].Speed -EQ 0) { # Allow 0 hashrate on secondary algorithm
+        ElseIf ($this.Workers[0].Hashrate -EQ 0) { # Allow 0 hashrate on secondary algorithm
             $this.Status = [MinerStatus]::Failed
             $this.Available = $false
             $this.Disabled = $false
@@ -1039,7 +1039,7 @@ Function Update-MonitoringData {
                 Algorithm      = $_.Algorithm -join ','
                 Pool           = $_.WorkersRunning.Pool.Name -join ','
                 CurrentSpeed   = $_.Hashrates_Live
-                EstimatedSpeed = $_.Workers.Speed
+                EstimatedSpeed = $_.Workers.Hashrate
                 Earning        = $_.Earning
                 Profit         = $_.Profit
                 Currency       = $Config.Currency

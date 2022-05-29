@@ -7,6 +7,18 @@ Breaking changes (from 3.8.x.x code base):
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
 
+ChangeLog NemosMiner 4.0.0.37 29.05.2022
+========================================
+
+Enhancements:
+- Web GUI / Dashboard - Launched Miners: Change column order (device name is more miner name)
+- Web GUI / Pools: Change column order (algorithm is more important than pool name)
+
+Fixes:
+- Core: Change 'Speed' to 'Hashrate' (Regression from 4.0.0.36)
+- Web GUI: Invalid hashrate unit '... unknown' (Regression from 4.0.0.35)
+
+
 ChangeLog NemosMiner 4.0.0.36 29.05.2022
 ========================================
 

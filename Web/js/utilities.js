@@ -21,7 +21,7 @@ function formatMiners(data) {
     // Format the pool and algorithm data
     if (item.Workers.length > 0) {
       item.tPrimaryMinerFee = item.Workers[0].Fee;
-      item.tPrimarySpeed = item.Workers[0].Speed;
+      item.tPrimaryHashrate = item.Workers[0].Hashrate;
       if (item.Workers[0].Pool) {
         item.tPrimaryAlgorithm = item.Workers[0].Pool.Algorithm;
         item.tPrimaryPool = item.Workers[0].Pool.Name;
@@ -29,7 +29,7 @@ function formatMiners(data) {
         item.tPrimaryPoolUser = item.Workers[0].Pool.User;
       }
       if (item.Workers.length > 1) {
-        item.tSecondarySpeed = item.Workers[1].Speed;
+        item.tSecondaryHashrate = item.Workers[1].Hashrate;
         item.tSecondaryMinerFee = item.Workers[1].Fee;
         if (item.Workers[1].Pool) {
           item.tSecondaryAlgorithm = item.Workers[1].Pool.Algorithm;
@@ -43,7 +43,7 @@ function formatMiners(data) {
     try {
       if (item.WorkersRunning.length > 0) {
         item.tPrimaryMinerFee = item.WorkersRunning[0].Fee;
-        item.tPrimarySpeed = item.WorkersRunning[0].Speed;
+        item.tPrimaryHashrate = item.WorkersRunning[0].Hashrate;
         if (item.WorkersRunning[0].Pool) {
           item.tPrimaryAlgorithm = item.WorkersRunning[0].Pool.Algorithm;
           item.tPrimaryPool = item.WorkersRunning[0].Pool.Name;
@@ -52,7 +52,7 @@ function formatMiners(data) {
         }
 
         if (item.WorkersRunning.length > 1) {
-          item.tSecondarySpeed = item.WorkersRunning[1].Speed;
+          item.tSecondaryHashrate = item.WorkersRunning[1].Hashrate;
           item.tSecondaryMinerFee = item.WorkersRunning[1].Fee;
           if (item.WorkersRunning[1].Pool) {
             item.tSecondaryAlgorithm = item.WorkersRunning[1].Pool.Algorithm;
@@ -69,9 +69,9 @@ function formatMiners(data) {
     item.tEarningAccuracy = formatPercent(item.Earning_Accuracy);
 
     // Format the live speed(s)
-    if (item.Speed_Live) {
-      if (item.Speed_Live.length > 0) item.tPrimarySpeedLive = item.Speed_Live[0];
-      if (item.Speed_Live.length > 1) item.tSecondarySpeedLive = item.Speed_Live[1];
+    if (item.Hashrates_Live) {
+      if (item.Hashrates_Live.length > 0) item.tPrimaryHashrateLive = item.Hashrates_Live[0];
+      if (item.Hashrates_Live.length > 1) item.tSecondaryHashrateLive = item.Hashrates_Live[1];
     }
 
     // Format Total Mining Duration (TimeSpan)
@@ -132,7 +132,7 @@ function formatHashrateValue(value) {
     var sizes = ['H/s', 'kH/s', 'MH/s', 'GH/s', 'TH/s', 'PH/s', 'EH/s', 'ZH/s', 'YH/s'];
     var i = Math.floor(Math.log(value) / Math.log(1000));
     unitvalue = value / Math.pow(1000, i);
-    if (i == 0) i = 1;
+    if (i <= 0) i = 1;
     if (unitvalue < 10) return unitvalue.toFixed(3) + ' ' + sizes[i];
     return unitvalue.toFixed(2) + ' ' + sizes[i];
   }
@@ -191,6 +191,11 @@ function formatArrayAsString(value) {
   return value.sort().join('; <br>');
 };
 
+function formatDigits0(value) {
+  if (value > 0) return (value).toFixed(0);
+  return '';
+};
+
 function formatDigits1(value) {
   if (value > 0) return (value).toFixed(1);
   return '';
@@ -240,6 +245,64 @@ function formatDigits10(value) {
   if (value > 0) return (value).toFixed(10);
   return '';
 };
+
+
+function formatGBDigits0(value) {
+  if (value > 0) return (value).toFixed(0) + " GB";
+  return '';
+};
+
+function formatGBDigits1(value) {
+  if (value > 0) return (value).toFixed(1) + " GB";
+  return '';
+};
+
+function formatGBDigits2(value) {
+  if (value > 0) return (value).toFixed(2) + " GB";
+  return '';
+};
+
+function formatGBDigits3(value) {
+  if (value > 0) return (value).toFixed(3) + " GB";
+  return '';
+};
+
+function formatGBDigits4(value) {
+  if (value > 0) return (value).toFixed(4) + " GB";
+  return '';
+};
+
+function formatGBDigits5(value) {
+  if (value > 0) return (value).toFixed(5) + " GB";
+  return '';
+};
+
+function formatGBDigits6(value) {
+  if (value > 0) return (value).toFixed(6) + " GB";
+  return '';
+};
+
+function formatGBDigits7(value) {
+  if (value > 0) return (value).toFixed(7) + " GB";
+  return '';
+};
+
+function formatGBDigits8(value) {
+  if (value > 0) return (value).toFixed(8) + " GB";
+  return '';
+};
+
+function formatGBDigits9(value) {
+  if (value > 0) return (value).toFixed(9) + " GB";
+  return '';
+};
+
+function formatGBDigits10(value) {
+  if (value > 0) return (value).toFixed(10) + " GB";
+  return '';
+};
+
+
 
 function detailFormatter(index, row) {
   var html = [];

@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.36
+Version:        4.0.0.37
 Version date:   29 May 2022
 #>
 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.6.0"
+    $APIVersion = "0.4.6.1"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
@@ -753,7 +753,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/miners/best" { 
-                        $Data = ConvertTo-Json -Depth 4 @($Variables.BestMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process | ConvertTo-Json -Depth 4 | ConvertFrom-Json | ForEach-Object { If ($_.WorkersRunning) { $_ | Add-Member Workers $_.WorkersRunning -Force }; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True })
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.BestMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process | ConvertTo-Json -Depth 4 | ConvertFrom-Json | ForEach-Object { If ($_.WorkersRunning) { $_ | Add-Member Workers $_.WorkersRunning -Force }; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning | Sort-Object DeviceName)
                         Break
                     }
                     "/miners/bestminers_combo" { 
@@ -829,23 +829,23 @@ Function Start-APIServer {
                         break
                     }
                     "/pools" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Select-Object | Sort-Object Name, Algorithm)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Select-Object | Sort-Object Algorithm, Name)
                         Break
                     }
                     "/pools/added" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.AddedPools | Select-Object | Sort-Object Name, Algorithm)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.AddedPools | Select-Object | Sort-Object Algorithm, Name)
                         Break
                     }
                     "/pools/available" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Available -EQ $true | Select-Object | Sort-Object Name, Algorithm)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Available -EQ $true | Select-Object | Sort-Object Algorithm, Name)
                         Break
                     }
                     "/pools/best" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Best -EQ $true | Select-Object | Sort-Object Best, Name, Algorithm)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Best -EQ $true | Select-Object | Sort-Object Best, Algorithm, Name)
                         Break
                     }
                     "/pools/new" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.NewPools | Select-Object | Sort-Object Name, Algorithm)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.NewPools | Select-Object | Sort-Object Algorithm, Name)
                         Break
                     }
                     "/pools/lastearnings" { 
@@ -857,11 +857,11 @@ Function Start-APIServer {
                         Break
                     }
                     "/pools/unavailable" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Available -NE $true | Select-Object | Sort-Object Name, Algorithm)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Available -NE $true | Select-Object | Sort-Object Algorithm, Name)
                         Break
                     }
                     "/pools/updated" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.UpdatedPools | Select-Object | Sort-Object Name, Algorithm)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.UpdatedPools | Select-Object | Sort-Object Algorithm, Name)
                         Break
                     }
                     "/poolreasons" { 
