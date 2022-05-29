@@ -78,7 +78,8 @@ function formatMiners(data) {
     item.tTotalMiningDuration = formatTimeSpan(item.TotalMiningDuration);
 
     // Format Mining Duration (TimeSpan)
-    item.tMiningDuration = formatTimeSince(item.BeginTime).replace(" ago", "");
+    if (item.BeginTime == '') item.tMiningDuration = '';
+    else item.tMiningDuration = formatTimeSince(item.BeginTime).replace(" ago", "").replace("just now", "");
 
     // Format status
     const enumstatus = ["Running", "Idle", "Failed", "Disabled"];

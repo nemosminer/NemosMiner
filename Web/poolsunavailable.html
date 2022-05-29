@@ -86,30 +86,10 @@
             })
 
             $(document).ready(function () {
-              $('#remove-watchdog').click(function () {
-                var $data = $table.bootstrapTable('getSelections');
-                if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.BaseName, Algorithms: $element.Algorithms})));
-                  if ($data.length >= $querysize) {
-                    alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
-                  }
-                  else {
-                    $("body").css("cursor", "progress");
-                    $command = '/functions/watchdogtimers/remove?Pools=' + encodeURIComponent($data);
-                    $('.modal-body').load($command, function() {
-                      $('.modal-title').text($('#remove-watchdog').text());
-                      $("body").css("cursor", "default");
-                      $('#myModal').modal({show:true});
-                    });
-                    $table.bootstrapTable('refresh');
-                  }
-                }
-              });
-
               $('#reset-data').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms, Currency: $element.Currency, Region: $element.Region})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm, Currency: $element.Currency, Region: $element.Region})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
@@ -126,10 +106,30 @@
                 }
               });
 
+              $('#remove-watchdog').click(function () {
+                var $data = $table.bootstrapTable('getSelections');
+                if ($data.length >= 1) {
+                  $data = JSON.stringify($data.map($element => ({Name: $element.BaseName, Algorithm: $element.Algorithm})));
+                  if ($data.length >= $querysize) {
+                    alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
+                  }
+                  else {
+                    $("body").css("cursor", "progress");
+                    $command = '/functions/watchdogtimers/remove?Pools=' + encodeURIComponent($data);
+                    $('.modal-body').load($command, function() {
+                      $('.modal-title').text($('#remove-watchdog').text());
+                      $("body").css("cursor", "default");
+                      $('#myModal').modal({show:true});
+                    });
+                    $table.bootstrapTable('refresh');
+                  }
+                }
+              });
+
               $('#enable').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
@@ -149,7 +149,7 @@
               $('#disable').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
