@@ -17,7 +17,7 @@ Enhancements:
 Fixes:
 - Core: Change 'Speed' to 'Hashrate' (Regression from 4.0.0.36)
 - Web GUI: Invalid hashrate unit '... unknown' (Regression from 4.0.0.35)
-
+- Web GUI / API: Buttons in Pools* don't work (Regression from 4.0.0.35)
 
 ChangeLog NemosMiner 4.0.0.36 29.05.2022
 ========================================
