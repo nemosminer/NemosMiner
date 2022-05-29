@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           lolMiner.ps1
-Version:        4.0.0.35
-Version date:   24 May 2022
+Version:        4.0.0.36
+Version date:   29 May 2022
 #>
 
 class lolMiner : Miner { 
@@ -39,7 +39,7 @@ class lolMiner : Miner {
         }
 
         $HashRate = [PSCustomObject]@{ }
-        $HashRate_Name = [String]$this.Algorithm[0]
+        $HashRate_Name = [String]$this.Algorithms[0]
         $HashRate_Unit = [Int64]1
         Switch ($Data.Algorithms[0].Performance_Unit) { 
             "kh/s"  { $HashRate_Unit = [Math]::Pow(10,3) }
@@ -60,8 +60,7 @@ class lolMiner : Miner {
         $Shares_Rejected = [Int64]$Data.Algorithms[0].Total_Rejected
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
 
-        If ($this.Algorithm[1]) { 
-            $HashRate_Name = [String]$this.Algorithm[1]
+        If ($HashRate_Name = [String]($this.Algorithms -ne $HashRate_Name)) { 
             $HashRate_Unit = [Int64]1
             Switch ($Data.Algorithms[1].Performance_Unit) { 
                 "kh/s"  { $HashRate_Unit = [Math]::Pow(10,3) }

@@ -119,7 +119,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
                 [PSCustomObject]@{ 
                     Name            = $Miner_Name
-                    DeviceName      = $AvailableMiner_Devices.Name
+                    DeviceNames    = $AvailableMiner_Devices.Name
                     Type            = $AvailableMiner_Devices.Type
                     Path            = $Path
                     Arguments       = ("$($_.Arguments) --log off --apiport $MinerAPIPort --shortstats 7 --longstats 30 --digits 6 --watchdog exit --dns-over-https 1 --devicesbypcie --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0}:0' -f $_ }) -join ',')" -replace "\s+", " ").trim()

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           FireIce.ps1
-Version:        4.0.0.35
-Version date:   24 May 2022
+Version:        4.0.0.36
+Version date:   29 May 2022
 #>
 
 class Fireice : Miner { 
@@ -107,7 +107,7 @@ class Fireice : Miner {
         }
 
         $HashRate = [PSCustomObject]@{ }
-        $HashRate_Name = [String]$this.Algorithm[0]
+        $HashRate_Name = [String]$this.Algorithms[0]
         $HashRate_Value = [Double]$Data.hashrate.total[0]
         If (-not $HashRate_Value) { $HashRate_Value = [Double]$Data.hashrate.total[1] } #fix
         If (-not $HashRate_Value) { $HashRate_Value = [Double]$Data.hashrate.total[2] } #fix

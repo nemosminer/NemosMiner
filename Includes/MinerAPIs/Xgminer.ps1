@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Xgminer.ps1
-Version:        4.0.0.35
-Version date:   24 May 2022
+Version:        4.0.0.36
+Version date:   29 May 2022
 #>
 
 class Xgminer : Miner { 
@@ -29,7 +29,7 @@ class Xgminer : Miner {
         $PowerUsage = [Double]0
         $Sample = [PSCustomObject]@{ }
 
-        $Request = @{ command = "summary$(If ($this.Algorithm[1]) { "+summary2" } )"; parameter = "" } | ConvertTo-Json -Compress
+        $Request = @{ command = "summary$(If ($this.Algorithms[1]) { "+summary2" } )"; parameter = "" } | ConvertTo-Json -Compress
         $Response = ""
 
         Try { 
@@ -42,8 +42,8 @@ class Xgminer : Miner {
 
         $HashRate = [PSCustomObject]@{ }
 
-        $DataSummary = If ($this.Algorithm[1]) { $Data.summary.SUMMARY[0] } Else { $Data.SUMMARY }
-        $HashRate_Name = [String]$this.Algorithm[0]
+        $DataSummary = If ($this.Algorithms[1]) { $Data.summary.SUMMARY[0] } Else { $Data.SUMMARY }
+        $HashRate_Name = [String]$this.Algorithms[0]
         $HashRate_Value = If ($DataSummary.HS_5s) { [Double]$DataSummary.HS_5s * [Math]::Pow(1000, 0) }
         ElseIf ($DataSummary.KHS_5s) { [Double]$DataSummary.KHS_5s * [Math]::Pow(1000, 1) }
         ElseIf ($DataSummary.MHS_5s) { [Double]$DataSummary.MHS_5s * [Math]::Pow(1000, 2) }
@@ -68,9 +68,8 @@ class Xgminer : Miner {
         $Shares_Rejected = [Int64]$DataSummary.rejected
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
 
-        If ($this.Algorithm[1]) {
+        If ($HashRate_Name = [String]($this.Algorithms -ne $HashRate_Name)) { # Dual algo mining
             $DataSummary = $Data.summary2.SUMMARY[0]
-            $HashRate_Name = [String]$this.Algorithm[1]
             $HashRate_Value = If ($DataSummary.HS_5s) { [Double]$DataSummary.HS_5s * [Math]::Pow(1000, 0) }
             ElseIf ($DataSummary.KHS_5s) { [Double]$DataSummary.KHS_5s * [Math]::Pow(1000, 1) }
             ElseIf ($DataSummary.MHS_5s) { [Double]$DataSummary.MHS_5s * [Math]::Pow(1000, 2) }

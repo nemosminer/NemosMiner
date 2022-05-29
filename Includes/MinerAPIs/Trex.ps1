@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Trex.ps1
-Version:        4.0.0.35
-Version date:   24 May 2022
+Version:        4.0.0.36
+Version date:   29 May 2022
 #>
 
 class Trex : Miner { 
@@ -39,7 +39,7 @@ class Trex : Miner {
         }
 
         $HashRate = [PSCustomObject]@{ }
-        $HashRate_Name = [String]$this.Algorithm[0]
+        $HashRate_Name = [String]$this.Algorithms[0]
         $HashRate_Value = [Double]$Data.hashrate_minute
         If (-not $Data.hashrate_minute) { $HashRate_Value = [Double]$Data.hashrate }
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
@@ -49,7 +49,7 @@ class Trex : Miner {
         $Shares_Rejected = [Int64]$Data.rejected_count
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
 
-        If ($HashRate_Name = [String]($this.Algorithm -ne $HashRate_Name)) { # Dual algo mining
+        If ($HashRate_Name = [String]($this.Algorithms -ne $HashRate_Name)) { # Dual algo mining
             $HashRate_Value = [Double]$Data.dual_stat.hashrate_minute
             If (-not $HashRate_Value) { $HashRate_Value = [Double]$Data.dual_stat.hashrate }
             $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }

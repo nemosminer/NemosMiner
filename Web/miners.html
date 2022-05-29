@@ -30,6 +30,7 @@
             data-response-handler="formatMiners"
             data-url="/miners"
             data-maintain-meta-data="true"
+            data-undefined-text=""
             data-show-fullscreen="true"
             >
             <thead>
@@ -42,7 +43,7 @@
                 <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
                 <th data-field="tStatus" data-sortable="true" data-filter-control="select">Status</th>
-                <th data-field="Reason" data-sortable="true" data-filter-control="select" data-visible="false">Reason</th>
+                <th data-field="Reasons" data-sortable="true" data-filter-control="select" data-visible="false">Reasons</th>
                 <th data-field="Earning_Bias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Earning Bias</th>
                 <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Earning</th>
                 <th data-field="Profit_Bias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Profit Bias</th>
@@ -134,7 +135,7 @@
               $('#re-benchmark').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
@@ -154,7 +155,7 @@
               $('#re-measure').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
@@ -174,7 +175,7 @@
               $('#failed').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
@@ -194,7 +195,7 @@
               $('#disable').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')')
                   }

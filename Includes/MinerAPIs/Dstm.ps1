@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Dstm.ps1
-Version:        4.0.0.35
-Version date:   24 May 2022
+Version:        4.0.0.36
+Version date:   29 May 2022
 #>
 
 class Dstm : Miner { 
@@ -41,7 +41,7 @@ class Dstm : Miner {
         }
 
         $HashRate = [PSCustomObject]@{ }
-        $HashRate_Name = [String]$this.Algorithm[0]
+        $HashRate_Name = [String]$this.Algorithms[0]
         $HashRate_Value = [Double]($Data.result.speed_sps | Measure-Object -Sum).Sum
         If (-not $HashRate_Value) { $HashRate_Value = [Double]($Data.result.sol_ps | Measure-Object -Sum).Sum } #fix
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }

@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.35
-Version date:   24 May 2022
+Version:        4.0.0.36
+Version date:   29 May 2022
 #>
 
 [CmdletBinding()]
@@ -266,7 +266,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.35"
+    Version      = [System.Version]"4.0.0.36"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -315,7 +315,13 @@ If (-not $Variables.Regions) {
     Start-Sleep -Seconds 10
     Exit
 }
-# Load pool data
+# Load FIAT currencies list
+$Variables.FIATcurrencies = Get-Content -Path ".\Data\FIATcurrencies.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+If (-not $Variables.Regions) { 
+    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\FIATcurrencies.json' is not a valid JSON file. Please restore it from your original download."
+    Start-Sleep -Seconds 10
+    Exit
+}# Load pool data
 $Variables.PoolData = Get-Content -Path ".\Data\PoolData.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore | Get-SortedObject
 $Variables.PoolNames = @($Variables.PoolData.Keys)
 $Variables.PoolVariants = @(($Variables.PoolData.Keys | ForEach-Object { $Variables.PoolData.$_.Variant.Keys -replace " External$| Internal$" }) | Sort-Object -Unique)
@@ -462,8 +468,8 @@ Write-Message -Level Verbose $Variables.Summary
 
 $Variables.Devices = [Device[]](Get-Device -Refresh)
 
-$Variables.Devices | Where-Object { $_.Type -eq "CPU" -and $_.Vendor -notin $Variables.SupportedCPUDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
-$Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -notin $Variables.SupportedGPUDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported Vendor: '$($_.Vendor)')" }
+$Variables.Devices | Where-Object { $_.Type -eq "CPU" -and $_.Vendor -notin $Variables.SupportedCPUDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported CPU Vendor: '$($_.Vendor)')" }
+$Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -notin $Variables.SupportedGPUDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported GPU Vendor: '$($_.Vendor)')" }
 
 $Variables.Devices | Where-Object Name -In $Config.ExcludeDeviceName | Where-Object { $_.State -NE [DeviceState]::Unsupported } | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
@@ -633,13 +639,13 @@ Function Update-TabControl {
         "Run" { 
             If ($Variables.Miners) { 
                 $RunningMinersDGV.DataSource = $Variables.Miners | Where-Object { $_.Status -eq "Running" } | Select-Object @(
-                    @{ Name = "Device(s)"; Expression = { $_.DeviceName -join "; " } }, 
+                    @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join "; " } }, 
                     @{ Name = "Miner"; Expression = { "$($_.Name) $($_.Info)" } }, 
                     @{ Name = "Account"; Expression = { ($_.Workers.Pool.User | Select-Object -Unique | ForEach-Object { $_ -split '\.' | Select-Object -First 1 } | Select-Object -Unique) -join ' & ' } }, 
                     @{ Name = "Earning $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { ($_.Earning * $Variables.Rates.BTC.($Config.Currency)).ToString("N3") } Else { "Unknown" } } }, 
                     @{ Name = "Profit $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { ($_.Profit * $Variables.Rates.BTC.($Config.Currency)).ToString("N3") } Else { "Unknown" } } }, 
                     @{ Name = "Pool"; Expression = { ($_.WorkersRunning.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' } }, 
-                    @{ Name = "Hashrate"; Expression = { If ($_.Speed_Live -contains $null) { ($_.Speed_Live | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join ' & ' } Else { ($_.Workers.Speed | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join ' & ' } } }, 
+                    @{ Name = "Hashrate"; Expression = { If ($_.Hashrates_Live -contains $null) { ($_.Hashrates_Live | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join ' & ' } Else { ($_.Workers.Speed | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join ' & ' } } }, 
                     @{ Name = "Active (hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [math]::floor(((Get-Date).ToUniversalTime() - $_.BeginTime).TotalDays * 24), ((Get-Date).ToUniversalTime() - $_.BeginTime) } }, 
                     @{ Name = "Total Active (hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [math]::floor($_.TotalMiningDuration.TotalDays * 24), $_.TotalMiningDuration } }
                 ) | Sort-Object "Device(s)" | Out-DataTable
@@ -770,7 +776,7 @@ Function Update-TabControl {
                 If ($Variables.CalculatePowerCost -and -not $Config.IgnorePowerCost) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
                 $BenchmarksDGV.DataSource = $Variables.Miners | Where-Object Available -EQ $true | Select-Object @(
                     @{ Name = "Miner"; Expression = { $_.Name } }, 
-                    @{ Name = "Device(s)"; Expression = { $_.DeviceName -join '; ' } }, 
+                    @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join '; ' } }, 
                     @{ Name = "Algorithm"; Expression = { $_.Algorithm -join ' & ' } }, 
                     @{ Name = "PowerUsage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else { "$($_.PowerUsage.ToString("N3")) W" } } }, 
                     @{ Name = "Hashrate"; Expression = { ($_.Workers.Speed | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "Benchmarking" } }) -join ' & ' } }, 
@@ -929,6 +935,16 @@ Function Global:TimerUITick {
             Write-Host "Some miners binaries are missing, downloader is installing miner binaries..." -ForegroundColor Yellow
         }
 
+        If ($Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
+            If ($Config.UIStyle -ne "full") { 
+                $Variables.UIStyle = "full"
+                Write-Host "$(If ($Variables.MinersNeedingBenchmark) { "Benchmarking" })$(If ($Variables.MinersNeedingBenchmark -and $Variables.MinersNeedingPowerUsageMeasurement) { " / " })$(If ($Variables.MinersNeedingPowerUsageMeasurement) { "Measuring power usage" }): Temporarily switched UI style to 'Full' (Information about miners run in the past, failed miners & watchdog timers will $(If ($Variables.UIStyle -eq "light") { "not " })be shown)" -ForegroundColor Yellow
+            }
+        }
+        Else { 
+            $Variables.UIStyle = $Config.UIStyle
+        }
+
         # Display available miners list
         [System.Collections.ArrayList]$Miner_Table = @(
             @{ Label = "Miner"; Expression = { $_.Name } }
@@ -951,7 +967,7 @@ Function Global:TimerUITick {
             If ($Variables.ShowCoinName -and $Variables.Miners.Workers.Pool.CoinName) { @{ Label = "CoinName"; Expression = { "$(If ($_.Workers.Pool.CoinName) { $_.Workers.Pool.CoinName })" -replace '{, }' } } }
         )
         If ($Variables.CalculatePowerCost) { $SortBy = "Profit" } Else { $SortBy = "Earning" }
-        $Variables.Miners | Where-Object Available -EQ $true | Group-Object -Property { [String]$_.DeviceName } | Sort-Object Name | ForEach-Object { 
+        $Variables.Miners | Where-Object Available -EQ $true | Group-Object -Property { [String]$_.DeviceNames } | Sort-Object Name | ForEach-Object { 
             $MinersDeviceGroup = @($_.Group)
             $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object Benchmark -EQ $true)
             $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object Enabled -EQ $True | Where-Object MeasurePowerUsage -EQ $true)
@@ -962,28 +978,28 @@ Function Global:TimerUITick {
                 $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 -or <#List all miners when measuring power usage#>
                 $_.$SortBy -ge ($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index (($MinersDeviceGroup.Count, 5 | Measure-Object -Minimum).Minimum - 1)) -or <#Always list at least the top 5 miners per device group#>
                 $_.$SortBy -ge (($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -First 1) * 0.5) <#Always list the better 50% miners per device group#>
-            } | Sort-Object -Property DeviceName, @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = { $_.KeepRunning -eq $true }; Descending = $true }, @{ Expression = { $_.Prioritize -eq $true }; Descending = $true }, @{ Expression = { $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithm[0] }; Descending = $false }, @{ Expression = { $_.Algorithm[1] }; Descending = $false } | 
-            Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (@($_).Count -ne 1) { "s" })"; Expression = { "$($_.DeviceName -join ',') [$(($Variables.Devices | Where-Object Name -In $_.DeviceName).Model -join '; ')]" } } | Out-Host
+            } | Sort-Object -Property DeviceName, @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = { $_.KeepRunning -eq $true }; Descending = $true }, @{ Expression = { $_.Prioritize -eq $true }; Descending = $true }, @{ Expression = { $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithms[0] }; Descending = $false }, @{ Expression = { $_.Algorithms[1] }; Descending = $false } | 
+            Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (@($_).Count -ne 1) { "s" })"; Expression = { "$($_.DeviceNames -join ',') [$(($Variables.Devices | Where-Object Name -In $_.DeviceNames).Model -join '; ')]" } } | Out-Host
 
             # Display benchmarking progress
             If ($MinersDeviceGroupNeedingBenchmark) { 
-                "Benchmarking for device$(If (($MinersDeviceGroup.DeviceName | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceName | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingBenchmark.Count) miner$(If ($MinersDeviceGroupNeedingBenchmark.Count -gt 1){ 's' }) left to complete benchmark." | Out-Host
+                "Benchmarking for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingBenchmark.Count) miner$(If ($MinersDeviceGroupNeedingBenchmark.Count -gt 1){ 's' }) left to complete benchmark." | Out-Host
             }
             # Display power usage measurement progress
             If ($MinersDeviceGroupNeedingPowerUsageMeasurement) { 
-                "Power usage measurement for device$(If (($MinersDeviceGroup.DeviceName | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceName | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring." | Out-Host
+                "Power usage measurement for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring." | Out-Host
             }
         }
 
         If ($ProcessesRunning = @($Variables.Miners | Where-Object { $_.Status -eq "Running" })) { 
             Write-Host "Running $(If ($ProcessesRunning.Count -eq 1) { "miner:" } Else { "miners: $($ProcessesRunning.Count)" })"
             [System.Collections.ArrayList]$Miner_Table = @(
-                @{ Label = "Hashrate"; Expression = { If ($_.Speed_Live) { (($_.Speed_Live | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ') -replace '\s+', ' ' } Else { "n/a" } }; Align = "right" }
+                @{ Label = "Hashrate"; Expression = { If ($_.Hashrates_Live) { (($_.Hashrates_Live | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ') -replace '\s+', ' ' } Else { "n/a" } }; Align = "right" }
                 If ($Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ($_.PowerUsage_Live) { "$($_.PowerUsage_Live.ToString("N2")) W" } Else { "n/a" } }; Align = "right" } }
                 @{ Label = "Active (this run)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f ((Get-Date).ToUniversalTime() - $_.BeginTime) } }
                 @{ Label = "Active (total)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f ($_.TotalMiningDuration) } }
                 @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
-                @{ Label = "Device"; Expression = { $_.DeviceName -join ',' } }
+                @{ Label = "Device"; Expression = { $_.DeviceNames -join ',' } }
                 @{ Label = "Name"; Expression = { $_.Name } }
                 @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
             )
@@ -1002,7 +1018,7 @@ Function Global:TimerUITick {
                     @{ Label = "Time since last run"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }
                     @{ Label = "Active (total)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $_.TotalMiningDuration } }
                     @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
-                    @{ Label = "Device"; Expression = { $_.DeviceName -join ',' } }
+                    @{ Label = "Device"; Expression = { $_.DeviceNames -join ',' } }
                     @{ Label = "Name"; Expression = { $_.Name } }
                     @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
                 )
@@ -1017,7 +1033,7 @@ Function Global:TimerUITick {
                     @{ Label = "Time since last fail"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }
                     @{ Label = "Active (total)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $_.TotalMiningDuration } }
                     @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
-                    @{ Label = "Device"; Expression = { $_.DeviceName -join ',' } }
+                    @{ Label = "Device"; Expression = { $_.DeviceNames -join ',' } }
                     @{ Label = "Name"; Expression = { $_.Name } }
                     @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
                 )
@@ -1030,7 +1046,7 @@ Function Global:TimerUITick {
                     @{Label = "Miner Watchdog Timers"; Expression = { $_.MinerName } }, 
                     @{Label = "Pool"; Expression = { $_.PoolName } }, 
                     @{Label = "Algorithm"; Expression = { $_.Algorithm } }, 
-                    @{Label = "Device"; Expression = { $_.DeviceName -join ',' } }, 
+                    @{Label = "Device"; Expression = { $_.DeviceNames -join ',' } }, 
                     @{Label = "Last Updated"; Expression = { "{0:mm} min {0:ss} sec ago" -f ((Get-Date).ToUniversalTime() - $_.Kicked) }; Align = "right" }
                 ) | Out-Host
             }

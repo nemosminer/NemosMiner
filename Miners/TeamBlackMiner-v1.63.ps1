@@ -54,7 +54,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
                 [PSCustomObject]@{ 
                     Name        = $Miner_Name
-                    DeviceName  = $AvailableMiner_Devices.Name
+                    DeviceNames= $AvailableMiner_Devices.Name
                     Type        = $AvailableMiner_Devices.Type
                     Path        = $Path
                     Arguments   = ("$($_.Arguments) --api --api-port $MinerAPIPort$($DeviceSelector.($_.Type)) [$(($AvailableMiner_Devices.($DeviceEnumerator.($_.Type)) | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')]" -replace "\s+", " ").trim()

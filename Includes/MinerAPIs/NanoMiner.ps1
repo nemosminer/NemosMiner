@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NanoMiner.ps1
-Version:        4.0.0.35
-Version date:   24 May 2022
+Version:        4.0.0.36
+Version date:   29 May 2022
 #>
 
 class NanoMiner : Miner { 
@@ -55,7 +55,7 @@ class NanoMiner : Miner {
         }
 
         $HashRate = [PSCustomObject]@{ }
-        $HashRate_Name = $this.Algorithm[0]
+        $HashRate_Name = $this.Algorithms[0]
         $HashRate_Value = [Double]0
 
         $Shares = [PSCustomObject]@{ }

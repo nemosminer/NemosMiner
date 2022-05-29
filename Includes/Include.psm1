@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.35
-Version date:   24 May 2022
+Version:        4.0.0.36
+Version date:   29 May 2022
 #>
 
 # Window handling
@@ -100,9 +100,6 @@ Enum DeviceState {
 }
 
 Class Pool { 
-    # static [Credential[]]$Credentials = @()
-    # [Credential[]]$Credential = @()
-
     [String]$Name
     [String]$BaseName
     [String]$Algorithm
@@ -123,7 +120,7 @@ Class Pool {
     [DateTime]$Updated = (Get-Date).ToUniversalTime()
     [Nullable[Int]]$Workers
     [Boolean]$Available = $true
-    [String[]]$Reason = @("")
+    [String[]]$Reasons = @()
     [Boolean]$Best = $false
 
     # Stats
@@ -152,7 +149,6 @@ Enum MinerStatus {
 }
 
 Class Miner { 
-    static [Pool[]]$Pools = @()
     [Worker[]]$Workers = @()
     [Worker[]]$WorkersRunning = @()
     [Device[]]$Devices = @()
@@ -166,10 +162,9 @@ Class Miner {
     [String]$Arguments
     [String]$CommandLine
     [UInt16]$Port
-    [String[]]$DeviceName = @() # derived from devices
-    [String[]]$Algorithm = @() # derived from workers
-    [String[]]$Pool = @() # derived from workers
-    [Double[]]$Speed_Live = @()
+    [String[]]$DeviceNames = @() # derived from devices
+    [String[]]$Algorithms = @() # derived from workers
+    [Double[]]$Hashrates_Live = @()
 
     [Boolean]$Benchmark = $false # derived from stats
 
@@ -191,7 +186,7 @@ Class Miner {
     [Boolean]$Best = $false
     [Boolean]$Available = $true
     [Boolean]$Disabled = $false
-    [String[]]$Reason
+    [String[]]$Reasons # Why is a miner unavailable?
     [Boolean]$Restart = $false 
     [Boolean]$KeepRunning = $false # do not stop miner even if not best (MinInterval)
 
@@ -257,7 +252,7 @@ Class Miner {
             }
         }
         # Start Miner data reader
-        $this | Add-Member -Force @{ DataReaderJob = Start-ThreadJob -Name "$($this.Name)_DataReader" -ThrottleLimit 99 -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithm, DataCollectInterval, Devices, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore) }
+        $this | Add-Member -Force @{ DataReaderJob = Start-ThreadJob -Name "$($this.Name)_DataReader" -ThrottleLimit 99 -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithms, DataCollectInterval, Devices, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore) }
     }
 
     hidden StopDataReader() { 
@@ -305,7 +300,7 @@ Class Miner {
                 DateTime          = (Get-Date -Format o)
                 Action            = "Launched"
                 Name              = $this.Name
-                Device            = ($this.Devices.Name | Sort-Object) -join "; "
+                Device            = $this.DeviceNames -join "; "
                 Type              = $this.Type
                 Account           = ($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
                 Pool              = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
@@ -318,7 +313,7 @@ Class Miner {
                 CommandLine       = $this.CommandLine
                 Benchmark         = $this.Benchmark
                 MeasurePowerUsage = $this.MeasurePowerUsage
-                Reason            = ""
+                Reasons           = ""
                 LastDataSample    = $null
             } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
@@ -328,9 +323,9 @@ Class Miner {
                         $this.StatusMessage = "Warming up $($this.Info)"
                         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
                         $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
-                        $this.StartDataReader()
-                        $this.Speed_Live = @($this.Algorithm | ForEach-Object { [Double]::NaN })
+                        $this.Hashrates_Live = @($this.Algorithms[0] | ForEach-Object { [Double]::NaN })
                         $this.WorkersRunning = $this.Workers
+                        $this.StartDataReader()
                         Break
                     }
                     Start-Sleep -Milliseconds 100
@@ -406,7 +401,7 @@ Class Miner {
             DateTime          = (Get-Date -Format o)
             Action            = If ($this.Status -eq [MinerStatus]::Idle) { "Stopped" } Else { "Failed" }
             Name              = $this.Name
-            Device            = ($this.Devices.Name | Sort-Object) -join "; "
+            Device            = $this.DeviceNames -join "; "
             Type              = $this.Type
             Account           = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
             Pool              = ($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
@@ -419,7 +414,7 @@ Class Miner {
             CommandLine       = ""
             Benchmark         = $this.Benchmark
             MeasurePowerUsage = $this.MeasurePowerUsage
-            Reason            = If ($this.Status -eq [MinerStatus]::Failed) { $this.StatusMessage } Else { "" }
+            Reasons           = If ($this.Status -eq [MinerStatus]::Failed) { $this.StatusMessage } Else { "" }
             LastDataSample    = $this.Data | Select-Object -Last 1 | ConvertTo-Json -Compress
         } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
@@ -517,7 +512,7 @@ Class Miner {
     }
 
     Refresh([Double]$PowerCostBTCperW, [Boolean]$CalculatePowerCost) { 
-        $this.Reason = @()
+        $this.Reasons = @()
         $this.Available = $true
         $this.Best = $false
         $this.Disabled = $false
@@ -552,7 +547,7 @@ Class Miner {
                 $_.Disabled = $false
                 $_.Speed = [Double]::NaN
             }
-            If ($_.Pool.Reason -contains "Prioritized by BalancesKeepAlive") { $this.Prioritize = $true }
+            If ($_.Pool.Reasons -contains "Prioritized by BalancesKeepAlive") { $this.Prioritize = $true }
         }
 
         If ($this.Workers | Where-Object Disabled) { 
@@ -1043,7 +1038,7 @@ Function Update-MonitoringData {
                 Type           = $_.Type -join ','
                 Algorithm      = $_.Algorithm -join ','
                 Pool           = $_.WorkersRunning.Pool.Name -join ','
-                CurrentSpeed   = $_.Speed_Live
+                CurrentSpeed   = $_.Hashrates_Live
                 EstimatedSpeed = $_.Workers.Speed
                 Earning        = $_.Earning
                 Profit         = $_.Profit
@@ -1302,10 +1297,7 @@ Function Write-Config {
     )
 
     $Header = 
-"// This file was initially generated by $($Variables.Branding.ProductLabel)
-// It should still be usable in newer versions, but newer versions might have additional
-// settings or changes
-
+"// This file was generated by $($Variables.Branding.ProductLabel)
 // $($Variables.Branding.ProductLabel) will automatically add / convert / rename / update new settings when updating to a new version
 "
     If (Test-Path $ConfigFile -PathType Leaf) { 

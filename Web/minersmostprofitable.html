@@ -30,6 +30,7 @@
             data-response-handler="formatMiners"
             data-url="/miners/mostprofitable"
             data-maintain-meta-data="true"
+            data-undefined-text=""
             data-show-fullscreen="true"
             >
             <thead>
@@ -130,7 +131,7 @@
               $('#re-benchmark').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
@@ -150,7 +151,7 @@
               $('#re-measure').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
@@ -170,7 +171,7 @@
               $('#failed').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
@@ -190,7 +191,7 @@
               $('#disable').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')')
                   }

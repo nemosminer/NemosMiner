@@ -16,14 +16,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 Product:        NemosMiner
 File:           API.psm1
-version:        4.0.0.35
-version date:   24 May 2022-->
+version:        4.0.0.36
+version date:   29 May 2022-->
 
 
 <html>
 
 <body>
-  <h1>NemosMiner API (version 0.4.5.5)</h1>
+  <h1>NemosMiner API (version 0.4.6.0)</h1>
 
   API data is available at http://localhost:[API port]/&lt;resource&gt.
   (The default API port is 3999)
@@ -102,6 +102,9 @@ version date:   24 May 2022-->
   <br>
   <a href="http://localhost:3999/extracurrencies">/extracurrencies</a>
   <p>Returns the list of extra currencies</p>
+  <br>
+  <a href="http://localhost:3999/fiatcurrencies">/fiatcurrencies</a>
+  <p>Returns the list of all available FIAT currencies (defined in '\Data\FIATcurrencies.json').</p>
   <br>
   <a href="http://localhost:3999/miners">/miners</a>
   <p>Shows all available miners data, use for debugging.</p>

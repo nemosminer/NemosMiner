@@ -214,7 +214,7 @@
               $('#re-benchmark').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
@@ -232,7 +232,7 @@
               $('#re-measure').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
@@ -250,7 +250,7 @@
               $('#failed').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')')
                   }
@@ -268,7 +268,7 @@
               $('#disable').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')')
                   }
@@ -363,7 +363,8 @@
 
                                 $.each(result, function(index, item) {
                                   item.Currencies = [item.Currency];
-                                  item.Currencies = (item.Currencies).concat(currencies);
+                                  if (config.BalancesShowInAllCurrencies || footer.test(item.Pool)) item.Currencies = (item.Currencies).concat(currencies);
+                                  else item.Currencies = (item.Currencies).concat(currencies[0]);
                                   item.Currencies = Array.from(new Set(item.Currencies));
 
                                   if (config.UsemBTC == true) {

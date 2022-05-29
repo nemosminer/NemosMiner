@@ -15,7 +15,7 @@ function formatMiners(data) {
     else item.tName = item.Name;
 
     // Format the device(s)
-    if (item.DeviceName) item.tDevices = item.DeviceName.toString();
+    if (item.DeviceNames) item.tDevices = item.DeviceNames.toString();
     else item.tDevices = '';
 
     // Format the pool and algorithm data

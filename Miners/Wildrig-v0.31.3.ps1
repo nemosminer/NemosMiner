@@ -131,19 +131,18 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                 [PSCustomObject]@{ 
-                    Name       = $Miner_Name
-                    DeviceName = $AvailableMiner_Devices.Name
-                    Type       = $AvailableMiner_Devices.Type
-                    Path       = $Path
-                    Arguments  = ("$($_.Arguments) --api-port $MinerAPIPort --url stratum+tcp$(if ($Pools.$Algorithm_Norm.SSL) { "s" })://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --multiple-instance --opencl-threads auto --opencl-launch auto --opencl-platforms $($AvailableMiner_Devices.PlatformId | Sort-Object -Unique) --opencl-devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
-                    Algorithm  = $_.Algorithm
-                    API        = "XmRig"
-                    Port       = $MinerAPIPort
-                    URI        = $Uri
-                    Fee        = $_.Fee # subtract devfee
-                    MinerUri   = "http://localhost:$($MinerAPIPort)"
+                    Name        = $Miner_Name
+                    DeviceNames = $AvailableMiner_Devices.Name
+                    Type        = $AvailableMiner_Devices.Type
+                    Path        = $Path
+                    Arguments   = ("$($_.Arguments) --api-port $MinerAPIPort --url stratum+tcp$(if ($Pools.$Algorithm_Norm.SSL) { "s" })://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --multiple-instance --opencl-threads auto --opencl-launch auto --opencl-platforms $($AvailableMiner_Devices.PlatformId | Sort-Object -Unique) --opencl-devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
+                    Algorithm   = $_.Algorithm
+                    API         = "XmRig"
+                    Port        = $MinerAPIPort
+                    URI         = $Uri
+                    Fee         = $_.Fee # subtract devfee
+                    MinerUri    = "http://localhost:$($MinerAPIPort)"
                     WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
-                    EnvVars     = @("GPU_MAX_WORKGROUP_SIZE=256")
                 }
             }
         }

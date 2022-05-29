@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.0.35
-Version date:   24 May 2022
+Version:        4.0.0.36
+Version date:   29 May 2022
 #>
 
 Function Initialize-API { 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.5.5"
+    $APIVersion = "0.4.6.0"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
@@ -340,10 +340,10 @@ Function Start-APIServer {
                                     $AlgorithmList.Remove("+$Algorithm")
                                     If (-not ($AlgorithmList -match "\+.+") -and $AlgorithmList -notcontains "-$Algorithm") { $AlgorithmList += "-$Algorithm" }
 
-                                    $Reason = "Algorithm disabled (``-$($Algorithm)`` in $PoolBaseName pool config)"
+                                    $Reasons = "Algorithm disabled (``-$($Algorithm)`` in $PoolBaseName pool config)"
                                     $Variables.Pools | Where-Object BaseName -EQ $PoolName | Where-Object Algorithm -EQ $Algorithm | ForEach-Object { 
-                                        $_.Reason = @($_.Reason | Where-Object { $_ -notmatch $Reason })
-                                        $_.Reason += $Reason
+                                        $_.Reasons = @($_.Reasons | Where-Object { $_ -notmatch $Reasons })
+                                        $_.Reasons += $Reasons
                                         $_.Available = $false
                                     }
                                     $Data += "$Algorithm@$PoolName ($((($Variables.Pools | Where-Object Name -EQ $PoolName | Where-Object Algorithm -EQ $Algorithm).Region | Sort-Object -Unique) -join ', '))`n"
@@ -378,10 +378,10 @@ Function Start-APIServer {
                                     $AlgorithmList.Remove("-$Algorithm")
                                     If ($AlgorithmList -match "\+.+" -and $AlgorithmList -notcontains "+$Algorithm") { $AlgorithmList += "+$Algorithm" }
 
-                                    $Reason = "Algorithm disabled (``-$($Algorithm)`` in $PoolBaseName pool config)"
+                                    $Reasons = "Algorithm disabled (``-$($Algorithm)`` in $PoolBaseName pool config)"
                                     $Variables.Pools | Where-Object BaseName -EQ $PoolName | Where-Object Algorithm -EQ $Algorithm | ForEach-Object { 
-                                        $_.Reason = @($_.Reason | Where-Object { $_ -ne $Reason })
-                                        If (-not $_.Reason) { $_.Available = $true }
+                                        $_.Reasons = @($_.Reasons | Where-Object { $_ -ne $Reasons })
+                                        If (-not $_.Reasons) { $_.Available = $true }
                                     }
                                     $Data += "$Algorithm@$PoolName ($((($Variables.Pools | Where-Object Name -EQ $PoolName | Where-Object Algorithm -EQ $Algorithm).Region | Sort-Object -Unique) -join ', '))`n"
                                 }
@@ -434,7 +434,7 @@ Function Start-APIServer {
                                     $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
                                     $Data += "$($Stat_Name) ($($_.Region))`n"
                                     Remove-Stat -Name "$($Stat_Name)_Profit"
-                                    $_.Reason = [String[]]@()
+                                    $_.Reasons = [String[]]@()
                                     $_.Price = $_.Price_Bias = $_.StablePrice = $_.Accuracy = [Double]::Nan
                                     $_.Available = $true
                                     $_.Disabled = $false
@@ -449,8 +449,8 @@ Function Start-APIServer {
                             Break
                         }
                         ElseIf ($Parameters.Miners -and $Parameters.Type -eq "HashRate") { 
-                            If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithm)) { 
-                                $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
+                            If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithms)) { 
+                                $Miners | Sort-Object Name, Algorithms | ForEach-Object { 
                                     If ($_.Earning -eq 0) { $_.Available = $true }
                                     $_.Earning_Accuracy = [Double]::NaN
                                     $_.Activated = 0 # To allow 3 attempts
@@ -458,18 +458,20 @@ Function Start-APIServer {
                                     $_.Benchmark = $true
                                     $_.Restart = $true
                                     $_.Workers | ForEach-Object { $_.Speed = [Double]::NaN }
-                                    $Data += "$($_.Name) ($($_.Algorithm -join " & "))`n"
-                                    ForEach ($Algorithm in $_.Algorithm) { 
+                                    $Data += "$($_.Name) ($($_.Algorithms -join " & "))`n"
+                                    ForEach ($Algorithm in $_.Algorithms) { 
                                         Remove-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
                                         $_.Disabled = $false
                                     }
                                     # Also clear power usage
-                                    Remove-Stat -Name "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })_PowerUsage"
+                                    Remove-Stat -Name "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms)" })_PowerUsage"
                                     $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
 
-                                    $_.Reason = @($_.Reason | Where-Object { $_ -ne "Disabled by user" })
-                                    $_.Reason = @($_.Reason | Where-Object { $_ -ne "0 H/s Stat file" })
-                                    If (-not $_.Reason) { $_.Available = $true }
+                                    $_.Reasons = @($_.Reasons | Where-Object { $_ -ne "Disabled by user" })
+                                    $_.Reasons = @($_.Reasons | Where-Object { $_ -ne "0 H/s Stat file" })
+                                    $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Unreal profit data *" })
+                                    Unreal profit data
+                                    If (-not $_.Reasons) { $_.Available = $true }
 
                                     If ($_.Status -eq "Running") { $Variables.EndLoopTime = (Get-Date).ToUniversalTime() } # End loop immediately
                                 }
@@ -482,14 +484,14 @@ Function Start-APIServer {
                             Break
                         }
                         ElseIf ($Parameters.Miners -and $Parameters.Type -eq "PowerUsage") { 
-                            If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithm)) { 
-                                $Miners | Sort-Object Name, Algorithm | ForEach-Object { 
+                            If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithms)) { 
+                                $Miners | Sort-Object Name, Algorithms | ForEach-Object { 
                                     If ($_.Earning -eq 0) { $_.Available = $true }
                                     If ($Variables.CalculatePowerCost) { 
                                         $_.MeasurePowerUsage = $true
                                         $_.Activated = 0 # To allow 3 attempts
                                     }
-                                    $Stat_Name = "$($_.Name)$(If ($_.Algorithm.Count -eq 1) { "_$($_.Algorithm)" })"
+                                    $Stat_Name = "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms)" })"
                                     $Data += "$Stat_Name`n"
                                     Remove-Stat -Name "$($Stat_Name)_PowerUsage"
                                     $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
@@ -523,27 +525,27 @@ Function Start-APIServer {
                     }
                     "/functions/stat/set" { 
                         If ($Parameters.Miners -and $Parameters.Type -eq "HashRate" -and $null -ne $Parameters.Value) { 
-                            If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithm)) {
-                                $Miners | Sort-Object Name, Algorithm | ForEach-Object {
+                            If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithms)) {
+                                $Miners | Sort-Object Name, Algorithms | ForEach-Object {
                                     $_.Data = @()
                                     If ($Parameters.Value -le 0 -and $Parameters.Type -eq "Hashrate") { $_.Available = $false; $_.Disabled = $true }
-                                    $Data += "$($_.Name) ($($_.Algorithm -join " & "))`n"
-                                    ForEach ($Algorithm in $_.Algorithm) { 
+                                    $Data += "$($_.Name) ($($_.Algorithms -join " & "))`n"
+                                    ForEach ($Algorithm in $_.Algorithms) { 
                                         $Stat_Name = "$($_.Name)_$($Algorithm)_$($Parameters.Type)"
                                         If ($Parameters.Value -eq 0) { # Miner failed
                                             Remove-Stat -Name $Stat_Name
                                             $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = $_.Earning_Accuracy = [Double]::NaN
                                             $_.Available = $false
                                             $_.Disabled = $false
-                                            $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Disabled by user" })
-                                            If ($_.Reason -notcontains "0 H/s Stat file" ) { $_.Reason += "0 H/s Stat file" }
+                                            $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Disabled by user" })
+                                            If ($_.Reasons -notcontains "0 H/s Stat file" ) { $_.Reasons += "0 H/s Stat file" }
                                             $_.Status = [MinerStatus]::Failed
                                         }
                                         ElseIf ($Parameters.Value -eq -1) { # Miner disabled
                                             $_.Available = $false
                                             $_.Disabled = $true
-                                            $_.Reason = @($_.Reason | Where-Object { $_ -notlike "0 H/s Stat file" })
-                                            If ($_.Reason -notcontains "Disabled by user") { $_.Reason += "Disabled by user" }
+                                            $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "0 H/s Stat file" })
+                                            If ($_.Reasons -notcontains "Disabled by user") { $_.Reasons += "Disabled by user" }
                                             $_.Status = [MinerStatus]::Disabled
                                         }
                                         Set-Stat -Name $Stat_Name -Value $Parameters.Value -FaultDetection $false | Out-Null
@@ -572,29 +574,29 @@ Function Start-APIServer {
                     "/functions/watchdogtimers/remove" { 
                         $Data = @()
                         ForEach ($WatchdogTimer in ($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
-                            If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $WatchdogTimer.Name | Where-Object { $_.Algorithm -eq $WatchdogTimer.Algorithm -or $WatchdogTimer.Reason -eq "Miner suspended by watchdog (all algorithms)" })) {
+                            If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $WatchdogTimer.Name | Where-Object { $_.Algorithm -eq $WatchdogTimer.Algorithm -or $WatchdogTimer.Reasons -eq "Miner suspended by watchdog (all algorithms)" })) {
                                 # Remove Watchdog timers
                                 $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
                                 $Data += "$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}`n"
 
                                 # Update miner
                                 $Variables.Miners | Where-Object Name -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm | ForEach-Object { 
-                                    $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Miner suspended by watchdog *" })
-                                    If (-not $_.Reason) { $_.Available = $true }
+                                    $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Miner suspended by watchdog *" })
+                                    If (-not $_.Reasons) { $_.Available = $true }
                                 }
                             }
                         }
                         ForEach ($WatchdogTimer in ($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
-                            If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object PoolName -EQ $WatchdogTimer.Name | Where-Object { $_.Algorithm -EQ $WatchdogTimer.Algorithm -or $WatchdogTimer.Reason -eq "Pool suspended by watchdog" })) {
+                            If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object PoolName -EQ $WatchdogTimer.Name | Where-Object { $_.Algorithm -EQ $WatchdogTimer.Algorithm -or $WatchdogTimer.Reasons -eq "Pool suspended by watchdog" })) {
                                 # Remove Watchdog timers
                                 $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
                                 $Data += "$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}`n"
 
                                 # Update pool
                                 $Variables.Pools | Where-Object Name -EQ $WatchdogTimer.Name | Where-Object Algorithm -EQ $WatchdogTimer.Algorithm | ForEach-Object { 
-                                    $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Algorithm@Pool suspended by watchdog" })
-                                    $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Pool suspended by watchdog*" })
-                                    If (-not $_.Reason) { $_.Available = $true }
+                                    $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Algorithm@Pool suspended by watchdog" })
+                                    $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Pool suspended by watchdog*" })
+                                    If (-not $_.Reasons) { $_.Available = $true }
                                 }
                             }
                         }
@@ -610,8 +612,8 @@ Function Start-APIServer {
                     }
                     "/functions/watchdogtimers/reset" { 
                         $Variables.WatchDogTimers = @()
-                        $Variables.Miners | ForEach-Object { $_.Reason = @($_.Reason | Where-Object { $_ -notlike "Miner suspended by watchdog *" }); $_ } | Where-Object { -not $_.Reason } | ForEach-Object { $_.Available = $true }
-                        $Variables.Pools | ForEach-Object { $_.Reason = @($_.Reason | Where-Object { $_ -notlike "*Pool suspended by watchdog" }); $_ } | Where-Object { -not $_.Reason } | ForEach-Object { $_.Available = $true }
+                        $Variables.Miners | ForEach-Object { $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Miner suspended by watchdog *" }); $_ } | Where-Object { -not $_.Reasons } | ForEach-Object { $_.Available = $true }
+                        $Variables.Pools | ForEach-Object { $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "*Pool suspended by watchdog" }); $_ } | Where-Object { -not $_.Reasons } | ForEach-Object { $_.Available = $true }
                         Write-Message -Level Verbose "Web GUI: All watchdog timers reset."
                         $Data = "Watchdog timers will be recreated in next cycle."
                         Break
@@ -738,6 +740,10 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 ($Config.ExtraCurrencies)
                         break
                     }
+                    "/fiatcurrencies" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.FIATcurrencies | Select-Object)
+                        Break
+                    }
                     "/miners" { 
                         $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, intervals | ForEach-Object { If ($_.WorkersRunning) { $_ | Add-Member Workers $_.WorkersRunning -Force }; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning | Sort-Object Status, DeviceName, Name)
                         Break
@@ -859,7 +865,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/poolreasons" { 
-                        $Data = ConvertTo-Json -Depth 10 @(($Variables.Pools | Where-Object Available -NE $true).Reason | Sort-Object -Unique)
+                        $Data = ConvertTo-Json -Depth 10 @(($Variables.Pools | Where-Object Available -NE $true).Reasons | Sort-Object -Unique)
                         Break
                     }
                     "/poolvariants" { 
@@ -972,7 +978,7 @@ Function Start-APIServer {
                 $Response.OutputStream.Write($ResponseBuffer, 0, $ResponseBuffer.Length)
                 $Response.Close()
 
-                Remove-Variable AlgorithmList, BalanceDataEntries, ContentType, Data, DisabledPoolsCount, EnabledPoolsCount, File, DisplayWorkers, IncludeData, IncludeFile, IncludeRegex, Key, Lines, Message, MinerNames, Miners, Path, PoolConfig, PoolBaseName, PoolName, Pools, Reason, ResponseBuffer, Stat_Name, StatusCode, TempStats, Value, Values, WatchdogTimer, WatchdogTimers -ErrorAction SilentlyContinue
+                Remove-Variable AlgorithmList, BalanceDataEntries, ContentType, Data, DisabledPoolsCount, EnabledPoolsCount, File, DisplayWorkers, IncludeData, IncludeFile, IncludeRegex, Key, Lines, Message, MinerNames, Miners, Path, PoolConfig, PoolBaseName, PoolName, Pools, Reasons, ResponseBuffer, Stat_Name, StatusCode, TempStats, Value, Values, WatchdogTimer, WatchdogTimers -ErrorAction SilentlyContinue
             }
             # Only gets here if something is wrong and the server couldn't start or stops listening
             $Server.Stop()

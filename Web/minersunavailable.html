@@ -2,7 +2,7 @@
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h2 data-navbaractive="navminersunavailable">Unavailable Miners</h2>
           </div>
-          <div class="alert alert-info" role="alert">These are all unavailable miners. The column 'Reason' shows the filter criteria(s) that made the miner unavailable.</div>
+          <div class="alert alert-info" role="alert">These are all unavailable miners. The column 'Reasons' shows the filter criteria(s) that made the miner unavailable.</div>
           <div id="toolbar">
             <button id="re-benchmark" class="btn btn-primary" disabled title="The marked miners will re-benchmark&#10;Use this if the recorded hashrate is unreal or to re-enable disabled miners">Re-benchmark</button>
             <button id="re-measure" class="btn btn-primary" disabled title="The marked miners will re-measure power usage&#10;Use this if the recorded power usage is unreal">Re-measure Power Usage</button>
@@ -33,6 +33,7 @@
             data-sort-name="tDevices"
             data-sort-order="asc"
             data-maintain-meta-data="true"
+            data-undefined-text=""
             data-show-fullscreen="true"
             >
             <thead>
@@ -45,7 +46,7 @@
                 <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
                 <th data-field="tStatus" data-sortable="true" data-filter-control="select">Status</th>
-                <th data-field="Reason" data-sortable="true" data-filter-control="select">Reason</th>
+                <th data-field="Reasons" data-sortable="true" data-filter-control="select">Reasons</th>
                 <th data-field="Earning_Bias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Earning Bias</th>
                 <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Earning</th>
                 <th data-field="Profit_Bias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Profit Bias</th>
@@ -136,7 +137,7 @@
               $('#remove-watchdog').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
@@ -156,7 +157,7 @@
               $('#re-benchmark').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
@@ -176,7 +177,7 @@
               $('#re-measure').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
@@ -196,7 +197,7 @@
               $('#failed').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
@@ -216,7 +217,7 @@
               $('#disable').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')')
                   }

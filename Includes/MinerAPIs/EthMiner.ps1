@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           EthMiner.ps1
-Version:        4.0.0.35
-Version date:   24 May 2022
+Version:        4.0.0.36
+Version date:   29 May 2022
 #>
 
 class EthMiner : Miner { 
@@ -41,7 +41,7 @@ class EthMiner : Miner {
         }
 
         $HashRate = [PSCustomObject]@{ }
-        $HashRate_Name = [String]$this.Algorithm[0]
+        $HashRate_Name = [String]$this.Algorithms[0]
         $HashRate_Value = [Double]($Data.result[2] -split ";")[0]
         If ($Data.result[0] -notmatch "^TT-Miner") { 
             If ($HashRate_Name -eq "EtcHash")          { $HashRate_Value *= 1000 }
@@ -58,10 +58,10 @@ class EthMiner : Miner {
         $Shares_Rejected = [Int64]($Data.result[2] -split ";")[2]
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
 
-        If ($HashRate_Name = [String]($this.Algorithm -ne $HashRate_Name)) { # Dual algo mining
+        If ($HashRate_Name = [String]($this.Algorithms -ne $HashRate_Name)) { # Dual algo mining
             $HashRate_Value = [Double]($Data.result[4] -split ";")[0]
-            If ($this.Algorithm -eq "Blake2s") { $HashRate_Value *= 1000 }
-            If ($this.Algorithm -eq "Keccak") { $HashRate_Value *= 1000 }
+            If ($this.Algorithms[0] -eq "Blake2s") { $HashRate_Value *= 1000 }
+            If ($this.Algorithms[0] -eq "Keccak") { $HashRate_Value *= 1000 }
             $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
             $Shares_Accepted = [Int64]($Data.result[4] -split ";")[1]

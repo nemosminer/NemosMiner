@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NBMiner.ps1
-Version:        4.0.0.35
-Version date:   24 May 2022
+Version:        4.0.0.36
+Version date:   29 May 2022
 #>
 
 class NBMiner : Miner { 
@@ -39,7 +39,7 @@ class NBMiner : Miner {
         }
 
         $HashRate = [PSCustomObject]@{ }
-        $HashRate_Name = $this.Algorithm | Select-Object -Last 1
+        $HashRate_Name = [String]$this.Algorithms[0]
         $HashRate_Value = [Double]$Data.miner.total_hashrate_raw
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
@@ -49,7 +49,7 @@ class NBMiner : Miner {
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
 
         If ($Data.stratum.dual_mine) { 
-            $HashRate_Name = [String]($this.Algorithm -ne $HashRate_Name)
+            $HashRate_Name = [String]($this.Algorithms -ne $HashRate_Name)
             $HashRate | Add-Member @{ $HashRate_Name = [Double]$Data.miner.total_hashrate2_raw }
 
             $Shares_Accepted = [Int64]$Data.stratum.accepted_shares2

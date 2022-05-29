@@ -6,6 +6,26 @@ Breaking changes (from 3.8.x.x code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+
+ChangeLog NemosMiner 4.0.0.36 29.05.2022
+========================================
+
+Core:
+- Miner class: Changed property names to plural if array (Algorithms, DeviceNames, Reasons)
+
+Enhancements:
+- Core: Minor code optimization
+- New config item 'BalancesShowInAllCurrencies'
+- Web GUI / Config Editor: Select 'Currency' from dropdown list
+- Web GUI / Miners & Pools: Optimize header options
+- Web GUI / Rig Monitor: Hide monitoring settings
+
+Miner updates:
+- GMiner-v2.98
+- JayddeeCpu-v3.19.8
+- NBMiner-v42.2
+
+
 ChangeLog NemosMiner 4.0.0.35 24.05.2022
 ========================================
 
@@ -15,6 +35,7 @@ Enhancements:
 - Core / Update-Config: remove obsolete miner stat files
 - Core / Devices: Add 'Architecture' property
 - Core: 3 digits for hashrate values < 10
+- Core: Make number of earnings & profit decimals relative to Bitcoin price
 - Web GUI / Log viewer: Make output scrollable
 
 Fixes:
