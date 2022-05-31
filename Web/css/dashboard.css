@@ -114,11 +114,11 @@ footer {
 .navbar-summary {
   position: absolute;
   padding-right: 20px;
+  padding-top: 0.55rem;
   left: 770px;
   color: white;
   font-size: 1.2rem;
   height: 75px;
-  display : flex;
   align-items : center;
   justify-content : center;
   overflow-y: auto;
