@@ -1867,17 +1867,33 @@ Function Get-CpuId {
         $features.ADX = ($info[1] -band ([Int]1 -shl 19)) -ne 0
         $features.MPX = ($info[1] -band ([Int]1 -shl 14)) -ne 0
         $features.SHA = ($info[1] -band ([Int]1 -shl 29)) -ne 0
+        $features.RDSEED = ($info[1] -band ([Int]1 -shl 18)) -ne 0
         $features.PREFETCHWT1 = ($info[2] -band ([Int]1 -shl 00)) -ne 0
+        $features.RDPID = ($info[2] -band ([Int]1 -shl 22)) -ne 0
 
         $features.AVX512_F = ($info[1] -band ([Int]1 -shl 16)) -ne 0
         $features.AVX512_CD = ($info[1] -band ([Int]1 -shl 28)) -ne 0
         $features.AVX512_PF = ($info[1] -band ([Int]1 -shl 26)) -ne 0
         $features.AVX512_ER = ($info[1] -band ([Int]1 -shl 27)) -ne 0
+
         $features.AVX512_VL = ($info[1] -band ([Int]1 -shl 31)) -ne 0
         $features.AVX512_BW = ($info[1] -band ([Int]1 -shl 30)) -ne 0
         $features.AVX512_DQ = ($info[1] -band ([Int]1 -shl 17)) -ne 0
+
         $features.AVX512_IFMA = ($info[1] -band ([Int]1 -shl 21)) -ne 0
         $features.AVX512_VBMI = ($info[2] -band ([Int]1 -shl 01)) -ne 0
+
+        $features.AVX512_VPOPCNTDQ = ($info[2] -band ([Int]1 -shl 14)) -ne 0
+        $features.AVX512_4FMAPS = ($info[3] -band ([Int]1 -shl 02)) -ne 0
+        $features.AVX512_4VNNIW = ($info[3] -band ([Int]1 -shl 03)) -ne 0
+
+        $features.AVX512_VNNI = ($info[2] -band ([Int]1 -shl 11)) -ne 0
+
+        $features.AVX512_VBMI2 = ($info[2] -band ([Int]1 -shl 06)) -ne 0
+        $features.GFNI = ($info[2] -band ([Int]1 -shl 08)) -ne 0
+        $features.VAES = ($info[2] -band ([Int]1 -shl 09)) -ne 0
+        $features.AVX512_VPCLMUL = ($info[2] -band ([Int]1 -shl 10)) -ne 0
+        $features.AVX512_BITALG = ($info[2] -band ([Int]1 -shl 12)) -ne 0
     }
 
     If ($nExIds -ge 0x80000001) { 
@@ -1896,6 +1912,7 @@ Function Get-CpuId {
         $features.SSE4a = ($info[2] -band ([Int]1 -shl 06)) -ne 0
         $features.FMA4 = ($info[2] -band ([Int]1 -shl 16)) -ne 0
         $features.XOP = ($info[2] -band ([Int]1 -shl 11)) -ne 0
+        $features.PREFETCHW = ($info[2] -band ([Int]1 -shl 08)) -ne 0
     }
 
     # wrap data into PSObject
@@ -1907,9 +1924,12 @@ Function Get-CpuId {
 }
 
 Function Get-NvidiaArchitecture {
+
     [CmdLetBinding()]
     param(
+        [Parameter(Mandatory = $true)]
         [String]$Model,
+        [Parameter(Mandatory = $true)]
         [String]$ComputeCapability = ""
     )
 
