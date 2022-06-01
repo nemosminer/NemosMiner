@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.37
-Version date:   29 May 2022
+Version:        4.0.0.38
+Version date:   01 June 2022
 #>
 
 [CmdletBinding()]
@@ -266,7 +266,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.37"
+    Version      = [System.Version]"4.0.0.38"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -321,7 +321,8 @@ If (-not $Variables.Regions) {
     Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\FIATcurrencies.json' is not a valid JSON file. Please restore it from your original download."
     Start-Sleep -Seconds 10
     Exit
-}# Load pool data
+}
+# Load pool data
 $Variables.PoolData = Get-Content -Path ".\Data\PoolData.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore | Get-SortedObject
 $Variables.PoolNames = @($Variables.PoolData.Keys)
 $Variables.PoolVariants = @(($Variables.PoolData.Keys | ForEach-Object { $Variables.PoolData.$_.Variant.Keys -replace " External$| Internal$" }) | Sort-Object -Unique)
@@ -430,8 +431,7 @@ If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) {
     $VertHashDatCheckJob = Start-ThreadJob -ThrottleLimit 99 -ScriptBlock { (Get-FileHash ".\Cache\VertHash.dat").Hash -eq "A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48" }
 }
 
-$Variables.Summary = "Setting variables..."
-Write-Message -Level Verbose $Variables.Summary
+Write-Message -Level Verbose "Setting variables..."
 
 $Variables.BrainJobs = @{ }
 $Variables.IsLocalAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
@@ -463,8 +463,8 @@ $Variables.UIStyle = $Config.UIStyle
 $Variables.SupportedCPUDeviceVendors = @("AMD", "INTEL")
 $Variables.SupportedGPUDeviceVendors = @("AMD", "NVIDIA")
 
-$Variables.Summary = "Loading miner device information..."
-Write-Message -Level Verbose $Variables.Summary
+$Variables.Summary = "Loading miner device information.<br>This will take a while..."
+Write-Message -Level Verbose ($Variables.Summary -replace "<br>", " ")
 
 $Variables.Devices = [Device[]](Get-Device -Refresh)
 
@@ -522,7 +522,7 @@ If (Test-Path -Path .\Cache\VertHash.dat -PathType Leaf) {
 }
 
 If ($Variables.FreshConfig) { 
-    $Variables.Summary = "Change your settings and apply the configuration; then click 'Start mining'."
+    $Variables.Summary = "Change your settings and apply the configuration.<br>Then Click the 'Start mining' button."
     $wshell = New-Object -ComObject Wscript.Shell
     $wshell.Popup($Variables.FreshConfigText, 0, "Welcome to $($Variables.Branding.ProductLabel) v$($Variables.Branding.Version)", 4096) | Out-Null
     $Variables.FreshConfigText = $null
@@ -826,8 +826,8 @@ Function Global:TimerUITick {
             Switch ($Variables.NewMiningStatus) { 
                 "Idle" { 
                     If ($Variables.MiningStatus) { 
-                        $Variables.Summary = "Stopping $($Variables.Branding.ProductLabel) ('Stop mining' button pressed)..."
-                        Write-Message -Level Info $Variables.Summary
+                        $Variables.Summary = "'Stop mining' button clicked.<br>Stopping $($Variables.Branding.ProductLabel)..."
+                        Write-Message -Level Info ($Variables.Summary -replace "<br", " ")
                     }
                     Stop-Mining
                     Stop-BrainJob
@@ -838,9 +838,9 @@ Function Global:TimerUITick {
                     $LabelMiningStatus.Text = "Stopped | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Red
 
-                    $Variables.Summary = "$($Variables.Branding.ProductLabel) is idle."
+                    $Variables.Summary = "$($Variables.Branding.ProductLabel) is idle.<br>Click the 'Start mining' button to make money..."
                     Write-Host "`n"
-                    Write-Message -Level Info $Variables.Summary
+                    Write-Message -Level Info ($Variables.Summary -replace "<br", " ")
 
                     $ButtonPause.Enabled = $true
                     $ButtonStart.Enabled = $true
@@ -849,8 +849,8 @@ Function Global:TimerUITick {
                     $TimerUI.Stop
 
                     If ($Variables.MiningStatus) { 
-                        $Variables.Summary = "Pausing $($Variables.Branding.ProductLabel) ('Pause mining' button pressed)..."
-                        Write-Message -Level Info $Variables.Summary
+                        $Variables.Summary = "'Pause mining' button pressed<br>Pausing $($Variables.Branding.ProductLabel)..."
+                        Write-Message -Level Info ($Variables.Summary -replace "<br", " ")
                     }
 
                     If ($Variables.MiningStatus -eq "Running") { 
@@ -867,17 +867,17 @@ Function Global:TimerUITick {
                     $LabelMiningStatus.Text = "Paused | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Blue
 
-                    $Variables.Summary = "$($Variables.Branding.ProductLabel) is paused."
+                    $Variables.Summary = "$($Variables.Branding.ProductLabel) is paused.<br>Click the 'Start mining' button to make money."
                     Write-Host "`n"
-                    Write-Message -Level Info $Variables.Summary
+                    Write-Message -Level Info ($Variables.Summary -replace "<br", " ")
 
                     $ButtonStop.Enabled = $true
                     $ButtonStart.Enabled = $true
                 }
                 "Running" { 
                     If ($Variables.MiningStatus) { 
-                        $Variables.Summary = "Starting $($Variables.Branding.ProductLabel) ('Start mining' button pressed)..."
-                        Write-Message -Level Info $Variables.Summary
+                        $Variables.Summary = "'Start mining' botton clicked.<br>Starting $($Variables.Branding.ProductLabel)..."
+                        Write-Message -Level Info ($Variables.Summary -replace "<br", " ")
                     }
 
                     Initialize-Application
@@ -887,9 +887,9 @@ Function Global:TimerUITick {
                     $LabelMiningStatus.Text = "Running | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
 
-                    $Variables.Summary = "$($Variables.Branding.ProductLabel) is running."
+                    $Variables.Summary = "$($Variables.Branding.ProductLabel) is getting ready.<br>Please wait..."
                     Write-Host "`n"
-                    Write-Message -Level Info $Variables.Summary
+                    Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
 
                     $ButtonStop.Enabled = $true
                     $ButtonStart.Enabled = $false

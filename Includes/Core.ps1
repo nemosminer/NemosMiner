@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0.37
-Version date:   29 May 2022
+Version:        4.0.0.38
+Version date:   01 June 2022
 #>
 
 using module .\Include.psm1
@@ -255,13 +255,13 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 Else { 
                     If ($Variables.BrainJobs.Keys) {
                         # Allow extra 30 seconds for brains to get ready
-                        $Variables.Summary = "Loading pool data from '$($PoolNames -join ', ')'. This will take more than 30 seconds..."
-                        Write-Message -Level Verbose $Variables.Summary
+                        $Variables.Summary = "Loading pool data from '$($PoolNames -join ', ')'.<br>This will take more than 30 seconds..."
+                        Write-Message -Level Verbose ($Variables.Summary -replace "<br>", " ")
                         Start-Sleep -Seconds 30
                     }
                     Else { 
-                        $Variables.Summary = "Loading pool data from '$($PoolNames -join ', ')'..."
-                        Write-Message -Level Verbose $Variables.Summary
+                        $Variables.Summary = "Loading pool data from '$($PoolNames -join ', ')'.<br>This wil take while..."
+                        Write-Message -Level Verbose ($Variables.Summary -replace "<br>", " ")
                     }
                 }
                 $NewPools_Jobs = @(
@@ -587,7 +587,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
             }
 
             # Get new miners
-            If (-not ($Variables.Pools -and $Variables.Miners)) { $Variables.Summary = "Loading miners..." }
+            If (-not ($Variables.Pools -and $Variables.Miners)) { $Variables.Summary = "Loading miners.<br>This will take a while..." }
             Write-Message -Level Verbose "Loading miners..."
             $NewMiners_Jobs = @(
                 Get-ChildItemContent ".\Miners" -Parameters @{ Pools = $PoolsPrimaryAlgorithm; PoolsSecondaryAlgorithm = $PoolsSecondaryAlgorithm; Config = $Config; Variables = $Variables } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object { $_.DeviceNames -like "CPU#*" }) { "Normal" })
@@ -938,12 +938,14 @@ While ($Variables.NewMiningStatus -eq "Running") {
         $Variables.Miners = $Miners
 
         If ($Variables.Rates."BTC") { 
-            $Variables.Summary = ""
             If ($Variables.MinersNeedingBenchmark.Count) { 
-                $Variables.Summary += "Earning / day: n/a (Benchmarking: $($Variables.MinersNeedingBenchmark.Count) $(If ($Variables.MinersNeedingBenchmark.Count -eq 1) { "miner" } Else { "miners" }) left$(If (($Variables.EnabledDevices | Sort-Object -Property { $_.DeviceNames -join ', ' }).Count -gt 1) { " [$(($Variables.MinersNeedingBenchmark | Group-Object -Property { $_.DeviceNames -join ',' } | Sort-Object Name | ForEach-Object { "$($_.Name): $($_.Count)" }) -join '; ')]"}))"
+                $Variables.Summary = "Earning / day: n/a (Benchmarking: $($Variables.MinersNeedingBenchmark.Count) $(If ($Variables.MinersNeedingBenchmark.Count -eq 1) { "miner" } Else { "miners" }) left$(If (($Variables.EnabledDevices | Sort-Object -Property { $_.DeviceNames -join ', ' }).Count -gt 1) { " [$(($Variables.MinersNeedingBenchmark | Group-Object -Property { $_.DeviceNames -join ',' } | Sort-Object Name | ForEach-Object { "$($_.Name): $($_.Count)" }) -join '; ')]"}))"
             }
             ElseIf ($Variables.MiningEarning -gt 0) { 
-                $Variables.Summary += "Earning / day: {1:N} {0}" -f $Config.Currency, ($Variables.MiningEarning * $Variables.Rates."BTC".($Config.Currency))
+                $Variables.Summary = "Earning / day: {1:N} {0}" -f $Config.Currency, ($Variables.MiningEarning * $Variables.Rates."BTC".($Config.Currency))
+            }
+            Else { 
+                $Variables.Summary = ""
             }
 
             If ($Variables.CalculatePowerCost -eq $true) { 
@@ -981,7 +983,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
             }
         }
         Else { 
-            $Variables.Summary = "Error: Could not get BTC exchange rate from min-api.cryptocompare.com"
+            $Variables.Summary = "Error:<br>Could not get BTC exchange rate from min-api.cryptocompare.com"
         }
 
         # Stop running miners
@@ -1284,8 +1286,8 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
     If ($Variables.IdleRunspace.NewMiningStatus -eq "Idle") { 
         Stop-MiningProcess
-        $Variables.Summary = "Mining is suspended until system is idle again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" })..."
-        Write-Message -Level Verbose $Variables.Summary
+        $Variables.Summary = "Mining is suspended until system is idle<br>again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" })..."
+        Write-Message -Level Verbose ($Variables.Summary -replace "<br>", " ")
         Do { 
             Start-Sleep -Seconds 1
         } While ($Variables.NewMiningStatus -eq "Running" -and $Config.IdleDetection -and $Variables.IdleRunspace.NewMiningStatus -eq "Idle")

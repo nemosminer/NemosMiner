@@ -13,10 +13,10 @@ footer {
   width: 100%;
   text-align: right;
   padding-left: 30px;
-  padding-right: 35px;
-  padding-top: 5px;
+  padding-right: 30px;
+  padding-top: 6px;
   z-index: 99;
-  background-color: whitesmoke;
+  background-color: rgb(235, 235, 235);
   height: 35px;
 }
 
@@ -45,19 +45,13 @@ footer {
 .sidebar-sticky {
   position: relative;
   top: 0;
-  height: calc(100vh - 75px);
+  bottom: 0;
+  padding-left: 1rem;
   padding-top: 1.5rem;
+  padding-bottom: 1rem;
+  height: calc(100vh - 75px - 35px);
   overflow-x: auto; /* Scrollable contents if viewport is narrower than content. */
   overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
-  padding-bottom: 1.1rem;
-  padding-left: 1rem;
-}
-
-@supports ((position: -webkit-sticky) or (position: sticky)) {
-  .sidebar-sticky {
-    position: -webkit-sticky;
-    position: sticky;
-  }
 }
 
 .sidebar .nav-link {
@@ -94,7 +88,6 @@ footer {
  * Navbar
  */
 .navbar .form-control {
-  padding: 1.75rem;
   border-width: 0;
   border-radius: 0;
 }
@@ -113,8 +106,8 @@ footer {
 
 .navbar-summary {
   position: absolute;
-  padding-right: 20px;
-  padding-top: 0.55rem;
+  padding-right: 30px;
+  padding-top: 0.6rem;
   left: 770px;
   color: white;
   font-size: 1.2rem;
@@ -195,7 +188,7 @@ legend {
   background-color: rgb(232, 250, 232);
 }
 .miner-warmingup {
-  background-color: rgb(239, 250, 239);
+  background-color: rgb(245, 255, 245);
 }
 .miner-measuring {
   background-color: rgb(248, 239, 223);
