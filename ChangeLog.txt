@@ -6,6 +6,16 @@ Breaking changes (from 3.8.x.x code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+ChangeLog NemosMiner 4.0.0.38 01.06.2022
+========================================
+
+Enhancements:
+- Core: Rewording some dialogs
+- Include.psm1 / Get-CpuId: Support for more CPU features
+
+Miner updates:
+- GMiner-v2.99
+
 
 ChangeLog NemosMiner 4.0.0.37 29.05.2022
 ========================================
@@ -18,6 +28,7 @@ Fixes:
 - Core: Change 'Speed' to 'Hashrate' (Regression from 4.0.0.36)
 - Web GUI: Invalid hashrate unit '... unknown' (Regression from 4.0.0.35)
 - Web GUI / API: Buttons in Pools* don't work (Regression from 4.0.0.35)
+
 
 ChangeLog NemosMiner 4.0.0.36 29.05.2022
 ========================================
