@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { (($_.Type -eq "AMD" -and $_.Architecture -ne "Other") -or $_.OpenCL.ClVersion -ge "OpenCL C 2.0") -or $_.Type -eq "CPU" })) { Return }
 
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.9.5/SRBMiner-Multi-0-9-5-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.9.6/SRBMiner-Multi-0-9-6-win64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
 $Miner_Devices = $Devices 
@@ -34,6 +34,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "FrkHash";           Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm frkhash" }
     [PSCustomObject]@{ Algorithm = "HeavyHash";         Type = "AMD"; Fee = 0.01;   MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm heavyhash" }
     [PSCustomObject]@{ Algorithm = "Kangaroo12";        Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm k12" }
+    [PSCustomObject]@{ Algorithm = "Kaspa";             Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm kaspa" }
     [PSCustomObject]@{ Algorithm = "KawPoW";            Type = "AMD"; Fee = 0.085;  MinMemGB = $Pools."KawPoW".DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(90, 75); Arguments = " --algorithm kawpow --gpu-boost 50 --gpu-auto-tune 2" }
     [PSCustomObject]@{ Algorithm = "Keccak";            Type = "AMD"; Fee = 0;      MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm keccak" }
     [PSCustomObject]@{ Algorithm = "Lyra2v2Webchain";   Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm lyra2v2_webchain" }
@@ -79,6 +80,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "HeavyHash";         Type = "CPU"; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm heavyhash" }
     [PSCustomObject]@{ Algorithm = "K12";               Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm K12" }
     # [PSCustomObject]@{ Algorithm = "KawPoW";            Type = "CPU"; Fee = 0.085;  MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algorithm kawpow" } # Not profitable with CPU
+    [PSCustomObject]@{ Algorithm = "Kaspa";             Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm kaspa" }
     [PSCustomObject]@{ Algorithm = "Keccak";            Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm keccak" }
     [PSCustomObject]@{ Algorithm = "Lyra2v2Webchain";   Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm lyra2v2_webchain" }
     [PSCustomObject]@{ Algorithm = "Minotaur";          Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm minotaur" }
