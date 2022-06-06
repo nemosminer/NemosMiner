@@ -227,21 +227,21 @@ Easy configuration, easy start:
 
    In session console the following keys are supported
 
-   a: Toggle Accuracy column visibility
-   b: Toggle List Pool Balances
-   c: Toggle Power Cost column visibility
-   e: Toggle Earnings column visibility
-   i: Toggle Earning Bias column visibility
-   m: Toggle Miner Fees column visibility
-   n: Toggle CoinName column visibility
-   p: Toggle Pool Fees column visibility
-   r: Toggle Profit Bias column visibility
-   s: Toggle UI Style [full or light]
-   t: Toggle Profit column visibility
-   u: Toggle User column visibility
-   v: Toggle List all available miners
-   w: Toggle Power usage column visibility
-   y: Toggle Currency column visibility
+    a: Toggle Accuracy column visibility
+    b: Toggle List Pool Balances
+    c: Toggle Power Cost column visibility
+    e: Toggle Earnings column visibility
+    i: Toggle Earning Bias column visibility
+    m: Toggle Miner Fees column visibility
+    n: Toggle CoinName column visibility
+    p: Toggle Pool Fees column visibility
+    r: Toggle Profit Bias column visibility
+    s: Toggle UI Style [full or light]
+    t: Toggle Profit column visibility
+    u: Toggle User column visibility
+    v: Toggle List all available miners
+    w: Toggle Power usage column visibility
+    y: Toggle Currency column visibility
 
    New version notification (Available since version 3.9.9.10)
 
