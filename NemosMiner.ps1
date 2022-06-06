@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.0.38
-Version date:   01 June 2022
+Version:        4.0.0.39
+Version date:   06 June 2022
 #>
 
 [CmdletBinding()]
@@ -266,7 +266,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.0.38"
+    Version      = [System.Version]"4.0.0.39"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -827,7 +827,7 @@ Function Global:TimerUITick {
                 "Idle" { 
                     If ($Variables.MiningStatus) { 
                         $Variables.Summary = "'Stop mining' button clicked.<br>Stopping $($Variables.Branding.ProductLabel)..."
-                        Write-Message -Level Info ($Variables.Summary -replace "<br", " ")
+                        Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                     }
                     Stop-Mining
                     Stop-BrainJob
@@ -840,7 +840,7 @@ Function Global:TimerUITick {
 
                     $Variables.Summary = "$($Variables.Branding.ProductLabel) is idle.<br>Click the 'Start mining' button to make money..."
                     Write-Host "`n"
-                    Write-Message -Level Info ($Variables.Summary -replace "<br", " ")
+                    Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
 
                     $ButtonPause.Enabled = $true
                     $ButtonStart.Enabled = $true
@@ -850,7 +850,7 @@ Function Global:TimerUITick {
 
                     If ($Variables.MiningStatus) { 
                         $Variables.Summary = "'Pause mining' button pressed<br>Pausing $($Variables.Branding.ProductLabel)..."
-                        Write-Message -Level Info ($Variables.Summary -replace "<br", " ")
+                        Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                     }
 
                     If ($Variables.MiningStatus -eq "Running") { 
@@ -869,7 +869,7 @@ Function Global:TimerUITick {
 
                     $Variables.Summary = "$($Variables.Branding.ProductLabel) is paused.<br>Click the 'Start mining' button to make money."
                     Write-Host "`n"
-                    Write-Message -Level Info ($Variables.Summary -replace "<br", " ")
+                    Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
 
                     $ButtonStop.Enabled = $true
                     $ButtonStart.Enabled = $true
@@ -877,7 +877,7 @@ Function Global:TimerUITick {
                 "Running" { 
                     If ($Variables.MiningStatus) { 
                         $Variables.Summary = "'Start mining' botton clicked.<br>Starting $($Variables.Branding.ProductLabel)..."
-                        Write-Message -Level Info ($Variables.Summary -replace "<br", " ")
+                        Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                     }
 
                     Initialize-Application

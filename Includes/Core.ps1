@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0.38
-Version date:   01 June 2022
+Version:        4.0.0.39
+Version date:   06 June 2022
 #>
 
 using module .\Include.psm1
@@ -392,6 +392,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
             $Variables.UseAnycast = $Config.UseAnycast
 
             # Remove de-configured pools
+            $DeconfiguredPools = $Pools | Where-Object Name -notin $PoolNames
             $Pools = $Pools | Where-Object Name -in $PoolNames
 
             If ($ComparePools = @(Compare-Object -PassThru @($Variables.NewPools | Select-Object) @($Pools | Select-Object) -Property Name, Algorithm, Host, Port, SSL -IncludeEqual)) { 
@@ -399,10 +400,10 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 $Variables.AddedPools = @($ComparePools | Where-Object SideIndicator -eq "<=" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ })
                 $Variables.UpdatedPools = @($ComparePools | Where-Object SideIndicator -eq "==" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ })
 
+                $Variables.PoolsCount = $Pools.Count
+
                 # Add new pools
                 $Pools += $Variables.AddedPools
-
-                $Variables.PoolsCount = $Pools.Count
 
                 # Update existing pools
                 $Pools | Select-Object | ForEach-Object { 
@@ -519,7 +520,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 }
 
                 If ($Variables.Pools.Count -gt 0) { 
-                    Write-Message -Level Info "Had $($Variables.PoolsCount) pool$(If ($Variables.PoolsCount -ne 1) { "s" }), found new $($Variables.AddedPools.Count) pool$(If ($Variables.AddedPools.Count -ne 1) { "s" }), updated $($Variables.UpdatedPools.Count) pool$(If ($Variables.UpdatedPools.Count -ne 1) { "s" }), filtered out $(@($Pools | Where-Object Available -NE $true).Count) pool$(If (@($Pools | Where-Object Available -NE $true).Count -ne 1) { "s" }). $(@($Pools | Where-Object Available -EQ $true).Count) available pool$(If (@($Pools | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (@($Pools | Where-Object Available -EQ $true).Count -eq 1) { "s" })."
+                    Write-Message -Level Info "Had $($Variables.PoolsCount + $DeconfiguredPools.Count) pool$(If (($Variables.PoolsCount + $DeconfiguredPools.Count) -ne 1) { "s" }),$(If ($DeconfiguredPools) { " removed $($DeconfiguredPools.Count) deconfigured pool$(If ($DeconfiguredPools.Count -ne 1) { "s" } )," }) updated $($Variables.UpdatedPools.Count) pool$(If ($Variables.UpdatedPools.Count -ne 1) { "s" }), found $($Variables.AddedPools.Count) new pool$(If ($Variables.AddedPools.Count -ne 1) { "s" }), filtered out $(@($Pools | Where-Object Available -NE $true).Count) pool$(If (@($Pools | Where-Object Available -NE $true).Count -ne 1) { "s" }). $(@($Pools | Where-Object Available -EQ $true).Count) available pool$(If (@($Pools | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (@($Pools | Where-Object Available -EQ $true).Count -eq 1) { "s" })."
                 }
                 Else { 
                     Write-Message -Level Info "Found $($Variables.NewPools.Count) pool$(If ($NewPools.Count -ne 1) { "s" }), filtered out $(@($Pools | Where-Object Available -NE $true).Count) pool$(If (@($Pools | Where-Object Available -NE $true).Count -ne 1) { "s" }). $(@($Pools | Where-Object Available -EQ $true).Count) available pool$(If (@($Pools | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (@($Pools | Where-Object Available -EQ $true).Count -eq 1) { "s" })."
@@ -563,7 +564,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             # Update data in API
             $Variables.Pools = $Pools
-            Remove-Variable ComparePools, Pools, PoolNames, PoolNamesToKeepBalancesAlive, PoolsConfig, SortedAvailablePools -ErrorAction Ignore
+            Remove-Variable DeconfiguredPools, ComparePools, Pools, PoolNames, PoolNamesToKeepBalancesAlive, PoolsConfig, SortedAvailablePools -ErrorAction Ignore
         }
 
         # Faster shutdown
@@ -739,7 +740,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
         Remove-Variable Algorithm, MinerPools, NewMiners_Jobs -ErrorAction Ignore
 
         If ($NewMiners) { # Sometimes there are no miners loaded, keep existing
-            $CompareMiners = Compare-Object -PassThru @($Miners | Select-Object) @($NewMiners | Select-Object) -Property Arguments, Name, Pool -IncludeEqual
+            $CompareMiners = Compare-Object -PassThru @($Miners | Select-Object) @($NewMiners | Select-Object) -Property Name, Algorithms -IncludeEqual
             # Remove gone miners
             $Miners = $CompareMiners | Where-Object SideIndicator -NE "<=" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ }
         }
@@ -749,7 +750,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 $_.Restart = $false
                 $_.KeepRunning = $_.Status -eq [MinerStatus]::Running -and -not $_.Benchmark -and -not $_.MeasurePowerUsage -and $_.BeginTime.AddSeconds($Config.Interval * ($Config.MinInterval -1)) -gt $Variables.Timer -and -not $Variables.DonateRandom # Minimum numbers of full cycles not yet reached
 
-                If ($Miner = Compare-Object -PassThru @($NewMiners | Select-Object) @($_ | Select-Object) -Property Arguments, Name, Pool -ExcludeDifferent | Select-Object -ExcludeProperty SideIndicator) { 
+                If ($Miner = Compare-Object -PassThru @($NewMiners | Select-Object) @($_ | Select-Object) -Property Name, Algorithms -ExcludeDifferent | Select-Object -ExcludeProperty SideIndicator) { 
                     # Update existing miners
                     If (-not $_.KeepRunning) { 
                         $_.Restart = $_.Arguments -ne $Miner.Arguments
@@ -827,7 +828,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             $Miners | Where-Object Reasons | ForEach-Object { $_.Available = $false }
 
-            Write-Message -Level Info "Found $($Miners.Count) miner$(If ($Miners.Count -ne 1) { "s" }), $(($Miners | Where-Object Available -EQ $true).Count) available miner$(If (($Miners | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (($Miners | Where-Object Available -EQ $true).Count -eq 1) { "s" }) (filtered out $(($Miners | Where-Object Available -NE $true).Count) miner$(If (($Miners | Where-Object Available -NE $true).Count -ne 1) { "s" }))."
+            Write-Message -Level Info "Loaded $($Miners.Count) miner$(If ($Miners.Count -ne 1) { "s" }), filtered out $(($Miners | Where-Object Available -NE $true).Count) miner$(If (($Miners | Where-Object Available -NE $true).Count -ne 1) { "s" }). $(($Miners | Where-Object Available -EQ $true).Count) available miner$(If (($Miners | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (($Miners | Where-Object Available -EQ $true).Count -eq 1) { "s" })."
 
             If ($Variables.MinersMissingBinary) { 
                 # Download miner binaries
@@ -1002,7 +1003,8 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 $Miner.Info = ""
                 $Miner.WorkersRunning = @()
             }
-            ElseIf ($Miner.Best -ne $true -or $Miner.Restart -eq $true -or $Miner.SideIndicator -eq "<=" -or $Variables.NewMiningStatus -ne "Running") { 
+            # ElseIf ($Miner.Best -ne $true -or $Miner.Restart -eq $true -or $Miner.SideIndicator -eq "<=" -or $Variables.NewMiningStatus -ne "Running") { 
+            ElseIf ($Variables.NewMiningStatus -ne "Running" -or ($Miner.KeepRunning -eq $false -and ($Miner.Best -ne $true -or $Miner.Restart -or $Miner.SideIndicator -eq "<="))) { 
                 ForEach ($Worker in $Miner.WorkersRunning) { 
                     If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object PoolRegion -EQ $Worker.Pool.Region | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceNames -EQ $Miner.DeviceNames)) { 
                         # Remove Watchdog timers

@@ -6,6 +6,24 @@ Breaking changes (from 3.8.x.x code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+ChangeLog NemosMiner 4.0.0.39 06.06.2022
+========================================
+
+Core:
+- Region 'Europe West' changed to 'Europe', Auto-Update will update configuration from 'Europe West' to 'Europe' if necessary
+
+Enhancements:
+- Include.psm1 / Get-Rate: Print message if no rates can be retrieved for some configured currencies
+
+Fixes:
+- Core: Do not create new miner objects when pool changes
+- Core: Enforce 'MinInterval' even when pool is no longer available
+- Core: Typos
+
+Miner updates:
+- SRBMinerMulti-v0.9.6
+
+
 ChangeLog NemosMiner 4.0.0.38 01.06.2022
 ========================================
 
@@ -21,7 +39,7 @@ ChangeLog NemosMiner 4.0.0.37 29.05.2022
 ========================================
 
 Enhancements:
-- Web GUI / Dashboard - Launched Miners: Change column order (device name is more miner name)
+- Web GUI / Dashboard - Launched Miners: Change column order (device name is more important than miner name)
 - Web GUI / Pools: Change column order (algorithm is more important than pool name)
 
 Fixes:
@@ -38,8 +56,8 @@ Core:
 
 Enhancements:
 - Core: Minor code optimization
-- New config item 'BalancesShowInAllCurrencies'
-- Web GUI / Config Editor: Select 'Currency' from dropdown list
+- New configuration item 'BalancesShowInAllCurrencies'
+- Web GUI / configuration Editor: Select 'Currency' from dropdown list
 - Web GUI / Miners & Pools: Optimize header options
 - Web GUI / Rig Monitor: Hide monitoring settings
 
@@ -81,13 +99,13 @@ Core:
 - Xgminer API: Support dual algorithm mining (TeamRedMiner)
 
 Enhancements:
-- New config item 'AutoReboot'
+- New configuration item 'AutoReboot'
 - Main Text Window: Update hotkey legend text for 'List Pool Balances' & 'List all available miners'
 - Main Text Window: Add colors to hotkey legend status
  
 Fixes:
 - Core: 'MinersNeedingBenchmark' & 'MinersNeedingPowerUsageMeasurement' also included failed miners
-- Core: UIStyle set by hotkey in main text window would always get reset to config value
+- Core: UIStyle set by hotkey in main text window would always get reset to configuration value
 - Main Text Window: Hotkey status for 'List all available miners'
 
 Miner updates:
@@ -140,7 +158,7 @@ Miner updates:
 - MiniZ-v1.8z2
 
 Web GUI:
-- Config editor: Re-arranged some items
+- configuration editor: Re-arranged some items
 
 
 ChangeLog NemosMiner 4.0.0.31 14.05.2022
@@ -150,10 +168,10 @@ Core:
 - Removed 'CustomMiners' folder support
 
 Enhancements
-- New config item 'ShowUser' to toggle pool user column visibility in main text window
+- New configuration item 'ShowUser' to toggle pool user column visibility in main text window
 
 Fixes:
-- Core: Single valued arrays in config were stored as string
+- Core: Single valued arrays in configuration were stored as string
 
 Miner updates:
 - GMiner-v2.94 (For 100% LHR unlock run NemosMiner with admin priviledges)
@@ -162,9 +180,9 @@ Miner updates:
 - Trex-v0.26.1 (For 100% LHR unlock run NemosMiner with admin priviledges)
 
 Web GUI:
-- Config Editor: Add hyperlinks for registration with Mining Pool Hub, NiceHash & ProHashing
-- Config Editor: Single valued arrays in config were stored as string
-- Config Editor: Display error when trying to save config with no pool selected
+- configuration Editor: Add hyperlinks for registration with Mining Pool Hub, NiceHash & ProHashing
+- configuration Editor: Single valued arrays in configuration were stored as string
+- configuration Editor: Display error when trying to save configuration with no pool selected
 - Miners: Change worker icon
 
 
@@ -172,8 +190,8 @@ ChangeLog NemosMiner 4.0.0.30 10.05.2022
 ========================================
 
 Core:
-- Renamed config item 'IdlePowerUsageW' to 'PowerUsageIdleSystemW'
-- Renamed config item 'MineWhenIdle' to 'IdleDetection'
+- Renamed configuration item 'IdlePowerUsageW' to 'PowerUsageIdleSystemW'
+- Renamed configuration item 'MineWhenIdle' to 'IdleDetection'
 
 Miner updates:
 - lolMiner-v1.49
@@ -181,19 +199,19 @@ Miner updates:
 
 Fixes:
 - Core: Get-Device: Ignore "Remote Display Adapters 0GB" when incrementing slot numbers
-- Web GUI / Config Editor: ProHashing pool config settings not getting disabled when disabling 'ProHashing' pool
+- Web GUI / configuration Editor: ProHashing pool configuration settings not getting disabled when disabling 'ProHashing' pool
 
 
 Changelog NemosMiner 4.0.0.29 07.05.2022
 ========================================
 
 Core:
-- New config item 'AutoUpdateCheckInterval'
-- New config item 'Show Change Log'
+- New configuration item 'AutoUpdateCheckInterval'
+- New configuration item 'Show Change Log'
 
 Enhancements:
 - Dynamic EthashLowMem memory limit calculation; data taken from prohashing API
-- Function 'Read-Config' rewritten to work better with broken config files
+- Function 'Read-Config' rewritten to work better with broken configuration files
 - Miner APIs: Minor code optimization
 - Use DAG data from 'MinerStat.com' & 'ProHashing.com'
 
@@ -207,8 +225,8 @@ Miner updates:
 - Trex-v0.25.15
 
 Web GUI:
-- Config Editor: Added new section 'Auto Update Settings'
-- Config editor: Re-arranged some items
+- configuration Editor: Added new section 'Auto Update Settings'
+- configuration editor: Re-arranged some items
 - SwitchingLog:  Added 'hh:mm:ss' to 'Running Time' header
 
 
@@ -225,13 +243,13 @@ Miner Updates:
 
 Pools:
 - NiceHash: Region 'eu-east' changed to 'eu-north', added anycast option
-- Region 'eu-east' changed to 'eu-north', Auto-Update will update config from 'Europe East' to 'Europe North' if necessary
+- Region 'eu-east' changed to 'eu-north', Auto-Update will update configuration from 'Europe East' to 'Europe North' if necessary
 - ZergPool (all variants): Simplify hostnames for region 'na'
 
 Web GUI:
-- Config editor: Fix typos and improve tool tip info
-- Config editor: Re-arranged some items
-- Config editor: Use toggle switches instead of checkboxes
+- configuration editor: Fix typos and improve tool tip info
+- configuration editor: Re-arranged some items
+- configuration editor: Use toggle switches instead of checkboxes
 - Update Bootstrap Table to version 1.20.0
 
 
@@ -240,9 +258,9 @@ Changelog NemosMiner 4.0.0.27 24.04.2022
 
 Core:
 - Reduce number of requests to 'min-api.cryptocompare.com'
-- Renamed config item 'AllowedBadShareRatio' to 'BadShareRatioThreshold' to better reflect its purpose
-- Renamed config item 'DeductRejectedShares to 'SubtractBadShares'
-- Removed obsolete config item 'EstimateCorrection' (Accuracy & Bias reduce prices which in turn avoids pools with high price fluctuation)
+- Renamed configuration item 'AllowedBadShareRatio' to 'BadShareRatioThreshold' to better reflect its purpose
+- Renamed configuration item 'DeductRejectedShares to 'SubtractBadShares'
+- Removed obsolete configuration item 'EstimateCorrection' (Accuracy & Bias reduce prices which in turn avoids pools with high price fluctuation)
 
 Miner updates:
 - NanoMiner-v3.6.2
@@ -252,7 +270,7 @@ Fixes:
 - ZergPool broken (all variants, regression from 4.0.0.26)
 
 Web GUI:
-- Config editor: Re-arranged some items
+- configuration editor: Re-arranged some items
 
 
 Changelog NemosMiner 4.0.0.26 15.04.2022
@@ -273,7 +291,7 @@ Pools:
 - ZergPoolCoins: Fixed PriceField for earnings calculation ('estimate_current' instead of 'Plus_Pricce')
 
 Web GUI:
-- Config editor: Improve input validation
+- configuration editor: Improve input validation
 - Update font-awesome to version 6.1.1
 
 
@@ -286,7 +304,7 @@ Balances:
 Improvements:
 - Core: Auto-add coin names to 'Data\CoinNames.json' (data taken from pool API)
 - Core: Use cached BTC rate data if CryptoCompare API is down
-- Web GUI / Running Config: Added 'Edit Configuration File' & 'Edit PoolsConfig File' buttons
+- Web GUI / Running Config: Added 'Edit Configuration File' & 'Edit Poolsconfiguration File' buttons
 
 Core:
 - Minor code improvements & speed ups
@@ -334,8 +352,8 @@ Changelog NemosMiner 4.0.0.23 19.03.2022
 ========================================
 
 Changes:
-- Changed config item 'IgnoreRejectedShares' to 'DeductRejectedShares'
-- Changed config item 'RunningMinerGainPct' to 'MinerSwitchingThreshold'
+- Changed configuration item 'IgnoreRejectedShares' to 'DeductRejectedShares'
+- Changed configuration item 'RunningMinerGainPct' to 'MinerSwitchingThreshold'
 - Rename function 'Get-PoolName' to 'Get-PoolBaseName'
 
 Enhancements:
@@ -374,7 +392,7 @@ Miner changes:
 - Wildrig-v0.31.3
 
 WebGUI:
-- Config editor: Hide buttons while editing config files
+- configuration editor: Hide buttons while editing configuration files
 - Pools: Display 'EstimateFactor' as number with digits (instead of %)
 
 
@@ -382,7 +400,7 @@ Changelog NemosMiner 4.0.0.21 (RC21) 12.03.2022
 ===============================================
 
 Fixes:
-- Core: Do not apply generic config value 'MinWorker' to all pool config entries
+- Core: Do not apply generic configuration value 'MinWorker' to all pool configuration entries
 - Core: Increase 'MinWorker' default to 25
 
 Miner changes:
@@ -395,19 +413,19 @@ Miner changes:
 - TeamRedMiner-v0.9.4.2
 
 Web GUI:
-- Config editor: Added button 'Edit Unprofitable Algorithms File'
+- configuration editor: Added button 'Edit Unprofitable Algorithms File'
 
 
 Changelog NemosMiner 4.0.0.20 (RC20) 07.03.2022
 ===============================================
 
 Core:
-- Remove 'SSL' config item (only NiceHash supports SSL & Non SSL connections on some algorithms)
+- Remove 'SSL' configuration item (only NiceHash supports SSL & Non SSL connections on some algorithms)
 
 Fixes:
 - Core: Do not add failed miners twice ('failed' & 'stopped') to switching log.
 - lolMiner API: Rejected shares count in dual algorithm mode broken (regression from 4.0.0.19)
-- WebGUI / Config editor: Fix typos
+- WebGUI / configuration editor: Fix typos
 
 Miner changes:
 - CcminerKlausT-v8.26x
@@ -488,7 +506,7 @@ Core:
 - Unified pools, variants defined in PoolData.json
 
 Fixes:
-- '-Algorithm' in pool config not disabling pool 
+- '-Algorithm' in pool configuration not disabling pool 
 - Web GUI: Pools (All, Unavailable, Best) 'Reset pool stat data' not working for pools with currency
 
 Miner Updates:
@@ -501,8 +519,8 @@ Pool Changes:
   Added more guaranteed payout currencies
 
 WebGUI:
-- Added config item 'WebGUIUseColor'. If true Miners in the Web GUI will be shown with colored background depending on status.
-- Config Editor: Regrouped config items, removed obsolete config items
+- Added configuration item 'WebGUIUseColor'. If true Miners in the Web GUI will be shown with colored background depending on status.
+- configuration Editor: Regrouped configuration items, removed obsolete configuration items
 
 Changelog NemosMiner 4.0.0.15 (RC15) 22.01.2022
 ===============================================
@@ -518,7 +536,7 @@ Core:
 - Minor code improvements
 
 Fixes:
-- PoolConfig for in NiceHash (Internal or External) not working for all config items
+- Poolconfiguration for in NiceHash (Internal or External) not working for all configuration items
 
 Miner Updates:
 - Fix Ethash stratum for NiceHash
@@ -535,7 +553,7 @@ Pool updates:
 - Zergpool: Added 'BNB' as guaranteed payout currency
 
 Web GUI:
-- Config Editor: Regrouped config items, removed obsolete config items
+- configuration Editor: Regrouped configuration items, removed obsolete configuration items
 
 
 Changelog NemosMiner 4.0.0.14 (RC14) 09.01.2022
@@ -576,7 +594,7 @@ Changelog NemosMiner 4.0.0.12 (RC12) 01.01.2022
 
 Fixes:
 - Core: MinDataSamplesAlgoMultiplier broken
-- FireIce API: Ensure temp miner instance (for config file creation) is stopped
+- FireIce API: Ensure temp miner instance (for configuration file creation) is stopped
 - NiceHash pool: Make price fluctuation part of profit calculation (same as all other pools)
 - NLPool: Changed location to Europe West
 - ProHashing pool: Fix host location for EU
@@ -712,7 +730,7 @@ Enhancements:
 - Miners: Optimize code, improve readability
 - Web GUI: Update bootstrap to version 5.1.2
 - Web GUI: Dashboard show launched (instead of running) miners
-- Web GUI / Config Editor: add config items 'ShowCoinName' & 'ShowCurrency'
+- Web GUI / configuration Editor: add configuration items 'ShowCoinName' & 'ShowCurrency'
 
 Fixes:
 - NHec miner API: Reported HashRate in H/s instead of MH/s
@@ -738,7 +756,7 @@ Enhancements:
 Fixes:
 - Core: Parsing DAG data from 'https://minerstat.com' failed
 - Web GUI / Miners(Unavailable|Fastest): Show MinerWindow column (Regression from 3.9.9.63)
-- Web GUI / & API: Enable / disable device no longer adds poolsconfig to config file
+- Web GUI / & API: Enable / disable device no longer adds poolsconfiguration to configuration file
 - WildRig-v0.29.1: Changed download link to NemosMiner repository
 
 Miner updates:
@@ -762,7 +780,7 @@ Fixes:
 - Legacy GUI: Earnings/Projected Paydate missing
 
 Improvements:
-- Core: Removed obsolete config items
+- Core: Removed obsolete configuration items
 
 Miner updates:
 - Trex-v0.23.2
@@ -797,7 +815,7 @@ Fixes:
 - Core: Failing miners not completing benchmark loop (Regression from 3.9.9.68)
 - Core: Extra currencies no longer listed in summary (Regression from 3.9.9.68)
 - RplantCpu-v5.0.22: YespowerARWN broken
-- Web GUI / Config editor: Fix 'ExcludeMinerName' if parameter contains space or underscores
+- Web GUI / configuration editor: Fix 'ExcludeMinerName' if parameter contains space or underscores
 
 Miner updates:
 - GMiner-v2.68

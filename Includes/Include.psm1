@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.38
-Version date:   01 June 2022
+Version:        4.0.0.39
+Version date:   06 June 2022
 #>
 
 # Window handling
@@ -933,7 +933,7 @@ Function Get-Rate {
                         $Rates.$Currency | Add-Member $mCurrency ([Double]$Rates.$Currency.$_ * 1000)
                     }
                 }
-                Write-Message -Level Info "Loaded currency exchange rates from 'min-api.cryptocompare.com'.$(If ($MissingCurrencies = Compare-Object $Currencies $Variables.AllCurrencies -PassThru) { " Warning: Could not get rates for '$($MissingCurrencies -join '; ')'." })"
+                Write-Message -Level Info "Loaded currency exchange rates from 'min-api.cryptocompare.com'.$(If ($MissingCurrencies = Compare-Object $Currencies $Variables.AllCurrencies -PassThru) { " Warning: Could not get rates for '$($MissingCurrencies -join ', ')'." })"
                 $Rates | ConvertTo-Json -Depth 5 | Out-File -FilePath $RatesFile -Encoding utf8NoBOM -Force -ErrorAction SilentlyContinue
                 $Variables.Rates = $Rates
                 $Variables.RatesUpdated = (Get-Date).ToUniversalTime()
@@ -3001,15 +3001,14 @@ Function Update-ConfigFile {
         # Write message about new mining regions
         $Config.Region = Switch ($Config.Region) { 
             "Brazil"       { "USA West" }
-            "Europe"       { "Europe West" }
-            "Europe East"  { "Europe West" }
-            "Europe North" { "Europe West" }
+            "Europe East"  { "Europe" }
+            "Europe North" { "Europe" }
             "HongKong"     { "Asia" }
             "India"        { "Asia" }
             "Japan"        { "Japan" }
             "Russia"       { "Russia" }
             "US"           { "USA West" }
-            Default        { "Europe West" }
+            Default        { "Europe" }
         }
         Write-Message -Level Warn "Available mining locations have changed ($OldRegion -> $($Config.Region)). Please verify your configuration."
         Remove-Variable OldRegion
