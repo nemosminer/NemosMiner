@@ -2036,7 +2036,7 @@ Function Get-Device {
                 }
 
                 $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
-                $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB" -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9\.]' -replace '\s+', ' ').Trim()
+                $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor) -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9\.]' -replace '\s+', ' ').Trim()
 
                 If (-not $Type_Vendor_Id.($Device.Type)) { 
                     $Type_Vendor_Id.($Device.Type) = @{ }
