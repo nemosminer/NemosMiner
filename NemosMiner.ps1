@@ -167,7 +167,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$Proxy = "", # i.e http://192.0.0.1:8080
     [Parameter(Mandatory = $false)]
-    [String]$Region = "Europe West", # Used to determine pool nearest to you. One of "Asia", "Europe North", "Europe West", "HongKong", "Japan", "Russia", "USA East", "USA West"
+    [String]$Region = "Europe", # Used to determine pool nearest to you. One of "Asia", "Europe", "HongKong", "Japan", "Russia", "USA East", "USA West"
     [Parameter(Mandatory = $false)]
     [Switch]$ReportToServer = $false, # If true will report worker status to central monitoring server
     [Parameter(Mandatory = $false)]
@@ -590,7 +590,7 @@ Function Get-Chart {
         $EarningsChart1.BringToFront()
 
         $Datasource = $DatasourceRaw | Where-Object Date -eq (Get-Date).Date | Where-Object DailyEarnings -gt 0 | Sort-Object DailyEarnings -Descending
-        $Datasource | ForEach-Object { $_.DailyEarnings = [Double]$_.DailyEarnings * $Variables.Rates.($_.Currency).($Config.Currency) }
+        $Datasource | ForEach-Object { $_.DailyEarnings = [Double]($_.DailyEarnings * $Variables.Rates.($_.Currency).($Config.Currency)) }
 
         $ChartTitle = New-Object System.Windows.Forms.DataVisualization.Charting.Title
         $ChartTitle.Text = "Todays earnings per pool"
@@ -734,7 +734,7 @@ Function Update-TabControl {
                     @{ Name = "Status"; Expression = { $_.status } }, 
                     @{ Name = "Last seen"; Expression = { $_.TimeSinceLastReportText } }, 
                     @{ Name = "Version"; Expression = { $_.version } }, 
-                    @{ Name = "Est. Profit $($Config.Currency)/day"; Expression = { [Decimal]($_.Profit * ($Variables.Rates.BTC.($Config.Currency))) } }, 
+                    @{ Name = "Est. Profit $($Config.Currency)/day"; Expression = { [Decimal]($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } }, 
                     @{ Name = "Miner"; Expression = { $_.data.Name -join $nl } }, 
                     @{ Name = "Pool"; Expression = { ($_.data | ForEach-Object { $_.Pool -join " & " }) -join $nl } }, 
                     @{ Name = "Algorithm"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join $nl } }, 
