@@ -236,8 +236,8 @@
                   </div>
                   <br>
 
-                  <!-- Miners Runtime Settings -->
-                  <legend title="Miners Runtime Settings" class=h6><b>Miners Runtime Settings</b></legend>
+                  <!-- Miner Runtime Settings -->
+                  <legend title="Miner Runtime Settings" class=h6><b>Miner Runtime Settings</b></legend>
                   <div style="padding-top: 0.3rem" title="Miners will run as a hidden background task and are not accessible (not recommended)">
                     <input type="radio" id="MinerWindowStyleHidden" name="MinerWindowStyle" value="Hidden"> Run as hidden background task
                   </div>
@@ -677,7 +677,11 @@
                   })
                 }
               });
-              document.getElementById(('region-' + config.Region).toLowerCase()).checked = "true";
+              try {
+                document.getElementById(('region-' + config.Region).toLowerCase()).checked = "true";
+              } catch {
+                document.getElementById(('region-europe').toLowerCase()).checked = "true";
+              }
               if (config.UseAnycast) document.getElementById('UseAnycast').checked = true;
 
               // Miner and Algorithm Selection
@@ -706,7 +710,7 @@
                 if (document.getElementById('DisableSingleAlgoMining').checked) document.getElementById('DisableDualAlgoMining').checked = false;
               });
 
-              // Miners Runtime Settings
+              // Miner Runtime Settings
               if (config.MinerWindowStyle.toLowerCase() == "hidden") document.getElementById('MinerWindowStyleHidden').checked = true;
               if (config.MinerWindowStyle.toLowerCase() == "minimized") document.getElementById('MinerWindowStyleMinimized').checked = true;
               if (config.MinerWindowStyle.toLowerCase() == "normal") document.getElementById('MinerWindowStyleNormal').checked = true;
@@ -1034,7 +1038,7 @@
                   }
                 },
                 submitHandler: function (form) {
-                  document.body.style.cursor = 'wait'
+                  document.body.style.cursor = 'wait';
 
                   // Wallet addresses and user names
                   $.each(config.Wallets, function (key, value) {
@@ -1177,16 +1181,16 @@
                     // Write current config
                     var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
                     $('.modal-body').load($command, function () {
-                      document.body.style.cursor = 'default'
                       $('.modal-title').text('Apply configuration');
                       $('#myModal').modal({ show: true });
+                      document.body.style.cursor = 'default';
                       $('#myModal').on('hidden.bs.modal', function () { location.reload(true) })
                     });
                   } else {
                     // No pool selected
-                    document.body.style.cursor = 'default'
                     $('.modal-title').html('Error: Invalid configuration');
                     $('.modal-body').html('Cannot apply configuration - you must select at least one pool.');
+                    document.body.style.cursor = 'default';
                     $('#myModal').modal({ show: true });
                   }
                 }
