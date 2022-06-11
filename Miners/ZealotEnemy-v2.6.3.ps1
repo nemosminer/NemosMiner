@@ -14,7 +14,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Aergo";      MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo aergo --intensity 23" }
     [PSCustomObject]@{ Algorithm = "BCD";        MinMemGB = 3;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo bcd" }
     [PSCustomObject]@{ Algorithm = "Bitcore";    MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo bitcore --intensity 22" }
-    [PSCustomObject]@{ Algorithm = "C11";        MinMemGB = 3;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo c11 --intensity 24" }
+    [PSCustomObject]@{ Algorithm = "C11";        MinMemGB = 3;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algo c11 --intensity 24" }
     [PSCustomObject]@{ Algorithm = "Hex";        MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo hex --intensity 24" }
     [PSCustomObject]@{ Algorithm = "KawPoW";     MinMemGB = $Pools."KawPoW".DAGSizeGB; MemReserveGB = 0.41; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo kawpow --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Phi";        MinMemGB = 3;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo phi" }
@@ -28,7 +28,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "X16rv2";     MinMemGB = 3;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo x16rv2" }
     [PSCustomObject]@{ Algorithm = "X16s";       MinMemGB = 3;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo x16s" }
     # [PSCustomObject]@{ Algorithm = "X17";        MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo x17" } # No hashrate in time
-    [PSCustomObject]@{ Algorithm = "Xevan";      MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(90, 0);  Arguments = " --algo xevan --intensity 26 --diff-factor 2" }
+    # [PSCustomObject]@{ Algorithm = "Xevan";      MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(90, 0);  Arguments = " --algo xevan --intensity 26 --diff-factor 1" } # No hashrate in time
     )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
