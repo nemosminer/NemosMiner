@@ -56,7 +56,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Argon2dDyn";        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(60, 15);   Arguments = " --algorithm argon2d_dynamic" }
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";      Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 15);   Arguments = " --algorithm argon2id_chukwa" }
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa2";     Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 15);   Arguments = " --algorithm argon2id_chukwa2" }
-    [PSCustomObject]@{ Algorithm = "Autolykos2";        Type = "CPU"; Fee = 0.015;  MinerSet = 0; WarmupTimes = @(120, 15);  Arguments = " --algorithm autolykos2" } # CPU Fails to create DAG in time
+    [PSCustomObject]@{ Algorithm = "Autolykos2";        Type = "CPU"; Fee = 0.015;  MinerSet = 0; WarmupTimes = @(120, 15);  Arguments = " --algorithm autolykos2 --gpu-autolykos2-preload 3" }
     [PSCustomObject]@{ Algorithm = "Blake2b";           Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(90, 15);   Arguments = " --algorithm blake2b" }
     [PSCustomObject]@{ Algorithm = "Blake2s";           Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(30, 15);   Arguments = " --algorithm blake2s" }
     [PSCustomObject]@{ Algorithm = "Blake3";            Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 15);   Arguments = " --algorithm blake3_alephium" }
@@ -67,7 +67,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightTurtle"; Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 15);   Arguments = " --algorithm cryptonight_turtle" }
     [PSCustomObject]@{ Algorithm = "CryptonightUpx";    Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 15);   Arguments = " --algorithm cryptonight_upx" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhv";    Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 15);   Arguments = " --algorithm cryptonight_xhv" }
-    [PSCustomObject]@{ Algorithm = "Cosa";              Type = "CPU"; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(30, 15);   Arguments = " --algorithm cosa" }
+    [PSCustomObject]@{ Algorithm = "Cosa";              Type = "CPU"; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(60, 15);   Arguments = " --algorithm cosa" }
     [PSCustomObject]@{ Algorithm = "CpuPower";          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 15);   Arguments = " --algorithm cpupower" }
     [PSCustomObject]@{ Algorithm = "CurveHash";         Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 15);   Arguments = " --algorithm curvehash" }
     # [PSCustomObject]@{ Algorithm = "DynamoCoin";        Type = "CPU"; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algorithm dynamo" } # Algorithm 'dynamo' supports only 'pool' mode (yiimp stratum compatibility removed)
@@ -163,7 +163,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 }
 
                 $_.Arguments += " --pool $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --wallet $($Pools.($_.Algorithm).User) --worker $($Config.Workername)"
-                $_.Arguments += " --password $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$(((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB) * 1GB / 1000000000)" })"
+                $_.Arguments += " --password $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
 
                 If ($Pools.($_.Algorithm).SSL) { $_.Arguments += " --ssl true" }
                 If ($Pools.($_.Algorithm).DAGsizeGB -ne $null -and $Pools.($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { $_.Arguments += " --nicehash true" }

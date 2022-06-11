@@ -54,7 +54,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 #(ethash, kawpow, progpow) Worker name is not being passed for some mining pools
                 # From now on the username (--user) for these algorithms is no longer parsed as <wallet_address>.<worker_name>
                 $_.Arguments += " --user $(If ($Pools.($_.Algorithm[0]).DAGsizeGB -gt 0 -and ($Pools.($_.Algorithm[0]).User -split "\.").Count -eq 2 -and $Pools.($_.Algorithm[0]).BaseName -ne "MiningPoolHub") { "$($Pools.($_.Algorithm[0]).User -split "\." | Select-Object -First 1) --worker $($Pools.($_.Algorithm[0]).User -split "\." | Select-Object -Index 1)" } Else { "$($Pools.($_.Algorithm[0]).User)" })"
-                $_.Arguments += " --pass $($Pools.($_.Algorithm[0]).Pass)$(If ($Pools.($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$(((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB) * 1GB / 1000000000)" })"
+                $_.Arguments += " --pass $($Pools.($_.Algorithm[0]).Pass)$(If ($Pools.($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
 
                 If ($_.Algorithm[0] -in @("ProgPoW", "Zano")) { 
                     If ($Pools.($_.Algorithm[0]).Currency -in @("SERO", "ZANO")) { 
@@ -70,7 +70,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     #(ethash, kawpow, progpow) Worker name is not being passed for some mining pools
                     # From now on the username (--user) for these algorithms is no longer parsed as <wallet_address>.<worker_name>
                     $_.Arguments += " --user2 $(If ($Pools.($_.Algorithm[1]).DAGsizeGB -gt 0 -and ($Pools.($_.Algorithm[1]).User -split "\.").Count -eq 2 -and $Pools.($_.Algorithm[1]).BaseName -ne "MiningPoolHub") { "$($Pools.($_.Algorithm[1]).User -split "\." | Select-Object -First 1) --worker2 $($Pools.($_.Algorithm[1]).User -split "\." | Select-Object -Index 1)" } Else { "$($Pools.($_.Algorithm[1]).User)" })"
-                    $_.Arguments += " --pass2 $($Pools.($_.Algorithm[1]).Pass)$(If ($Pools.($_.Algorithm[1]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$(((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB) * 1GB / 1000000000)" })"
+                    $_.Arguments += " --pass2 $($Pools.($_.Algorithm[1]).Pass)$(If ($Pools.($_.Algorithm[1]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
                 }
 
                 # Apply tuning parameters
