@@ -3,8 +3,8 @@ using module ..\Includes\Include.psm1
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -ne "NVIDIA" -or $_.OpenCL.ComputeCapability -gt 5.0 })) { Return }
 
 $Uri = Switch ($Variables.DriverVersion.CUDA) { 
-    { $_ -ge "11.0" } { "https://github.com/nanopool/nanominer/releases/download/v3.6.3/nanominer-windows-3.6.3-cuda11.zip"; Break }
-    Default           { "https://github.com/nanopool/nanominer/releases/download/v3.6.3/nanominer-windows-3.6.3.zip" }
+    { $_ -ge "11.0" } { "https://github.com/nanopool/nanominer/releases/download/v3.6.4/nanominer-windows-3.6.4-cuda11.zip"; Break }
+    Default           { "https://github.com/nanopool/nanominer/releases/download/v3.6.4/nanominer-windows-3.6.4.zip" }
 }
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\nanominer.exe"
@@ -53,7 +53,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
                 $Arguments = "-mport 0 -webPort $MinerAPIPort -checkForUpdates false -noLog true -watchdog false"
                 $Arguments += " -useSSL $("$($Pools.($_.Algorithm).SSL)".toLower())"
-                $Arguments += " -rigName $($Config.WorkerName) -rigPassword $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$(((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB) * 1GB / 1000000000)" })"
+                $Arguments += " -rigName $($Config.WorkerName) -rigPassword $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
                 $Arguments += " -devices $(($AvailableMiner_Devices | Sort-Object Name -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')"
 
                 # Apply tuning parameters
