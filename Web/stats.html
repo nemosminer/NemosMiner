@@ -72,63 +72,63 @@
                 document.body.style.cursor = 'wait'
                 $(".modal-body").load("functions/stat/get?Type=HashRate&Value=0", function() {
                   $(".modal-title").text($("#showzerohashrateminers").text());
+                  document.body.style.cursor = 'default';
                   $("#myModal").modal({show:true});
                 });
-                document.body.style.cursor = 'default'
               });
 
               $("#resetzerohashrateminers").on("click",function() {
                 document.body.style.cursor = 'wait'
                 $(".modal-body").load("functions/stat/remove?Type=HashRate&Value=0", function() {
                   $(".modal-title").text($("#resetzerohashrateminers").text());
+                  document.body.style.cursor = 'default';
                   $("#myModal").modal({show:true});
                 });
-                document.body.style.cursor = 'default'
               });
 
               $("#showzeropowerusageminers").on("click",function() {
                 document.body.style.cursor = 'wait'
                 $(".modal-body").load("functions/stat/get?Type=PowerUsage&Value=0", function() {
                   $(".modal-title").text($("#showzeropowerusageminers").text());
+                  document.body.style.cursor = 'default';
                   $("#myModal").modal({show:true});
                 });
-                document.body.style.cursor = 'default'
               });
 
               $("#resetzeropowerusageminers").on("click",function() {
                 document.body.style.cursor = 'wait'
                 $(".modal-body").load("functions/stat/remove?Type=PowerUsage&Value=0", function() {
                   $(".modal-title").text($("#resetzeropowerusageminers").text());
+                  document.body.style.cursor = 'default';
                   $("#myModal").modal({show:true});
                 });
-                document.body.style.cursor = 'default'
               });
 
               $("#resetallpooldata").on("click",function() {
                 document.body.style.cursor = 'wait'
                 $(".modal-body").load("functions/stat/remove?Type=Profit", function() {
                   $(".modal-title").text($("#resetallpooldata").text());
+                  document.body.style.cursor = 'default';
                   $("#myModal").modal({show:true});
                 });
-                document.body.style.cursor = 'default'
               });
 
               $("#resetallbenchmarks").on("click",function() {
                 document.body.style.cursor = 'wait'
                 $(".modal-body").load("functions/stat/remove?Type=HashRate", function() {
                   $(".modal-title").text($("#resetallbenchmarks").text());
+                  document.body.style.cursor = 'default';
                   $("#myModal").modal({show:true});
                 });
-                document.body.style.cursor = 'default'
               });
 
               $("#resetallpowerusage").on("click",function() {
                 document.body.style.cursor = 'wait'
                 $(".modal-body").load("functions/stat/remove?Type=PowerUsage", function() {
                   $(".modal-title").text($("#resetallpowerusage").text());
+                  document.body.style.cursor = 'default';
                   $("#myModal").modal({show:true});
                 });
-                document.body.style.cursor = 'default'
               });
             });
           </script>

@@ -151,7 +151,7 @@
 
               $("#configuration").validate({
                 submitHandler: function (form) {
-                  document.body.style.cursor = 'wait'
+                  document.body.style.cursor = 'wait';
 
                   config.ReportToServer = document.getElementById('ReportToServer').checked;
                   if ((document.getElementById('MonitoringServer').value).toString().trim() == "") document.getElementById('MonitoringServer').value = 'https://nemosminer.com';
@@ -162,8 +162,8 @@
                   // Write current config
                   var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
                   $('.modal-body').load($command, function() {
-                    document.body.style.cursor = 'default'
                     $('.modal-title').text($('#save-button').text());
+                    document.body.style.cursor = 'default';
                     $('#myModal').modal({show:true});
                   });
                 }
