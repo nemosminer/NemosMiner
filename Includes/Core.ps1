@@ -459,8 +459,8 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 $Pools | Where-Object Disabled -EQ $true | ForEach-Object { $_.Reasons += "Disabled (by Stat file)" }
                 # Min accuracy not reached
                 $Pools | Where-Object Accuracy -LT $Config.MinAccuracy | ForEach-Object { $_.Reasons += "MinAccuracy ($($Config.MinAccuracy * 100)%) not reached" }
-                # Unavailable algorithms
-                $Pools | Where-Object { $Variables.UnprofitableAlgorithms.($_.Algorithm) -eq "*" } | ForEach-Object { $_.Reasons += "Unprofitable Algorithm" }
+                # Filter unavailable algorithms
+                If ($Config.MinerSet -lt 2) { $Pools | Where-Object { $Variables.UnprofitableAlgorithms.($_.Algorithm) -eq "*" } | ForEach-Object { $_.Reasons += "Unprofitable Algorithm" } }
                 # Pool price 0
                 $Pools | Where-Object Price -EQ 0 | ForEach-Object { $_.Reasons += "Price -eq 0" }
                 # No price data
@@ -487,6 +487,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 $Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $Config.MinWorker } | ForEach-Object { $_.Reasons += "Not enough workers at pool (MinWorker ``$($Config.MinWorker)`` in generic config)" }
                 # Update pools last used, required for BalancesKeepAlive
                 If ($Variables.PoolsLastUsed) { $Variables.PoolsLastUsed | Get-SortedObject | ConvertTo-Json | Out-File -FilePath ".\Data\PoolsLastUsed.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue}
+                If ($Variables.AlgorithmsLastUsed) { $Variables.AlgorithmsLastUsed | Get-SortedObject | ConvertTo-Json | Out-File -FilePath ".\Data\AlgorithmsLastUsed.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue}
 
                 # Apply watchdog to pools
                 If ($Config.Watchdog) { 
@@ -683,6 +684,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                         If ($Stat.Updated -gt $Miner.StatStart) { 
                             Write-Message -Level Info "Saved hashrate for '$($Stat_Name -replace '_Hashrate$')': $(($Miner_Hashrates.$Algorithm | ConvertTo-Hash) -replace ' ')$(If ($Factor -le 0.999) { " (adjusted by factor $($Factor.ToString('N3')) [Shares total: $($LastSharesData.$Algorithm[2]), rejected: $($LastSharesData.$Algorithm[1])])" })$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
                             $Miner.StatStart = $Miner.StatEnd
+                            $Variables.AlgorithmsLastUsed.($Worker.Pool.Algorithm) = $Stat.Updated
                             $Variables.PoolsLastUsed.(Get-PoolBaseName $Worker.Pool.Name) = $Stat.Updated # most likely this will count at the pool to keep balances alive
                         }
                         ElseIf ($Miner_Hashrates.$Algorithm -gt 0 -and $Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($Miner_Hashrates.$Algorithm -gt $Stat.Week * 2 -or $Miner_Hashrates.$Algorithm -lt $Stat.Week / 2)) { # Stop miner if new value is outside ±200% of current value
