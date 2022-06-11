@@ -228,7 +228,7 @@ Easy configuration, easy start:
    In session console the following keys are supported
 
     a: Toggle Accuracy column visibility
-    b: Toggle List Pool Balances
+    b: Toggle Listing Pool balances
     c: Toggle Power Cost column visibility
     e: Toggle Earnings column visibility
     i: Toggle Earning Bias column visibility
@@ -239,10 +239,10 @@ Easy configuration, easy start:
     s: Toggle UI Style [full or light]
     t: Toggle Profit column visibility
     u: Toggle User column visibility
-    v: Toggle List all available miners
+    v: Toggle Listing all available miners
     w: Toggle Power usage column visibility
     y: Toggle Currency column visibility
-
+ 
    New version notification (Available since version 3.9.9.10)
 
       NemosMiner will notify new version availability
