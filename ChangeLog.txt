@@ -26,7 +26,7 @@ Enhancements:
 - Web GUI / Devices: Use colors for enabled devices status
 
 Fixes:
-- Core: Algorithm in gig monitor data missing (Regression from 4.0.0.36)
+- Core: Algorithm in rig monitor data missing (Regression from 4.0.0.36)
 - Core: Do not apply unprofitable algorithms when 'MinerSet' is set to 2 ("all miners (incl. those in UnprofitableAlgorithms.json)")
 - Core / Get-Device: Removed ' 0GB' from CPU model name (Regression from 4.0.0.25)
 - Miners: EthashLowMem 'l=[nnn]' GB parameter is now using GB instead of GiB (ProHashing has fixed API error)
