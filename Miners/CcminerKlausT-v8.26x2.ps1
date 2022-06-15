@@ -14,11 +14,11 @@ $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "C11";           MinMemGB = 2; MinerSet = 2; WarmupTimes = @(60, 0);  Arguments = " --algo c11 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
-    [PSCustomObject]@{ Algorithm = "Keccak";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo keccak --diff-multiplier 2 --intensity 29" }
-    [PSCustomObject]@{ Algorithm = "Lyra2RE2";      MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo lyra2v2" }
-    [PSCustomObject]@{ Algorithm = "Neoscrypt";     MinMemGB = 2; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo neoscrypt --intensity 15.5" } # CryptoDredge-v0.26.0 is fastest
-    [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo neoscrypt-xaya --intensity 15.5" } # CryptoDredge-v0.26.0 is fastest
-    [PSCustomObject]@{ Algorithm = "Skein";         MinMemGB = 2; MinerSet = 2; WarmupTimes = @(30, 0);  Arguments = " --algo skein" } # CcminerAlexis78-v1.5.2 is fastest
+    [PSCustomObject]@{ Algorithm = "Keccak";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algo keccak --diff-multiplier 2 --intensity 29" }
+    [PSCustomObject]@{ Algorithm = "Lyra2RE2";      MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algo lyra2v2" }
+    [PSCustomObject]@{ Algorithm = "Neoscrypt";     MinMemGB = 2; MinerSet = 1; WarmupTimes = @(60, 0);  Arguments = " --algo neoscrypt --intensity 15.5" } # CryptoDredge-v0.26.0 is fastest
+    [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(60, 0);  Arguments = " --algo neoscrypt-xaya --intensity 15.5" } # CryptoDredge-v0.26.0 is fastest
+    [PSCustomObject]@{ Algorithm = "Skein";         MinMemGB = 2; MinerSet = 2; WarmupTimes = @(60, 0);  Arguments = " --algo skein" } # CcminerAlexis78-v1.5.2 is fastest
     [PSCustomObject]@{ Algorithm = "Veltor";        MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo veltor --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Whirlcoin";     MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo whirlcoin" }
     [PSCustomObject]@{ Algorithm = "Whirlpool";     MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo whirlpool" }
@@ -51,7 +51,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     Type        = $AvailableMiner_Devices.Type
                     Path        = $Path
                     Arguments   = ("$($_.Arguments) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --timeout 50000 --retry-pause 1 --api-bind $MinerAPIPort --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
-                    Algorithm   = $_.Algorithm
+                    Algorithms  = $_.Algorithm
                     API         = "Ccminer"
                     Port        = $MinerAPIPort
                     URI         = $Uri

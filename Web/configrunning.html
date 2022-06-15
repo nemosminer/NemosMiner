@@ -52,13 +52,15 @@
 
               // Get config file names
               $.ajax({
-                url: '/configfile',
                 async: false,
+                dataType: 'text',
+                url: '/configfile',
                 success: function (result) {
                   configfile = result;
                   $.ajax({
-                    url: '/poolsconfigfile',
                     async: false,
+                    dataType: 'text',
+                    url: '/poolsconfigfile',
                     success: function (result) {
                       poolsconfigfile = result;
                       $('#configrunning').text("This is the full configuration NemosMiner is currently using. (Current configuration files: '" + configfile + "' & '" + poolsconfigfile + "')");
@@ -68,7 +70,10 @@
               });
 
               $(function() {
-                $.ajax({url: '/configrunning',
+                $.ajax({
+                  async: false,
+                  dataType: 'json',
+                  url: '/configrunning',
                   success: function(result) {
                     $("#config").empty();
                     $("#config").append(JSON.stringify(result, undefined, 4));

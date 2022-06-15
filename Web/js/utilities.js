@@ -83,7 +83,10 @@ function formatMiners(data) {
     // Format status
     const enumstatus = ["Running", "Idle", "Failed", "Disabled"];
     item.tStatus = enumstatus[item.Status];
-});
+
+    // Format status message
+    if (item.StatusMessage) item.tStatusMessage = item.StatusMessage.replace(/ \{.+/g, "");
+  });
   return data;
 }
 

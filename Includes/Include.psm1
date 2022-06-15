@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.0.39
-Version date:   06 June 2022
+Version:        4.0.1.0
+Version date:   15 June 2022
 #>
 
 # Window handling
@@ -49,48 +49,42 @@ public static class Win32 {
 $Global:PriorityNames = [PSCustomObject]@{ -2 = "Idle"; -1 = "BelowNormal"; 0 = "Normal"; 1 = "AboveNormal"; 2 = "High"; 3 = "RealTime" }
 
 Class Device { 
-    [String]$Name
-    [String]$Model
-    [String]$Vendor
-    [Int64]$Memory
-    [Double]$MemoryGB
-    [String]$Type
     [String]$Architecture
-    [PSCustomObject]$CIM
-    [PSCustomObject]$PNP
-    [PSCustomObject]$Reg
-    [PSCustomObject]$CpuFeatures
-
-    [String]$Status = "Idle"
-
     [Int]$Bus
-    [Int]$Id
-    [Int]$Type_Id
-    [Int]$Vendor_Id
-    [Int]$Type_Vendor_Id
-
-    [Int]$Slot = 0
-    [Int]$Type_Slot
-    [Int]$Vendor_Slot
-    [Int]$Type_Vendor_Slot
-
-    [Int]$Index = 0
-    [Int]$Type_Index
-    [Int]$Type_Vendor_Index
-    [Int]$Vendor_Index
     [Int]$Bus_Index
     [Int]$Bus_Type_Index
+    [Int]$Bus_Platform_Index
     [Int]$Bus_Vendor_Index
-
+    [PSCustomObject]$CIM
+    [Double]$ConfiguredPowerUsage = 0 # Workaround if device does not expose power usage
+    [PSCustomObject]$CpuFeatures
+    [Int]$Id
+    [Int]$Index = 0
+    [Int64]$Memory
+    [String]$Model
+    [Double]$MemoryGB
+    [String]$Name
+    [PSCustomObject]$OpenCL = [PSCustomObject]@{ }
     [Int]$PlatformId = 0
     [Int]$PlatformId_Index
-    [Int]$Type_PlatformId_Index
-    [Int]$Bus_Platform_Index
-
-    [PSCustomObject]$OpenCL = [PSCustomObject]@{ }
-    [DeviceState]$State = [DeviceState]::Enabled
+    [PSCustomObject]$PNP
     [Boolean]$ReadPowerUsage = $false
-    [Double]$ConfiguredPowerUsage = 0 # Workaround if device does not expose power usage
+    [PSCustomObject]$Reg
+    [Int]$Slot = 0
+    [String]$Status = "Idle"
+    [DeviceState]$State = [DeviceState]::Enabled
+    [String]$Type
+    [Int]$Type_Id
+    [Int]$Type_Index
+    [Int]$Type_PlatformId_Index
+    [Int]$Type_Slot
+    [Int]$Type_Vendor_Id
+    [Int]$Type_Vendor_Index
+    [Int]$Type_Vendor_Slot
+    [String]$Vendor
+    [Int]$Vendor_Id
+    [Int]$Vendor_Index
+    [Int]$Vendor_Slot
 }
 
 Enum DeviceState { 
@@ -100,44 +94,42 @@ Enum DeviceState {
 }
 
 Class Pool { 
-    [String]$Name
-    [String]$BaseName
+    [Double]$Accuracy
     [String]$Algorithm
+    [Boolean]$Available = $true
+    [String]$BaseName
+    [Boolean]$Best = $false
     [Nullable[Int64]]$BlockHeight = $null
+    [String]$CoinName
+    [String]$Currency
     [Nullable[Double]]$DAGsizeGB = $null
+    [Double]$EarningsAdjustmentFactor = 1
     [Nullable[Int]]$Epoch = $null
-    [String]$Currency = ""
-    [String]$CoinName = ""
+    [Double]$Fee
     [String]$Host
     # [String[]]$Hosts # To be implemented for pool failover
-    [UInt16]$Port
-    [String]$User
+    [String]$Name
     [String]$Pass
-    [String]$Region
-    [Boolean]$SSL
-    [Double]$Fee
-    [Double]$EarningsAdjustmentFactor = 1
-    [DateTime]$Updated = (Get-Date).ToUniversalTime()
-    [Nullable[Int]]$Workers
-    [Boolean]$Available = $true
-    [String[]]$Reasons = @()
-    [Boolean]$Best = $false
-
-    # Stats
+    [UInt16]$Port
     [Double]$Price
     [Double]$Price_Bias
+    [String[]]$Reasons = @()
+    [String]$Region
+    [Boolean]$SSL
     [Double]$StablePrice
-    [Double]$Accuracy
+    [DateTime]$Updated = (Get-Date).ToUniversalTime()
+    [String]$User
+    [Nullable[Int]]$Workers
 }
 
 Class Worker { 
-    [Pool]$Pool
-    [Double]$Fee
-    [Double]$Hashrate
+    [Boolean]$Disabled
     [Double]$Earning
     [Double]$Earning_Bias
     [Double]$Earning_Accuracy
-    [Boolean]$Disabled
+    [Double]$Fee
+    [Double]$Hashrate
+    [Pool]$Pool
     [TimeSpan]$TotalMiningDuration
 }
 
@@ -149,74 +141,64 @@ Enum MinerStatus {
 }
 
 Class Miner { 
-    [Worker[]]$Workers = @()
-    [Worker[]]$WorkersRunning = @()
-    [Device[]]$Devices = @()
-    [String]$Type
-
-    [String]$Name
-    [String]$BaseName
-    [String]$Version
-    [String]$Path
-    [String]$URI
-    [String]$Arguments
-    [String]$CommandLine
-    [UInt16]$Port
-    [String[]]$DeviceNames = @() # derived from devices
+    [Int]$Activated = 0
     [String[]]$Algorithms = @() # derived from workers
-    [Double[]]$Hashrates_Live = @()
-
+    [String]$API
+    [String]$Arguments
+    [Boolean]$Available = $true
+    [String]$BaseName
+    [DateTime]$BeginTime
     [Boolean]$Benchmark = $false # derived from stats
-
+    [Boolean]$Best = $false
+    [String]$CommandLine
+    [Int]$DataCollectInterval = 5 # Seconds
+    [String[]]$DeviceNames = @() # derived from devices
+    [Device[]]$Devices = @()
+    [Boolean]$Disabled = $false
     [Double]$Earning # derived from pool and stats
     [Double]$Earning_Bias # derived from pool and stats
     [Double]$Earning_Accuracy # derived from pool and stats
-    [Double]$Profit
-    [Double]$Profit_Bias
-
-    [Boolean]$ReadPowerUsage = $false
+    [DateTime]$EndTime
+    [String[]]$EnvVars = @()
+    [Double[]]$Hashrates_Live = @()
+    [String]$Info
+    [Boolean]$KeepRunning = $false # do not stop miner even if not best (MinInterval)
+    [String]$LogFile
     [Boolean]$MeasurePowerUsage = $false
-    [Boolean]$Prioritize = $false # derived from BalancesKeepAlive
-
+    [Int]$MinDataSamples # for safe hashrate values
+    [String]$MinerUri
+    [Bool]$MostProfitable
+    [String]$Name
+    [String]$Path
+    [UInt16]$Port
+    [Double]$PowerCost
     [Double]$PowerUsage
     [Double]$PowerUsage_Live
-    [Double]$PowerCost
-
-    [Boolean]$MostProfitable = $false
-    [Boolean]$Best = $false
-    [Boolean]$Available = $true
-    [Boolean]$Disabled = $false
+    [Boolean]$Prioritize = $false # derived from BalancesKeepAlive
+    [Int32]$ProcessId = 0
+    [Int]$ProcessPriority = -1
+    [Double]$Profit
+    [Double]$Profit_Bias
+    [Boolean]$ReadPowerUsage = $false
     [String[]]$Reasons # Why is a miner unavailable?
     [Boolean]$Restart = $false 
-    [Boolean]$KeepRunning = $false # do not stop miner even if not best (MinInterval)
+    [DateTime]$StatStart
+    [DateTime]$StatEnd
+    [MinerStatus]$Status = [MinerStatus]::Idle
+    [String]$StatusMessage
+    [TimeSpan]$TotalMiningDuration # derived from pool and stats
+    [String]$Type
+    [String]$URI
+    [Worker[]]$Workers = @()
+    [Worker[]]$WorkersRunning = @()
+    [String]$Version
+    [Int[]]$WarmupTimes # First value: time (in seconds) until first hashrate sample is valid (default 0, accept first sample), second value: time (in seconds) the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed (default 15)
+    [String]$WindowStyle = "minimized"
 
     hidden [PSCustomObject[]]$Data = $null
     hidden [System.Management.Automation.Job]$DataReaderJob = $null
     hidden [System.Management.Automation.Job]$Process = $null
     hidden [TimeSpan]$Active = [TimeSpan]::Zero
-
-    [Int32]$ProcessId = 0
-    [Int]$ProcessPriority = -1
-
-    [Int]$Activated = 0
-    [MinerStatus]$Status = [MinerStatus]::Idle
-    [String]$StatusMessage
-    [String]$Info
-    [DateTime]$StatStart
-    [DateTime]$StatEnd
-    [Int]$DataCollectInterval = 5 # Seconds
-    [String]$WindowStyle = "minimized"
-    [String[]]$EnvVars = @()
-    [Int]$MinDataSamples # for safe hashrate values
-    [PSCustomObject]$LastSample # last hashrate sample
-    [Int[]]$WarmupTimes # First value: time (in seconds) until first hashrate sample is valid (default 0, accept first sample), second value: time (in seconds) the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed (default 15)
-    [DateTime]$BeginTime
-    [DateTime]$EndTime
-    [TimeSpan]$TotalMiningDuration # derived from pool and stats
-
-    [String]$API
-    [String]$MinerUri
-    [String]$LogFile
 
     [String[]]GetProcessNames() { 
         Return @(([IO.FileInfo]($this.Path | Split-Path -Leaf -ErrorAction Ignore)).BaseName)
@@ -241,6 +223,7 @@ Class Miner {
                 # Load miner API file
                 . ".\Includes\MinerAPIs\$($args[0]).ps1"
                 $Miner = ($args[1] | ConvertFrom-Json) -as $args[0]
+                Start-Sleep -Seconds 2
                 While ($true) { 
                     $NextLoop = (Get-Date).AddSeconds($Miner.DataCollectInterval)
                     $Miner.GetMinerData()
@@ -261,7 +244,7 @@ Class Miner {
     }
 
     hidden RestartDataReader() { 
-        # Read data if available before restarting
+        # Before restarting read data if available
         If ($this.DataReaderJob.HasMoreData) { $this.Data += @($this.DataReaderJob | Receive-Job | Select-Object) }
         $this.StopDataReader()
         $this.StartDataReader()
@@ -297,24 +280,24 @@ Class Miner {
 
             # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
-                DateTime          = (Get-Date -Format o)
-                Action            = "Launched"
-                Name              = $this.Name
-                Device            = $this.DeviceNames -join "; "
-                Type              = $this.Type
                 Account           = ($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
-                Pool              = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
-                Algorithm         = $this.Workers.Pool.Algorithm -join "; "
+                Action            = "Launched"
+                Algorithms        = $this.Workers.Pool.Algorithm -join "; "
+                Benchmark         = $this.Benchmark
+                CommandLine       = $this.CommandLine
+                DateTime          = (Get-Date -Format o)
+                DeviceNames       = $this.DeviceNames -join "; "
                 Duration          = ""
                 Earning           = $this.Earning
                 Earning_Bias      = $this.Earning_Bias
+                LastDataSample    = $null
+                MeasurePowerUsage = $this.MeasurePowerUsage
+                Name              = $this.Name
+                Pools              = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
                 Profit            = $this.Profit
                 Profit_Bias       = $this.Profit_Bias
-                CommandLine       = $this.CommandLine
-                Benchmark         = $this.Benchmark
-                MeasurePowerUsage = $this.MeasurePowerUsage
-                Reasons           = ""
-                LastDataSample    = $null
+                Reason            = ""
+                Type              = $this.Type
             } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
@@ -398,24 +381,24 @@ Class Miner {
 
         # Log switching information to .\Logs\SwitchingLog
         [PSCustomObject]@{ 
-            DateTime          = (Get-Date -Format o)
-            Action            = If ($this.Status -eq [MinerStatus]::Idle) { "Stopped" } Else { "Failed" }
-            Name              = $this.Name
-            Device            = $this.DeviceNames -join "; "
-            Type              = $this.Type
             Account           = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
-            Pool              = ($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
-            Algorithm         = $this.WorkersRunning.Pool.Algorithm -join "; "
+            Action            = If ($this.Status -eq [MinerStatus]::Idle) { "Stopped" } Else { "Failed" }
+            Algorithms        = $this.WorkersRunning.Pool.Algorithm -join "; "
+            Benchmark         = $this.Benchmark
+            CommandLine       = ""
+            DateTime          = (Get-Date -Format o)
+            DeviceNames       = $this.DeviceNames -join "; "
             Duration          = "{0:hh\:mm\:ss}" -f ($this.EndTime - $this.BeginTime)
             Earning           = $this.Earning
             Earning_Bias      = $this.Earning_Bias
+            LastDataSample    = $this.Data | Select-Object -Last 1 | ConvertTo-Json -Compress
+            MeasurePowerUsage = $this.MeasurePowerUsage
+            Name              = $this.Name
+            Pools             = ($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
             Profit            = $this.Profit
             Profit_Bias       = $this.Profit_Bias
-            CommandLine       = ""
-            Benchmark         = $this.Benchmark
-            MeasurePowerUsage = $this.MeasurePowerUsage
-            Reasons           = If ($this.Status -eq [MinerStatus]::Failed) { $this.StatusMessage } Else { "" }
-            LastDataSample    = $this.Data | Select-Object -Last 1 | ConvertTo-Json -Compress
+            Reason            = If ($this.Status -eq [MinerStatus]::Failed) { $this.StatusMessage } Else { "" }
+            Type              = $this.Type
         } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
         $this.StatusMessage = If ($this.Status -eq [MinerStatus]::Idle) { "Idle" } Else { "Failed $($this.Info)" }
@@ -452,14 +435,14 @@ Class Miner {
         $RegistryHive = "HKCU:\Software\HWiNFO64\VSB"
         $TotalPowerUsage = [Double]0
 
-        # Read power usage
+        # Read power usage from HwINFO64 reg key, otherwise use hardconfigured value
         $RegistryData = Get-ItemProperty $RegistryHive -ErrorAction Ignore
         ForEach ($Device in $this.Devices) { 
             If ($RegistryEntry = $RegistryData.PSObject.Properties | Where-Object { ($_.Value -split " ") -contains $Device.Name }) { 
                 $TotalPowerUsage += [Double]($RegistryData.($RegistryEntry.Name -replace "Label", "Value") -split ' ' | Select-Object -First 1)
             }
             Else { 
-                $TotalPowerUsage += [Double]$Device.ConfiguredPowerUsage # Use configured value
+                $TotalPowerUsage += [Double]$Device.ConfiguredPowerUsage
             }
         }
         Return $TotalPowerUsage
@@ -1025,24 +1008,23 @@ Function Update-MonitoringData {
 
     $Version = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version.ToString())"
     $Status = $Variables.NewMiningStatus
-    $RunningMiners = $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }
 
     # Build object with just the data we need to send, and make sure to use relative paths so we don't accidentally
     # reveal someone's windows username or other system information they might not want sent
     # For the ones that can be an array, comma separate them
     $Data = @(
-        $RunningMiners | Sort-Object DeviceName | ForEach-Object { 
+        $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Sort-Object DeviceName | ForEach-Object { 
             [PSCustomObject]@{ 
+                Algorithm      = $_.WorkersRunning.Pool.Algorithm -join ','
+                Currency       = $Config.Currency
+                CurrentSpeed   = $_.Hashrates_Live
+                Earning        = $_.Earning
+                EstimatedSpeed = $_.Workers.Hashrate
                 Name           = $_.Name
                 Path           = Resolve-Path -Relative $_.Path
-                Type           = $_.Type -join ','
-                Algorithm      = $_.Algorithm -join ','
                 Pool           = $_.WorkersRunning.Pool.Name -join ','
-                CurrentSpeed   = $_.Hashrates_Live
-                EstimatedSpeed = $_.Workers.Hashrate
-                Earning        = $_.Earning
                 Profit         = $_.Profit
-                Currency       = $Config.Currency
+                Type           = $_.Type -join ','
             }
         }
     )
@@ -2849,6 +2831,7 @@ Function Initialize-Autoupdate {
         Remove-Item ".\PostUpdateActions.ps1" -Force
         "Removed '.\PostUpdateActions.ps1'."
     }
+    # Keep only 3 file generations
     Get-ChildItem -Path "AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $BackupFile } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
     Get-ChildItem -Path ".\Logs\AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $UpdateLog } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
 
@@ -3073,6 +3056,7 @@ Function Get-EpochLength {
 
     Switch ($Currency) { 
         "ETC"   { If ($Blockheight -ge 11700000 ) { Return 60000 } Else { Return 30000 } }
+        "FIRO"  { Return 1300 }
         "RVN"   { Return 7500 }
         Default { return 30000 }
     }

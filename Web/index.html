@@ -39,7 +39,7 @@
                 <th data-field="tDevices" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Devices</th>
                 <th data-field="tName" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Name</th>
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false" data-filter-strict-search="true">Type</th>
-                <th data-field="StatusMessage" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Status</th>
+                <th data-field="tStatusMessage" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Status</th>
                 <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Earning</th>
                 <th data-field="Earning_Bias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)" data-visible="false">Earning Bias</th>
                 <th data-field="Profit" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Profit</th>
@@ -286,43 +286,48 @@
               });
             });
 
-            $('#miners').on('post-body.bs.table', function () {
-              try { 
-                if ($('#miners').bootstrapTable('getSelections').length >= 1) {
-                  document.getElementById('re-benchmark').disabled = false;
-                  document.getElementById('re-measure').disabled = false;
-                  document.getElementById('failed').disabled = false;
-                  document.getElementById('disable').disabled = false;
-                } else {
-                  document.getElementById('re-benchmark').disabled = true;
-                  document.getElementById('re-measure').disabled = true;
-                  document.getElementById('failed').disabled = true;
-                  document.getElementById('disable').disabled = true;
-                }
-              } catch {}
+            $('#miners').bootstrapTable({
+              onPostBody: function () {
+                try { 
+                  if ($('#miners').bootstrapTable('getSelections').length >= 1) {
+                    document.getElementById('re-benchmark').disabled = false;
+                    document.getElementById('re-measure').disabled = false;
+                    document.getElementById('failed').disabled = false;
+                    document.getElementById('disable').disabled = false;
+                  } else {
+                    document.getElementById('re-benchmark').disabled = true;
+                    document.getElementById('re-measure').disabled = true;
+                    document.getElementById('failed').disabled = true;
+                    document.getElementById('disable').disabled = true;
+                  }
+                } catch {}
 
-              $('#miners thead tr th').each(function () {
-                $(this).addClass('align-top align-left');
-              });
-
-              if (config.WebGUIUseColor == true) {
-                $('#miners td:nth-child(5)').each(function () {
-                  switch(this.innerText) {
-                    case this.innerText.match(/^Mining/)?.input:
-                      $(this).parent('tr').addClass('miner-running');
-                      break;
-                    case this.innerText.match(/^Warming/)?.input:
-                      $(this).parent('tr').addClass('miner-warmingup');
-                      break;
-                    case this.innerText.match(/^Benchmarking|^Power usage/)?.input:
-                      $(this).parent('tr').addClass('miner-measuring');
-                      break;
-                    case this.innerText.match(/^Failed/)?.input:
-                      $(this).parent('tr').addClass('miner-failed');
-                      break;
-                  };
+                $('#miners thead tr th').each(function () {
+                  $(this).addClass('align-top align-left');
                 });
-              };
+
+                if (config.WebGUIUseColor == true) {
+                  $('#miners td:nth-child(5)').each(function () {
+                    switch(this.innerText) {
+                      case this.innerText.match(/^Mining/)?.input:
+                        $(this).parent('tr').addClass('miner-running');
+                        break;
+                      case this.innerText.match(/^Warming/)?.input:
+                        $(this).parent('tr').addClass('miner-warmingup');
+                        break;
+                      case this.innerText.match(/^Benchmarking|^Power usage/)?.input:
+                        $(this).parent('tr').addClass('miner-measuring');
+                        break;
+                      case this.innerText.match(/^Failed/)?.input:
+                        $(this).parent('tr').addClass('miner-failed');
+                        break;
+                      case this.innerText.match(/^Stopping/)?.input:
+                        $(this).parent('tr').addClass('miner-stopping');
+                        break;
+                    };
+                  });
+                };
+              }
             });
 
             function updatePoolBalances() {
@@ -335,17 +340,25 @@
               var rates = {};
 
               $.ajax({
+                async: false,
+                dataType: 'json',
                 url: '/rates',
                 success: function(result) {
                   if (result != null) {
                     rates = result;
 
-                    $.ajax({url: '/allcurrencies',
+                    $.ajax({
+                      async: false,
+                      dataType: 'json',
+                      url: '/allcurrencies',
                       success: function(result) {
                         if (result != null) { 
                           currencies = result;
 
-                          $.ajax({url: '/balances',
+                          $.ajax({
+                            async: false,
+                            dataType: 'json',
+                            url: '/balances',
                             success: function(result) {
                               if (result != null) { 
                                 document.getElementById("balances").style.display = "block";

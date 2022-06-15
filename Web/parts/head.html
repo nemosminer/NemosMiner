@@ -58,7 +58,7 @@
     // get main currency
     $.ajax({
       async: false,
-      dataType: 'json',
+      dataType: 'text',
       timeout: 10,
       url: '/currency',
       success: function(result) {
@@ -69,7 +69,7 @@
     // get BTC rate of first currency
     $.ajax({
       async: false,
-      dataType: 'json',
+      dataType: 'text',
       timeout: 10,
       url: '/btc',
       success: function(result) {

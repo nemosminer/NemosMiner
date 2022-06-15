@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.0.39
-Version date:   06 June 2022
+Version:        4.0.1.0
+Version date:   15 June 2022
 #>
 
 using module .\Include.psm1
@@ -117,7 +117,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                                 })
                             }
                         }
-                        $Variables.DAGdata.Updated.Minerstat = (Get-Date).ToUniversalTime()
+                        $Variables.DAGdata.Updated.$Url = (Get-Date).ToUniversalTime()
                         Write-Message -Level Info "Loaded DAG data from '$Url'."
                     }
                     Else { 
@@ -145,10 +145,36 @@ While ($Variables.NewMiningStatus -eq "Running") {
                                     DAGsize     = Get-DAGSize -Block $Response.data.$_.height -Currency $_
                                     Epoch       = Get-Epoch -BlockHeight $Response.data.$_.height -Currency $_
                                 })
-                                $Variables.DAGdata.Updated.ProHashing = (Get-Date).ToUniversalTime()
+                                $Variables.DAGdata.Updated.$Url = (Get-Date).ToUniversalTime()
                             }
                         }
                         $Variables.EthashLowMemCurrency = $Response.data.PSObject.Properties.Name | Where-Object { $Response.data.$_.enabled -and $Response.data.$_.height -and $Response.data.$_.algo -eq "ethash-lowmemory" } | Sort-Object { $Response.data.$_.height } | Select-Object -First 1
+                        Write-Message -Level Info "Loaded DAG data from '$Url'."
+                    }
+                    Else { 
+                        Write-Message -Level Info "Failed to load DAG data from '$Url'."
+                    }
+                }
+                Catch { 
+                    Write-Message -Level Info "Failed to load DAG data from '$Url'."
+                }
+            }
+
+            If ($Variables.DAGdata.Updated.FiroOrg -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
+                Try { 
+                    # Get block data from firo.org
+                    $Url = "https://explorer.firo.org/api/status"
+                    $Response = Invoke-RestMethod -Uri $Url
+
+                    If ($Response.info.blocks -gt $Variables.DAGdata.Currency.FIRO.BlockHeight) { 
+                        $Variables.DAGdata.Currency.Remove("FIRO")
+                        $Variables.DAGdata.Currency.Add("FIRO", [PSCustomObject]@{ 
+                            BlockHeight = $Response.info.blocks
+                            CoinName    = Get-CoinName "FIRO"
+                            DAGsize     = Get-DAGSize -Block $Response.info.blocks -Currency "FIRO"
+                            Epoch       = Get-Epoch -BlockHeight $Response.info.blocks -Currency "FIRO"
+                        })
+                        $Variables.DAGdata.Updated.$Url = (Get-Date).ToUniversalTime()
                         Write-Message -Level Info "Loaded DAG data from '$Url'."
                     }
                     Else { 
@@ -277,6 +303,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             # Load currency exchange rates from min-api.cryptocompare.com
             Get-Rate
+            $Variables.Digits = ([math]::truncate(12 - [math]::log($Variables.Rates.BTC.($Config.Currency), 10)))
 
             # Power cost preparations
             $Variables.CalculatePowerCost = $Config.CalculatePowerCost # $Variables.CalculatePowerCost is an operational variable and not identical to $Config.CalculatePowerCost
@@ -617,14 +644,14 @@ While ($Variables.NewMiningStatus -eq "Running") {
                             Else {
                                 # Create watchdog timer
                                 $Variables.WatchdogTimers += [PSCustomObject]@{ 
-                                    MinerName     = $Miner.Name
-                                    MinerBaseName = $Miner.BaseName
-                                    MinerVersion  = $Miner.Version
-                                    PoolName      = $Worker.Pool.Name
-                                    PoolRegion    = $Worker.Pool.Region
                                     Algorithm     = $Worker.Pool.Algorithm
                                     DeviceNames   = $Miner.DeviceNames
                                     Kicked        = (Get-Date).ToUniversalTime()
+                                    MinerBaseName = $Miner.BaseName
+                                    MinerName     = $Miner.Name
+                                    MinerVersion  = $Miner.Version
+                                    PoolName      = $Worker.Pool.Name
+                                    PoolRegion    = $Worker.Pool.Region
                                 }
                             }
                         }
@@ -718,24 +745,24 @@ While ($Variables.NewMiningStatus -eq "Running") {
         $NewMiners = @(
             $NewMiners_Jobs | ForEach-Object { $_ | Get-Job -ErrorAction Ignore | Wait-Job -Timeout 60 | Receive-Job } | Where-Object { $_.Content.API } | ForEach-Object { 
                 [PSCustomObject]@{ 
-                    Name           = [String]$_.Content.Name
-                    BaseName       = [String]($_.Content.Name -split '-' | Select-Object -Index 0)
-                    Version        = [String]($_.Content.Name -split '-' | Select-Object -Index 1)
-                    Path           = [String]$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Content.Path)
-                    Algorithms     = [String[]]$_.Content.Algorithm
-                    Workers        = [Worker[]]@(ForEach ($Algorithm in $_.Content.Algorithm) { @{ Pool = $MinerPools.$Algorithm; Fee = If ($Config.IgnoreMinerFee) { 0 } Else { [Double]($_.Content.Fee | Select-Object -Index $_.Content.Algorithm.IndexOf($Algorithm)) } } })
+                    Algorithms     = [String[]]$_.Content.Algorithms
+                    API            = [String]$_.Content.API
                     Arguments      = [String]$_.Content.Arguments
+                    BaseName       = [String]($_.Content.Name -split '-' | Select-Object -Index 0)
                     DeviceNames    = [String[]]$_.Content.DeviceNames
                     Devices        = [Device[]]($Variables.Devices | Where-Object Name -In $_.Content.DeviceNames)
-                    Type           = [String]$_.Content.Type
-                    Port           = [UInt16]$_.Content.Port
-                    URI            = [String]$_.Content.URI
                     EnvVars        = [String[]]$_.Content.EnvVars
-                    WarmupTimes    = [Int[]]$_.Content.WarmupTimes
-                    MinerUri       = [String]$_.Content.MinerUri
                     LogFile        = [String]$_.Content.LogFile
-                    API            = [String]$_.Content.API
-                } -as "$($_.Content.API)"
+                    MinerUri       = [String]$_.Content.MinerUri
+                    Name           = [String]$_.Content.Name
+                    Path           = [String]$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Content.Path)
+                    Port           = [UInt16]$_.Content.Port
+                    Type           = [String]$_.Content.Type
+                    URI            = [String]$_.Content.URI
+                    Version        = [String]($_.Content.Name -split '-' | Select-Object -Index 1)
+                    WarmupTimes    = [Int[]]$_.Content.WarmupTimes
+                    Workers        = [Worker[]]@(ForEach ($Algorithm in $_.Content.Algorithms) { @{ Pool = $MinerPools.$Algorithm; Fee = If ($Config.IgnoreMinerFee) { 0 } Else { [Double]($_.Content.Fee | Select-Object -Index $_.Content.Algorithms.IndexOf($Algorithm)) } } })
+                } -as $_.Content.API
             }
         )
         $NewMiners_Jobs | ForEach-Object { $_ | Remove-Job -ErrorAction Ignore -Force }
@@ -924,8 +951,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 $Variables.BestMiners_Combo | Select-Object | ForEach-Object { $_.Best = $true }
             }
             Else { 
-                Write-Message -Level Warn "Mining profit ($($Config.Currency) $(ConvertTo-LocalCurrency -Value ($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) -Rate $Variables.Rates."BTC".($Config.Currency) -Offset 1)) is below the configured threshold of $($Config.Currency) $($Config.ProfitabilityThreshold.ToString("N$((Get-Culture).NumberFormat.CurrencyDecimalDigits)"))/day; mining is suspended until threshold is reached."
-            }
+                Write-Message -Level Warn ("Mining profit ($($Config.Currency) {0:n$($Variables.Digits)}) is below the configured threshold of $($Config.Currency) {1:n$($Variables.Digits)}/day; mining is suspended until threshold is reached." -f (($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) *  $Variables.Rates."BTC".($Config.Currency)), $Config.ProfitabilityThreshold)}
         }
         Else { 
             $Variables.MostProfitableMiners = @()
@@ -945,7 +971,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 $Variables.Summary = "Earning / day: n/a (Benchmarking: $($Variables.MinersNeedingBenchmark.Count) $(If ($Variables.MinersNeedingBenchmark.Count -eq 1) { "miner" } Else { "miners" }) left$(If (($Variables.EnabledDevices | Sort-Object -Property { $_.DeviceNames -join ', ' }).Count -gt 1) { " [$(($Variables.MinersNeedingBenchmark | Group-Object -Property { $_.DeviceNames -join ',' } | Sort-Object Name | ForEach-Object { "$($_.Name): $($_.Count)" }) -join '; ')]"}))"
             }
             ElseIf ($Variables.MiningEarning -gt 0) { 
-                $Variables.Summary = "Earning / day: {1:N} {0}" -f $Config.Currency, ($Variables.MiningEarning * $Variables.Rates."BTC".($Config.Currency))
+                $Variables.Summary = "Earning / day: {0:n} {1}" -f ($Variables.MiningEarning * $Variables.Rates."BTC".($Config.Currency)), $Config.Currency
             }
             Else { 
                 $Variables.Summary = ""
@@ -958,7 +984,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                     $Variables.Summary += "Profit / day: n/a (Measuring power usage: $($Variables.MinersNeedingPowerUsageMeasurement.Count) $(If (($Variables.MinersNeedingPowerUsageMeasurement).Count -eq 1) { "miner" } Else { "miners" }) left$(If (($Variables.EnabledDevices | Sort-Object -Property { $_.DeviceNames -join ',' }).Count -gt 1) { " [$(($Variables.MinersNeedingPowerUsageMeasurement | Group-Object -Property { $_.DeviceNames -join ',' } | Sort-Object Name | ForEach-Object { "$($_.Name): $($_.Count)" }) -join '; ')]"}))"
                 }
                 ElseIf ($Variables.MiningPowerUsage -gt 0) { 
-                    $Variables.Summary += "Profit / day: {1:N} {0}" -f $Config.Currency, (($Variables.MiningProfit - $Variables.BasePowerCostBTC) * $Variables.Rates."BTC".($Config.Currency))
+                    $Variables.Summary += "Profit / day: {0:n} {1}" -f (($Variables.MiningProfit - $Variables.BasePowerCostBTC) * $Variables.Rates."BTC".($Config.Currency)), $Config.Currency
                 }
                 Else { 
                     $Variables.Summary += "Profit / day: n/a (no power data)"
@@ -968,13 +994,13 @@ While ($Variables.NewMiningStatus -eq "Running") {
                     If ($Variables.Summary -ne "") { $Variables.Summary += "&ensp;&ensp;&ensp;" }
 
                     If ([Double]::IsNaN($Variables.MiningEarning) -or [Double]::IsNaN($Variables.MiningPowerCost)) { 
-                        $Variables.Summary += "Power Cost / day: n/a&ensp;[Miner$(If ($Variables.BestMiners_Combo.Count -gt 1) { "s" }): n/a; Base: {1:N} {0} ({2:0}W)]" -f $Config.Currency, ($Variables.BasePowerCostBTC * $Variables.Rates."BTC".($Config.Currency)), $Config.PowerUsageIdleSystemW
+                        $Variables.Summary += "Power Cost / day: n/a&ensp;[Miner$(If ($Variables.BestMiners_Combo.Count -gt 1) { "s" }): n/a; Base: {1:n} {0} ({2:n2} W)]" -f $Config.Currency, ($Variables.BasePowerCostBTC * $Variables.Rates."BTC".($Config.Currency)), $Config.PowerUsageIdleSystemW
                     }
                     ElseIf ($Variables.MiningPowerUsage -gt 0) { 
-                        $Variables.Summary += "Power Cost / day: {1:N} {0}&ensp;[Miner$(If ($Variables.BestMiners_Combo.Count -gt 1) { "s" }): {2:N} {0} ({3:0} W); Base: {4:N} {0} ({5:0} W)]" -f $Config.Currency, (($Variables.MiningPowerCost + $Variables.BasePowerCostBTC) * $Variables.Rates."BTC".($Config.Currency)), ($Variables.MiningPowerCost * $Variables.Rates."BTC".($Config.Currency)), $Variables.MiningPowerUsage, ($Variables.BasePowerCostBTC * $Variables.Rates."BTC".($Config.Currency)), $Config.PowerUsageIdleSystemW
+                        $Variables.Summary += "Power Cost / day: {1:n} {0}&ensp;[Miner$(If ($Variables.BestMiners_Combo.Count -gt 1) { "s" }): {2:n} {0} ({3:n2} W); Base: {4:n} {0} ({5:n2} W)]" -f $Config.Currency, (($Variables.MiningPowerCost + $Variables.BasePowerCostBTC) * $Variables.Rates."BTC".($Config.Currency)), ($Variables.MiningPowerCost * $Variables.Rates."BTC".($Config.Currency)), $Variables.MiningPowerUsage, ($Variables.BasePowerCostBTC * $Variables.Rates."BTC".($Config.Currency)), $Config.PowerUsageIdleSystemW
                     }
                     Else { 
-                        $Variables.Summary += "Power Cost / day: n/a&ensp;[Miner: n/a; Base: {1:N} {0} ({2:0} W)]" -f $Config.Currency, ($Variables.BasePowerCostBTC * $Variables.Rates.BTC.($Config.Currency)), $Config.PowerUsageIdleSystemW
+                        $Variables.Summary += "Power Cost / day: n/a&ensp;[Miner: n/a; Base: {1:n} {0} ({2:n2} W)]" -f $Config.Currency, ($Variables.BasePowerCostBTC * $Variables.Rates.BTC.($Config.Currency)), $Config.PowerUsageIdleSystemW
                     }
                 }
             }
@@ -982,7 +1008,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             # Add currency conversion rates
             @(@(If ($Config.UsemBTC -eq $true) { "mBTC" } Else { "BTC" }) + @($Config.ExtraCurrencies)) | Select-Object -Unique | Where-Object { $Variables.Rates.$_.($Config.Currency) } | ForEach-Object { 
-                $Variables.Summary += "1 $_ = {0:N} $($Config.Currency)&ensp;&ensp;&ensp;" -f $Variables.Rates.$_.($Config.Currency)
+                $Variables.Summary += "1 $_ = {0:n} $($Config.Currency)&ensp;&ensp;&ensp;" -f $Variables.Rates.$_.($Config.Currency)
             }
         }
         Else { 
@@ -990,7 +1016,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
         }
 
         # Stop running miners
-        ForEach ($Miner in @(@($Miners | Where-Object Info) + @($CompareMiners | Where-Object { $_.Info -and $_.SideIndicator -EQ "<=" } <# miner object is gone #>))) { 
+        ForEach ($Miner in @(@($Miners | Where-Object Info) + @($CompareMiners | Where-Object { $_.Info -and $_.SideIndicator -eq "<=" } <# miner object is gone #>))) { 
             If ($Miner.Status -eq [MinerStatus]::Failed) { 
                 If ($Miner.ProcessID) {  # Stop miner (may be set as failed in miner.refresh() because of 0 hashrate)
                     $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
@@ -1005,8 +1031,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 $Miner.Info = ""
                 $Miner.WorkersRunning = @()
             }
-            # ElseIf ($Miner.Best -ne $true -or $Miner.Restart -eq $true -or $Miner.SideIndicator -eq "<=" -or $Variables.NewMiningStatus -ne "Running") { 
-            ElseIf ($Variables.NewMiningStatus -ne "Running" -or ($Miner.KeepRunning -eq $false -and ($Miner.Best -ne $true -or $Miner.Restart -or $Miner.SideIndicator -eq "<="))) { 
+            ElseIf ($Miner.Best -ne $true -or $Miner.Restart -eq $true -or $Miner.SideIndicator -eq "<=" -or $Variables.NewMiningStatus -ne "Running") { 
                 ForEach ($Worker in $Miner.WorkersRunning) { 
                     If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object PoolRegion -EQ $Worker.Pool.Region | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Where-Object DeviceNames -EQ $Miner.DeviceNames)) { 
                         # Remove Watchdog timers
@@ -1114,14 +1139,14 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 If ($Config.Watchdog) { 
                     ForEach ($Worker in $Miner.Workers) { 
                         $Variables.WatchdogTimers += [PSCustomObject]@{ 
-                            MinerName     = $Miner.Name
-                            MinerBaseName = $Miner.BaseName
-                            MinerVersion  = $Miner.Version
-                            PoolName      = $Worker.Pool.Name
-                            PoolRegion    = $Worker.Pool.Region
                             Algorithm     = $Worker.Pool.Algorithm
                             DeviceNames   = $Miner.DeviceNames
                             Kicked        = (Get-Date).ToUniversalTime()
+                            MinerBaseName = $Miner.BaseName
+                            MinerName     = $Miner.Name
+                            MinerVersion  = $Miner.Version
+                            PoolName      = $Worker.Pool.Name
+                            PoolRegion    = $Worker.Pool.Region
                         }
                     }
                 }

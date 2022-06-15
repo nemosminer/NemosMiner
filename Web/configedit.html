@@ -448,8 +448,9 @@
 
               // Get FIAT currencies
               $.ajax({
-                url: '/fiatcurrencies',
                 async: false,
+                dataType: 'json',
+                url: '/fiatcurrencies',
                 success: function (result) {
                   fiatcurrencies = result;
                 }
@@ -457,13 +458,15 @@
 
               // Get config file names
               $.ajax({
-                url: '/configfile',
                 async: false,
+                dataType: 'text',
+                url: '/configfile',
                 success: function (result) {
                   configfile = result;
                   $.ajax({
-                    url: '/poolsconfigfile',
                     async: false,
+                    dataType: 'text',
+                    url: '/poolsconfigfile',
                     success: function (result) {
                       poolsconfigfile = result;
                       $('#configfilenames').text("Current configuration files: '" + configfile + "' & '" + poolsconfigfile + "'");
@@ -585,8 +588,9 @@
 
               // Select Mining Devices
               $.ajax({
-                url: '/devices',
                 async: false,
+                dataType: 'json',
+                url: '/devices',
                 success: function (result) {
                   devices = result;
                   $.each(devices, function (key, value) {
@@ -605,8 +609,9 @@
               // Select Pools
               // Populate pool checkbox list
               $.ajax({
-                url: '/poolvariants',
                 async: false,
+                dataType: 'json',
+                url: '/poolvariants',
                 success: function (result) {
                   poolvariants = result;
                   $.each(result, function (key, value) {
@@ -666,8 +671,9 @@
               // Select the Region closest to your Location
               // Fill region list
               $.ajax({
-                url: '/regions',
                 async: false,
+                dataType: 'json',
+                url: '/regions',
                 success: function (result) {
                   regions = result;
                   $.each(regions, function (key, value) {
@@ -693,6 +699,8 @@
               //Load default Algorithm list
               $('#DefaultAlgorithm').click(function () {
                 $.ajax({
+                  async: false,
+                  dataType: 'json',
                   url: '/defaultAlgorithm',
                   success: function (result) {
                     Algorithm.value = "+" + result.join(",+");

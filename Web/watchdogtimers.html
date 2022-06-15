@@ -58,8 +58,9 @@
             $(document).ready(function () {
               // Get watchdog expiry time
               $.ajax({
-                url: '/watchdogexpiration',
                 async: false,
+                dataType: 'text',
+                url: '/watchdogexpiration',
                 success: function(minutes) {
                   $('#watchdog').text("Shows all watchdog timers (watchdog timers expire after " + formatTime(minutes) + ").");
                 }

@@ -58,8 +58,8 @@
                   <th data-field="LastSeen" data-sortable="true" data-formatter="formatTimeSince">Last seen</th>
                   <th data-field="Version" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Version</th>
                   <th data-field="Currency" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Currency</th>
-                  <th data-field="EstimatedEarning" data-sortable="true">Estimated earning/day</th>
-                  <th data-field="EstimatedProfit" data-sortable="true">Estimated profit/day</th>
+                  <th data-field="EstimatedEarning" data-sortable="true">Estimated Earning/day</th>
+                  <th data-field="EstimatedProfit" data-sortable="true">Estimated Profit/day</th>
                   <th data-field="Miner" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Miner(s)</th>
                   <th data-field="Pool" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Pool(s)</th>
                   <th data-field="Algorithm" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Algorithm(s)</th>
@@ -103,8 +103,13 @@
             });
 
             $(document).ready(function () {
+
               // Get config file name
-              $.ajax({url: '/configfile',
+              $.ajax({
+                async: false,
+                dataType: 'text',
+                timeout: 10,
+                url: '/configfile',
                 success: function(result) {
                   $('#configfilename').text("Current configuration file: '" + result + "'");
                 }

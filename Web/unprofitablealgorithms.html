@@ -13,8 +13,10 @@
           <script type="text/javascript">
             $(document).ready(function () {
               $(function() {
-                $.ajax({url: '/functions/file/showcontent?FileName=.\\Data\\UnprofitableAlgorithms.json', 
+                $.ajax({
+                  async: false,
                   dataType: 'text',
+                  url: '/functions/file/showcontent?FileName=.\\Data\\UnprofitableAlgorithms.json', 
                   success: function(result) {
                     $("#unprofitablealgorithms").text(result);
                   }

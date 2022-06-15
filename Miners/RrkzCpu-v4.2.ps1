@@ -7,7 +7,7 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$()$Name)\cpuminer.exe"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "CpuPower"; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo cpupower" } # SRBMinerMulti-v0.9.6 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "CpuPower"; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo cpupower" } # SRBMinerMulti-v0.9.7 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "Power2b";  MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo power2b" }
 )
 
@@ -28,7 +28,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
             Type        = $AvailableMiner_Devices.Type
             Path        = $Path
             Arguments   = ("$($_.Arguments) --url $(If ($Pools.($_.Algorithm).SSL) { "stratum+ssl" } Else { "stratum+tcp" })://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --cpu-affinity AAAA --quiet --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
-            Algorithm   = $_.Algorithm
+            Algorithms  = $_.Algorithm
             API         = "Ccminer"
             Port        = $MinerAPIPort
             URI         = $Uri

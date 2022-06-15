@@ -190,6 +190,9 @@ legend {
 .miner-warmingup {
   background-color: rgb(245, 255, 245);
 }
+.miner-stopping {
+  background-color: rgb(245, 255, 245);
+}
 .miner-measuring {
   background-color: rgb(248, 239, 223);
 }

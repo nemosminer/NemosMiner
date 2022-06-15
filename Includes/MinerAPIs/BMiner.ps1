@@ -17,35 +17,20 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           NanoMiner.ps1
+File:           BMiner.ps1
 Version:        4.0.1.0
 Version date:   15 June 2022
 #>
 
-class NanoMiner : Miner { 
-    CreateConfigFiles() { 
-        $Parameters = $this.Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue
-
-        Try { 
-            $ConfigFile = "$(Split-Path $this.Path)\$($Parameters.ConfigFile.FileName)"
-            #Write config files. Do not overwrite existing files to preserve optional manual customization
-            If (-not (Test-Path $ConfigFile -PathType Leaf)) { 
-                $Parameters.ConfigFile.Content | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-            }
-        }
-        Catch { 
-            Write-Message -Level Error "Creating miner config files for '$($this.Info)' failed [Error: '$($Error | Select-Object -First 1)']."
-            Return
-        }
-    }
-
+class BMiner : Miner { 
     [Object]GetMinerData () { 
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
         $PowerUsage = [Double]0
         $Sample = [PSCustomObject]@{ }
 
-        $Request = "http://localhost:$($this.Port)/stats"
+        $Request = "http://localhost:$($this.Port)/api/v1/status/solver"
+        $Request2 = "http://localhost:$($this.Port)/api/v1/status/stratum"
 
         Try { 
             $Data = Invoke-RestMethod -Uri $Request -TimeoutSec $Timeout
@@ -54,20 +39,35 @@ class NanoMiner : Miner {
             Return $null
         }
 
+        If (-not (($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object { $Data.devices.$_.solvers })) { Return $null }
+
+        #Read stratum info from API
+        Try { 
+            $Data | Add-Member stratums (Invoke-RestMethod -Uri $Request2 -TimeoutSec $Timeout).stratums
+        }
+        Catch { 
+            Return $null
+        }
+
         $HashRate = [PSCustomObject]@{ }
-        $HashRate_Name = $this.Algorithms[0]
+        $HashRate_Name = ""
         $HashRate_Value = [Double]0
 
         $Shares = [PSCustomObject]@{ }
         $Shares_Accepted = [Int64]0
         $Shares_Rejected = [Int64]0
 
-        $Data.Algorithms | ForEach-Object { ($_ | Get-Member -MemberType NoteProperty).Name } | Select-Object -Unique | ForEach-Object { 
-            $HashRate_Value = [Double]($Data.Algorithms.$_.Total.Hashrate | Measure-Object -Sum).Sum
+        [Int]$Index = 0
+
+        $this.Algorithms | ForEach-Object { 
+            $Index = $this.Algorithms.IndexOf($_)
+            $HashRate_Name = $_
+            $HashRate_Value = [Double]((($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object { $Data.devices.$_.solvers[$Index] }).speed_info.hash_rate | Measure-Object -Sum).Sum
+            If (-not $HashRate_Value) { $HashRate_Value = [Double]((($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object { $Data.devices.$_.solvers[$Index] }).speed_info.solution_rate | Measure-Object -Sum).Sum}
             $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
-            $Shares_Accepted = [Int64]($Data.Algorithms.$_.Total.Accepted | Measure-Object -Sum).Sum
-            $Shares_Rejected = [Int64]($Data.Algorithms.$_.Total.Denied | Measure-Object -Sum).Sum
+            $Shares_Accepted = [Int64]$Data.stratums.(($Data.stratums | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | Where-Object { (Get-Algorithm $_) -eq $HashRate_Name }).accepted_shares
+            $Shares_Rejected = [Int64]$Data.stratums.(($Data.stratums | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | Where-Object { (Get-Algorithm $_) -eq $HashRate_Name }).rejected_shares
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
         }
 
@@ -76,14 +76,14 @@ class NanoMiner : Miner {
         }
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 
-            Return [PSCustomObject]@{ 
+            $Sample = [PSCustomObject]@{ 
                 Date       = (Get-Date).ToUniversalTime()
                 HashRate   = $HashRate
                 PowerUsage = $PowerUsage
                 Shares     = $Shares
             }
+            Return $Sample
         }
         Return $null
     }
 }
-

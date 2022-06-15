@@ -7,12 +7,12 @@
           <br>
 <!-- Start of page scripts 'logviewer.html' -->
           <script type="text/javascript">
-            // Substitute the URL for your server log file here...
-            var request = "/functions/log/get?lines=100";
 
             function tailf() {
-              $.ajax({url: request, 
+              $.ajax({
+                async: false,
                 dataType: 'text',
+                url: '/functions/log/get?lines=100', 
                 success: function(result) {
                   document.getElementById("logtext").innerHTML = result;
                 }

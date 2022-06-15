@@ -12,14 +12,14 @@ $Path = ".\Bin\$($Name)\CryptoDredge.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Allium";    Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(45, 0); Arguments = " --algo allium --intensity 8" } # CryptoDredge v0.26.0 is fastest
-    [PSCustomObject]@{ Algorithm = "Exosis";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo exosis --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Dedal";     Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo dedal --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "HMQ1725";   Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(60, 0); Arguments = " --algo hmq1725 --intensity 8" } # CryptoDredge v0.26.0 is fastest
-    [PSCustomObject]@{ Algorithm = "Neoscrypt"; Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(30, 0); Arguments = " --algo neoscrypt --intensity 6" } # CryptoDredge v0.26.0 is fastest
-    [PSCustomObject]@{ Algorithm = "Phi";       Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo phi --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Phi2";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo phi2 --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Pipe";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo pipe --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Allium";    Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @("Other"); Arguments = " --algo allium --intensity 8" } # CryptoDredge v0.26.0 is fastest
+    [PSCustomObject]@{ Algorithm = "Exosis";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo exosis --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Dedal";     Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo dedal --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "HMQ1725";   Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(60, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo hmq1725 --intensity 8" } # CryptoDredge v0.26.0 is fastest
+    [PSCustomObject]@{ Algorithm = "Neoscrypt"; Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo neoscrypt --intensity 6" } # CryptoDredge v0.26.0 is fastest
+    [PSCustomObject]@{ Algorithm = "Phi";       Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo phi --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Phi2";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo phi2 --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Pipe";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo pipe --intensity 8" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -32,7 +32,9 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Algorithms | ForEach-Object { 
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $_.MinMemGB) { 
+            $ExcludeGPUArchitecture = $_.ExcludeGPUArchitecture
+
+            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $_.MinMemGB | Where-Object { $_.Architecture -notin $ExcludeGPUArchitecture }) { 
 
                 $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
@@ -45,7 +47,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     Type        = $AvailableMiner_Devices.Type
                     Path        = $Path
                     Arguments   = ("$($_.Arguments) --url stratum+$(If ($Pools.($_.Algorithm).SSL) { "ssl" } Else { "tcp" } )://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --no-watchdog --no-crashreport --timeout 180 --cpu-priority $($Config.GPUMinerProcessPriority + 2) --retries 1 --retry-pause 1 --api-type ccminer-tcp --api-bind=127.0.0.1:$($MinerAPIPort) --device $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
-                    Algorithm   = $_.Algorithm
+                    Algorithms  = $_.Algorithm
                     API         = "Ccminer"
                     Port        = $MinerAPIPort
                     URI         = $Uri

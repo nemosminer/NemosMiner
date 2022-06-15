@@ -166,6 +166,8 @@
               $(function() {
                 function updateearningsdata() {
                   $.ajax({
+                    async: false,
+                    dataType: 'json',
                     url: '/earningschartdata',
                     success: function (earningsdata) {
                       var datasets = [];

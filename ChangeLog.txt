@@ -3,14 +3,48 @@ Breaking changes (from 3.8.x.x code base):
 - Miner files are not backwards compatible
 - Pool files are not backwards compatible
 - PowerShell 7.x is required, older PowerShell versions are no longer supported
-- Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible
+- Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible, new files will be created instead
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
+
+ChangeLog NemosMiner 4.0.1.0 15.06.2022
+=======================================
+
+Changes:
+- Core: Default region 'Europe West' changed to 'Europe'
+
+Enhancements:
+- API: Remove array or json data type when not required
+- Miners: Changed property Algorithm to Algorithms
+- Core / Update-Config: remove old miner files which are replaced by newer versions
+- Core: Added FIRO DAG size data from firo.org
+- Core: Optimize 'device' class (sorted properties)
+- Core: Optimize 'miner' class (sorted properties, removed property 'LastSample')
+- Core: Optimize 'pool' class (sorted properties)
+- Core: Optimize 'worker' class (sorted properties)
+- Core: Write algorithm last used data to 'Data\AlgorithmsLastUsed.json'
+- Legacy GUI / Rig Monitor: Add 'Currency' & 'Profit' column
+- Web GUI / Devices: Use colors for enabled devices status
+
+Fixes:
+- Core: Algorithm in gig monitor data missing (Regression from 4.0.0.36)
+- Core: Do not apply unprofitable algorithms when 'MinerSet' is set to 2 ("all miners (incl. those in UnprofitableAlgorithms.json)")
+- Core / Get-Device: Removed ' 0GB' from CPU model name (Regression from 4.0.0.25)
+- Miners: EthashLowMem 'l=[nnn]' GB parameter is now using GB instead of GiB (ProHashing has fixed API error)
+- Miners: SPMinerVertHash-v5 not creating any miner objects
+- Web GUI / Config editor: Editing config broken when config file contained invalid region
+
+Miner updates:
+- MiniZ-v1.8z3
+- NanoMiner-v3.6.4
+- SRBMinerMulti-v0.9.7
+- TeamRedMiner-v0.10.1
+
 
 ChangeLog NemosMiner 4.0.0.39 06.06.2022
 ========================================
 
-Core:
-- Region 'Europe West' changed to 'Europe', Auto-Update will update configuration from 'Europe West' to 'Europe' if necessary
+Changes:
+- Core: Region 'Europe West' changed to 'Europe', Auto-Update will update configuration from 'Europe West' to 'Europe' if necessary
 
 Enhancements:
 - Include.psm1 / Get-Rate: Print message if no rates can be retrieved for some configured currencies
@@ -465,7 +499,7 @@ Miner changes:
 - Trex-v0.25.8
 
 Pools:
-- Nicehash: Add SLL port for supported algorithms ("BeamV3", "CryptonightR", "Equihash", "EquihashBTG", "Ethash", "RandomX")
+- Nicehash: Add SSL port for supported algorithms ("BeamV3", "CryptonightR", "Equihash", "EquihashBTG", "Ethash", "RandomX")
 
 
 Changelog NemosMiner 4.0.0.18 (RC18) 04.02.2022
