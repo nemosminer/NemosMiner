@@ -131,6 +131,7 @@ Class Worker {
     [Double]$Hashrate
     [Pool]$Pool
     [TimeSpan]$TotalMiningDuration
+    [DateTime]$Updated
 }
 
 Enum MinerStatus { 
@@ -188,6 +189,7 @@ Class Miner {
     [String]$StatusMessage
     [TimeSpan]$TotalMiningDuration # derived from pool and stats
     [String]$Type
+    [DateTime]$Updated
     [String]$URI
     [Worker[]]$Workers = @()
     [Worker[]]$WorkersRunning = @()
@@ -280,7 +282,7 @@ Class Miner {
 
             # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
-                Account           = ($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
+                Accounts          = ($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
                 Action            = "Launched"
                 Algorithms        = $this.Workers.Pool.Algorithm -join "; "
                 Benchmark         = $this.Benchmark
@@ -381,7 +383,7 @@ Class Miner {
 
         # Log switching information to .\Logs\SwitchingLog
         [PSCustomObject]@{ 
-            Account           = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
+            Accounts          = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
             Action            = If ($this.Status -eq [MinerStatus]::Idle) { "Stopped" } Else { "Failed" }
             Algorithms        = $this.WorkersRunning.Pool.Algorithm -join "; "
             Benchmark         = $this.Benchmark
@@ -518,11 +520,12 @@ Class Miner {
             If ($Stat = Get-Stat "$($this.Name)_$($_.Pool.Algorithm)_Hashrate") { 
                 $_.Hashrate = $Stat.Hour
                 $Factor = [Double]($_.Hashrate * (1 - $_.Fee) * (1 - $_.Pool.Fee))
+                $_.Disabled = $Stat.Disabled
                 $_.Earning = [Double]($_.Pool.Price * $Factor)
                 $_.Earning_Bias = [Double]($_.Pool.Price_Bias * $Factor)
                 $_.Earning_Accuracy = [Double]$_.Pool.Accuracy
                 $_.TotalMiningDuration = $Stat.Duration
-                $_.Disabled = $Stat.Disabled
+                $_.Updated = $Stat.Updated
                 $this.Earning += $_.Earning
                 $this.Earning_Bias += $_.Earning_Bias
             }
@@ -556,6 +559,7 @@ Class Miner {
         If ($this.Earning -eq 0) { $this.Earning_Accuracy = 0 }
 
         $this.TotalMiningDuration = ($this.Workers.TotalMiningDuration | Measure-Object -Minimum).Minimum
+        $this.Updated = ($this.Workers.Updated | Measure-Object -Minimum).Minimum
 
         If ($CalculatePowerCost) { 
             If ($Stat = Get-Stat "$($this.Name)$(If ($this.Workers.Count -eq 1) { "_$($this.Workers.Pool.Algorithm | Select-Object -First 1)" })_PowerUsage") { 
@@ -2810,7 +2814,8 @@ Function Initialize-Autoupdate {
     Start-LogReader
 
     # Remove obsolete miner stat files; must be done after new miner files have been unpacked
-    If ($ObsoleteMinerStats = Get-ObsoleteMinerStats) { 
+    $ObsoleteMinerStats = Get-ObsoleteMinerStats
+    If ($ObsoleteMinerStats) { 
         "Removing obsolete stat files from miners that no longer exist..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
         $ObsoleteMinerStats | ForEach-Object { 
             Remove-Item -Path ".\Stats\$($_).txt" -Force -ErrorAction Ignore
