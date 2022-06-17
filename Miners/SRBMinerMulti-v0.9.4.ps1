@@ -15,7 +15,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Argon2dDyn";        Fee = 0.0085; MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 45); Arguments = " --algorithm argon2d_dynamic" }
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";      Fee = 0.0085; MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 45); Arguments = " --algorithm argon2id_chukwa" }
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa2";     Fee = 0.0085; MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 45); Arguments = " --algorithm argon2id_chukwa2" }
-    [PSCustomObject]@{ Algorithm = "Autolykos2";        Fee = 0.02;   MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 15); Arguments = " --algorithm autolykos2" }
+    [PSCustomObject]@{ Algorithm = "Autolykos2";        Fee = 0.02;   MinMemGB = $Pools."Autolykos2".DAGSizeGB;   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 15); Arguments = " --algorithm autolykos2" }
     [PSCustomObject]@{ Algorithm = "Blake2b";           Fee = 0;      MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm blake2b" }
     [PSCustomObject]@{ Algorithm = "Blake2s";           Fee = 0;      MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm blake2s" }
     [PSCustomObject]@{ Algorithm = "Blake3";            Fee = 0.01;   MinMemGB = 2;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm blake3_alephium" }

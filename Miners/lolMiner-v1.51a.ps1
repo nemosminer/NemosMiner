@@ -8,7 +8,7 @@ $Path = ".\Bin\$($Name)\lolminer.exe"
 $DeviceEnumerator = "Bus"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = @("Autolykos2");                Type = "AMD"; Fee = @(0.015);      MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --algo AUTOLYKOS2" }
+    [PSCustomObject]@{ Algorithm = @("Autolykos2");                Type = "AMD"; Fee = @(0.015);      MinMemGB = $Pools."Autolykos2".DAGSizeGB;   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --algo AUTOLYKOS2" }
     [PSCustomObject]@{ Algorithm = @("Blake3");                    Type = "AMD"; Fee = @(0.015);      MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --algo ALEPHIUM" }
     [PSCustomObject]@{ Algorithm = @("BeamV3");                    Type = "AMD"; Fee = @(0.01);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 30); Arguments = " --algo BEAM-III" }
     [PSCustomObject]@{ Algorithm = @("Cuckoo29");                  Type = "AMD"; Fee = @(0.02);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --algo C29AE" }
@@ -37,7 +37,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("UbqHash", "Blake3");         Type = "AMD"; Fee = @(0.01, 0.01); MinMemGB = $Pools."UbqHash".DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 2; WarmupTimes = @(60, 45); Arguments = " --algo UBQHASH --dualmode ALEPHDUAL" }
     # [PSCustomObject]@{ Algorithm = @("UbqHash", "SHA256ton");      Type = "AMD"; Fee = @(0.01, 0.01); MinMemGB = $Pools."UbqHash".DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 2; WarmupTimes = @(60, 45); Arguments = " --algo UBQHASH --dualmode TONDUAL" } # No hashrates
 
-    [PSCustomObject]@{ Algorithm = @("Autolykos2");                Type = "NVIDIA"; Fee = @(0.015);      MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " --algo AUTOLYKOS2" }
+    [PSCustomObject]@{ Algorithm = @("Autolykos2");                Type = "NVIDIA"; Fee = @(0.015);      MinMemGB = $Pools."Autolykos2".DAGSizeGB;   MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " --algo AUTOLYKOS2" }
     [PSCustomObject]@{ Algorithm = @("Blake3");                    Type = "NVIDIA"; Fee = @(0.015);      MinMemGB = 3.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " --algo ALEPHIUM" }
     [PSCustomObject]@{ Algorithm = @("BeamV3");                    Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " --algo BEAM-III" } # NBMiner-v42.2 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckoo29");                  Type = "NVIDIA"; Fee = @(0.02);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --algo C29AE" }
