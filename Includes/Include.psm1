@@ -3006,53 +3006,91 @@ Function Test-Prime {
     Return $true
 }
 
-Function Get-DAGsize { 
+Function Get-DAGdata { 
 
     Param(
         [Parameter(Mandatory = $false)]
         [Double]$Blockheight = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400,
         [Parameter(Mandatory = $false)]
-        [String]$Currency
+        [String]$Currency = "ETH"
     )
+        Function Get-DAGsize { 
 
-    $DATASET_BYTES_INIT = [Math]::Pow(2, 30)
-    $DATASET_BYTES_GROWTH = [Math]::Pow(2, 23)
-    $MIX_BYTES = 128
+        Param(
+            [Parameter(Mandatory = $true)]
+            [Double]$Epoch,
+            [Parameter(Mandatory = $true)]
+            [String]$Currency
+        )
 
-    $Size = $DATASET_BYTES_INIT + $DATASET_BYTES_GROWTH * (Get-Epoch -BlockHeight $Blockheight -Currency $Currency)
-    $Size -= $MIX_BYTES
-    While (-not (Test-Prime ($Size / $MIX_BYTES))) { $Size -= 2 * $MIX_BYTES }
+        Switch ($Currency) { 
+            "ERG" { 
+                $Dataset_Bytes_Init = [Math]::Pow(2, 31) # 2GB
+                $Dataset_Bytes_Growth = [Math]::Pow(2, 21) # 1MB
+                $Mix_Bytes = 128
+            }
+            Default { 
+                $Dataset_Bytes_Init = [Math]::Pow(2, 30) # 1GB
+                $Dataset_Bytes_Growth = [Math]::Pow(2, 23) # 8MB
+                $Mix_Bytes = 128
+            }
+        }
 
-    Return [Int64]$Size
-}
+        Switch ($Currency) { 
+            "ERG" { $Epoch -= 193} # First increment @ epoch 193 
+            Default { }
+        }
 
-Function Get-EpochLength { 
+        $Size = $Dataset_Bytes_Init + $Dataset_Bytes_Growth * $Epoch
+        $Size -= $Mix_Bytes
+        While (-not (Test-Prime ($Size / $Mix_Bytes))) { $Size -= 2 * $Mix_Bytes }
 
-    Param(
-        [Parameter(Mandatory = $false)]
-        [Double]$Blockheight,
-        [Parameter(Mandatory = $false)]
-        [String]$Currency
-    )
-
-    Switch ($Currency) { 
-        "ETC"   { If ($Blockheight -ge 11700000 ) { Return 60000 } Else { Return 30000 } }
-        "FIRO"  { Return 1300 }
-        "RVN"   { Return 7500 }
-        Default { return 30000 }
+        Return [Int64]$Size
     }
-}
 
-Function Get-Epoch { 
+    Function Get-Epoch { 
 
-    Param(
-        [Parameter(Mandatory = $false)]
-        [Double]$Blockheight,
-        [Parameter(Mandatory = $false)]
-        [String]$Currency
-    )
+        Param(
+            [Parameter(Mandatory = $true)]
+            [Double]$Blockheight,
+            [Parameter(Mandatory = $true)]
+            [String]$Currency
+        )
 
-    Return [Int][Math]::Floor($Blockheight / (Get-EpochLength -Blockheight $Blockheight -Currency $Currency))
+        Switch ($Currency) { 
+            "ERG"   { $Blockheight -= 416768 } # Epoch 0 starts @ 417792
+            Default { }
+        }
+
+        Return [Int][Math]::Floor($Blockheight / (Get-EpochLength -Blockheight $Blockheight -Currency $Currency))
+    }
+
+    Function Get-EpochLength { 
+
+        Param(
+            [Parameter(Mandatory = $true)]
+            [Double]$Blockheight,
+            [Parameter(Mandatory = $true)]
+            [String]$Currency
+        )
+
+        Switch ($Currency) { 
+            "ERG"   { Return 1024 }
+            "ETC"   { If ($Blockheight -ge 11700000 ) { Return 60000 } Else { Return 30000 } }
+            "FIRO"  { Return 1300 }
+            "RVN"   { Return 7500 }
+            Default { return 30000 }
+        }
+    }
+
+    $Epoch = Get-Epoch -BlockHeight $BlockHeight -Currency $Currency
+
+    [PSCustomObject]@{ 
+        BlockHeight = [Int]$BlockHeight
+        CoinName    = Get-CoinName $Currency
+        DAGsize     = Get-DAGSize -Epoch $Epoch -Currency $Currency
+        Epoch       = $Epoch
+    }
 }
 
 Function Out-DataTable { 
