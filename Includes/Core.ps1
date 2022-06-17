@@ -96,10 +96,10 @@ While ($Variables.NewMiningStatus -eq "Running") {
             If ($Config.AutoUpdateCheckInterval -and $Variables.CheckedForUpdate -lt (Get-Date).ToUniversalTime().AddDays(-$Config.AutoUpdateCheckInterval)) { Get-NMVersion }
 
             # Do do once every 24hrs or if unable to get data from all sources
-            If ($Variables.DAGdata.Updated.Minerstat -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
+            $Url = "https://minerstat.com/dag-size-calculator"
+            If ($Variables.DAGdata.Updated.$Url -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
                 # Get block data from Minerstat
                 Try { 
-                    $Url = "https://minerstat.com/dag-size-calculator"
                     $Response = Invoke-WebRequest -Uri $Url -TimeoutSec 5 # PWSH 6+ no longer supports basic parsing -> parse text
                     If ($Response.statuscode -eq 200) {
                         $Response.Content -split '\n' -replace '"', "'" | Where-Object { $_ -like "<div class='block' title='Current block height of *" } | ForEach-Object { 
@@ -109,12 +109,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
                             If ($BlockHeight -and $Currency) { 
                                 $Variables.DAGdata.Currency.Remove($Currency)
-                                $Variables.DAGdata.Currency.Add($Currency, [PSCustomObject]@{ 
-                                    BlockHeight = [Int]$BlockHeight
-                                    CoinName    = Get-CoinName $Currency
-                                    DAGsize     = Get-DAGSize -Block $BlockHeight -Currency $Currency
-                                    Epoch       = Get-Epoch -BlockHeight $BlockHeight -Currency $Currency
-                                })
+                                $Variables.DAGdata.Currency.Add($Currency, (Get-DAGdata -BlockHeight $BlockHeight -Currency $Currency))
                             }
                         }
                         $Variables.DAGdata.Updated.$Url = (Get-Date).ToUniversalTime()
@@ -129,22 +124,17 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 }
             }
 
-            If ($Variables.DAGdata.Updated.ProHashing -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
+            $Url = "https://prohashing.com/api/v1/currencies"
+            If ($Variables.DAGdata.Updated.$Url -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
                 Try { 
                     # Get block data from ProHashing
-                    $Url = "https://prohashing.com/api/v1/currencies"
                     $Response = Invoke-RestMethod -Uri $Url
 
                     If ($Response.code -eq 200) { 
                         $Response.data.PSObject.Properties.Name | Where-Object { $Response.data.$_.enabled -and $Response.data.$_.height -and ((Get-Algorithm $Response.data.$_.algo) -in @("Autolykos2", "EtcHash", "Ethash", "EthashLowMem", "KawPow", "Octopus", "UbqHash") -or $_ -in @($Variables.DAGdata.Currency.Keys))} | ForEach-Object { 
                             If ($Response.data.$_.height -gt $Variables.DAGdata.Currency.$_.BlockHeight) { 
                                 $Variables.DAGdata.Currency.Remove($_)
-                                $Variables.DAGdata.Currency.Add($_, [PSCustomObject]@{ 
-                                    BlockHeight = $Response.data.$_.height
-                                    CoinName    = Get-CoinName $_
-                                    DAGsize     = Get-DAGSize -Block $Response.data.$_.height -Currency $_
-                                    Epoch       = Get-Epoch -BlockHeight $Response.data.$_.height -Currency $_
-                                })
+                                $Variables.DAGdata.Currency.Add($_, (Get-DAGdata -BlockHeight $Response.data.$_.height -Currency $_))
                                 $Variables.DAGdata.Updated.$Url = (Get-Date).ToUniversalTime()
                             }
                         }
@@ -160,20 +150,15 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 }
             }
 
-            If ($Variables.DAGdata.Updated.FiroOrg -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
+            $Url = "https://explorer.firo.org/api/status"
+            If ($Variables.DAGdata.Updated.$Url -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
                 Try { 
                     # Get block data from firo.org
-                    $Url = "https://explorer.firo.org/api/status"
                     $Response = Invoke-RestMethod -Uri $Url
 
                     If ($Response.info.blocks -gt $Variables.DAGdata.Currency.FIRO.BlockHeight) { 
                         $Variables.DAGdata.Currency.Remove("FIRO")
-                        $Variables.DAGdata.Currency.Add("FIRO", [PSCustomObject]@{ 
-                            BlockHeight = $Response.info.blocks
-                            CoinName    = Get-CoinName "FIRO"
-                            DAGsize     = Get-DAGSize -Block $Response.info.blocks -Currency "FIRO"
-                            Epoch       = Get-Epoch -BlockHeight $Response.info.blocks -Currency "FIRO"
-                        })
+                        $Variables.DAGdata.Currency.Add("FIRO", (Get-DAGdata -BlockHeight $Response.info.blocks -Currency "FIRO"))
                         $Variables.DAGdata.Updated.$Url = (Get-Date).ToUniversalTime()
                         Write-Message -Level Info "Loaded DAG data from '$Url'."
                     }
@@ -207,14 +192,9 @@ While ($Variables.NewMiningStatus -eq "Running") {
             If (-not $Variables.DAGdata.Currency."*") { 
                 $BlockHeight = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400
                 Write-Message -Level Warn "Cannot load ethash DAG size information from 'https://minerstat.com', using calculated block height $BlockHeight based on 6400 blocks per day since 30 July 2015."
-                $Variables.DAGdata.Currency.Add("*", [PSCustomObject]@{ 
-                    BlockHeight = [Int]$BlockHeight
-                    CoinName    = "Ethereum"
-                    DAGsize     = Get-DAGSize $BlockHeight
-                    Epoch       = [Int][Math]::Floor($BlockHeight / 30000)
-                })
+                $Variables.DAGdata.Currency.Add("*", (Get-DAGdata -BlockHeight $BlockHeight -Currency "ETH"))
             }
-            Remove-Variable BlockHeight, Currency, Response -ErrorAction Ignore
+            Remove-Variable BlockHeight, Currency, Response, Url -ErrorAction Ignore
 
             # Use non-donate pool config
             $Variables.NiceHashWalletIsInternal = $Config.NiceHashWalletIsInternal
@@ -303,7 +283,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             # Load currency exchange rates from min-api.cryptocompare.com
             Get-Rate
-            $Variables.Digits = ([math]::truncate(12 - [math]::log($Variables.Rates.BTC.($Config.Currency), 10)))
+            $Variables.Digits = 12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MinDigits 10)
 
             # Power cost preparations
             $Variables.CalculatePowerCost = $Config.CalculatePowerCost # $Variables.CalculatePowerCost is an operational variable and not identical to $Config.CalculatePowerCost
@@ -555,7 +535,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 }
 
                 # Keep pool balances alive; force mining at pool even if it is not the best for the algo
-                If ($Config.BalancesKeepAlive -and $Variables.BalancesTrackerRunspace -and $Variables.PoolsLastEarnings.Count -gt 0) { 
+                If ($Config.BalancesKeepAlive -and $Variables.BalancesTrackerRunspace -and $Variables.PoolsLastEarnings.Count -gt 0 -and $Variables.PoolsLastUsed) { 
                     $PoolNamesToKeepBalancesAlive = @()
                     ForEach ($Pool in @($Pools | Where-Object Name -notin $Config.BalancesTrackerIgnorePool | Sort-Object Name -Unique)) { 
 
