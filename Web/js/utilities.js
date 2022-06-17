@@ -1,11 +1,3 @@
-// fix bootstrap-table icons
-window.icons = {
-  refresh: 'fa-sync',
-  toggle: 'fa-id-card',
-  columns: 'fa-columns',
-  clear: 'fa-trash'
-};
-
 function formatMiners(data) {
   // This function can alter the returned data before building the table, formatting it in a way
   // that is easier to display and manipulate in a table
@@ -145,21 +137,35 @@ function formatHashrateValue(value) {
 function formatHashrate(value) {
   const values = value.split('<br/>')
   return values.map(formatHashrate).toString();
-}
+};
+
+function digitsFromValue(value) {
+  // The higher the value the more digits are returned
+
+  // Output will have as many digits as the integer value is to the power of 10
+  // e.g. Rate is between 100 and 999, then Digits is 3
+  // The bigger the number, the more decimal digits
+  // Use $Offset to add/remove decimal places
+
+  digits = parseInt(value).toString().length
+  if (digits < 0) digits = 0;
+  if (digits > 10) digits = 10;
+  return digits;
+};
 
 function formatmBTC(value) {
   if (value == null) return ''
-  if (value > 0) return parseFloat(value * rate / 1000).toFixed(parseInt(rate).toString().length + 2);
+  if (value > 0) return parseFloat(value * rate / 1000).toFixed(digitsFromValue(rate) + 2);
   if (value == 0) return (0).toFixed(8);
-  if (value < 0) return parseFloat(value * rate / 1000).toFixed(parseInt(rate).toString().length + 2);
+  if (value < 0) return parseFloat(value * rate / 1000).toFixed(digitsFromValue(rate) + 2);
   return 'N/A';
 };
 
 function formatBTC(value) {
   if (value == null) return ''
-  if (value > 0) return parseFloat(value * rate).toFixed(parseInt(rate).toString().length + 2);
+  if (value > 0) return parseFloat(value * rate).toFixed(digitsFromValue(rate) + 2);
   if (value == 0) return (0).toFixed(8);
-  if (value < 0) return parseFloat(value * rate).toFixed(parseInt(rate).toString().length + 2);
+  if (value < 0) return parseFloat(value * rate).toFixed(digitsFromValue(rate) + 2);
   return 'N/A';
 };
 
@@ -304,8 +310,6 @@ function formatGBDigits10(value) {
   if (value > 0) return (value).toFixed(10) + " GB";
   return '';
 };
-
-
 
 function detailFormatter(index, row) {
   var html = [];
