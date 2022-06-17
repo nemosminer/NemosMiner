@@ -2295,47 +2295,23 @@ Filter ConvertTo-Hash {
 
 Function Get-DigitsFromValue { 
 
-    # To get same numbering scheme regardless of value base currency value (size) to determine formatting
-
-    # Length is calculated as follows:
-    # Output will have as many digits as the integer value is to the power of 10
-    # e.g. Rate is between 100 -and 999, then Digits is 3
     # The bigger the number, the more decimal digits
-    # Use $Offset to add/remove decimal places
 
-    Param(
-        [Parameter(Mandatory = $true)]
-        [Double]$Value, 
-        [Parameter(Mandatory = $false)]
-        [Int]$Offset = 0
-    )
-
-    $Digits = [math]::Floor($Value).ToString().Length + $Offset
-    If ($Digits -lt 0) { $Digits = 0 }
-    If ($Digits -gt 10) { $Digits = 10 }
-
-    $Digits
-}
-
-Function ConvertTo-LocalCurrency { 
-
-    # To get same numbering scheme regardless of value
-    # Use $Offset to add/remove decimal places
+    # Output will have as many digits as the integer value is to the power of 10
+    # e.g. Rate is between 100 and 999, then Digits is 3
 
     Param(
         [Parameter(Mandatory = $true)]
         [Double]$Value, 
         [Parameter(Mandatory = $true)]
-        [Double]$Rate, 
-        [Parameter(Mandatory = $false)]
-        [Int]$Offset
+        [Int]$MinDigits
     )
 
-    $Digits = ([math]::truncate(10 - $Offset - [math]::log($Rate, 10)))
+    $Digits = [math]::Floor($Value).ToString().Length
     If ($Digits -lt 0) { $Digits = 0 }
-    If ($Digits -gt 10) { $Digits = 10 }
+    If ($Digits -gt $MinDigits) { $Digits = $MinDigits }
 
-    ($Value * $Rate).ToString("N$($Digits)")
+   $Digits
 }
 
 Function Get-Combination { 
