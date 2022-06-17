@@ -171,35 +171,35 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$ReportToServer = $false, # If true will report worker status to central monitoring server
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowAccuracy = $true, # Show pool data accuracy column in miner overview
+    [Switch]$ShowAccuracy = $true, # Show pool data accuracy column in main text window miner overview
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowAllMiners = $false, # Always show all miners in miner overview (if $false, only the best miners will be shown except when in benchmark / powerusage measurement)
+    [Switch]$ShowAllMiners = $false, # Always show all miners in main text window miner overview (if $false, only the best miners will be shown except when in benchmark / powerusage measurement)
     [Parameter(Mandatory = $false)]
     [Switch]$ShowChangeLog = $true, # If enabled NemosMiner will show the changlog when an update is available
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowCoinName = $true, # Show CoinName column in miner overview
+    [Switch]$ShowCoinName = $true, # Show CoinName column in main text window miner overview
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowCurrency = $true, # Show Currency column in miner overview
+    [Switch]$ShowCurrency = $true, # Show Currency column in main text window miner overview
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowEarning = $true, # Show miner earning column in miner overview
+    [Switch]$ShowEarning = $true, # Show miner earning column in main text window miner overview
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowEarningBias = $true, # Show miner earning bias column in miner overview
+    [Switch]$ShowEarningBias = $true, # Show miner earning bias column in main text window miner overview
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowMinerFee = $true, # Show miner fee column in miner overview (if fees are available, t.b.d. in miner files, Property '[Double]Fee')
+    [Switch]$ShowMinerFee = $true, # Show miner fee column in main text window miner overview (if fees are available, t.b.d. in miner files, Property '[Double]Fee')
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowPoolBalances = $false, # Display pool balances & earnings information in text window, requires BalancesTrackerPollInterval > 0
+    [Switch]$ShowPoolBalances = $false, # Display pool balances & earnings information in main text window, requires BalancesTrackerPollInterval > 0
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowPoolFee = $true, # Show pool fee column in miner overview
+    [Switch]$ShowPoolFee = $true, # Show pool fee column in main text window miner overview
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowPowerCost = $true, # Show Power cost column in miner overview (if power price is available, see PowerPricekWh)
+    [Switch]$ShowPowerCost = $true, # Show Power cost column in main text window miner overview (if power price is available, see PowerPricekWh)
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowProfit = $true, # Show miner profit column in miner overview (if power price is available, see PowerPricekWh)
+    [Switch]$ShowProfit = $true, # Show miner profit column in main text window miner overview (if power price is available, see PowerPricekWh)
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowProfitBias = $true, # Show miner profit bias column in miner overview (if power price is available, see PowerPricekWh)
+    [Switch]$ShowProfitBias = $true, # Show miner profit bias column in main text window miner overview (if power price is available, see PowerPricekWh)
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowPowerUsage = $true, # Show Power usage column in miner overview (if power price is available, see PowerPricekWh)
+    [Switch]$ShowPowerUsage = $true, # Show Power usage column in main text window miner overview (if power price is available, see PowerPricekWh)
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowUser = $true, # Show pool user name column in miner overview
+    [Switch]$ShowUser = $false, # Show pool user name column in main text window miner overview
     [Parameter(Mandatory = $false)]
     [Switch]$ShowWorkerStatus = $true, # Show worker status from other rigs (data retrieved from monitoring server)
     [Parameter(Mandatory = $false)]
@@ -594,7 +594,7 @@ Function Get-Chart {
         $EarningsChart1.BringToFront()
 
         $Datasource = $DatasourceRaw | Where-Object Date -eq (Get-Date).Date | Where-Object DailyEarnings -gt 0 | Sort-Object DailyEarnings -Descending
-        $Datasource | ForEach-Object { $_.DailyEarnings = [Double]($_.DailyEarnings * $Variables.Rates.($_.Currency).($Config.Currency)) }
+        $Datasource | ForEach-Object { $_.DailyEarnings = [Double]$_.DailyEarnings * $Variables.Rates.($_.Currency).($Config.Currency) }
 
         $ChartTitle = New-Object System.Windows.Forms.DataVisualization.Charting.Title
         $ChartTitle.Text = "Todays earnings per pool"
@@ -684,7 +684,7 @@ Function Update-TabControl {
                     @{ Name = "$($Config.Currency) in 6h"; Expression = { "{0:N6}" -f ($_.Growth6 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
                     @{ Name = "$($Config.Currency) in 24h"; Expression = { "{0:N6}" -f ($_.Growth24 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
                     @{ Name = "Projected paydate"; Expression = { If ($_.ProjectedPayDate -is [DateTime]) { $_.ProjectedPayDate.ToShortDateString() } Else { $_.ProjectedPayDate } } }, 
-                    @{ Name = "PayoutThreshold"; Expression = { "$($_.PayoutThreshold) $($_.PayoutThresholdCurrency) ($('{0:P1}' -f $($_.Balance / $_.PayoutThreshold * $Variables.Rates.($_.PayoutThresholdCurrency).($_.Currency))))" } }
+                    @{ Name = "Payout threshold"; Expression = { "$($_.PayoutThreshold) $(If ($_.Currency -eq "BTC" -and $Config.UsemBTC) { "mBTC" } Else { $_.Currency }) ($('{0:P2}' -f $($_.Balance / $_.PayoutThreshold)))" } }
                 ) | Sort-Object Pool | Out-DataTable
 
                 $EarningsDGV.ClearSelection()
@@ -933,8 +933,8 @@ Function Global:TimerUITick {
                 Write-Host ("≈ average / day:        {0:n$($Variables.Digits + 3)} {1} / {2:n$($Variables.Digits + 3)} {3}" -f ($_.AvgDailyGrowth * $mBTCfactor), $Currency, ($_.AvgDailyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
                 Write-Host ("≈ average / week:       {0:n$($Variables.Digits + 3)} {1} / {2:n$($Variables.Digits + 3)} {3}" -f ($_.AvgWeeklyGrowth * $mBTCfactor), $Currency, ($_.AvgWeeklyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
                 Write-Host "Balance:                " -NoNewline; Write-Host ("{0:n$($Variables.Digits + 3)} {1} / {2:n$($Variables.Digits + 3)} {3}" -f ($_.Balance * $mBTCfactor), $Currency, ($_.Balance * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency) -ForegroundColor Yellow
-                Write-Host "                        $(($_.Balance / $_.PayoutThreshold * $mBTCFactor).ToString('P1')) of $($_.PayoutThreshold.ToString()) $($_.PayoutThresholdCurrency) payment threshold"
-                Write-Host "Projected Payment Date: $(If ($_.ProjectedPayDate -is [DateTime]) { $_.ProjectedPayDate.ToString("G") } Else { $_.ProjectedPayDate })`n"
+                Write-Host "                        $(($_.Balance / $_.PayoutThreshold).ToString('P2')) of $(($_.PayoutThreshold * $mBTCfactor).ToString()) $($Currency) payment threshold"
+                Write-Host "Projected payment date: $(If ($_.ProjectedPayDate -is [DateTime]) { $_.ProjectedPayDate.ToString("G") } Else { $_.ProjectedPayDate })`n"
             }
             Remove-Variable Currency -ErrorAction Ignore
         }
