@@ -82,79 +82,94 @@
               <div class="card m-3 rounded {{#if total}}text-white bg-primary{{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}300px{{/if}}">
                 <div class="card-header text-center">
                   {{#if total}}
-                    <h5>{{{name}}}</h5>
+                    <h4>{{name}}</h4>
                     <table class="center" style="width: 100%">
+                      <br>
                       <tr>
-                        <th style="text-align:center">Earnings last hour</th>
-                        <th style="text-align:center">Earnings last 6 hours</th>
-                        <th style="text-align:center">Earnings last 24 hours</th>
-                        <th style="text-align:center">Earnings last 7 days</th>
-                       <th style="text-align:center">Earnings last 30 days</th>
+                        <th style="text-align:center; padding-left: 2%;">Earnings last hour</th>
+                        <th style="text-align:center; padding-left: 2%;">Earnings last 6 hours</th>
+                        <th style="text-align:center; padding-left: 2%;">Earnings last 24 hours</th>
+                        <th style="text-align:center; padding-left: 2%;">Earnings last 7 days</th>
+                        <th style="text-align:center; padding-left: 2%;">Earnings last 30 days</th>
                       </tr>
                       <tr>
-                        <td style="text-align:center">{{formatCurrency growth1sum}} {{firstcurrency}}</td>
-                        <td style="text-align:center">{{formatCurrency growth6sum}} {{firstcurrency}}</td>
-                        <td style="text-align:center">{{formatCurrency growth24sum}} {{firstcurrency}}</td>
-                        <td style="text-align:center">{{formatCurrency growth168sum}} {{firstcurrency}}</td>
-                        <td style="text-align:center">{{formatCurrency growth720sum}} {{firstcurrency}}</td>
-                      </tr>
-                      <tr>
-                        <td style="text-align:center">{{formatCurrency growth1summbtc}} mBTC</td>
-                        <td style="text-align:center">{{formatCurrency growth6summbtc}} mBTC</td>
-                        <td style="text-align:center">{{formatCurrency growth24summbtc}} mBTC</td>
-                        <td style="text-align:center">{{formatCurrency growth168summbtc}} mBTC</td>
-                        <td style="text-align:center">{{formatCurrency growth720summbtc}} mBTC</td>
-                      </tr>
+                        <td style="text-align:center; padding-left: 2%;">
+                          {{#each growth1}}
+                            <br>{{@key}}: {{formatCurrency this}}
+                          {{/each}}
+                        </td>
+                        <td style="text-align:center; padding-left: 2%;">
+                          {{#each growth6}}
+                            <br>{{@key}}: {{formatCurrency this}}
+                          {{/each}}
+                        </td>
+                        <td style="text-align:center; padding-left: 2%;">
+                          {{#each growth24}}
+                            <br>{{@key}}: {{formatCurrency this}}
+                          {{/each}}
+                        </td>
+                        <td style="text-align:center; padding-left: 2%;">
+                          {{#each growth168}}
+                            <br>{{@key}}: {{formatCurrency this}}
+                          {{/each}}
+                        </td>
+                        <td style="text-align:center; padding-left: 2%;">
+                          {{#each growth720}}
+                            <br>{{@key}}: {{formatCurrency this}}
+                          {{/each}}
+                          <td>
+                        </tr>
                     </table>
                   {{else}}
                     <h5><a href="{{uri}}" target="_blank">{{name}}</a></h5>
                     <div title="Data last collected from pool">
                       {{{updated}}}<br>
                     </div>
-                    <div title="{{formatMainCurrency growth1 rates thresholdcurrency maincurrency}} {{maincurrency}} last 1 hour">
-                      <br>{{formatCurrency growth1}} {{thresholdcurrency}} last 1 hour
+                    <div title="{{formatMainCurrency growth1 rates currency maincurrency}} {{maincurrency}} last 1 hour">
+                      <br>{{formatCurrency growth1}} {{currencyunit}} last 1 hour
                     </div>
-                    <div title="{{formatMainCurrency growth6 rates thresholdcurrency maincurrency}} {{maincurrency}} last 6 hrs">
-                      {{formatCurrency growth6}} {{thresholdcurrency}} last 6 hrs
+                    <div title="{{formatMainCurrency growth6 rates currency maincurrency}} {{maincurrency}} last 6 hrs">
+                      {{formatCurrency growth6}} {{currencyunit}} last 6 hrs
                     </div>
-                    <div title="{{formatMainCurrency growth24 rates thresholdcurrency maincurrency}} {{maincurrency}} last 24 hrs">
-                      {{formatCurrency growth24}} {{thresholdcurrency}} last 24 hrs
+                    <div title="{{formatMainCurrency growth24 rates currency maincurrency}} {{maincurrency}} last 24 hrs">
+                      {{formatCurrency growth24}} {{currencyunit}} last 24 hrs
                     </div>
-                    <div title="{{formatMainCurrency growth168 rates thresholdcurrency maincurrency}} {{maincurrency}} last 7 days">
-                      {{formatCurrency growth168}} {{thresholdcurrency}} last 7 days
+                    <div title="{{formatMainCurrency growth168 rates currency maincurrency}} {{maincurrency}} last 7 days">
+                      {{formatCurrency growth168}} {{currencyunit}} last 7 days
                     </div>
-                    <div title="{{formatMainCurrency growth720 rates thresholdcurrency maincurrency}} {{maincurrency}} last 30 days">
-                      {{formatCurrency growth720}} {{thresholdcurrency}} last 30 days
+                    <div title="{{formatMainCurrency growth720 rates currency maincurrency}} {{maincurrency}} last 30 days">
+                      {{formatCurrency growth720}} {{currencyunit}} last 30 days
                     </div>
                     <br/>
-                    <div title="avg. {{formatMainCurrency avghourlygrowth rates thresholdcurrency maincurrency}} {{maincurrency}} in 1h">
-                      avg. {{formatCurrency avghourlygrowth}} {{thresholdcurrency}} in 1h
+                    <div title="avg. {{formatMainCurrency avghourlygrowth rates currency maincurrency}} {{maincurrency}} in 1h">
+                      avg. {{formatCurrency avghourlygrowth}} {{currencyunit}} in 1h
                     </div>
-                    <div title="avg. {{formatMainCurrency avgdailygrowth rates thresholdcurrency maincurrency}} {{maincurrency}} in 24 hrs">
-                      avg. {{formatCurrency avgdailygrowth}} {{thresholdcurrency}} in 24 hrs
+                    <div title="avg. {{formatMainCurrency avgdailygrowth rates currency maincurrency}} {{maincurrency}} in 24 hrs">
+                      avg. {{formatCurrency avgdailygrowth}} {{currencyunit}} in 24 hrs
                     </div>
-                    <div title="avg. {{formatMainCurrency avgweeklygrowth rates thresholdcurrency maincurrency}} {{maincurrency}} in 7 days">
-                      avg. {{formatCurrency avgweeklygrowth}} {{thresholdcurrency}} in 7 days
+                    <div title="avg. {{formatMainCurrency avgweeklygrowth rates currency maincurrency}} {{maincurrency}} in 7 days">
+                      avg. {{formatCurrency avgweeklygrowth}} {{currencyunit}} in 7 days
                     </div>
                   {{/if}}
                 </div>
                 <div class="card-body text-center">
                   <p class="card-text currencies">
                     {{#each balances}}
-                    <b>{{@key}}: {{formatCurrency this}}</b>
-                    <br/>
+                      {{@key}}: {{formatCurrency this}}
+                      <br>
                     {{/each}}
                   </p>
-                  {{#if total}}{{else}}
-                  <p class="payout">
-                    <div title="{{percentage}}% of {{formatMainCurrency payoutthreshold rates thresholdcurrency maincurrency}} {{maincurrency}}">
-                      <b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{thresholdcurrency}}</b><br/>payout threshold<br/>
-                    </div>
-                    <br/>
-                    <div title="Projection is based on the current daily average earnings">
-                      Projected Paydate:<br/><b>{{paydate}}</b>
-                    </div>
-                  </p>
+                  {{#if total}}
+                  {{else}}
+                    <p class="payout">
+                      <div title="{{percentage}}% of {{formatMainCurrency payoutthreshold rates currency maincurrency}} {{maincurrency}}">
+                        <b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{currencyunit}}</b><br/>payout threshold<br/>
+                      </div>
+                      <br/>
+                      <div title="Projection is based on the current daily average earnings">
+                        Projected Paydate:<br/><b>{{paydate}}</b>
+                      </div>
+                    </p>
                   {{/if}}
                 </div>
               </div>
@@ -169,11 +184,11 @@
             var $querysize = 20000;
 
             Handlebars.registerHelper('formatCurrency', function(value) {
-              return (new Intl.NumberFormat(navigator.language, { minimumFractionDigits: 7 }).format(value));
+              return (new Intl.NumberFormat(navigator.language, { minimumFractionDigits: (8 - (digitsFromValue(value, 8))) }).format(value));
             });
 
-            Handlebars.registerHelper('formatMainCurrency', function(value, rates, thresholdcurrency, maincurrency) {
-              return (new Intl.NumberFormat(navigator.language, { minimumFractionDigits: 7 }).format(value * rates[thresholdcurrency][maincurrency]));
+            Handlebars.registerHelper('formatMainCurrency', function(value, rates, currency, maincurrency) {
+              return (new Intl.NumberFormat(navigator.language, { minimumFractionDigits: (8 - (digitsFromValue((value * rates[currency][maincurrency]), 8))) }).format(value * rates[currency][maincurrency]));
             });
 
             $('#miners tr:eq(0) th:eq(5)').html("Earning<br>(" + maincurrency + ")");
@@ -333,9 +348,23 @@
             function updatePoolBalances() {
               var balances = document.getElementById("balances");
               var data_sum = {
-                name: "Total from all Pools",
                 balances: {},
-                total: true
+                growth1: {},
+                growth6: {},
+                growth24: {},
+                growth168: {},
+                growth720: {},
+              };
+              var totals = {
+                name: "Total from all pools",
+                balances: {},
+                growth1: {},
+                growth6: {},
+                growth24: {},
+                growth168: {},
+                growth720: {},
+                total: true,
+                maincurrency: maincurrency
               };
               var rates = {};
 
@@ -350,10 +379,12 @@
                     $.ajax({
                       async: false,
                       dataType: 'json',
-                      url: '/allcurrencies',
+                      url: '/allcurrencies', //returns array
                       success: function(result) {
                         if (result != null) { 
                           currencies = result;
+
+                          if (config.UsemBTC == true) currencies.splice((currencies).indexOf('BTC'), 1, 'mBTC');
 
                           $.ajax({
                             async: false,
@@ -363,65 +394,53 @@
                               if (result != null) { 
                                 document.getElementById("balances").style.display = "block";
                                 $("#balanceboxes").empty();
+                                var currencytotals = {};
                                 var outdatedicon = "";
                                 var template = Handlebars.compile($("#poolbalance_template").html());
                                 var footer = new RegExp("-.+|=.+");
-                                var growth1_sum   = 0;
-                                var growth6_sum   = 0;
-                                var growth24_sum  = 0;
-                                var growth168_sum = 0;
-                                var growth720_sum = 0;
-                                var avghourlygrowth_sum  = 0;
-                                var avgdailygrowth_sum  = 0;
-                                var avgweeklygrowth_sum = 0;
-                                var avgmonthlygrowth_sum = 0;
 
                                 $.each(result, function(index, item) {
-                                  item.Currencies = [item.Currency];
-                                  if (config.BalancesShowInAllCurrencies || footer.test(item.Pool)) item.Currencies = (item.Currencies).concat(currencies);
-                                  else item.Currencies = (item.Currencies).concat(currencies[0]);
-                                  item.Currencies = Array.from(new Set(item.Currencies));
-
-                                  if (config.UsemBTC == true) {
-                                    (item.Currencies).splice((item.Currencies).indexOf('BTC'), 1, 'mBTC')
+                                  if (config.BalancesShowInAllCurrencies || footer.test(item.Pool)) {
+                                    item.Currencies = currencies;
+                                  } else { 
+                                    item.Currencies = [maincurrency];
+                                    item.Currencies.push(item.Currency);
                                   }
-                                  // Remove duplicated currencies, keep first in list
-                                  item.Currencies = [...new Set(item.Currencies)];
 
-                                  growth1_sum   += item.Growth1   * rates[item.Currency]['BTC'];
-                                  growth6_sum   += item.Growth6   * rates[item.Currency]['BTC'];
-                                  growth24_sum  += item.Growth24  * rates[item.Currency]['BTC'];
-                                  growth168_sum += item.Growth168 * rates[item.Currency]['BTC'];
-                                  growth720_sum += item.Growth720 * rates[item.Currency]['BTC'];
-
-                                  avghourlygrowth_sum += item.AvgHourlyGrowth * rates[item.Currency]['BTC'];
-                                  avgdailygrowth_sum  += item.AvgDailyGrowth  * rates[item.Currency]['BTC'];
-                                  avgweeklygrowth_sum += item.AvgWeeklyGrowth * rates[item.Currency]['BTC'];
+                                  if (config.UsemBTC && item.Currency == "BTC") {
+                                    var factor = 1000;
+                                    var currencyunit = "mBTC";
+                                  } else {
+                                    var factor = 1;
+                                    var currencyunit = item.Currency;
+                                  }
 
                                   if (!(footer.test(item.Pool))) {
 
-                                    if (config.UsemBTC && item.Currency == "BTC") var factor = 1000;
-                                    else var factor = 1;
-
+                                    var growth1   = item.Growth1;
+                                    var growth6   = item.Growth6;
+                                    var growth24  = item.Growth24;
+                                    var growth168 = item.Growth168;
+                                    var growth720 = item.Growth720;
                                     var data = {
                                       name: (item.Pool + " (" + item.Currency + ")"),
                                       updated: formatDate(item.LastUpdated),
-                                      payoutthreshold: item.PayoutThreshold,
-                                      thresholdcurrency: item.PayoutThresholdCurrency,
+                                      payoutthreshold: item.PayoutThreshold * factor,
                                       currency: item.Currency,
+                                      maincurrency: maincurrency,
+                                      currencyunit: currencyunit,
                                       uri: item.Uri,
                                       balances: {},
                                       paydate: formatDate(item.ProjectedPayDate),
-                                      percentage: (item.Balance / item.PayoutThreshold * 100 * rates[item.Currency][item.PayoutThresholdCurrency]).toFixed(2),
-                                      growth1:item.Growth1 * factor,
-                                      growth6: item.Growth6 * factor,
-                                      growth24: item.Growth24 * factor,
-                                      growth168: item.Growth168 * factor,
-                                      growth720: item.Growth720 * factor,
+                                      percentage: (item.Balance / item.PayoutThreshold * 100).toFixed(2),
+                                      growth1: growth1 * factor,
+                                      growth6: growth6 * factor,
+                                      growth24: growth24 * factor,
+                                      growth168: growth168 * factor,
+                                      growth720: growth720 * factor,
                                       avghourlygrowth: item.AvgHourlyGrowth * factor,
                                       avgdailygrowth: item.AvgDailyGrowth * factor,
                                       avgweeklygrowth: item.AvgWeeklyGrowth * factor,
-                                      maincurrency: maincurrency,
                                       rates: rates
                                     };
 
@@ -433,59 +452,41 @@
 
                                     $.each(item.Currencies, function(cindex, currency) {
                                       data["balances"][currency] = (item.Balance * rates[item.Currency][currency]);
-                                      if (!(data_sum["balances"][currency])) {data_sum["balances"][currency] = 0}
-                                      data_sum["balances"][currency] += item.Balance * rates[item.Currency][currency];
                                     });
+
                                     $("#balanceboxes").append(template(data));
+
+                                    $.each(currencies, function(cindex, currency) {
+                                      if (!(data_sum["balances"][currency])) data_sum["balances"][currency] = 0;
+                                      data_sum["balances"][currency] += item.Balance * rates[item.Currency][currency];
+                                      if (!(data_sum["growth1"][currency])) data_sum["growth1"][currency] = 0;
+                                      data_sum["growth1"][currency] += growth1 * rates[item.Currency][currency];
+                                      if (!(data_sum["growth6"][currency])) data_sum["growth6"][currency] = 0;
+                                      data_sum["growth6"][currency] += growth6 * rates[item.Currency][currency];
+                                      if (!(data_sum["growth24"][currency])) data_sum["growth24"][currency] = 0;
+                                      data_sum["growth24"][currency] += growth24 * rates[item.Currency][currency];
+                                      if (!(data_sum["growth168"][currency])) data_sum["growth168"][currency] = 0;
+                                      data_sum["growth168"][currency] += growth168 * rates[item.Currency][currency];
+                                      if (!(data_sum["growth720"][currency])) data_sum["growth720"][currency] = 0;
+                                      data_sum["growth720"][currency] += growth720 * rates[item.Currency][currency];
+                                    });
                                   }
                                 });
 
-                                data_sum["name"] = (data_sum["name"] + outdatedicon);
-                                data_sum["firstcurrency"] = maincurrency;
-                                if (growth1_sum > 0) {
-                                  data_sum["growth1summbtc"] = growth1_sum * 1000;
-                                  data_sum["growth1sum"] = growth1_sum * rates['BTC'][maincurrency];
-                                } else { 
-                                  data_sum["growth1summbtc"] = 0;
-                                  data_sum["growth1sum"] = 0;
-                                };
-                                if (growth6_sum > 0) {
-                                  data_sum["growth6summbtc"] = growth6_sum * 1000;
-                                  data_sum["growth6sum"] = growth6_sum * rates['BTC'][maincurrency];
-                                } else {
-                                  data_sum["growth6summbtc"] = 0;
-                                  data_sum["growth6sum"] = 0;
-                                };
-                                if (growth24_sum > 0) {
-                                  data_sum["growth24summbtc"] = growth24_sum * 1000;
-                                  data_sum["growth24sum" ] = growth24_sum * rates['BTC'][maincurrency];
-                                } else {
-                                  data_sum["growth24summbtc"] = 0;
-                                  data_sum["growth24sum"] = 0;
-                                };
-                                if (growth168_sum > 0) {
-                                  data_sum["growth168summbtc"] = growth168_sum * 1000;
-                                  data_sum["growth168sum"] = growth168_sum * rates['BTC'][maincurrency];
-                                } else {
-                                  data_sum["growth168summbtc"] = 0;
-                                  data_sum["growth168sum"] = 0;
-                                };
-                                if (growth720_sum > 0) {
-                                  data_sum["growth720summbtc"] = growth720_sum * 1000;
-                                  data_sum["growth720sum"] = growth720_sum * rates['BTC'][maincurrency];
-                                } else {
-                                  data_sum["growth720summbtc"] = 0;
-                                  data_sum["growth720sum"] = 0;
-                                };
+                                totals["name"] = (totals["name"] + outdatedicon);
 
-                                data_sum["avghourlygrowthsummbtc"] = avghourlygrowth_sum * 1000;
-                                data_sum["avgdailygrowthsummbtc"]  = avgdailygrowth_sum * 1000;
-                                data_sum["avgweeklygrowthsummbtc"] = avgweeklygrowth_sum * 1000;
-                                data_sum["avghourlygrowthsum"] = avghourlygrowth_sum  * rates['BTC'][maincurrency];
-                                data_sum["avgdailygrowthsum"] = avgdailygrowth_sum  * rates['BTC'][maincurrency];
-                                data_sum["avgweeklygrowthsum"] = avgweeklygrowth_sum * rates['BTC'][maincurrency];
+                                if (!(config.BalancesShowInAllCurrencies)) currencies = [maincurrency];
 
-                                $("#balanceboxes").append(template(data_sum));
+                                $.each(currencies, function(cindex, currency) {
+                                  totals["balances"][currency]  = data_sum["balances"][currency];
+                                  totals["growth1"][currency]   = data_sum["growth1"][currency];
+                                  totals["growth6"][currency]   = data_sum["growth6"][currency];
+                                  totals["growth24"][currency]  = data_sum["growth24"][currency];
+                                  totals["growth168"][currency] = data_sum["growth168"][currency];
+                                  totals["growth720"][currency] = data_sum["growth720"][currency];
+                                });
+
+                                $("#balanceboxes").append(template(totals));
                                 $('#miners').bootstrapTable('refresh');
                               }
                             }

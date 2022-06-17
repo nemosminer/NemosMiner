@@ -112,9 +112,9 @@ While ($true) {
                 $PayoutThreshold = If ($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold."*" -like "* *") { [Double](($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold."*" -split ' ' | Select-Object -First 1) * $Variables.Rates.$PayoutThresholdCurrency.($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold."*" -split ' ' | Select-Object -Index 1)) } Else { [Double]($PoolConfig.PayoutThreshold."*") }
             }
 
-            If ($PayoutThresholdCurrency -eq "BTC" -and $Config.UsemBTC -eq $true) { 
-                $PayoutThresholdCurrency = "mBTC"
-                $PayoutThreshold *= 1000
+            If ($PayoutThresholdCurrency -eq "mBTC") { 
+                $PayoutThresholdCurrency = "BTC"
+                $PayoutThreshold /= 1000
             }
 
             $Growth1 = $Growth6 = $Growth24 = $Growth168 = $Growth720 = $GrowthToday = $AvgHourlyGrowth = $AvgDailyGrowth = $AvgWeeklyGrowth = $Delta = $Payout = $HiddenPending = [Double]0
@@ -200,7 +200,7 @@ While ($true) {
                     $Delta = $PoolBalanceObject.Unpaid - ($PoolBalanceObjects | Select-Object -Last 1).Unpaid
                     # Current 'Unpaid' is smaller
                     If ($Delta -lt 0) { 
-                        If (($Delta * -1) -gt $(If ($PayoutThresholdCurrency -eq "mBTC") { $PayoutThreshold / 1000 } Else { $PayoutThreshold }) * 0.5) { 
+                        If (($Delta * -1) -gt $PayoutThreshold * 0.5) { 
                             # Payout occured (delta > 50% of payout limit)
                             $Payout = $Delta * -1
                         }
@@ -272,7 +272,6 @@ While ($true) {
                 ProjectedPayDate        = If ($PayoutThreshold) { If ([Double]$PoolBalanceObject.Balance -lt $PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.($PoolBalanceObject.Currency)) { If (($AvgDailyGrowth, $Growth24 | Measure-Object -Maximum).Maximum -gt 1E-7) { [DateTime]$Now.AddDays(($PayoutThreshold * $Variables.Rates.$PayoutThresholdCurrency.($PoolBalanceObject.Currency) - $PoolBalanceObject.Balance) / (($AvgDailyGrowth, $Growth24) | Measure-Object -Maximum).Maximum) } Else { "Unknown" } } Else { If ($PoolBalanceObject.NextPayout) { $PoolBalanceObject.NextPayout } Else { "Next Payout!" } } } Else { "Unknown" }
                 TrustLevel              = [Double]((($Now - $PoolBalanceObjects[0].DateTime).TotalHours / 168), 1 | Measure-Object -Minimum).Minimum
                 TotalHours              = [Double]($Now - $PoolBalanceObjects[0].DateTime).TotalHours
-                PayoutThresholdCurrency = $PayoutThresholdCurrency
                 PayoutThreshold         = [Double]$PayoutThreshold
                 Payout                  = [Double]$PoolBalanceObject.Payout
                 Uri                     = $PoolBalanceObject.Url
