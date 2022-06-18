@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.6.2"
+    $APIVersion = "0.4.6.3"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
@@ -269,8 +269,6 @@ Function Start-APIServer {
                             $Variables.ShowPowerUsage = $Config.ShowPowerUsage
                             $Variables.ShowProfit = $Config.ShowProfit
                             $Variables.ShowProfitBias = $Config.ShowProfitBias
-
-                            Read-Config -ConfigFile $Variables.ConfigFile
 
                             Write-Message -Level Verbose "Web GUI: Configuration applied."
                             $Data = "Config saved to '$($Variables.ConfigFile)'. It will become active in next cycle."
@@ -670,7 +668,7 @@ Function Start-APIServer {
                         break
                     }
                     "/configrunning" {
-                        $Data = ConvertTo-Json -Depth 10 $Config | Get-SortedObject
+                        $Data = ConvertTo-Json -Depth 10 ($Config | Get-SortedObject)
                         Break
                     }
                     "/currency" { 
