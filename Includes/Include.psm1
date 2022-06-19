@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.1.0
-Version date:   15 June 2022
+Version:        4.0.1.1
+Version date:   19 June 2022
 #>
 
 # Window handling
@@ -2304,14 +2304,14 @@ Function Get-DigitsFromValue {
         [Parameter(Mandatory = $true)]
         [Double]$Value, 
         [Parameter(Mandatory = $true)]
-        [Int]$MinDigits
+        [Int]$MaxDigits
     )
 
     $Digits = [math]::Floor($Value).ToString().Length
     If ($Digits -lt 0) { $Digits = 0 }
-    If ($Digits -gt $MinDigits) { $Digits = $MinDigits }
+    If ($Digits -gt $MaxDigits) { $Digits = $MaxDigits }
 
-   $Digits
+    $Digits
 }
 
 Function Get-Combination { 
@@ -3106,8 +3106,8 @@ Function Out-DataTable {
     .OUTPUTS
        System.Data.DataTable
     .EXAMPLE
-    $dt = Get-psdrive| Out-DataTable
-    This example creates a DataTable from the properties of Get-psdrive and assigns output to $dt variable
+    $DataTable = Get-psdrive| Out-DataTable
+    This example creates a DataTable from the properties of Get-psdrive and assigns output to $DataTable variable
     .NOTES
     Adapted from script by Marc van Orsouw see link
     Version History
@@ -3134,12 +3134,12 @@ Function Out-DataTable {
     )
 
     Begin { 
-        $DT = New-Object Data.datatable
+        $DataTable = New-Object Data.datatable
         $First = $true
     }
     Process { 
         ForEach ($Object in $InputObject) { 
-            $DR = $DT.NewRow()
+            $DataRow = $DataTable.NewRow()
             ForEach ($Property in $Object.PSObject.Properties) { 
                 If ($First) { 
                     $Col = New-Object Data.DataColumn
@@ -3149,21 +3149,16 @@ Function Out-DataTable {
                             $Col.DataType = [System.Type]::GetType($Property.TypeNameOfValue).Name
                         }
                     }
-                    $DT.Columns.Add($Col)
+                    $DataTable.Columns.Add($Col)
                 }
-                If ($Property.GetType().IsArray) { 
-                    $DR.Item($Property.Name) = $Property.Value | ConvertTo-Xml -As String -NoTypeInformation -Depth 1
-                }
-                Else { 
-                    $DR.Item($Property.Name) = $Property.Value
-                }
+                $DataRow.Item($Property.Name) = If ($Property.GetType().IsArray) { $Property.Value | ConvertTo-Xml -As String -NoTypeInformation -Depth 1 } Else { $Property.Value }
             }
-            $DT.Rows.Add($DR)
+            $DataTable.Rows.Add($DataRow)
             $First = $false
         }
     }
 
     End { 
-        Write-Output @(,($dt))
+        Write-Output @(,($DataTable))
     }
 }

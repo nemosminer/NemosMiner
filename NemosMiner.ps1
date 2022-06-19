@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.1.0
-Version date:   15 June 2022
+Version:        4.0.1.1
+Version date:   19 June 2022
 #>
 
 [CmdletBinding()]
@@ -266,7 +266,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.1.0"
+    Version      = [System.Version]"4.0.1.1"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -646,12 +646,14 @@ Function Update-TabControl {
                     @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join "; " } }, 
                     @{ Name = "Miner"; Expression = { "$($_.Name) $($_.Info)" } }, 
                     @{ Name = "Account(s)"; Expression = { ($_.Workers.Pool.User | Select-Object -Unique | ForEach-Object { $_ -split '\.' | Select-Object -First 1 } | Select-Object -Unique) -join ' & ' } }, 
-                    @{ Name = "Earning $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) {"{0:n$((Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10) + 2)}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } Else { "Unknown" } } }, 
-                    @{ Name = "Profit $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$((Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10) + 2)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } Else { "Unknown" } } }, 
+                    @{ Name = "Earning $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) {"{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } Else { "N/A" } } }, 
+                    @{ Name = "Power cost $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.PowerCost)) { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Powercost * $Variables.Rates.BTC.($Config.Currency)) } Else { "N/A" } } }, 
+                    @{ Name = "Profit $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } Else { "N/A" } } }, 
+                    @{ Name = "Power usage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else { "$($_.PowerUsage.ToString("N2")) W" } } }, 
                     @{ Name = "Pool(s)"; Expression = { ($_.WorkersRunning.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' } }, 
                     @{ Name = "Hashrate(s)"; Expression = { (($_.Hashrates_Live | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ') -replace '\s+', ' ' } }, 
                     @{ Name = "Active (hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [math]::floor(((Get-Date).ToUniversalTime() - $_.BeginTime).TotalDays * 24), ((Get-Date).ToUniversalTime() - $_.BeginTime) } }, 
-                    @{ Name = "Total Active (hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [math]::floor($_.TotalMiningDuration.TotalDays * 24), $_.TotalMiningDuration } }
+                    @{ Name = "Total active (hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [math]::floor($_.TotalMiningDuration.TotalDays * 24), $_.TotalMiningDuration } }
                 ) | Sort-Object "Device(s)" | Out-DataTable
 
                 $RunningMinersDGV.ClearSelection()
@@ -662,11 +664,17 @@ Function Update-TabControl {
                     $RunningMinersDGV.Columns[2].FillWeight = 150
                     $RunningMinersDGV.Columns[3].FillWeight = 50; $RunningMinersDGV.Columns[3].DefaultCellStyle.Alignment = "MiddleRight"; $RunningMinersDGV.Columns[3].HeaderCell.Style.Alignment = "MiddleRight"
                     $RunningMinersDGV.Columns[4].FillWeight = 50; $RunningMinersDGV.Columns[4].DefaultCellStyle.Alignment = "MiddleRight"; $RunningMinersDGV.Columns[4].HeaderCell.Style.Alignment = "MiddleRight"
-                    $RunningMinersDGV.Columns[5].FillWeight = 100
-                    $RunningMinersDGV.Columns[6].FillWeight = 75; $RunningMinersDGV.Columns[6].DefaultCellStyle.Alignment = "MiddleRight"; $RunningMinersDGV.Columns[6].HeaderCell.Style.Alignment = "MiddleRight"
-                    $RunningMinersDGV.Columns[7].FillWeight = 65
-                    $RunningMinersDGV.Columns[8].FillWeight = 65
+                    $RunningMinersDGV.Columns[5].FillWeight = 50; $RunningMinersDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $RunningMinersDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"
+                    $RunningMinersDGV.Columns[6].FillWeight = 50; $RunningMinersDGV.Columns[6].DefaultCellStyle.Alignment = "MiddleRight"; $RunningMinersDGV.Columns[6].HeaderCell.Style.Alignment = "MiddleRight"
+                    $RunningMinersDGV.Columns[7].FillWeight = 100
+                    $RunningMinersDGV.Columns[8].FillWeight = 75; $RunningMinersDGV.Columns[8].DefaultCellStyle.Alignment = "MiddleRight"; $RunningMinersDGV.Columns[8].HeaderCell.Style.Alignment = "MiddleRight"
+                    $RunningMinersDGV.Columns[9].FillWeight = 65
+                    $RunningMinersDGV.Columns[10].FillWeight = 65
                 }
+
+                $RunningMinersDGV.Columns[4].Visible = $Variables.CalculatePowerCost
+                $RunningMinersDGV.Columns[5].Visible = $Variables.CalculatePowerCost
+                $RunningMinersDGV.Columns[6].Visible = $Variables.CalculatePowerCost
 
                 $LabelRunningMiners.Text = "Running Miners - Updated $((Get-Date).ToString())"
             }
@@ -679,11 +687,11 @@ Function Update-TabControl {
             If ($Variables.Balances) { 
                 $EarningsDGV.DataSource = $Variables.Balances.Values | Select-Object @(
                     @{ Name = "Pool"; Expression = { "$($_.Pool) [$($_.Currency)]" } }, 
-                    @{ Name = "Balance ($($Config.Currency))"; Expression = { "{0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Balance * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
-                    @{ Name = "Avg. $($Config.Currency)/day"; Expression = { "{0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.AvgDailyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
-                    @{ Name = "$($Config.Currency) in 1h"; Expression = { "{0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Growth1 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
-                    @{ Name = "$($Config.Currency) in 6h"; Expression = { "{0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Growth6 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
-                    @{ Name = "$($Config.Currency) in 24h"; Expression = { "{0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Growth24 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
+                    @{ Name = "Balance ($($Config.Currency))"; Expression = { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Balance * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
+                    @{ Name = "Avg. $($Config.Currency)/day"; Expression = { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.AvgDailyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
+                    @{ Name = "$($Config.Currency) in 1h"; Expression = { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Growth1 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
+                    @{ Name = "$($Config.Currency) in 6h"; Expression = { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Growth6 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
+                    @{ Name = "$($Config.Currency) in 24h"; Expression = { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Growth24 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
                     @{ Name = "Projected paydate"; Expression = { If ($_.ProjectedPayDate -is [DateTime]) { $_.ProjectedPayDate.ToShortDateString() } Else { $_.ProjectedPayDate } } }, 
                     @{ Name = "Payout threshold"; Expression = { If ($_.Currency -eq "BTC" -and $Config.UsemBTC) { $Currency = "mBTC"; $mBTCfactor = 1000 } Else { $Currency = $_.Currency; $mBTCfactor = 1 }; "{0:P2} of {1} {2} " -f ($_.Balance / $_.PayoutThreshold), ($_.PayoutThreshold * $mBTCfactor), $Currency } }
                 ) | Sort-Object Pool | Out-DataTable
@@ -726,10 +734,10 @@ Function Update-TabControl {
                     $TimeSinceLastReport = New-TimeSpan -Start $_.date -End (Get-Date)
                     # Show friendly time since last report in seconds, minutes, hours and days
                     $TimeSinceLastReportText = ""
-                    If ($TimeSinceLastReport.Days -ge 1) { $TimeSinceLastReportText += " {0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))} day$(If ($TimeSinceLastReport.Days -ne 1) { "s" })" -f $TimeSinceLastReport.Days }
-                    If ($TimeSinceLastReport.Hours -ge 1) { $TimeSinceLastReportText += " {0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))} hour$(If ($TimeSinceLastReport.Hours -ne 1) { "s" })" -f $TimeSinceLastReport.Hours }
-                    If ($TimeSinceLastReport.Minutes -ge 1) { $TimeSinceLastReportText += " {0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))} minute$(If ($TimeSinceLastReport.Minutes -ne 1) { "s" })" -f $TimeSinceLastReport.Minutes }
-                    If ($TimeSinceLastReport.Seconds -ge 1) { $TimeSinceLastReportText += " {0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))} second$(If ($TimeSinceLastReport.Seconds -ne 1) { "s" })" -f $TimeSinceLastReport.Seconds }
+                    If ($TimeSinceLastReport.Days -ge 1) { $TimeSinceLastReportText += " {0:n0} day$(If ($TimeSinceLastReport.Days -ne 1) { "s" })" -f $TimeSinceLastReport.Days }
+                    If ($TimeSinceLastReport.Hours -ge 1) { $TimeSinceLastReportText += " {0:n0} hour$(If ($TimeSinceLastReport.Hours -ne 1) { "s" })" -f $TimeSinceLastReport.Hours }
+                    If ($TimeSinceLastReport.Minutes -ge 1) { $TimeSinceLastReportText += " {0:n0} minute$(If ($TimeSinceLastReport.Minutes -ne 1) { "s" })" -f $TimeSinceLastReport.Minutes }
+                    If ($TimeSinceLastReport.Seconds -ge 1) { $TimeSinceLastReportText += " {0:n0} second$(If ($TimeSinceLastReport.Seconds -ne 1) { "s" })" -f $TimeSinceLastReport.Seconds }
                     If ($TimeSinceLastReportText) { $_ | Add-Member -Force @{ TimeSinceLastReportText = "$($TimeSinceLastReportText.trim()) ago" } }
                     Else  { $_ | Add-Member -Force @{ TimeSinceLastReportText = "just now" } }
                 }
@@ -741,8 +749,8 @@ Function Update-TabControl {
                     @{ Name = "Last seen"; Expression = { $_.TimeSinceLastReportText } }, 
                     @{ Name = "Version"; Expression = { $_.version } }, 
                     @{ Name = "Currency"; Expression = { [String]$Config.Currency } }, 
-                    @{ Name = "Estimated Earning/day"; Expression = { "{0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ([Decimal](($_.Data.Earning | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
-                    @{ Name = "Estimated Profit/day"; Expression = { "{0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ([Decimal](($_.Data.Profit | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
+                    @{ Name = "Estimated Earning/day"; Expression = { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ([Decimal](($_.Data.Earning | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
+                    @{ Name = "Estimated Profit/day"; Expression = { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ([Decimal](($_.Data.Profit | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
                     @{ Name = "Miner(s)"; Expression = { $_.data.Name -join $nl } }, 
                     @{ Name = "Pool(s)"; Expression = { ($_.data | ForEach-Object { $_.Pool -join " & " }) -join $nl } }, 
                     @{ Name = "Algorithm(s)"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join $nl } }, 
@@ -787,27 +795,33 @@ Function Update-TabControl {
                 $BenchmarksDGV.DataSource = $Variables.Miners | Where-Object Available -EQ $true | Select-Object @(
                     @{ Name = "Miner"; Expression = { $_.Name } }, 
                     @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join '; ' } }, 
-                    @{ Name = "Earning $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) {"{0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } Else { "Unknown" } } }, 
-                    @{ Name = "Profit $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } Else { "Unknown" } } }, 
-                    @{ Name = "Power Usage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else { "$($_.PowerUsage.ToString("N2")) W" } } }, 
+                    @{ Name = "Earning $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } Else { "N/A" } } }, 
+                    @{ Name = "Power cost $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.PowerCost)) { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Powercost * $Variables.Rates.BTC.($Config.Currency)) } Else { "N/A" } } }, 
+                    @{ Name = "Profit $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } Else { "N/A" } } }, 
+                    @{ Name = "Power usage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else { "$($_.PowerUsage.ToString("N2")) W" } } }, 
                     @{ Name = "Algorithm(s)"; Expression = { $_.Algorithms -join ' & ' } }, 
                     @{ Name = "Pool(s)"; Expression = { ($_.Workers.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' } }, 
                     @{ Name = "Hashrate(s)"; Expression = { ($_.Workers.Hashrate | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "Benchmarking" } }) -join ' & ' } }
                 ) | Sort-Object "$SortBy $($Config.Currency)/day" -Descending | Out-DataTable
                 Remove-Variable SortBy
 
-                $BenchmarksDGV.ClearSelection()
-
                 If ($BenchmarksDGV.Columns) { 
                     $BenchmarksDGV.Columns[0].FillWeight = 200
                     $BenchmarksDGV.Columns[1].FillWeight = 80
                     $BenchmarksDGV.Columns[2].FillWeight = 55; $BenchmarksDGV.Columns[2].DefaultCellStyle.Alignment = "MiddleRight"; $BenchmarksDGV.Columns[2].HeaderCell.Style.Alignment = "MiddleRight"
                     $BenchmarksDGV.Columns[3].FillWeight = 55; $BenchmarksDGV.Columns[3].DefaultCellStyle.Alignment = "MiddleRight"; $BenchmarksDGV.Columns[3].HeaderCell.Style.Alignment = "MiddleRight"
-                    $BenchmarksDGV.Columns[4].FillWeight = 45; $BenchmarksDGV.Columns[4].DefaultCellStyle.Alignment = "MiddleRight"; $BenchmarksDGV.Columns[4].HeaderCell.Style.Alignment = "MiddleRight"
-                    $BenchmarksDGV.Columns[5].FillWeight = 90
-                    $BenchmarksDGV.Columns[6].FillWeight = 125
-                    $BenchmarksDGV.Columns[7].FillWeight = 80; $BenchmarksDGV.Columns[7].DefaultCellStyle.Alignment = "MiddleRight"; $BenchmarksDGV.Columns[7].HeaderCell.Style.Alignment = "MiddleRight"
+                    $BenchmarksDGV.Columns[4].FillWeight = 55; $BenchmarksDGV.Columns[4].DefaultCellStyle.Alignment = "MiddleRight"; $BenchmarksDGV.Columns[4].HeaderCell.Style.Alignment = "MiddleRight"
+                    $BenchmarksDGV.Columns[5].FillWeight = 55; $BenchmarksDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $BenchmarksDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"
+                    $BenchmarksDGV.Columns[6].FillWeight = 90
+                    $BenchmarksDGV.Columns[7].FillWeight = 125
+                    $BenchmarksDGV.Columns[8].FillWeight = 80; $BenchmarksDGV.Columns[8].DefaultCellStyle.Alignment = "MiddleRight"; $BenchmarksDGV.Columns[8].HeaderCell.Style.Alignment = "MiddleRight"
                 }
+
+                $BenchmarksDGV.Columns[3].Visible = $Variables.CalculatePowerCost
+                $BenchmarksDGV.Columns[4].Visible = $Variables.CalculatePowerCost
+                $BenchmarksDGV.Columns[5].Visible = $Variables.CalculatePowerCost
+
+                $BenchmarksDGV.ClearSelection()
 
                 $LabelBenchmarks.Text = "Benchmark data read from stats - Updated $((Get-Date).ToString())"
             }
@@ -962,14 +976,14 @@ Function Global:TimerUITick {
             @{ Label = "Algorithm"; Expression = { $_.Workers.Pool.Algorithm -join " & " } }
             If ($Variables.ShowMinerFee -and ($Variables.Miners.Workers.Fee)) { @{ Label = "Fee"; Expression = { $_.Workers.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } } } }
             @{ Label = "Hashrate"; Expression = { If (-not $_.Benchmark) { $_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" } } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } }; Align = "right" }
-            If (-not $Config.IgnorePowerCost -and $Variables.ShowProfitBias -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost -and -not $Config.IgnorePowerCost) { @{ Label = "ProfitBias"; Expression = { If ([Double]::IsNaN($_.Profit_Bias)) { "Unknown" } Else { "{0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Profit_Bias * $Variables.Rates.BTC.($Config.Currency)) }; Align = "right" } } }
-            If (-not $Config.IgnorePowerCost -and $Variables.ShowProfit -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost -and -not $Config.IgnorePowerCost) { @{ Label = "Profit"; Expression = { If ([Double]::IsNaN($_.Profit)) { "Unknown" } Else { "{0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
-            If ($Variables.ShowEarningBias) { @{ Label = "EarningBias"; Expression = { If ([Double]::IsNaN($_.Earning_Bias)) { "Unknown" } Else { "{0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Earning_Bias * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
-            If ($Variables.ShowEarning) { @{ Label = "Earning"; Expression = { If ([Double]::IsNaN($_.Earning)) { "Unknown" } Else { "{0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
-            If ($Config.IgnorePowerCost -and $Variables.ShowProfitBias -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "ProfitBias"; Expression = { If ([Double]::IsNaN($_.Profit_Bias)) { "Unknown" } Else { "{0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Profit_Bias * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
-            If ($Config.IgnorePowerCost -and $Variables.ShowProfit -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "Profit"; Expression = { If ([Double]::IsNaN($_.Profit)) { "Unknown" } Else { "{0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
+            If (-not $Config.IgnorePowerCost -and $Variables.ShowProfitBias -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost -and -not $Config.IgnorePowerCost) { @{ Label = "ProfitBias"; Expression = { If ([Double]::IsNaN($_.Profit_Bias)) { "Unknown" } Else { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Profit_Bias * $Variables.Rates.BTC.($Config.Currency)) }; Align = "right" } } }
+            If (-not $Config.IgnorePowerCost -and $Variables.ShowProfit -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost -and -not $Config.IgnorePowerCost) { @{ Label = "Profit"; Expression = { If ([Double]::IsNaN($_.Profit)) { "Unknown" } Else { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
+            If ($Variables.ShowEarningBias) { @{ Label = "EarningBias"; Expression = { If ([Double]::IsNaN($_.Earning_Bias)) { "Unknown" } Else { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Earning_Bias * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
+            If ($Variables.ShowEarning) { @{ Label = "Earning"; Expression = { If ([Double]::IsNaN($_.Earning)) { "Unknown" } Else { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
+            If ($Config.IgnorePowerCost -and $Variables.ShowProfitBias -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "ProfitBias"; Expression = { If ([Double]::IsNaN($_.Profit_Bias)) { "Unknown" } Else { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Profit_Bias * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
+            If ($Config.IgnorePowerCost -and $Variables.ShowProfit -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "Profit"; Expression = { If ([Double]::IsNaN($_.Profit)) { "Unknown" } Else { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
             If ($Variables.ShowPowerUsage -and $Config.CalculatePowerCost) { @{ Label = "PowerUsage"; Expression = { If (-not $_.MeasurePowerUsage) { "$($_.PowerUsage.ToString("N2")) W" } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } }; Align = "right" } }
-            If ($Variables.ShowPowerCost -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "PowerCost"; Expression = { If ([Double]::IsNaN($_.PowerUsage)) { "Unknown" } Else { "-{0:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.PowerCost * $Variables.Rates.($Config.PayoutCurrency).($Config.Currency)) } }; Align = "right" } }
+            If ($Variables.ShowPowerCost -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "PowerCost"; Expression = { If ([Double]::IsNaN($_.PowerUsage)) { "Unknown" } Else { "-{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.PowerCost * $Variables.Rates.($Config.PayoutCurrency).($Config.Currency)) } }; Align = "right" } }
             If ($Variables.ShowAccuracy) { @{ Label = "Accuracy"; Expression = { $_.Workers.Pool.Accuracy | ForEach-Object { "{0:P0}" -f [Double]$_ } }; Align = "right" } }
             @{ Label = "Pool"; Expression = { $_.Workers.Pool.Name -join " & " } }
             If ($Variables.ShowUser) { @{ Label = "User"; Expression = { $_.Workers.Pool.User -join ' & ' } } }
@@ -1072,11 +1086,11 @@ Function Global:TimerUITick {
             If ($Variables.Miners | Where-Object Available -EQ $true | Where-Object { $_.Benchmark -eq $false -or $_.MeasurePowerUsage -eq $false }) { 
                 If ($Variables.MiningEarning -lt $Variables.MiningPowerCost) { 
                     # Mining causes a loss
-                    Write-Host -ForegroundColor Red ("Mining is currently NOT profitable and causes a loss of {0} {1:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))} / day (including Base Power Cost)." -f $Config.Currency, (-($Variables.MiningProfit - $Variables.BasePowerCostBTC) * $Variables.Rates.BTC.($Config.Currency)))
+                    Write-Host -ForegroundColor Red ("Mining is currently NOT profitable and causes a loss of {0} {1:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))} / day (including Base Power Cost)." -f $Config.Currency, (-($Variables.MiningProfit - $Variables.BasePowerCostBTC) * $Variables.Rates.BTC.($Config.Currency)))
                 }
                 If (($Variables.MiningEarning - $Variables.MiningPowerCost) -lt $Config.ProfitabilityThreshold) { 
                     # Mining profit is below the configured threshold
-                    Write-Host -ForegroundColor Blue ("Mining profit ({0} {1:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}) is below the configured threshold of {0} {2:n$(12 -(Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))} / day. Mining is suspended until threshold is reached." -f $Config.Currency, (($Variables.MiningProfit - $Variables.BasePowerCostBTC) * $Variables.Rates.BTC.($Config.Currency)), $Config.ProfitabilityThreshold)
+                    Write-Host -ForegroundColor Blue ("Mining profit ({0} {1:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}) is below the configured threshold of {0} {2:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))} / day. Mining is suspended until threshold is reached." -f $Config.Currency, (($Variables.MiningProfit - $Variables.BasePowerCostBTC) * $Variables.Rates.BTC.($Config.Currency)), $Config.ProfitabilityThreshold)
                 }
             }
         }
@@ -1404,12 +1418,19 @@ $RunningMinersDGV.AutoSizeColumnsMode = "Fill"
 $RunningMinersDGV.ColumnHeadersHeightSizeMode = "AutoSize"
 $RunningMinersDGV.RowHeadersVisible = $false
 $RunningMinersDGV.AllowUserToAddRows = $false
+$RunningMinersDGV.AllowUserToDeleteRows = $false
 $RunningMinersDGV.AllowUserToOrderColumns = $true
 $RunningMinersDGV.AllowUserToResizeColumns = $true
 $RunningMinersDGV.AllowUserToResizeRows = $false
+$RunningMinersDGV.ScrollBars = "None"
 $RunningMinersDGV.ReadOnly = $true
 $RunningMinersDGV.EnableHeadersVisualStyles = $false
 $RunningMinersDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
+$RunningMinersDGV.Add_DataSourceChanged(
+    {
+        MainForm_Resize
+    }
+)
 $RunPageControls += $RunningMinersDGV
 
 # Earnings Page Controls
@@ -1438,12 +1459,19 @@ $EarningsDGV.AutoSizeColumnsMode = "Fill"
 $EarningsDGV.ColumnHeadersHeightSizeMode = "AutoSize"
 $EarningsDGV.RowHeadersVisible = $false
 $EarningsDGV.AllowUserToAddRows = $false
+$EarningsDGV.AllowUserToDeleteRows = $false
 $EarningsDGV.AllowUserToOrderColumns = $true
 $EarningsDGV.AllowUserToResizeColumns = $true
 $EarningsDGV.AllowUserToResizeRows = $false
+$EarningsDGV.ScrollBars = "None"
 $EarningsDGV.ReadOnly = $true
 $EarningsDGV.EnableHeadersVisualStyles = $false
 $EarningsDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
+$EarningsDGV.Add_DataSourceChanged(
+    {
+        MainForm_Resize
+    }
+)
 $EarningsPageControls += $EarningsDGV
 
 # Switching Page Controls
@@ -1635,6 +1663,7 @@ Function MainForm_Resize {
 
     $TabControl.Width = $MainForm.Width - 33
     $TabControl.Height = $MainForm.Height - 139
+    $Variables.LabelStatus.Width = $RunningMinersDGV.Width = $EarningsDGV.Width = $SwitchingDGV.Width = $WorkersDGV.Width = $BenchmarksDGV.Width = $TabControl.Width - 13
 
     $LabelEarningsDetails.Width = $MainForm.Width - 270
     $LabelMiningStatus.Location = [System.Drawing.Point]::new(($MainForm.Width - $LabelMiningStatus.Width - 22), 2)
@@ -1647,43 +1676,51 @@ Function MainForm_Resize {
     $ButtonPause.Location = [System.Drawing.Point]::new($MainForm.Width - 145, 62)
     $ButtonStop.Location = [System.Drawing.Point]::new($MainForm.Width - 85, 62)
 
-    $Variables.LabelStatus.Width = $TabControl.Width - 13
-    $Variables.LabelStatus.Height = ($TabControl.Height - 20) * 0.6
-
+    $RunningMinersDGV.Height = $RunningMinersDGV.RowTemplate.Height * $Variables.EnabledDevices.Count + $RunningMinersDGV.ColumnHeadersHeight
+    If ($RunningMinersDGV.Height -gt $TabControl.Height / 2) { 
+        $RunningMinersDGV.Height = $TabControl.Height / 2
+        $RunningMinersDGV.ScrollBars = "Vertical"
+    }
+    Else { 
+        $RunningMinersDGV.ScrollBars = "None"
+    }
+    $Variables.LabelStatus.Height = ($TabControl.Height - $LabelRunningMiners.Height - $RunningMinersDGV.Height - 41)
     $LabelRunningMiners.Location = [System.Drawing.Point]::new(2, ($Variables.LabelStatus.Height + 7))
-
-    $RunningMinersDGV.Location = [System.Drawing.Point]::new(2, ($Variables.LabelStatus.Height + 25))
-    $RunningMinersDGV.Width = $TabControl.Width - 13
-    $RunningMinersDGV.Height = ($TabControl.Height - $Variables.LabelStatus.Height - 56)
+    $RunningMinersDGV.Location = [System.Drawing.Point]::new(2, ($Variables.LabelStatus.Height + $LabelRunningMiners.Height + 10))
 
     $WorkersDGV.Height = $TabControl.Height - 73
     $ConfigMonitoring.Location = [System.Drawing.Point]::new(2, ($RunningMinersDGV.Bottom - 18))
 
     If ($MainForm.Width -gt 722) { 
         $EarningsChart1.Width = ($TabControl.Width - 14) * 0.75
-        $EarningsChart2.Left = $EarningsChart1.Width + 20
         $EarningsChart2.Width = ($TabControl.Width - $EarningsChart1.Width - 50)
-        $EarningsChart1.Height = $EarningsChart2.Height = ($TabControl.Height - 60) * 0.4
-        $LabelEarnings.Location = [System.Drawing.Point]::new(2, ($EarningsChart1.Height + 4))
+        $EarningsChart2.Left = $EarningsChart1.Width + 20
     }
 
-    $EarningsDGV.Location = [System.Drawing.Point]::new(2, ($EarningsChart1.Height + 22))
+    $EarningsDGV.Height = ($EarningsDGV.Rows.Height | Measure-Object -Sum).Sum + $EarningsDGV.ColumnHeadersHeight
+    If ($EarningsDGV.Height -gt $TabControl.Height / 2) { 
+        $EarningsDGV.Height = $TabControl.Height / 2
+        $EarningsDGV.ScrollBars = "Vertical"
+    }
+    Else { 
+        $EarningsDGV.ScrollBars = "None"
+    }
+    $EarningsChart1.Height = $EarningsChart2.Height = (($TabControl.Height - $LabelEarnings.Height - $EarningsDGV.Height - 41), 0 | Measure-Object -Maximum).Maximum
+    $LabelEarnings.Location = [System.Drawing.Point]::new(2, ($EarningsChart1.Height + 7))
+    $EarningsDGV.Location = [System.Drawing.Point]::new(2, ($EarningsChart1.Height + $LabelEarnings.Height + 10))
 
-    $BenchmarksDGV.Width = $EarningsDGV.Width = $SwitchingDGV.Width = $WorkersDGV.Width = $TabControl.Width - 14
-    $BenchmarksDGV.Height = $EarningsDGV.Height = $SwitchingDGV.Height = $TabControl.Height - 53
+    $SwitchingDGV.Height = $BenchmarksDGV.Height = $TabControl.Height - 53
 }
 
 $MainForm.Add_Load(
     { 
         If (Test-Path ".\Config\WindowSettings.json" -PathType Leaf) { 
             $WindowSettings = Get-Content -Path ".\Config\WindowSettings.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore
-            If ($WindowSettings.Height -ge $MainForm.MinimumSize.Height -and $WindowSettings.Width -ge $MainForm.MinimumSize.Width) { 
-                # Restore window size
-                $MainForm.Height = $WindowSettings.Height
-                $MainForm.Width = $WindowSettings.Width
-                $MainForm.Top = $WindowSettings.Top
-                $MainForm.Left = $WindowSettings.Left
-            }
+            # Restore window size
+            $MainForm.Width = If ($WindowSettings.Width -gt $MainForm.MinimumSize.Width) { $WindowSettings.Width }
+            $MainForm.Height = If ($WindowSettings.Height -gt $MainForm.MinimumSize.Height) { $WindowSettings.Height }
+            $MainForm.Top = $WindowSettings.Top
+            $MainForm.Left = $WindowSettings.Left
         }
         Update-TabControl
         MainForm_Load

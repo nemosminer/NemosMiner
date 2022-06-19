@@ -3,8 +3,8 @@ using module ..\Includes\Include.psm1
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -ne "NVIDIA" -or $_.OpenCL.ComputeCapability -gt 5.0 })) { Return }
 
 $Uri = Switch ($Variables.DriverVersion.CUDA) { 
-    { $_ -ge "11.0" } { "https://github.com/nanopool/nanominer/releases/download/v3.6.4/nanominer-windows-3.6.4-cuda11.zip"; Break }
-    Default           { "https://github.com/nanopool/nanominer/releases/download/v3.6.4/nanominer-windows-3.6.4.zip" }
+    { $_ -ge "11.0" } { "https://github.com/nanopool/nanominer/releases/download/v3.6.5/nanominer-windows-3.6.5-cuda11.zip"; Break }
+    Default           { "https://github.com/nanopool/nanominer/releases/download/v3.6.5/nanominer-windows-3.6.5.zip" }
 }
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\nanominer.exe"

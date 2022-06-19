@@ -6,6 +6,35 @@ Breaking changes (from 3.8.x.x code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible, new files will be created instead
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+
+ChangeLog NemosMiner 4.0.1.1 19.06.2022
+=======================================
+
+Enhancements:
+- Core: Added Ergo (ERG) DAG size data
+- Core / Miners: Added 'Updated' property (when was miner last used)
+- Legacy GUI: Show / Hide 'Profit', 'Power usage' & 'Power cost' depending on 'CalculatePowerCost'
+- Legacy GUI: Improve form resizing
+- Web GUI / Balances: Hide other currencies when 'BalancesShowInAllCurrencies' is false
+- Web GUI / Miners: Added hidden column 'Updated'
+- Web GUI / Miners: Changed column order 'Power cost'; now in-between 'Ernings' & 'Profit'
+
+Fixes:
+- Core: Do not update DAG data on every loop (Regression from 4.0.1.0; once per day is enough)
+- Legacy GUI / Earnings: Graph broken (Regression from 4.0.1.0)
+- Legacy GUI / Benchmarks: Columns 'Algorithm(s)' & 'Hashrate(s)' empty (Regression from 4.0.1.0)
+- Legacy GUI / Running Miner: Columns 'Algorithm(s)' & 'Hashrate(s)' empty (Regression from 4.0.1.0)
+- Legacy GUI / Switching Log: Columns 'Algorithm(s)' & 'Hashrate(s)' empty (Regression from 4.0.1.0)
+- Main Text Window: Removed double "Temporarily switched UI style to 'full'" message
+- Web GUI / Balances: Invalid values calculated when 'BalancesShowInAllCurrencies' is false (Regression from 4.0.0.36)
+- Web GUI / Dashboard: 'NaN' value in columns 'Earning', 'Profit' and 'PowerCost' after start (page refresh required to show proper values)
+- Web GUI / Running Config: Sort entries alphabetically (Regression from 4.0.1.0)
+
+Miner changes:
+- Autolykos2 (Ergo): Use DAG data for MinMemGB
+- NanoMiner-v3.6.5
+
+
 ChangeLog NemosMiner 4.0.1.0 15.06.2022
 =======================================
 
@@ -14,7 +43,7 @@ Changes:
 
 Enhancements:
 - API: Remove array or json data type when not required
-- Miners: Changed property Algorithm to Algorithms
+- Miners: Changed property 'Algorithm' to 'Algorithms'
 - Core / Update-Config: remove old miner files which are replaced by newer versions
 - Core: Added FIRO DAG size data from firo.org
 - Core: Optimize 'device' class (sorted properties)

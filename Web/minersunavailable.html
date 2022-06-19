@@ -47,11 +47,11 @@
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
                 <th data-field="tStatus" data-sortable="true" data-filter-control="select">Status</th>
                 <th data-field="Reasons" data-sortable="true" data-filter-control="select">Reasons</th>
-                <th data-field="Earning_Bias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Earning Bias</th>
-                <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Earning</th>
-                <th data-field="Profit_Bias" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Profit Bias</th>
-                <th data-field="Profit" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Profit</th>
-                <th data-field="PowerCost" data-align="right" data-sortable="true" data-formatter="formatBTC" data-title-tooltip="per 24hrs (estimated)">Power Cost</th>
+                <th data-field="Earning_Bias" data-align="right" data-sortable="true" data-formatter="formatDigitsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning Bias</th>
+                <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatDigitsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning</th>
+                <th data-field="PowerCost" data-align="right" data-sortable="true" data-formatter="formatDigitsFromBTC" data-title-tooltip="per 24hrs (estimated)">Power Cost</th>
+                <th data-field="Profit_Bias" data-align="right" data-sortable="true" data-formatter="formatDigitsFromBTC" data-title-tooltip="per 24hrs (estimated)">Profit Bias</th>
+                <th data-field="Profit" data-align="right" data-sortable="true" data-formatter="formatDigitsFromBTC" data-title-tooltip="per 24hrs (estimated)">Profit</th>
                 <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt" class="text-nowrap" data-title-tooltip="per 24hrs (estimated)">Power<br>Usage</th>
                 <th data-field="tTotalMiningDuration" data-sortable="true" data-visible="false">Total Mining Duration</th>
                 <th data-field="tEarningAccuracy" data-align="right" data-sortable="true">Accuracy</th>
@@ -90,11 +90,11 @@
             var $table = $('#miners');
             var $querysize = 20000;
 
-            $('#miners tr:eq(0) th:eq(9)').html("Earning Bias<br>(" + maincurrency + ")");
-            $('#miners tr:eq(0) th:eq(10)').html("Earning<br>(" + maincurrency + ")");
-            $('#miners tr:eq(0) th:eq(11)').html("Profit Bias<br>(" + maincurrency + ")");
-            $('#miners tr:eq(0) th:eq(12)').html("Profit<br>(" + maincurrency + ")");
-            $('#miners tr:eq(0) th:eq(13)').html("Power Cost<br>(" + maincurrency + ")");
+            $('#miners tr:eq(0) th:eq(9)').html('Earning Bias<br>(' + maincurrency + ')');
+            $('#miners tr:eq(0) th:eq(10)').html('Earning<br>(' + maincurrency + ')');
+            $('#miners tr:eq(0) th:eq(11)').html('Power Cost<br>(' + maincurrency + ')');
+            $('#miners tr:eq(0) th:eq(12)').html('Profit Bias<br>(' + maincurrency + ')');
+            $('#miners tr:eq(0) th:eq(13)').html('Profit<br>(' + maincurrency + ')');
 
             $table.bootstrapTable({
               onPreBody: function () { 
@@ -143,11 +143,11 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
                   else {
-                    $("body").css("cursor", "progress");
+                    $('body').css('cursor', 'progress');
                     $command = '/functions/watchdogtimers/remove?Miners=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#remove-watchdog').text());
-                      $("body").css("cursor", "default");
+                      $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });
                     $table.bootstrapTable('refresh');
@@ -163,11 +163,11 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
                   else {
-                    $("body").css("cursor", "progress");
+                    $('body').css('cursor', 'progress');
                     $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=HashRate';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#re-benchmark').text());
-                      $("body").css("cursor", "default");
+                      $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });
                     $table.bootstrapTable('refresh');
@@ -183,11 +183,11 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
                   else {
-                    $("body").css("cursor", "progress");
+                    $('body').css('cursor', 'progress');
                     $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=PowerUsage';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#re-measure').text());
-                      $("body").css("cursor", "default");
+                      $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });
                     $table.bootstrapTable('refresh');
@@ -203,11 +203,11 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
                   else {
-                    $("body").css("cursor", "progress");
+                    $('body').css('cursor', 'progress');
                     $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=HashRate&Value=0';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#failed').text());
-                      $("body").css("cursor", "default");
+                      $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });
                     $table.bootstrapTable('refresh');
@@ -223,11 +223,11 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')')
                   }
                   else {
-                    $("body").css("cursor", "progress");
+                    $('body').css('cursor', 'progress');
                     $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=HashRate&Value=-1';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#disable').text());
-                      $("body").css("cursor", "default");
+                      $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });
                     $table.bootstrapTable('refresh');

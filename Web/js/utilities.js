@@ -3,7 +3,7 @@ function formatMiners(data) {
   // that is easier to display and manipulate in a table
   $.each(data, function(index, item) {
     // Format miner link
-    if (item.MinerUri) item.tName = "<a href='" + item.MinerUri + "' target ='_blank'>" + item.Name + "</a>";
+    if (item.MinerUri) item.tName = '<a href="' + item.MinerUri + '" target ="_blank">' + item.Name + '</a>';
     else item.tName = item.Name;
 
     // Format the device(s)
@@ -70,14 +70,14 @@ function formatMiners(data) {
     item.tTotalMiningDuration = formatTimeSpan(item.TotalMiningDuration);
 
     // Format Mining Duration (TimeSpan)
-    item.tMiningDuration = formatTimeSince(item.BeginTime).replace(" ago", "").replace("just now", "just started");
+    item.tMiningDuration = formatTimeSince(item.BeginTime).replace(' ago', '').replace('just now', 'just started');
 
     // Format status
-    const enumstatus = ["Running", "Idle", "Failed", "Disabled"];
+    const enumstatus = ['Running', 'Idle', 'Failed', 'Disabled'];
     item.tStatus = enumstatus[item.Status];
 
     // Format status message
-    if (item.StatusMessage) item.tStatusMessage = item.StatusMessage.replace(/ \{.+/g, "");
+    if (item.StatusMessage) item.tStatusMessage = item.StatusMessage.replace(/ \{.+/g, '');
   });
   return data;
 }
@@ -86,7 +86,7 @@ function formatTimeSince(value) {
   var value = (new Date).getTime() - (new Date(value)).getTime();
   var localtime = new Date().getTime();
   var lastupdated = '';
-  if (isNaN(value)) value = localtime - parseInt(kicked.replace("/Date(", "").replace(")/", ""));
+  if (isNaN(value)) value = localtime - parseInt(kicked.replace('/Date(', '').replace(')/', ''));
 
   seconds = value / 1000;
   lastupdated = formatTime(seconds)
@@ -139,41 +139,39 @@ function formatHashrate(value) {
   return values.map(formatHashrate).toString();
 };
 
-function digitsFromValue(value) {
-  // The higher the value the more digits are returned
+function digitsFromValue(value, maxdigits) {
+  // The bigger the number, the more decimal digits
 
   // Output will have as many digits as the integer value is to the power of 10
   // e.g. Rate is between 100 and 999, then Digits is 3
-  // The bigger the number, the more decimal digits
-  // Use $Offset to add/remove decimal places
 
   digits = parseInt(value).toString().length
   if (digits < 0) digits = 0;
-  if (digits > 10) digits = 10;
+  if (digits > maxdigits) digits = maxdigits;
   return digits;
 };
 
-function formatmBTC(value) {
-  if (value == null) return ''
-  if (value > 0) return parseFloat(value * rate / 1000).toFixed(digitsFromValue(rate) + 2);
-  if (value == 0) return (0).toFixed(8);
-  if (value < 0) return parseFloat(value * rate / 1000).toFixed(digitsFromValue(rate) + 2);
+function formatDigitsFromBTC(value) {
+  if (value == null) return '';
+  if (isNaN(value)) return 'N/A';
+  if (value == 0) return (0).toFixed(12 - digitsFromValue(rate, 10));
+  if (value != 0) return parseFloat(value * rate).toFixed(12 - digitsFromValue(rate, 10));
   return 'N/A';
 };
 
-function formatBTC(value) {
+function formatDigitsFromValue(value) {
   if (value == null) return ''
-  if (value > 0) return parseFloat(value * rate).toFixed(digitsFromValue(rate) + 2);
-  if (value == 0) return (0).toFixed(8);
-  if (value < 0) return parseFloat(value * rate).toFixed(digitsFromValue(rate) + 2);
+  if (isNaN(value)) return 'N/A';
+  if (value == 0) return (0).toFixed(8 - digitsFromValue(value, 8));
+  if (value != 0) return parseFloat(value).toFixed(8 - digitsFromValue(value, 8));
   return 'N/A';
 };
 
 function formatDate(value) {
   if (value === '') return "N/A";
   if (Date.parse(value)) return (new Date(value).toLocaleString(navigator.language));
-  if (value == "Unknown") return "N/A";
-  if (value == null) return "N/A";
+  if (value == "Unknown") return 'N/A';
+  if (value == null) return 'N/A';
   return value;
 };
 
@@ -257,64 +255,64 @@ function formatDigits10(value) {
 
 
 function formatGBDigits0(value) {
-  if (value > 0) return (value).toFixed(0) + " GB";
+  if (value > 0) return (value).toFixed(0) + ' GB';
   return '';
 };
 
 function formatGBDigits1(value) {
-  if (value > 0) return (value).toFixed(1) + " GB";
+  if (value > 0) return (value).toFixed(1) + ' GB';
   return '';
 };
 
 function formatGBDigits2(value) {
-  if (value > 0) return (value).toFixed(2) + " GB";
+  if (value > 0) return (value).toFixed(2) + ' GB';
   return '';
 };
 
 function formatGBDigits3(value) {
-  if (value > 0) return (value).toFixed(3) + " GB";
+  if (value > 0) return (value).toFixed(3) + ' GB';
   return '';
 };
 
 function formatGBDigits4(value) {
-  if (value > 0) return (value).toFixed(4) + " GB";
+  if (value > 0) return (value).toFixed(4) + ' GB';
   return '';
 };
 
 function formatGBDigits5(value) {
-  if (value > 0) return (value).toFixed(5) + " GB";
+  if (value > 0) return (value).toFixed(5) + ' GB';
   return '';
 };
 
 function formatGBDigits6(value) {
-  if (value > 0) return (value).toFixed(6) + " GB";
+  if (value > 0) return (value).toFixed(6) + ' GB';
   return '';
 };
 
 function formatGBDigits7(value) {
-  if (value > 0) return (value).toFixed(7) + " GB";
+  if (value > 0) return (value).toFixed(7) + ' GB';
   return '';
 };
 
 function formatGBDigits8(value) {
-  if (value > 0) return (value).toFixed(8) + " GB";
+  if (value > 0) return (value).toFixed(8) + ' GB';
   return '';
 };
 
 function formatGBDigits9(value) {
-  if (value > 0) return (value).toFixed(9) + " GB";
+  if (value > 0) return (value).toFixed(9) + ' GB';
   return '';
 };
 
 function formatGBDigits10(value) {
-  if (value > 0) return (value).toFixed(10) + " GB";
+  if (value > 0) return (value).toFixed(10) + ' GB';
   return '';
 };
 
 function detailFormatter(index, row) {
   var html = [];
   $.each(row, function (key, value) {
-    if (typeof value === 'string') html.push(`<p class="mb-0"><b>${key}:</b> ${JSON.stringify(value).replaceAll("\\\\", "\\")}</p>`);
+    if (typeof value === 'string') html.push(`<p class="mb-0"><b>${key}:</b> ${JSON.stringify(value).replaceAll('\\\\', '\\')}</p>`);
     else html.push(`<p class="mb-0"><b>${key}:</b> ${JSON.stringify(value)}</p>`);
   });
   return html.join('');

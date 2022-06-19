@@ -66,17 +66,6 @@
       }
     });
 
-    // get BTC rate of first currency
-    $.ajax({
-      async: false,
-      dataType: 'text',
-      timeout: 10,
-      url: '/btc',
-      success: function(result) {
-        rate = result;
-      }
-    });
-
     $(document).ready(function() {
       // set the values in the header
       updateHeader();
@@ -86,6 +75,17 @@
     });
 
     function updateHeader() {
+      // get BTC rate for first currency
+      $.ajax({
+        async: false,
+        dataType: 'text',
+        timeout: 10,
+        url: '/btc',
+        success: function(result) {
+          rate = result;
+        }
+      });
+
       // get page header info
       $.ajax({
         async: false,

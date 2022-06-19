@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.1.0
-Version date:   15 June 2022
+Version:        4.0.1.1
+Version date:   19 June 2022
 #>
 
 using module .\Include.psm1
@@ -184,8 +184,8 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 $Variables.DAGdata = $Variables.DAGdata | Get-SortedObject 
                 $Variables.DAGdata | ConvertTo-Json -ErrorAction Ignore | Out-File -FilePath ".\Data\DagData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
             }
-            ElseIf ((Get-ChildItem -Path ".\Data\DagData.json" -ErrorAction Ignore).LastWriteTime.AddDays(-1) -gt (Get-Date)) { 
-                # Read from file
+            ElseIf ((Get-ChildItem -Path ".\Data\DagData.json" -ErrorAction Ignore).LastWriteTime.AddDays(1) -gt (Get-Date)) { 
+                # Read from file if data is not older than 1 day
                 If ($Variables.DAGdata = Get-Content ".\Data\DagData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) { Write-Message -Level Verbose "Loaded DAG data from cached file '.\Data\DagData.json' (Last updated $((Get-ChildItem -Path ".\Data\DagData.json" -ErrorAction Ignore).LastWriteTime))." }
             }
 
@@ -283,7 +283,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             # Load currency exchange rates from min-api.cryptocompare.com
             Get-Rate
-            $Variables.Digits = 12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MinDigits 10)
+            $Variables.Digits = 12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10)
 
             # Power cost preparations
             $Variables.CalculatePowerCost = $Config.CalculatePowerCost # $Variables.CalculatePowerCost is an operational variable and not identical to $Config.CalculatePowerCost
@@ -931,7 +931,8 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 $Variables.BestMiners_Combo | Select-Object | ForEach-Object { $_.Best = $true }
             }
             Else { 
-                Write-Message -Level Warn ("Mining profit ($($Config.Currency) {0:n$($Variables.Digits)}) is below the configured threshold of $($Config.Currency) {1:n$($Variables.Digits)}/day; mining is suspended until threshold is reached." -f (($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) *  $Variables.Rates."BTC".($Config.Currency)), $Config.ProfitabilityThreshold)}
+                Write-Message -Level Warn ("Mining profit ({0} {1:n$($Variables.Digits)}) is below the configured threshold of {0} {2:n$($Variables.Digits)}/day; mining is suspended until threshold is reached." -f $Config.Currency, (($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) * $Variables.Rates."BTC".($Config.Currency)), $Config.ProfitabilityThreshold)
+            }
         }
         Else { 
             $Variables.MostProfitableMiners = @()
