@@ -2834,6 +2834,7 @@ Function Initialize-Autoupdate {
 
     $VersionTable = (Get-Content -Path ".\Version.txt").trim() | ConvertFrom-Json -AsHashtable
     $VersionTable | Add-Member @{ AutoUpdated = ((Get-Date).DateTime) } -Force
+    $VersionTable | Add-Member @{ Version = $UpdateVersion.Version } -Force
     $VersionTable | ConvertTo-Json | Out-File -FilePath ".\Version.txt" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
 
     "Successfully updated $($UpdateVersion.Product) to version $($UpdateVersion.Version)." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
