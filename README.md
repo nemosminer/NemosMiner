@@ -263,7 +263,8 @@ When running multiple cards its recommended to increase Virtual Memory. 64GB is 
 
 **Recommended/optimal Windows Nvidia driver**
 
-[recommended/optimal Windows Nvidia driver 516.40](https://us.download.nvidia.com/Windows/516.40/516.40-desktop-win10-win11-64bit-international-dch-whql.exe)
+[recommended/optimal Windows Nvidia driver 512.95](https://us.download.nvidia.com/Windows/512.95/512.95-notebook-win10-win11-64bit-international-dch-whql.exe)
+Newer drivers have issues with 100% LHR unlock.
 
 **Recommended/optimal Windows AMD driver**
 
