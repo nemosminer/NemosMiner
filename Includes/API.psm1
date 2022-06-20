@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.6.3"
+    $APIVersion = "0.4.6.4"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
@@ -720,6 +720,10 @@ Function Start-APIServer {
                             ) | Sort-Object "Worker Name"
                         )
                         $Data = ConvertTo-Json @($DisplayWorkers | Select-Object)
+                        Break
+                    }
+                    "/donationdata" { 
+                        $Data =  ConvertTo-Json $Variables.DonationData
                         Break
                     }
                     "/driverversion" { 
