@@ -41,7 +41,7 @@
               </tr>
             </thead>
           </table>
-<!-- Start of page scripts 'watchdogtimers.html' -->
+<!-- Start of page scripts 'watchdogtmiers.html' -->
           <script type="text/javascript">
             var $table = $('#watchdogtimers');
 
@@ -62,11 +62,11 @@
                 dataType: 'text',
                 url: '/watchdogexpiration',
                 success: function(minutes) {
-                  $('#watchdog').text("Shows all watchdog timers (watchdog timers expire after " + formatTime(minutes) + ").");
+                  $('#watchdog').text('Shows all watchdog timers (watchdog timers expire after ' + formatTime(minutes) + ').');
                 }
               });
 
-              $("#removewatchdogs").click(function () {
+              $('#removewatchdogs').click(function () {
                 $command = '/functions/watchdogtimers/reset';
                 $('.modal-body').load($command, function() {
                   $('.modal-title').text($('#removewatchdogs').text());

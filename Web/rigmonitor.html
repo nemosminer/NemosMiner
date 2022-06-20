@@ -53,13 +53,13 @@
               >
               <thead>
                 <tr>
-                  <th data-field="Worker" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Worker</th>
+                  <th data-field="Worker" data-sortable="true" data-filter-control="select">Worker</th>
                   <th data-field="Status" data-sortable="true" data-filter-control="select">Status</th>
                   <th data-field="LastSeen" data-sortable="true" data-formatter="formatTimeSince">Last seen</th>
-                  <th data-field="Version" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Version</th>
-                  <th data-field="Currency" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Currency</th>
-                  <th data-field="EstimatedEarning" data-align="right" data-sortable="true" data-formatter="formatDigitsFromValue">Estimated Earning/day</th>
-                  <th data-field="EstimatedProfit" data-align="right" data-sortable="true" data-formatter="formatDigitsFromValue">Estimated Profit/day</th>
+                  <th data-field="Version" data-sortable="true" data-filter-control="select">Version</th>
+                  <th data-field="Currency" data-sortable="true" data-filter-control="select">Currency</th>
+                  <th data-field="EstimatedEarning" data-align="right" data-sortable="true" data-formatter="formatDigitsFromValue">Estimated<br>Earning/day</th>
+                  <th data-field="EstimatedProfit" data-align="right" data-sortable="true" data-formatter="formatDigitsFromValue">Estimated<br>Profit/day</th>
                   <th data-field="Miner" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Miner(s)</th>
                   <th data-field="Pool" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Pool(s)</th>
                   <th data-field="Algorithm" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Algorithm(s)</th>
@@ -74,23 +74,23 @@
             var $table = $('#workers');
 
             $table.on('pre-body.bs.table', function () {
-              $("#workers thead tr th").each(function () {
+              $('#workers thead tr th').each(function () {
                 $(this).addClass('align-top');
               });
             });
 
             $table.on('post-body.bs.table', function () {
               if (config.WebGUIUseColor == true) {
-                $("#workers td:nth-child(3)").each(function () {
+                $('#workers td:nth-child(3)').each(function () {
                   switch(this.innerHTML) {
                     case this.innerHTML.match(/^Offline/)?.input:
-                      $(this).parent("tr").addClass('miner-failed');
+                      $(this).parent('tr').addClass('miner-failed');
                       break;
                     case this.innerHTML.match(/^Paused/)?.input:
-                      $(this).parent("tr").addClass('miner-disabled');
+                      $(this).parent('tr').addClass('miner-disabled');
                       break;
                     case this.innerHTML.match(/^Running/)?.input:
-                      $(this).parent("tr").addClass('miner-running');
+                      $(this).parent('tr').addClass('miner-running');
                       break;
                   };
                 });
@@ -99,7 +99,7 @@
 
             $table.bootstrapTable({
               autoRefreshInterval: (parseInt(config.Interval / 2)), // refresh once per interval
-              height: $(window).height() - $("#workers").offset().top + 20
+              height: $(window).height() - $('#workers').offset().top + 20
             });
 
             $(document).ready(function () {
@@ -122,25 +122,25 @@
               document.getElementById('ShowWorkerStatus').checked = config.ShowWorkerStatus;
 
               if (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '' || document.getElementById('ShowWorkerStatus').checked != true) document.getElementById('workerlist').style.visibility="hidden";
-              else document.getElementById('workerlist').style.visibility="visible";
+              else document.getElementById('workerlist').style.visibility='visible';
 
               $(document.getElementById('MonitoringServer')).change(function (event) {
                 document.getElementById('ReportToServer').disabled = (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '');
                 document.getElementById('ShowWorkerStatus').disabled = (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '');
                 if (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '' || document.getElementById('ShowWorkerStatus').checked != true) document.getElementById('workerlist').style.visibility="hidden";
-                else document.getElementById('workerlist').style.visibility="visible";
+                else document.getElementById('workerlist').style.visibility='visible';
               });
 
               $(document.getElementById('MonitoringUser')).change(function (event) {
                 document.getElementById('ReportToServer').disabled = (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '');
                 document.getElementById('ShowWorkerStatus').disabled = (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '');
                 if (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '' || document.getElementById('ShowWorkerStatus').checked != true) document.getElementById('workerlist').style.visibility="hidden";
-                else document.getElementById('workerlist').style.visibility="visible";
+                else document.getElementById('workerlist').style.visibility='visible';
               });
 
               $(document.getElementById('ShowWorkerStatus')).click(function (event) {
                 if (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '' || document.getElementById('ShowWorkerStatus').checked != true) document.getElementById('workerlist').style.visibility="hidden";
-                else document.getElementById('workerlist').style.visibility="visible";
+                else document.getElementById('workerlist').style.visibility='visible';
               });
 
               if (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '' || document.getElementById('ShowWorkerStatus').checked != true) $("#settings").collapse("show");
@@ -150,11 +150,11 @@
                 document.getElementById('MonitoringUser').value = createUUID();
               });
 
-              $("#configuration").bind("reset", function () {
+              $('#configuration').bind('reset', function () {
                 location.reload(true);
               });
 
-              $("#configuration").validate({
+              $('#configuration').validate({
                 submitHandler: function (form) {
                   document.body.style.cursor = 'wait';
 

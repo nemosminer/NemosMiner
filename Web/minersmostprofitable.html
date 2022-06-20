@@ -81,7 +81,7 @@
             </thead>
           </table>
 <!-- Start of page scripts 'minersmostprofitable.html' -->
-          <script type='text/javascript'>
+          <script type="text/javascript">
             var $table = $('#miners');
             var $querysize = 20000;
 
@@ -137,7 +137,7 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
                   else {
-                    $("body").css("cursor", "progress");
+                    $('body').css('cursor', 'progress');
                     $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=HashRate';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#re-benchmark').text());

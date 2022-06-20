@@ -75,8 +75,8 @@
                   dataType: 'json',
                   url: '/configrunning',
                   success: function(result) {
-                    $("#config").empty();
-                    $("#config").append(JSON.stringify(result, undefined, 4));
+                    $('#config').empty();
+                    $('#config').append(JSON.stringify(result, undefined, 4));
                   }
                 });
               });

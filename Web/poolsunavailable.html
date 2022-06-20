@@ -62,8 +62,8 @@
               </tr>
             </thead>
           </table>
-<!-- Start of page scripts 'poolsunavailable.html' -->
-          <script type='text/javascript'>
+<!-- Start of page scripts 'poolunavailable.html' -->
+          <script type="text/javascript">
             var $table = $('#pools');
             var $querysize = 20000;
 
@@ -94,11 +94,11 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
                   else {
-                    $("body").css("cursor", "progress");
+                    $('body').css('cursor', 'progress');
                     $command = '/functions/stat/remove?Pools=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#reset-data').text());
-                      $("body").css("cursor", "default");
+                      $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });
                     $table.bootstrapTable('refresh');
@@ -114,11 +114,11 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
                   else {
-                    $("body").css("cursor", "progress");
+                    $('body').css('cursor', 'progress');
                     $command = '/functions/watchdogtimers/remove?Pools=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#remove-watchdog').text());
-                      $("body").css("cursor", "default");
+                      $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });
                     $table.bootstrapTable('refresh');
@@ -134,11 +134,11 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
                   else {
-                    $("body").css("cursor", "progress");
+                    $('body').css('cursor', 'progress');
                     $command = '/functions/pool/enable?Pools=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#enable').text());
-                      $("body").css("cursor", "default");
+                      $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });
                     $table.bootstrapTable('refresh');
@@ -154,11 +154,11 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
                   else {
-                    $("body").css("cursor", "progress");
+                    $('body').css('cursor', 'progress');
                     $command = '/functions/pool/disable?Pools=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#disable').text());
-                      $("body").css("cursor", "default");
+                      $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });
                     $table.bootstrapTable('refresh');

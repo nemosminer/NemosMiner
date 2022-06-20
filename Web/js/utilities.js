@@ -96,7 +96,7 @@ function formatTimeSince(value) {
 }
 
 function formatTime(seconds) {
-  var formattedtime = "";
+  var formattedtime = '';
 
   interval = Math.floor(seconds / (24 * 3600));
   if (interval > 1) formattedtime = formattedtime + interval.toString() + ' days ';
@@ -131,7 +131,7 @@ function formatHashrateValue(value) {
     if (unitvalue < 10) return unitvalue.toFixed(3) + ' ' + sizes[i];
     return unitvalue.toFixed(2) + ' ' + sizes[i];
   }
-  return 'N/A';
+  return 'n/a';
 };
 
 function formatHashrate(value) {
@@ -153,32 +153,32 @@ function digitsFromValue(value, maxdigits) {
 
 function formatDigitsFromBTC(value) {
   if (value == null) return '';
-  if (isNaN(value)) return 'N/A';
+  if (isNaN(value)) return 'n/a';
   if (value == 0) return (0).toFixed(12 - digitsFromValue(rate, 10));
   if (value != 0) return parseFloat(value * rate).toFixed(12 - digitsFromValue(rate, 10));
-  return 'N/A';
+  return 'n/a';
 };
 
 function formatDigitsFromValue(value) {
   if (value == null) return ''
-  if (isNaN(value)) return 'N/A';
+  if (isNaN(value)) return 'n/a';
   if (value == 0) return (0).toFixed(8 - digitsFromValue(value, 8));
   if (value != 0) return parseFloat(value).toFixed(8 - digitsFromValue(value, 8));
-  return 'N/A';
+  return 'n/a';
 };
 
 function formatDate(value) {
-  if (value === '') return "N/A";
+  if (value === '') return 'Unknown';
   if (Date.parse(value)) return (new Date(value).toLocaleString(navigator.language));
-  if (value == "Unknown") return 'N/A';
-  if (value == null) return 'N/A';
+  if (value == 'Unknown') return 'Unknown';
+  if (value == null) return 'Unknown';
   return value;
 };
 
 function formatWatt(value) {
   if (value == 0) return (0).toFixed(2) + ' W';
   if (value > 0) return parseFloat(value).toFixed(2) + ' W';
-  return 'N/A';
+  return 'n/a';
 };
 
 function formatPercent(value) {

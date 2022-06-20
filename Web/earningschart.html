@@ -4,7 +4,7 @@
           </div>
           <div class="alert alert-info" role="alert">Consolidated earnings of the last 30 active mining days<br>The data is taken from the pools APIs and may not yet include results from recent mining</div>
           <canvas id="EarningsChart" width="400" height="200" role="img"></canvas>
-<!-- Start of page scripts -->
+<!-- Start of page scripts 'earningschart.html' -->
           <script type="text/javascript">
             var canvas = document.getElementById('EarningsChart');
 
@@ -22,14 +22,14 @@
               // let saturation = 70;
               let saturation = 50 + (25 * (item % 2));
               let lightness = 50 + (25 * (item % 2));
-              return "hsl(" + hue + ", " + saturation + "%, " + lightness + "%)";
+              return 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
             };
 
             function HsvColor (items, item) {
               let hue = Math.trunc(360 / items * item);
               let saturation = 0.8;
               let value = 0.95;
-              return "rgb(" + hsv2rgb(hue, saturation, value) + ")";
+              return 'rgb(' + hsv2rgb(hue, saturation, value) + ')';
             };
 
             function RGBcolor (items, item) {
@@ -41,7 +41,7 @@
               if (green >= 255) { green -= 255};
               let blue = step * item + 2 * delta;
               if (blue >= 255) { blue -= 255};
-              return "rgb(" + red + ", " + green + ", " + blue + ")";
+              return 'rgb(' + red + ', ' + green + ', ' + blue + ')';
             };
 
             function hsv2rgb(hue, saturation, value) {
@@ -130,10 +130,10 @@
                           let label = context.dataset.label || '';
 
                           if (label) {
-                            label = " " + label + ": ";
+                            label = ' ' + label + ': ';
                           }
                           if (context.parsed.y > 0) {
-                            label += (context.parsed.y.toFixed(3) + " " + currency);
+                            label += (context.parsed.y.toFixed(3) + ' ' + currency);
                             return label;
                           }
                         },
@@ -141,7 +141,7 @@
                           // Loop through all datasets to get the actual total of the index
                           var total = 0;
                           for (var i = 0; i < data.length; i++) total += data[i].raw;
-                          return "Total: " + total.toFixed(3) + " " + currency;
+                          return 'Total: ' + total.toFixed(3) + ' ' + currency;
                         }
                       },
                       itemSort: function(a, b) {
@@ -196,5 +196,5 @@
               });
             });
           </script>
-<!-- End of page scripts -->
+<!-- End of page scripts 'earningschart.html' -->
 <!--#include file="/parts/foot.html" -->

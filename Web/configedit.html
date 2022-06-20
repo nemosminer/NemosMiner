@@ -405,7 +405,7 @@
             const regionscontainer = document.getElementById('Regions');
             const devicescontainer = document.getElementById('Devices');
 
-            var configfile = "";
+            var configfile = '';
             var poolnames = [];
             var regions = [];
             var devicenames = [];
@@ -479,9 +479,9 @@
               // Fill wallet addresses
               $.each(config.Wallets, function (key, value) {
                 key = key.toUpperCase();
-                $('<label/>', { for: ('Wallet' + key), style: "width:4rem", text: key }).appendTo(walletscontainer);
-                if (key === "BTC" || key === "LTC") $('<input/>', { type: 'text', id: ('Wallet' + key), value: value, name: ('Wallet' + key), maxlength: 35, size: 64 }).appendTo(walletscontainer);
-                else if (key === "ETC" || key === "ETH") $('<input/>', { type: 'text', id: ('Wallet' + key), value: value, name: ('Wallet' + key), maxlength: 42, size: 64 }).appendTo(walletscontainer);
+                $('<label/>', { for: ('Wallet' + key), style: 'width:4rem', text: key }).appendTo(walletscontainer);
+                if (key === 'BTC' || key === 'LTC') $('<input/>', { type: 'text', id: ('Wallet' + key), value: value, name: ('Wallet' + key), maxlength: 35, size: 64 }).appendTo(walletscontainer);
+                else if (key === 'ETC' || key === 'ETH') $('<input/>', { type: 'text', id: ('Wallet' + key), value: value, name: ('Wallet' + key), maxlength: 42, size: 64 }).appendTo(walletscontainer);
                 else $('<input/>', { type: 'text', id: ('Wallet' + key), value: value, name: ('Wallet' + key), size: 64 }).appendTo(walletscontainer);
                 $('<br>').appendTo(walletscontainer);
                 $('<option/>', { value: key, text: key }).appendTo(payoutcurrencycontainer);
@@ -513,8 +513,8 @@
                 document.getElementById('RegisterProHashing').hidden = Boolean(document.getElementById('ProHashingUserName').value);
               });
               document.getElementById('ProHashingAPIKey').value = config.ProHashingAPIKey;
-              if (config.ProHashingMiningMode === "PPLNS") document.getElementById('ProHashingMiningMode').value = config.ProHashingMiningMode;
-              else document.getElementById('ProHashingMiningMode').value = "PPS";
+              if (config.ProHashingMiningMode === 'PPLNS') document.getElementById('ProHashingMiningMode').value = config.ProHashingMiningMode;
+              else document.getElementById('ProHashingMiningMode').value = 'PPS';
 
               // Currency Settings
               $.each(fiatcurrencies, function(key, value) {
@@ -526,8 +526,8 @@
               if (config.UsemBTC) document.getElementById('UsemBTC').checked = config.UsemBTC;
 
               // General Runtime Settings
-              if (config.StartupMode === "Idle" || config.StartupMode === "Paused" || config.StartupMode === "Running") document.getElementById('StartupMode').value = config.StartupMode;
-              else document.getElementById('StartupMode').value = "Idle";
+              if (config.StartupMode === 'Idle' || config.StartupMode === 'Paused' || config.StartupMode === 'Running') document.getElementById('StartupMode').value = config.StartupMode;
+              else document.getElementById('StartupMode').value = 'Idle';
               // StartPaused
               $(document.getElementById('AutoStart')).click(function (event) {
                 document.getElementById('StartPaused').disabled = !(document.getElementById('AutoStart').checked);
@@ -553,8 +553,8 @@
               document.getElementById('Interval').value = parseInt(config.Interval);
               document.getElementById('MinDataSamples').value = parseInt(config.MinDataSamples);
               document.getElementById('MinInterval').value = parseInt(config.MinInterval);
-              // if (config.SSL === "Never" || config.SSL === "Prefer" || config.SSL === "Enforce") document.getElementById('SSL').value = config.SSL;
-              // else document.getElementById('SSL').value = "Prefer";
+              // if (config.SSL === 'Never' || config.SSL === 'Prefer' || config.SSL === 'Enforce') document.getElementById('SSL').value = config.SSL;
+              // else document.getElementById('SSL').value = 'Prefer';
               document.getElementById('Proxy').value = config.Proxy.trim();
               if (config.OpenFirewallPorts) document.getElementById('OpenFirewallPorts').checked = true;
 
@@ -594,8 +594,8 @@
                 success: function (result) {
                   devices = result;
                   $.each(devices, function (key, value) {
-                    $('<input/>', { type: 'checkbox', class: 'toggle-switch', id: ('device-' + value.Name).toLowerCase(), value: value.Name, style:"margin-top:0.3rem" }).appendTo(devicescontainer);
-                    $('<label/>', { for: ('device-' + value.Name).toLowerCase(), text: (value.Name + ': ' + value.Model), style: "margin-left:5px" }).appendTo(devicescontainer);
+                    $('<input/>', { type: 'checkbox', class: 'toggle-switch', id: ('device-' + value.Name).toLowerCase(), value: value.Name, style: 'margin-top:0.3rem' }).appendTo(devicescontainer);
+                    $('<label/>', { for: ('device-' + value.Name).toLowerCase(), text: (value.Name + ': ' + value.Model), style: 'margin-left:5px' }).appendTo(devicescontainer);
                     $('<br>').appendTo(devicescontainer);
                     if (value.State == 0) document.getElementById(('device-' + value.Name).toLowerCase()).checked = true;
                     if (value.State == 2) {
@@ -615,8 +615,8 @@
                 success: function (result) {
                   poolvariants = result;
                   $.each(result, function (key, value) {
-                    $('<input/>', { type: 'checkbox', class: 'toggle-switch', id: ('pool-' + value).toLowerCase(), value: value, style:"margin-top:0.3rem" }).appendTo(poolscontainer);
-                    $('<label/>', { for: ('pool-' + value).toLowerCase(), text: (value), style: "margin-left:5px" }).appendTo(poolscontainer);
+                    $('<input/>', { type: 'checkbox', class: 'toggle-switch', id: ('pool-' + value).toLowerCase(), value: value, style: 'margin-top:0.3rem' }).appendTo(poolscontainer);
+                    $('<label/>', { for: ('pool-' + value).toLowerCase(), text: (value), style: 'margin-left:5px' }).appendTo(poolscontainer);
                     $('<br>').appendTo(poolscontainer);
                   })
                 }
@@ -677,16 +677,16 @@
                 success: function (result) {
                   regions = result;
                   $.each(regions, function (key, value) {
-                    $('<input/>', { type: 'radio', id: ('region-' + value).toLowerCase(), value: value, name: "Region" }).appendTo(regionscontainer);
-                    $('<label/>', { for: ('region-' + value).toLowerCase(), text: value, style: "margin-left:5px" }).appendTo(regionscontainer);
+                    $('<input/>', { type: 'radio', id: ('region-' + value).toLowerCase(), value: value, name: 'Region' }).appendTo(regionscontainer);
+                    $('<label/>', { for: ('region-' + value).toLowerCase(), text: value, style: 'margin-left:5px' }).appendTo(regionscontainer);
                     $('<br>').appendTo(regionscontainer);
                   })
                 }
               });
               try {
-                document.getElementById(('region-' + config.Region).toLowerCase()).checked = "true";
+                document.getElementById(('region-' + config.Region).toLowerCase()).checked = true;
               } catch {
-                document.getElementById(('region-europe').toLowerCase()).checked = "true";
+                document.getElementById(('region-europe').toLowerCase()).checked = true;
               }
               if (config.UseAnycast) document.getElementById('UseAnycast').checked = true;
 
@@ -703,7 +703,7 @@
                   dataType: 'json',
                   url: '/defaultAlgorithm',
                   success: function (result) {
-                    Algorithm.value = "+" + result.join(",+");
+                    Algorithm.value = '+' + result.join(',+');
                   }
                 });
               });
@@ -719,9 +719,9 @@
               });
 
               // Miner Runtime Settings
-              if (config.MinerWindowStyle.toLowerCase() == "hidden") document.getElementById('MinerWindowStyleHidden').checked = true;
-              if (config.MinerWindowStyle.toLowerCase() == "minimized") document.getElementById('MinerWindowStyleMinimized').checked = true;
-              if (config.MinerWindowStyle.toLowerCase() == "normal") document.getElementById('MinerWindowStyleNormal').checked = true;
+              if (config.MinerWindowStyle.toLowerCase() == 'hidden') document.getElementById('MinerWindowStyleHidden').checked = true;
+              if (config.MinerWindowStyle.toLowerCase() == 'minimized') document.getElementById('MinerWindowStyleMinimized').checked = true;
+              if (config.MinerWindowStyle.toLowerCase() == 'normal') document.getElementById('MinerWindowStyleNormal').checked = true;
               if (config.MinerWindowStyleNormalWhenBenchmarking) document.getElementById('MinerWindowStyleNormalWhenBenchmarking').checked = true;
               if (parseInt(config.CPUMinerProcessPriority) >= -2 && parseInt(config.CPUMinerProcessPriority) <= 1) document.getElementById('CPUMinerProcessPriority').value = config.CPUMinerProcessPriority;
               else document.getElementById('CPUMinerProcessPriority').value = -2;
@@ -745,7 +745,7 @@
               document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
               document.getElementById('PowerPricekWhCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0] + ' per kW/h';
               document.getElementById('PowerPricekWhTitle').title = 'Price of power in ' + document.getElementById('Currency').value.split(',')[0] + ' per kW⋅h, valid from HH:mm (24hr format)\nData must be in compressed JSON format\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom 00:00h to 12:00h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom 12:00h to 23:59h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h'
-              document.getElementById('ProfitabilityThresholdTitle').title = "Mining will stop when profit (earnings - power cost) is less than the configured value\n(e.g. " + document.getElementById('Currency').value.split(',')[0] + " 1.00)\n(except for benchmarking & power usage measuring)\n\nHint: Use negative numbers to allow mining at loss"
+              document.getElementById('ProfitabilityThresholdTitle').title = 'Mining will stop when profit (earnings - power cost) is less than the configured value\n(e.g. ' + document.getElementById('Currency').value.split(',')[0] + ' 1.00)\n(except for benchmarking & power usage measuring)\n\nHint: Use negative numbers to allow mining at loss'
               // CalculatePowerCost click
               $(document.getElementById('CalculatePowerCost')).click(function (event) {
                 document.getElementById('PowerPricekWh').disabled = !(document.getElementById('CalculatePowerCost').checked);
@@ -758,7 +758,7 @@
                 document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
                 document.getElementById('PowerPricekWhCurrency').innerHTML = '(time: ' + document.getElementById('Currency').value.split(',')[0] + ' per kW/h)';
                 document.getElementById('PowerPricekWhTitle').title = 'Price of power in ' + document.getElementById('Currency').value.split(',')[0] + ' per kW⋅h, valid from HH:mm (24hr format)\nData must be in compressed JSON format\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom 00:00h to 12:00h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom 12:00h to 23:59h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h'
-                document.getElementById('ProfitabilityThresholdTitle').title = "If profit (earnings - power cost) is less than the configured value\n(e.g. " + document.getElementById('Currency').value.split(',')[0] + " 1.00) then mining will stop\n(except for benchmarking & power usage measuring)\n\nHint: Use negative numbers to allow mining at loss"
+                document.getElementById('ProfitabilityThresholdTitle').title = 'If profit (earnings - power cost) is less than the configured value\n(e.g. ' + document.getElementById('Currency').value.split(',')[0] + ' 1.00) then mining will stop\n(except for benchmarking & power usage measuring)\n\nHint: Use negative numbers to allow mining at loss'
               });
 
               // Calculation Settings
@@ -774,7 +774,7 @@
               if (config.IgnoreMinerFee) document.getElementById('IgnoreMinerFee').checked = true;
 
               // Main Text Window Display Settings
-              if (config.UIStyle.trim().toLowerCase() == "full") document.getElementById('UIStyle').value = 'full';
+              if (config.UIStyle.trim().toLowerCase() == 'full') document.getElementById('UIStyle').value = 'full';
               else document.getElementById('UIStyle').value = 'light';
               if (config.ShowPowerCost) document.getElementById('ShowPowerCost').checked = true;
               if (config.ShowPowerUsage) document.getElementById('ShowPowerUsage').checked = true;
@@ -815,89 +815,89 @@
                 $('#myModal').modal({ show: true });
               }
 
-              $("#configuration").bind("reset", function () {
+              $('#configuration').bind('reset', function () {
                 location.reload(true);
               });
 
-              $("#configuration").validate({
+              $('#configuration').validate({
                 rules: {
                   WalletBTC: {
                     required: false,
                     minlength: 34,
                     maxlength: 34,
-                    pattern: "^[0-9A-Za-z]{34}$"
+                    pattern: '^[0-9A-Za-z]{34}$'
                   },
                   WalletETC: {
                     required: false,
                     minlength: 42,
                     maxlength: 42,
-                    pattern: "^0[x|X][0-9A-Za-z]{40}$"
+                    pattern: '^0[x|X][0-9A-Za-z]{40}$'
                   },
                   WalletETH: {
                     required: false,
                     minlength: 42,
                     maxlength: 42,
-                    pattern: "^0[x|X][0-9A-Za-z]{40}$"
+                    pattern: '^0[x|X][0-9A-Za-z]{40}$'
                   },
                   WorkerName: {
                     required: true,
                     minlength: 2,
                     maxlength: 32,
-                    pattern: "^[0-9A-Za-z=\-]{2,32}$"
+                    pattern: '^[0-9A-Za-z=\-]{2,32}$'
                   },
                   MiningPoolHubUserName: {
                     required: false,
                     minlength: 2,
                     maxlength: 32,
-                    pattern: "^[0-9A-Za-z]{2,32}$"
+                    pattern: '^[0-9A-Za-z]{2,32}$'
                   },
                   MiningPoolHubAPIKey: {
                     required: false,
                     minlength: 64,
                     maxlength: 64,
-                    pattern: "^[0-9a-f]{64}$"
+                    pattern: '^[0-9a-f]{64}$'
                   },
                   NiceHashWallet: {
                     required: false,
                     minlength: 34,
                     maxlength: 34,
-                    pattern: "^[0-9A-Za-z]{34}$"
+                    pattern: '^[0-9A-Za-z]{34}$'
                   },
                   NiceHashAPIKey: {
                     required: false,
                     minlength: 36,
                     maxlength: 36,
-                    pattern: "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+                    pattern: '^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$'
                   },
                   NiceHashAPISecret: {
                     required: false,
                     minlength: 72,
                     maxlength: 72,
-                    pattern: "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{20}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+                    pattern: '^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{20}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$'
                   },
                   NiceHashOrganizationId: {
                     required: false,
                     minlength: 36,
                     maxlength: 36,
-                    pattern: "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$"
+                    pattern: '^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$'
                   },
                   ProHashingUserName: {
                     required: false,
                     minlength: 1,
                     maxlength: 32,
-                    pattern: "^.{1,32}$"
+                    pattern: '^.{1,32}$'
                   },
                   ProHashingAPIKey: {
                     required: false,
                     minlength: 64,
                     maxlength: 64,
-                    pattern: "^[0-9a-f]{64}$"
+                    pattern: '^[0-9a-f]{64}$'
                   },
                   ExtraCurrencies: {
                     required: false,
                     minlength: 3,
                     maxlength: 64,
-                    pattern: "^([A-Za-z0-9]{3,4}?)+(?:,([A-Za-z0-9$]{3,4})+)*$"
+                    pattern: '^([A-Za-z0-9]{3,4}?)+(?:,([A-Za-z0-9$]{3,4})+)*$'
                   },
                   IdleSec: {
                     digits: true,
@@ -930,7 +930,7 @@
                   },
                   Proxy: {
                     required: false,
-                    pattern: "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+                    pattern: '^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
                   },
                   AutoUpdateCheckInterval: {
                     digits: true,
@@ -948,13 +948,13 @@
                     required: false,
                     minlength: 4,
                     maxlength: 256,
-                    pattern: "^([A-Za-z0-9\-\._]{4,}?)+(?:,(| )([A-Za-z0-9\-\._]{4,})+)*$"
+                    pattern: '^([A-Za-z0-9\-\._]{4,}?)+(?:,(| )([A-Za-z0-9\-\._]{4,})+)*$'
                   },
                   Algorithm: {
                     required: false,
                     minlength: 3,
                     maxlength: 1024,
-                    pattern: "^[+|-]([A-Za-z0-9]{2,}?)+(?:,[+|-]([A-Za-z0-9]{2,})+)*$"
+                    pattern: '^[+|-]([A-Za-z0-9]{2,}?)+(?:,[+|-]([A-Za-z0-9]{2,})+)*$'
                   },
                   PowerUsageIdleSystemW: {
                     digits: true,
@@ -1053,9 +1053,9 @@
                     config.Wallets[key] = document.getElementById('Wallet' + key).value.toString();
                   });
                   config.WorkerName = document.getElementById('WorkerName').value.toString().trim();
-                  if ((document.getElementById('WorkerName').value) == "") config.WorkerName = document.getElementById('WorkerName').value = 'WorkerName';
+                  if ((document.getElementById('WorkerName').value) == '') config.WorkerName = document.getElementById('WorkerName').value = 'WorkerName';
                   config.MiningPoolHubUserName = document.getElementById('MiningPoolHubUserName').value.toString().trim();
-                  if ((document.getElementById('MiningPoolHubUserName').value) == "") config.MiningPoolHubUserName = document.getElementById('MiningPoolHubUserName').value = 'Nemo';
+                  if ((document.getElementById('MiningPoolHubUserName').value) == '') config.MiningPoolHubUserName = document.getElementById('MiningPoolHubUserName').value = 'Nemo';
                   config.MiningPoolHubAPIKey = document.getElementById('MiningPoolHubAPIKey').value = document.getElementById('MiningPoolHubAPIKey').value.toString().trim();
                   config.NiceHashAPIKey = document.getElementById('NiceHashAPIKey').value = document.getElementById('NiceHashAPIKey').value.toString().trim();
                   config.NiceHashAPISecret = document.getElementById('NiceHashAPISecret').value = document.getElementById('NiceHashAPISecret').value.toString().trim();
@@ -1074,8 +1074,8 @@
                   config.UsemBTC = document.getElementById('UsemBTC').checked;
 
                   // Runtime Settings
-                  if (document.getElementById('StartupMode').value.match("Idle|Paused|Running")) config.StartupMode = document.getElementById('StartupMode').value;
-                  else config.StartupMode = "Idle";
+                  if (document.getElementById('StartupMode').value.match('Idle|Paused|Running')) config.StartupMode = document.getElementById('StartupMode').value;
+                  else config.StartupMode = 'Idle';
                   config.IdleDetection = document.getElementById('IdleDetection').checked;
                   config.IdleSec = parseInt(document.getElementById('IdleSec').value);
                   config.StartGUIMinimized = document.getElementById('StartGUIMinimized').checked;
@@ -1085,8 +1085,8 @@
                   config.Interval = parseInt(document.getElementById('Interval').value);
                   config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
                   config.MinInterval = parseInt(document.getElementById('MinInterval').value);
-                  // if (document.getElementById('SSL').value.match("Never|Prefer|Enforce")) config.SSL = document.getElementById('SSL').value;
-                  // else config.SSL = "Prefer";
+                  // if (document.getElementById('SSL').value.match('Never|Prefer|Enforce')) config.SSL = document.getElementById('SSL').value;
+                  // else config.SSL = 'Prefer';
                   config.Proxy = document.getElementById('Proxy').value;
                   config.OpenFirewallPorts = document.getElementById('OpenFirewallPorts').checked;
 
@@ -1123,17 +1123,17 @@
                   config.MinerInstancePerDeviceModel = document.getElementById('MinerInstancePerDeviceModel').checked;
                   config.MinerSet = parseInt(document.getElementById('MinerSet').value);
                   config.ExcludeMinerName = []; // Enforce array
-                  if (document.getElementById('ExcludeMinerName').value) config.ExcludeMinerName = (document.getElementById('ExcludeMinerName').value).replace(" ", "").split(",");
+                  if (document.getElementById('ExcludeMinerName').value) config.ExcludeMinerName = (document.getElementById('ExcludeMinerName').value).replace(' ', '').split(',');
                   config.Algorithm = []; // Enforce array
-                  if (document.getElementById('Algorithm').value) config.Algorithm = (document.getElementById('Algorithm').value).replace(" ", "").split(",");
+                  if (document.getElementById('Algorithm').value) config.Algorithm = (document.getElementById('Algorithm').value).replace(' ', '').split(',');
                   config.DisableMinersWithFee = document.getElementById('DisableMinersWithFee').checked;
                   config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
                   config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
 
                   // Miner Runtime Settings
-                  if (document.getElementById('MinerWindowStyleHidden').checked) config.MinerWindowStyle = "hidden";
-                  if (document.getElementById('MinerWindowStyleMinimized').checked) config.MinerWindowStyle = "minimized";
-                  if (document.getElementById('MinerWindowStyleNormal').checked) config.MinerWindowStyle = "normal";
+                  if (document.getElementById('MinerWindowStyleHidden').checked) config.MinerWindowStyle = 'hidden';
+                  if (document.getElementById('MinerWindowStyleMinimized').checked) config.MinerWindowStyle = 'minimized';
+                  if (document.getElementById('MinerWindowStyleNormal').checked) config.MinerWindowStyle = 'normal';
                   config.MinerWindowStyleNormalWhenBenchmarking = document.getElementById('MinerWindowStyleNormalWhenBenchmarking').checked;
                   config.CPUMinerProcessPriority = parseInt(document.getElementById('CPUMinerProcessPriority').value);
                   config.GPUMinerProcessPriority = parseInt(document.getElementById('GPUMinerProcessPriority').value);
@@ -1143,7 +1143,7 @@
                   // Power Cost Calculation Settings
                   config.CalculatePowerCost = document.getElementById('CalculatePowerCost').checked;
                   document.getElementById('PowerPricekWh').value = document.getElementById('PowerPricekWh').value.replace('[', '').replace(']', '');
-                  if (document.getElementById('PowerPricekWh').value.toString().trim() === "") document.getElementById('PowerPricekWh').value = '{"00:00":0.0}';
+                  if (document.getElementById('PowerPricekWh').value.toString().trim() === '') document.getElementById('PowerPricekWh').value = '{"00:00":0.0}';
                   if (document.getElementById('PowerPricekWh').value.toString().trim().match(/^{"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+(?:,"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+)*\}$/)) config.PowerPricekWh = JSON.parse(document.getElementById('PowerPricekWh').value.toString().trim());
                   else {
                     $('.modal-title').text('Invalid Power Price data');

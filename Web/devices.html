@@ -199,8 +199,8 @@
               </thead>
             </table>
           </div>
-<!-- Start of page scripts -->
-          <script type='text/javascript'>
+<!-- Start of page scripts 'devices.html' -->
+          <script type="text/javascript">
 
             function formatDevices(data) {
               // This function can alter the returned data before building the table, formatting it in a way
@@ -208,27 +208,27 @@
               $.each(data, function(index, item) {
                 // Format the device(s)
                 if (item.OpenCL) item.tMemory = formatBytes(item.OpenCL.GlobalMemSize);
-                else item.tMemory = 'N/A';
+                else item.tMemory = 'n/a';
 
                 if (item.OpenCL) item.tClockSpeed = item.OpenCL.MaxClockFrequency;
                 else if (item.CIM) item.tClockSpeed = item.CIM.MaxClockSpeed;
-                else item.tClockSpeed = 'N/A';
+                else item.tClockSpeed = 'n/a';
 
                 if (item.CIM) item.tDriverVersionCIM = item.CIM.DriverVersion;
-                else item.tDriverVersionCIM = 'N/A';
+                else item.tDriverVersionCIM = 'n/a';
 
                 if (item.OpenCL) item.tDriverVersionOpenCL = item.OpenCL.DriverVersion;
-                else item.tDriverVersionOpenCL = 'N/A';
+                else item.tDriverVersionOpenCL = 'n/a';
 
                 if (item.OpenCL) item.tCores = item.OpenCL.MaxComputeUnits;
                 else if (item.CIM) item.tCores = item.CIM.NumberOfLogicalProcessors;
-                else item.tCores = 'N/A';
+                else item.tCores = 'n/a';
 
                 if (item.Architecture) item.tArchitecture = item.Architecture;
-                else item.tArchitecture = 'N/A';
+                else item.tArchitecture = 'n/a';
 
                 // Format device state
-                const enumstatus = ["Enabled", "Disabled", "Unsupported"];
+                const enumstatus = ['Enabled', 'Disabled', 'Unsupported'];
                 item.tState = enumstatus[item.State];
               });
               return data;
@@ -313,15 +313,15 @@
                   dataType: 'json',
                   url: '/devices/unsupported', 
                   success: function(result) {
-                    if (result == "") {
-                      document.getElementById("unsupporteddevices").style.visibility="hidden";
+                    if (result == '') {
+                      document.getElementById("unsupporteddevices").style.visibility='hidden';
                     } else {
-                      document.getElementById("unsupporteddevices").style.visibility="visible";
+                      document.getElementById("unsupporteddevices").style.visibility='visible';
                     }
                   }
                 });
               });
             });
           </script>
-<!-- End of page scripts -->
+<!-- End of page scripts 'devices.html' -->
 <!--#include file="/parts/foot.html" -->

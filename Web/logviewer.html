@@ -14,13 +14,13 @@
                 dataType: 'text',
                 url: '/functions/log/get?lines=100', 
                 success: function(result) {
-                  document.getElementById("logtext").innerHTML = result;
+                  document.getElementById('logtext').innerHTML = result;
                 }
               });
             };
 
             tailf();
-            setInterval("tailf()", 1000);
+            setInterval('tailf()', 1000);
           </script>
 <!-- End of page scripts 'logviewer.html' -->
 <!--#include file="/parts/foot.html" -->

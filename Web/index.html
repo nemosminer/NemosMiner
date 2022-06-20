@@ -86,11 +86,12 @@
                     <table class="center" style="width: 100%">
                       <br>
                       <tr>
-                        <th style="text-align:center; padding-left: 2%;">Earnings last hour</th>
-                        <th style="text-align:center; padding-left: 2%;">Earnings last 6 hours</th>
-                        <th style="text-align:center; padding-left: 2%;">Earnings last 24 hours</th>
-                        <th style="text-align:center; padding-left: 2%;">Earnings last 7 days</th>
-                        <th style="text-align:center; padding-left: 2%;">Earnings last 30 days</th>
+                        <th style="text-align:center; padding-left: 2%;"><h5>Earnings last hour</h5></th>
+                        <th style="text-align:center; padding-left: 2%;"><h5>Earnings last 6 hours</h5></th>
+                        <th style="text-align:center; padding-left: 2%;"><h5>Earnings last 24 hours</h5></th>
+                        <th style="text-align:center; padding-left: 2%;"><h5>Earnings last 7 days</h5></th>
+                        <th style="text-align:center; padding-left: 2%;"><h5>Earnings last 30 days</h5></th>
+                        <th style="text-align:center; padding-left: 2%;"><h5>All pool balances</h5></th>
                       </tr>
                       <tr>
                         <td style="text-align:center; padding-left: 2%;">
@@ -117,9 +118,15 @@
                           {{#each growth720}}
                             <br>{{@key}}: {{formatCurrency this}}
                           {{/each}}
-                          <td>
-                        </tr>
+                        </td>
+                        <td style="text-align:center; padding-left: 2%;">
+                          {{#each allbalances}}
+                            <br>{{@key}}: {{formatCurrency this}}
+                          {{/each}}
+                        </td>
+                      </tr>
                     </table>
+                    <br>
                   {{else}}
                     <h5><a href="{{uri}}" target="_blank">{{name}}</a></h5>
                     <div title="Data last collected from pool">
@@ -152,26 +159,25 @@
                     </div>
                   {{/if}}
                 </div>
-                <div class="card-body text-center">
-                  <p class="card-text currencies">
-                    {{#each balances}}
-                      {{@key}}: {{formatCurrency this}}
-                      <br>
-                    {{/each}}
-                  </p>
-                  {{#if total}}
-                  {{else}}
-                    <p class="payout">
+                {{#if total}}
+                {{else}}
+                  <div class="card-body text-center">
+                    <p class="card-text currencies">
+                      {{#each balances}}
+                        {{@key}}: {{formatCurrency this}}
+                        <br>
+                      {{/each}}
+                      <p class="payout">
                       <div title="{{percentage}}% of {{formatMainCurrency payoutthreshold rates currency maincurrency}} {{maincurrency}}">
-                        <b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{currencyunit}}</b><br/>payout threshold<br/>
+                        <br/>Payout threshold<br/><b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{currencyunit}}</b>
                       </div>
                       <br/>
                       <div title="Projection is based on the current daily average earnings">
-                        Projected Paydate:<br/><b>{{paydate}}</b>
+                        Projected paydate<br/><b>{{paydate}}</b>
                       </div>
                     </p>
-                  {{/if}}
-                </div>
+                  </div>
+                {{/if}}
               </div>
             </script>
           </div>
@@ -356,12 +362,12 @@
               };
               var totals = {
                 name: "Total from all pools",
-                balances: {},
                 growth1: {},
                 growth6: {},
                 growth24: {},
                 growth168: {},
                 growth720: {},
+                allbalances: {},
                 total: true,
                 maincurrency: maincurrency
               };
@@ -393,7 +399,6 @@
                               if (result != null) { 
                                 document.getElementById('balances').style.display = 'block';
                                 $('#balanceboxes').empty();
-                                var currencytotals = {};
                                 var outdatedicon = '';
                                 var template = Handlebars.compile($('#poolbalance_template').html());
                                 var footer = new RegExp('-.+|=.+');
@@ -464,12 +469,12 @@
 
                                     // build totals
                                     $.each(currencies, function(cindex, currency) {
-                                      data_sum['balances'][currency]  += item.Balance * rates[item.Currency][currency];
                                       data_sum['growth1'][currency]   += growth1 * rates[item.Currency][currency];
                                       data_sum['growth6'][currency]   += growth6 * rates[item.Currency][currency];
                                       data_sum['growth24'][currency]  += growth24 * rates[item.Currency][currency];
                                       data_sum['growth168'][currency] += growth168 * rates[item.Currency][currency];
                                       data_sum['growth720'][currency] += growth720 * rates[item.Currency][currency];
+                                      data_sum['balances'][currency]  += item.Balance * rates[item.Currency][currency];
                                     });
 
                                     $('#balanceboxes').append(template(data));
@@ -481,12 +486,12 @@
                                 if (!(config.BalancesShowInAllCurrencies)) currencies = [maincurrency];
 
                                 $.each(currencies, function(cindex, currency) {
-                                  totals['balances'][currency]  = data_sum['balances'][currency];
-                                  totals['growth1'][currency]   = data_sum['growth1'][currency];
-                                  totals['growth6'][currency]   = data_sum['growth6'][currency];
-                                  totals['growth24'][currency]  = data_sum['growth24'][currency];
-                                  totals['growth168'][currency] = data_sum['growth168'][currency];
-                                  totals['growth720'][currency] = data_sum['growth720'][currency];
+                                  totals['growth1'][currency]     = data_sum['growth1'][currency];
+                                  totals['growth6'][currency]     = data_sum['growth6'][currency];
+                                  totals['growth24'][currency]    = data_sum['growth24'][currency];
+                                  totals['growth168'][currency]   = data_sum['growth168'][currency];
+                                  totals['growth720'][currency]   = data_sum['growth720'][currency];
+                                  totals['allbalances'][currency] = data_sum['balances'][currency];
                                 });
 
                                 $('#balanceboxes').append(template(totals));
@@ -505,7 +510,6 @@
 
             window.setInterval(function() { 
               updatePoolBalances();
-              $table.bootstrapTable('refresh');
             }, (parseInt(config.Interval) * 1000));
           </script>
 <!-- End of page scripts 'index.html' -->

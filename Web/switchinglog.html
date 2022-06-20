@@ -61,16 +61,16 @@
                 });
 
                 if (config.WebGUIUseColor == true) {
-                  $("#switchinglog td:nth-child(3)").each(function () {
+                  $('#switchinglog td:nth-child(3)').each(function () {
                     switch(this.innerText) {
                       case this.innerText.match('Launched')?.input:
-                        $(this).parent("tr").addClass('miner-running');
+                        $(this).parent('tr').addClass('miner-running');
                         break;
                       case this.innerText.match('Stopped')?.input:
-                        $(this).parent("tr").addClass('miner-idle');
+                        $(this).parent('tr').addClass('miner-idle');
                         break;
                       case this.innerText.match('Failed')?.input:
-                        $(this).parent("tr").addClass('miner-failed');
+                        $(this).parent('tr').addClass('miner-failed');
                         break;
                     };
                   });
