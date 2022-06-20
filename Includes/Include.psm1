@@ -3026,25 +3026,26 @@ Function Get-DAGdata {
 
         Switch ($Currency) { 
             "ERG" { 
-                $Dataset_Bytes_Init = [Math]::Pow(2, 31) # 2GB
-                $Dataset_Bytes_Growth = [Math]::Pow(2, 21) # 1MB
-                $Mix_Bytes = 128
+                $Size = [Math]::Pow(2, 26)
+                $Blockheight = [Math]::Min($Blockheight, 4198400)
+                If ($Blockheight -ge 614400) { 
+                    $P = [Math]::Floor(($Blockheight - 614400) / 51200) + 1
+                    While ($P-- -gt 0) {
+                        $Size = [Math]::Floor($Size / 100) * 105
+                    }
+                }
+                $Size *= 31
             }
             Default { 
                 $Dataset_Bytes_Init = [Math]::Pow(2, 30) # 1GB
                 $Dataset_Bytes_Growth = [Math]::Pow(2, 23) # 8MB
                 $Mix_Bytes = 128
+                $Size = ($Dataset_Bytes_Init + $Dataset_Bytes_Growth * $Epoch) - $Mix_Bytes
+                While (-not (Test-Prime ($Size / $Mix_Bytes))) { 
+                    $Size -= 2 * $Mix_Bytes
+                }
             }
         }
-
-        Switch ($Currency) { 
-            "ERG" { $Epoch -= 193} # First increment @ epoch 193 
-            Default { }
-        }
-
-        $Size = $Dataset_Bytes_Init + $Dataset_Bytes_Growth * $Epoch
-        $Size -= $Mix_Bytes
-        While (-not (Test-Prime ($Size / $Mix_Bytes))) { $Size -= 2 * $Mix_Bytes }
 
         Return [Int64]$Size
     }
