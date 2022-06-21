@@ -518,7 +518,7 @@
 
               // Currency Settings
               $.each(fiatcurrencies, function(key, value) {
-                $('<option/>', { value: value, text: value }).appendTo(fiatcurrencycontainer);
+                $('<option/>', { value: key, text: key + ' (' + value + ')' }).appendTo(fiatcurrencycontainer);
               });
               document.getElementById('Currency').value = config.Currency.trim();
               document.getElementById('ExtraCurrencies').value = config.ExtraCurrencies.toString().trim();
