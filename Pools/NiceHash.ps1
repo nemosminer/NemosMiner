@@ -36,7 +36,7 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
 $Fee = $PoolConfig.Variant.$PoolVariant.Fee
 $PayoutCurrency = $PoolConfig.Variant.$PoolVariant.PayoutCurrency
-$Regions = If ($Config.UseAnycast -and $PoolConfig.Region -contains "N/A (Anycast)") { "N/A (Anycast)" } Else { $PoolConfig.Region | Where-Object { $_ -ne "N/A (Anycast)" }  }
+$Regions = If ($Config.UseAnycast -and $PoolConfig.Region -contains "n/a (Anycast)") { "n/a (Anycast)" } Else { $PoolConfig.Region | Where-Object { $_ -ne "n/a (Anycast)" }  }
 $Wallet = $PoolConfig.Variant.$PoolVariant.Wallets.$PayoutCurrency
 $User = "$Wallet.$($PoolConfig.WorkerName -replace "^ID=")"
 
@@ -83,7 +83,7 @@ If ($Wallet) {
         ForEach ($Region in $Regions) { 
             $Region_Norm = Get-Region $Region
 
-            If ($Region -eq "N/A (Anycast)") { 
+            If ($Region -eq "n/a (Anycast)") { 
                 $PoolHost = "$Algorithm.Auto.$HostSuffix"
                 $PoolPort = 9200
             }

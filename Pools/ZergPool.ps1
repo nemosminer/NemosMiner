@@ -37,7 +37,7 @@ $PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
 $PriceField = $Variables.PoolData.$Name.Variant.$PoolVariant.PriceField
 $DivisorMultiplier = $Variables.PoolData.$Name.Variant.$PoolVariant.DivisorMultiplier
 $PayoutCurrency = $PoolConfig.Wallets.Keys | Select-Object -First 1
-$Regions = If ($Config.UseAnycast -and $PoolConfig.Region -contains "N/A (Anycast)") { "N/A (Anycast)" } Else { $PoolConfig.Region | Where-Object { $_ -ne "N/A (Anycast)" }  }
+$Regions = If ($Config.UseAnycast -and $PoolConfig.Region -contains "n/a (Anycast)") { "n/a (Anycast)" } Else { $PoolConfig.Region | Where-Object { $_ -ne "n/a (Anycast)" }  }
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
 
 If ($DivisorMultiplier -and $Regions -and $Wallet) {
@@ -74,7 +74,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
 
         ForEach ($Region in $Regions) { 
 
-            $PoolHost = If ($Region -eq "N/A (Anycast)") { "$Algorithm.$HostSuffix" } Else { "$Algorithm.$Region.$HostSuffix" }
+            $PoolHost = If ($Region -eq "n/a (Anycast)") { "$Algorithm.$HostSuffix" } Else { "$Algorithm.$Region.$HostSuffix" }
 
             [PSCustomObject]@{ 
                 Name                     = [String]$PoolVariant

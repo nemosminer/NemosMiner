@@ -117,7 +117,7 @@
       "BTC" // Required here for donation
     ],
     "Region": [
-      "N/A (Anycast)"
+      "n/a (Anycast)"
     ],
     "Variant": {
       "NiceHash External": {
