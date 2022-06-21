@@ -3,7 +3,7 @@
             <h2 data-navbaractive="navearningschart">Earnings Chart</h2>
           </div>
           <div class="alert alert-info" role="alert">Consolidated earnings of the last 30 active mining days<br>The data is taken from the pools APIs and may not yet include results from recent mining</div>
-          <canvas id="EarningsChart" width="400" height="200" role="img"></canvas>
+          <canvas id="EarningsChart" role="img" style="padding-right: 1%;"></canvas>
 <!-- Start of page scripts 'earningschart.html' -->
           <script type="text/javascript">
             var canvas = document.getElementById('EarningsChart');
@@ -190,10 +190,11 @@
                   });
                 }
                 updateearningsdata();
-                window.setInterval(function() {
-                  updateearningsdata();
-                }, (parseInt(config.PoolBalancesUpdateInterval) * 60 * 1000));
               });
+
+              window.setInterval(function() {
+                updateearningsdata();
+              }, (parseInt(config.PoolBalancesUpdateInterval) * 60 * 1000));
             });
           </script>
 <!-- End of page scripts 'earningschart.html' -->
