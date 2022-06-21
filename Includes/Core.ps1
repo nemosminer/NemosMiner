@@ -184,7 +184,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 $Variables.DAGdata = $Variables.DAGdata | Get-SortedObject 
                 $Variables.DAGdata | ConvertTo-Json -ErrorAction Ignore | Out-File -FilePath ".\Data\DagData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
             }
-            ElseIf ((Get-ChildItem -Path ".\Data\DagData.json" -ErrorAction Ignore).LastWriteTime.AddDays(1) -gt (Get-Date)) { 
+            ElseIf (($Variables.DAGdata.Updated.Values | Sort-Object | Select-Object -First 1) -lt (Get-Date).ToUniversalTime().AddDays(-1) -and (Get-ChildItem -Path ".\Data\DagData.json" -ErrorAction Ignore).LastWriteTime.AddDays(1) -gt (Get-Date)) { 
                 # Read from file if data is not older than 1 day
                 If ($Variables.DAGdata = Get-Content ".\Data\DagData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) { Write-Message -Level Verbose "Loaded DAG data from cached file '.\Data\DagData.json' (Last updated $((Get-ChildItem -Path ".\Data\DagData.json" -ErrorAction Ignore).LastWriteTime))." }
             }
@@ -354,8 +354,10 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             # Load unprofitable algorithms
             Try { 
-                $Variables.UnprofitableAlgorithms = Get-Content -Path ".\Data\UnprofitableAlgorithms.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Stop -AsHashtable | Select-Object | Get-SortedObject
-                Write-Message -Level Info "Loaded list of unprofitable algorithms ($($Variables.UnprofitableAlgorithms.Count) $(If ($Variables.UnprofitableAlgorithms.Count -ne 1) { "entries" } Else { "entry" }))."
+                If (-not $Variables.UnprofitableAlgorithms -or (Get-ChildItem -Path ".\Data\UnprofitableAlgorithms.json" -ErrorAction Ignore).LastWriteTime.AddDays(1) -gt $Variables.Timer.AddSeconds( - $Config.Interval)) { 
+                    $Variables.UnprofitableAlgorithms = Get-Content -Path ".\Data\UnprofitableAlgorithms.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Stop -AsHashtable | Select-Object | Get-SortedObject
+                    Write-Message -Level Info "Loaded list of unprofitable algorithms ($($Variables.UnprofitableAlgorithms.Count) $(If ($Variables.UnprofitableAlgorithms.Count -ne 1) { "entries" } Else { "entry" }))."
+                }
             }
             Catch { 
                 Write-Message -Level ERROR "Error loading list of unprofitable algorithms. File '.\Data\UnprofitableAlgorithms.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file. Please restore it from your original download."
@@ -1189,9 +1191,9 @@ While ($Variables.NewMiningStatus -eq "Running") {
                     $WindowTitle = "$($Miner.Devices.Name -join ","): $($Miner.Name) $($Miner.Info)"
                     If ($Miner.Benchmark -eq $true -or $Miner.MeasurePowerUsage -eq $true) { 
                         $WindowTitle += " ("
-                        If ($Miner.Benchmark -eq $true) { $WindowTitle += "Benchmarking" }
-                        If ($Miner.Benchmark -eq $true -and $Miner.MeasurePowerUsage -eq $true) { $WindowTitle += " and " }
-                        If ($Miner.MeasurePowerUsage -eq $true) { $WindowTitle += "Measuring Power Usage" }
+                        If ($Miner.Benchmark -eq $true -and $Miner.MeasurePowerUsage -eq $false) { $WindowTitle += "Benchmarking" }
+                        If ($Miner.Benchmark -eq $true -and $Miner.MeasurePowerUsage -eq $true) { $WindowTitle += "Benchmarking and measuring power usage" }
+                        If ($Miner.Benchmark -eq $false -and $Miner.MeasurePowerUsage -eq $true) { $WindowTitle += "Measuring power usage" }
                         $WindowTitle += ")"
                     }
                     [Void][Win32]::SetWindowText((Get-Process -Id $Miner.ProcessId -ErrorAction Ignore).mainWindowHandle, $WindowTitle)
