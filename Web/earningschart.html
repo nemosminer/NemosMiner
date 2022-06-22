@@ -15,7 +15,7 @@
             Chart.defaults.font.size = 16;
 
             // Colors = ['#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#FFEB3B', '#FFC107', '#FF9800', '#E91E63', '#9C27B0', '#3F51B5'];
-            Colors = ['#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#FFEB3B', '#FFC107', '#FF9800', '#E91E63', '#9C27B0', '#3F51B5'];
+            let Colors = ['#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#FFEB3B', '#FFC107', '#FF9800', '#E91E63', '#9C27B0', '#3F51B5'];
 
             function HslColor (items, item) {
               let hue = Math.trunc(360 / items * item);
@@ -45,11 +45,11 @@
             };
 
             function hsv2rgb(hue, saturation, value) {
-            // hue in range [0, 360]
-            // saturation, value in range [0,1]
-            // return [r,g,b] each in range [0,255]
-            // See: https://en.wikipedia.org/wiki/HSL_and_HSV#From_HSV
-            let chroma = value * saturation;
+              // hue in range [0, 360]
+              // saturation, value in range [0,1]
+              // return [r,g,b] each in range [0,255]
+              // See: https://en.wikipedia.org/wiki/HSL_and_HSV#From_HSV
+              let chroma = value * saturation;
               let hue1 = hue / 60;
               let x = chroma * (1- Math.abs((hue1 % 2) - 1));
               let r1, g1, b1;
@@ -74,9 +74,12 @@
               return [255*r,255*g,255*b];
             };
 
+            var ctx = canvas.getContext('2d');
+            var myChart = new Chart(ctx);
+
             function renderChart(labels, datasets, currency) {
-              var ctx = canvas.getContext('2d');
-              var myChart = new Chart(ctx, {
+              myChart.destroy();
+              myChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                   labels: labels,
@@ -121,7 +124,7 @@
                         size: 28,
                         weight: 'normal'
                       },
-                      text: 'Daily Mining Earnings'
+                      text: 'Daily Mining Earnings',
                     },
                     tooltip: {
                       enabled: true,
@@ -162,40 +165,41 @@
               });
             }
 
-            $(document).ready(function () {
-              $(function() {
-                function updateearningsdata() {
-                  $.ajax({
-                    async: false,
-                    dataType: 'json',
-                    url: '/earningschartdata',
-                    success: function (earningsdata) {
-                      var datasets = [];
+            function updateEarningsChart() {
+              $.ajax({
+                async: false,
+                dataType: 'json',
+                url: '/earningschartdata',
+                success: function (earningsdata) {
+                  var datasets = [];
 
-                      for (var pool in earningsdata.Earnings) {
-                        var BTCvalue = [];
-                        for (var index in earningsdata.Earnings[pool]) BTCvalue.push(earningsdata.BTCrate * (earningsdata.Earnings[pool][index]));
-                        var earnings = {
-                          label: pool.replace('Internal', '(Internal)').replace('External', '(External)'),
-                          data: BTCvalue,
-                          backgroundColor: Colors[datasets.length]
-                          // backgroundColor: HslColor(Object.keys(earningsdata.Earnings).length, datasets.length)
-                          // backgroundColor: HsvColor(Object.keys(earningsdata.Earnings).length, datasets.length)
-                          // backgroundColor: RGBcolor(Object.keys(earningsdata.Earnings).length, datasets.length)
-                        };
-                        datasets.push(earnings);
-                      }
-                      renderChart(earningsdata.Labels, datasets, earningsdata.Currency);
-                    }
-                  });
+                  for (var pool in earningsdata.Earnings) {
+                    var BTCvalue = [];
+                    for (var index in earningsdata.Earnings[pool]) BTCvalue.push(earningsdata.BTCrate * (earningsdata.Earnings[pool][index]));
+                    var earnings = {
+                      label: pool.replace('Internal', '(Internal)').replace('External', '(External)'),
+                      data: BTCvalue,
+                      backgroundColor: Colors[datasets.length]
+                      // backgroundColor: HslColor(Object.keys(earningsdata.Earnings).length, datasets.length)
+                      // backgroundColor: HsvColor(Object.keys(earningsdata.Earnings).length, datasets.length)
+                      // backgroundColor: RGBcolor(Object.keys(earningsdata.Earnings).length, datasets.length)
+                    };
+                    datasets.push(earnings);
+                  }
+                  renderChart(earningsdata.Labels, datasets, earningsdata.Currency);
                 }
-                updateearningsdata();
               });
+            }
+
+            $(document).ready(function () {
+
+              updateEarningsChart();
 
               window.setInterval(function() {
-                updateearningsdata();
-              }, (parseInt(config.PoolBalancesUpdateInterval) * 60 * 1000));
+                updateEarningsChart();
+              }, (parseInt(config.BalancesTrackerPollInterval) * 1000 * 60));
             });
-          </script>
+
+            </script>
 <!-- End of page scripts 'earningschart.html' -->
 <!--#include file="/parts/foot.html" -->
