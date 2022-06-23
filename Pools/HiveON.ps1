@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveOn.ps1
-Version:        4.0.1.1
-Version date:   19 June 2022
+Version:        4.0.1.2
+Version date:   23 June 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -48,7 +48,7 @@ If ($PoolConfig.Wallets) {
         $Algorithm_Norm = Get-Algorithm $Currency
         $Divisor = [Double]$_.profitPerPower
         $Workers = $Request.stats.($_.name).workers
-        $_.Servers | ForEach-Object { $_.Region = $_.Region -replace 'all', 'N/A' }
+        $_.Servers | ForEach-Object { $_.Region = $_.Region -replace 'all', 'n/a' }
 
         # Add coin name
         If ($_.title -and $Currency -and -not (Get-CoinName $Currency)) { 
@@ -57,7 +57,7 @@ If ($PoolConfig.Wallets) {
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
 
-        ForEach ($Server in ($_.Servers | Where-Object { $_.Region -in $PoolConfig.Region -or  $_.Region -eq "N/A" } )) { 
+        ForEach ($Server in ($_.Servers | Where-Object { $_.Region -in $PoolConfig.Region -or  $_.Region -eq "n/a" } )) { 
             $Region_Norm = Get-Region $Server.Region
 
             [PSCustomObject]@{ 

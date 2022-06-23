@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.1.1
-Version date:   19 June 2022
+Version:        4.0.1.2
+Version date:   23 June 2022
 #>
 
 [CmdletBinding()]
@@ -50,7 +50,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$BalancesTrackerLog = $false, # If true will store all balance tracker data in .\Logs\EarningTrackerLog.csv
     [Parameter(Mandatory = $false)]
-    [UInt16]$BalancesTrackerPollInterval = 5, # minutes, Interval duration to trigger background task to collect pool balances & earnings dataset to 0 to disable
+    [UInt16]$BalancesTrackerPollInterval = 5, # minutes, Interval duration to trigger background task to collect pool balances & earnings data; set to 0 to disable
     [Parameter(Mandatory = $false)]
     [Switch]$CalculatePowerCost = $true, # If true power usage will be read from miners and calculate power cost, required for true profit calculation
     [Parameter(Mandatory = $false)]
@@ -144,8 +144,6 @@ param(
     [String]$PayoutCurrency = "BTC", # i.e. BTC, LTC, ZEC, ETH etc., Default PayoutCurrency for all pools that have no other currency configured, PayoutCurrency is also a per pool setting (to be configured in 'PoolsConfig.json')
     [Parameter(Mandatory = $false)]
     [String]$PoolsConfigFile = ".\Config\PoolsConfig.json", # PoolsConfig file name
-    [Parameter(Mandatory = $false)]
-    [Uint16]$PoolBalancesUpdateInterval = 15, # Udate balances every n minutes to limit pool API requests. Allowed values 0 - 999 minutes. 0 will disable gathering pool balances
     [Parameter(Mandatory = $false)]
     [String[]]$PoolName = @("Blockmasters", "MiningPoolHub", "NiceHash", "ZergPoolCoins", "ZPool"), 
     [Parameter(Mandatory = $false)]
@@ -266,7 +264,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.1.1"
+    Version      = [System.Version]"4.0.1.2"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -317,7 +315,7 @@ If (-not $Variables.Regions) {
 }
 # Load FIAT currencies list
 $Variables.FIATcurrencies = Get-Content -Path ".\Data\FIATcurrencies.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
-If (-not $Variables.Regions) { 
+If (-not $Variables.FIATcurrencies) { 
     Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\FIATcurrencies.json' is not a valid JSON file. Please restore it from your original download."
     Start-Sleep -Seconds 10
     Exit
@@ -331,6 +329,9 @@ If (-not $Variables.PoolVariants) {
     Start-Sleep -Seconds 10
     Exit
 }
+# Load DAG data, if not available it will get recreated, strip update info
+$Variables.DAGdata = Get-Content ".\Data\DagData.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore
+If ($Variables.DAGdata.Updated) { $Variables.DAGdata.Remove("Updated") }
 # Load PoolsLastUsed data
 $Variables.PoolsLastUsed = (Get-Content -Path ".\Data\PoolsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore)
 If (-not $Variables.PoolsLastUsed.Keys) { $Variables.PoolsLastUsed = @{ } }
@@ -646,9 +647,9 @@ Function Update-TabControl {
                     @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join "; " } }, 
                     @{ Name = "Miner"; Expression = { "$($_.Name) $($_.Info)" } }, 
                     @{ Name = "Account(s)"; Expression = { ($_.Workers.Pool.User | Select-Object -Unique | ForEach-Object { $_ -split '\.' | Select-Object -First 1 } | Select-Object -Unique) -join ' & ' } }, 
-                    @{ Name = "Earning $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) {"{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } Else { "N/A" } } }, 
-                    @{ Name = "Power cost $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.PowerCost)) { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Powercost * $Variables.Rates.BTC.($Config.Currency)) } Else { "N/A" } } }, 
-                    @{ Name = "Profit $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } Else { "N/A" } } }, 
+                    @{ Name = "Earning $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) {"{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }, 
+                    @{ Name = "Power cost $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.PowerCost)) { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Powercost * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }, 
+                    @{ Name = "Profit $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }, 
                     @{ Name = "Power usage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else { "$($_.PowerUsage.ToString("N2")) W" } } }, 
                     @{ Name = "Pool(s)"; Expression = { ($_.WorkersRunning.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' } }, 
                     @{ Name = "Hashrate(s)"; Expression = { (($_.Hashrates_Live | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ') -replace '\s+', ' ' } }, 
@@ -795,9 +796,9 @@ Function Update-TabControl {
                 $BenchmarksDGV.DataSource = $Variables.Miners | Where-Object Available -EQ $true | Select-Object @(
                     @{ Name = "Miner"; Expression = { $_.Name } }, 
                     @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join '; ' } }, 
-                    @{ Name = "Earning $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } Else { "N/A" } } }, 
-                    @{ Name = "Power cost $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.PowerCost)) { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Powercost * $Variables.Rates.BTC.($Config.Currency)) } Else { "N/A" } } }, 
-                    @{ Name = "Profit $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } Else { "N/A" } } }, 
+                    @{ Name = "Earning $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }, 
+                    @{ Name = "Power cost $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.PowerCost)) { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Powercost * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }, 
+                    @{ Name = "Profit $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$(12 - (Get-DigitsFromValue -Value $Variables.Rates.BTC.($Config.Currency) -MaxDigits 10))}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }, 
                     @{ Name = "Power usage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else { "$($_.PowerUsage.ToString("N2")) W" } } }, 
                     @{ Name = "Algorithm(s)"; Expression = { $_.Algorithms -join ' & ' } }, 
                     @{ Name = "Pool(s)"; Expression = { ($_.Workers.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' } }, 

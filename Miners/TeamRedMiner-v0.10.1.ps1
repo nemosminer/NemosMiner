@@ -8,7 +8,7 @@ $Path = ".\Bin\$($Name)\teamredminer.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = @("Autolykos2");           Fee = @(0.025); MinMemGB = $Pools."Autolykos2".DAGSizeGB;   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15);   Arguments = " --algo=autolykos2" }
+    [PSCustomObject]@{ Algorithm = @("Autolykos2");           Fee = @(0.025); MinMemGB = $Pools."Autolykos2".DAGSizeGB;   MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(60, 15);   Arguments = " --algo=autolykos2" }
     [PSCustomObject]@{ Algorithm = @("Chukwa");               Fee = @(0.025); MinMemGB = 2.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15);   Arguments = " --algo=trtl_chukwa" }
     [PSCustomObject]@{ Algorithm = @("Chukwa2");              Fee = @(0.025); MinMemGB = 2.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15);   Arguments = " --algo=trtl_chukwa2" }
     [PSCustomObject]@{ Algorithm = @("CryptonightCcx");       Fee = @(0.025); MinMemGB = 2.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15);   Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean --rig_id=$($Config.WorkerName)" } # SRBMinerMulti-v0.9.7 is fastest

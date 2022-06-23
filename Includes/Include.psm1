@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.1.1
-Version date:   19 June 2022
+Version:        4.0.1.2
+Version date:   23 June 2022
 #>
 
 # Window handling
@@ -2904,6 +2904,10 @@ Function Update-ConfigFile {
             "NoDualAlgoMining" { $Config.DisableDualAlgoMining = $Config.$_; $Config.Remove($_) }
             "NoSingleAlgoMining" { $Config.DisableSingleAlgoMining = $Config.$_; $Config.Remove($_) }
             "PasswordCurrency" { $Config.PayoutCurrency = $Config.$_; $Config.Remove($_) }
+            "PoolBalancesUpdateInterval" { 
+                If ($Config.$_) { $Config.PoolBalancesUpdateInterval = $Config.$_ }
+                $Config.Remove($_)
+            }
             "PricePenaltyFactor" { $Config.EarningsAdjustmentFactor = $Config.$_; $Config.Remove($_) }
             "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
             "RunningMinerGainPct" { $Config.MinerSwitchingThreshold = $Config.$_; $Config.Remove($_) }

@@ -7,6 +7,32 @@ Breaking changes (from 3.8.x.x code base):
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
 
+ChangeLog NemosMiner 4.0.1.2 23.06.2022
+=======================================
+
+API: 
+- Added '/donationdata' url
+
+Changes:
+- Changed config item 'PoolBalancesUpdateInterval' to 'BalancesTrackerPollInterval'
+- Donation list: Removed 'MrPlus', re-added 'grantemsley'
+
+Enhancements:
+- Core: Always load DAG data from file, update when new data is available
+- Web GUI / Balances: Minimize API requests
+- Web GUI / Balances: More compact layout
+- Web GUI / Config Editor: Display currency names
+
+Fixes:
+- Invalid Ergo (ERG) DAG size (Thanks to Rainbowminer)
+- NBMiner: Changed download link to NemosMiner repo (original DL links are dead)
+- Web GUI / Balances: Invalid tootip values calculated when 'UsemBTC' is true (Regression from 4.0.0.36)
+- Web GUI / Earnings chart: Graph not updating automatically
+
+Miner updates:
+- GMiner-v3.01
+
+
 ChangeLog NemosMiner 4.0.1.1 19.06.2022
 =======================================
 

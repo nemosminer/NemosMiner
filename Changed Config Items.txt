@@ -28,7 +28,7 @@ New Config Items
 # If true NemosMiner will store all balance tracker data in .\Logs\EarningTrackerLog.csv
   "BalancesTrackerLog": false,
 
-# Interval duration (in munutes) to trigger background task to collect pool balances & earnings dataset to 0 to disable
+# Interval duration (in munutes) to trigger background task to collect pool balances & earnings data; set to 0 to disable
   "BalancesTrackerPollInterval": 5, 
 
 # If true, power usage will be read from miners and calculate power cost, required for true profit calculation

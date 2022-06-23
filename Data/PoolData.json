@@ -254,7 +254,7 @@
       // e.g. "mBTC": 5
     },
     "Region": [
-      "N/A (Anycast)",
+      "n/a (Anycast)",
       "asia",
       "eu",
       "na"

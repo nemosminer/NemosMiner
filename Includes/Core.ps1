@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.1.1
-Version date:   19 June 2022
+Version:        4.0.1.2
+Version date:   23 June 2022
 #>
 
 using module .\Include.psm1
@@ -88,14 +88,14 @@ While ($Variables.NewMiningStatus -eq "Running") {
             If ($Config.Watchdog) { $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $Config.WatchDog } | Where-Object Kicked -GE $Variables.Timer.AddSeconds( - $Variables.WatchdogReset)) }
             Else { $Variables.WatchdogTimers = @() }
 
-            If (-not $Variables.DAGdata) { $Variables.DAGdata = [PSCustomObject][Ordered]@{ } }
-            If (-not $Variables.DAGdata.Currency) { $Variables.DAGdata | Add-Member Currency ([Ordered]@{ }) -Force }
-            If (-not $Variables.DAGdata.Updated) { $Variables.DAGdata | Add-Member Updated ([Ordered]@{ }) -Force }
-
             # Check for new version
             If ($Config.AutoUpdateCheckInterval -and $Variables.CheckedForUpdate -lt (Get-Date).ToUniversalTime().AddDays(-$Config.AutoUpdateCheckInterval)) { Get-NMVersion }
 
             # Do do once every 24hrs or if unable to get data from all sources
+            If (-not $Variables.DAGdata) { $Variables.DAGdata = [PSCustomObject][Ordered]@{ } }
+            If (-not $Variables.DAGdata.Currency) { $Variables.DAGdata | Add-Member Currency ([Ordered]@{ }) -Force }
+            If (-not $Variables.DAGdata.Updated) { $Variables.DAGdata | Add-Member Updated ([Ordered]@{ }) -Force }
+
             $Url = "https://minerstat.com/dag-size-calculator"
             If ($Variables.DAGdata.Updated.$Url -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
                 # Get block data from Minerstat
@@ -142,11 +142,11 @@ While ($Variables.NewMiningStatus -eq "Running") {
                         Write-Message -Level Info "Loaded DAG data from '$Url'."
                     }
                     Else { 
-                        Write-Message -Level Info "Failed to load DAG data from '$Url'."
+                        Write-Message -Level Warn "Failed to load DAG data from '$Url'."
                     }
                 }
                 Catch { 
-                    Write-Message -Level Info "Failed to load DAG data from '$Url'."
+                    Write-Message -Level Warn "Failed to load DAG data from '$Url'."
                 }
             }
 
@@ -163,15 +163,15 @@ While ($Variables.NewMiningStatus -eq "Running") {
                         Write-Message -Level Info "Loaded DAG data from '$Url'."
                     }
                     Else { 
-                        Write-Message -Level Info "Failed to load DAG data from '$Url'."
+                        Write-Message -Level Warn "Failed to load DAG data from '$Url'."
                     }
                 }
                 Catch { 
-                    Write-Message -Level Info "Failed to load DAG data from '$Url'."
+                    Write-Message -Level Warn "Failed to load DAG data from '$Url'."
                 }
             }
 
-            If ($Response -and $Variables.DAGdata.Currency.Count -gt 1) { 
+            If (($Variables.DAGdata.Updated.Values | Sort-Object | Select-Object -Last 1) -gt $Variables.Timer -and $Variables.DAGdata.Currency.Count -gt 1) { 
                 # Add default '*' (equal to highest)
                 $Variables.DAGdata.Currency.Remove("*")
                 $Variables.DAGdata.Currency.Add("*", [PSCustomObject]@{ 
@@ -183,10 +183,6 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
                 $Variables.DAGdata = $Variables.DAGdata | Get-SortedObject 
                 $Variables.DAGdata | ConvertTo-Json -ErrorAction Ignore | Out-File -FilePath ".\Data\DagData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-            }
-            ElseIf (($Variables.DAGdata.Updated.Values | Sort-Object | Select-Object -First 1) -lt (Get-Date).ToUniversalTime().AddDays(-1) -and (Get-ChildItem -Path ".\Data\DagData.json" -ErrorAction Ignore).LastWriteTime.AddDays(1) -gt (Get-Date)) { 
-                # Read from file if data is not older than 1 day
-                If ($Variables.DAGdata = Get-Content ".\Data\DagData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) { Write-Message -Level Verbose "Loaded DAG data from cached file '.\Data\DagData.json' (Last updated $((Get-ChildItem -Path ".\Data\DagData.json" -ErrorAction Ignore).LastWriteTime))." }
             }
 
             If (-not $Variables.DAGdata.Currency."*") { 

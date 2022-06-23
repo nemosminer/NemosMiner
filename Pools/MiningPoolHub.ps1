@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.0.1.1
-Version date:   19 June 2022
+Version:        4.0.1.2
+Version date:   23 June 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -64,7 +64,7 @@ If ($PoolConfig.UserName) {
             $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $false
 
             # Temp fix
-            $PoolRegions = If ($Current.host_list.split(";").count -eq 1) { @("N/A") } Else { $PoolConfig.Region }
+            $PoolRegions = If ($Current.host_list.split(";").count -eq 1) { @("n/a") } Else { $PoolConfig.Region }
             Switch ($Algorithm_Norm) { 
                 # "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
                 "Neoscrypt" { $Current.host_list = $Current.host } # Error in API
@@ -119,7 +119,7 @@ If ($PoolConfig.UserName) {
             $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $false
 
             # Temp fix
-            $PoolRegions = If ($Current.all_host_list.split(";").count -eq 1) { @("N/A") } Else { $PoolConfig.Region }
+            $PoolRegions = If ($Current.all_host_list.split(";").count -eq 1) { @("n/a") } Else { $PoolConfig.Region }
             Switch ($Algorithm_Norm) { 
                 # "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
                 "VertHash" { $Port = 20534 }
