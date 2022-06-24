@@ -119,6 +119,7 @@ Class Pool {
     [Double]$StablePrice
     [DateTime]$Updated = (Get-Date).ToUniversalTime()
     [String]$User
+    [String]$WorkerName = ""
     [Nullable[Int]]$Workers
 }
 
@@ -171,6 +172,8 @@ Class Miner {
     [Bool]$MostProfitable
     [String]$Name
     [String]$Path
+    [String]$PrerequisitePath
+    [String]$PrerequisiteURI
     [UInt16]$Port
     [Double]$PowerCost
     [Double]$PowerUsage
@@ -282,24 +285,25 @@ Class Miner {
 
             # Log switching information to .\Logs\SwitchingLog.csv
             [PSCustomObject]@{ 
-                Accounts          = ($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
+                DateTime          = (Get-Date -Format o)
                 Action            = "Launched"
+                Name              = $this.Name
+                Accounts          = ($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
                 Algorithms        = $this.Workers.Pool.Algorithm -join "; "
                 Benchmark         = $this.Benchmark
                 CommandLine       = $this.CommandLine
-                DateTime          = (Get-Date -Format o)
                 DeviceNames       = $this.DeviceNames -join "; "
                 Duration          = ""
                 Earning           = $this.Earning
                 Earning_Bias      = $this.Earning_Bias
                 LastDataSample    = $null
                 MeasurePowerUsage = $this.MeasurePowerUsage
-                Name              = $this.Name
                 Pools              = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
                 Profit            = $this.Profit
                 Profit_Bias       = $this.Profit_Bias
                 Reason            = ""
                 Type              = $this.Type
+                WorkerName        = $this.WorkerName
             } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
@@ -383,24 +387,25 @@ Class Miner {
 
         # Log switching information to .\Logs\SwitchingLog
         [PSCustomObject]@{ 
-            Accounts          = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
+            DateTime          = (Get-Date -Format o)
             Action            = If ($this.Status -eq [MinerStatus]::Idle) { "Stopped" } Else { "Failed" }
+            Name              = $this.Name
+            Accounts          = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
             Algorithms        = $this.WorkersRunning.Pool.Algorithm -join "; "
             Benchmark         = $this.Benchmark
             CommandLine       = ""
-            DateTime          = (Get-Date -Format o)
             DeviceNames       = $this.DeviceNames -join "; "
             Duration          = "{0:hh\:mm\:ss}" -f ($this.EndTime - $this.BeginTime)
             Earning           = $this.Earning
             Earning_Bias      = $this.Earning_Bias
             LastDataSample    = $this.Data | Select-Object -Last 1 | ConvertTo-Json -Compress
             MeasurePowerUsage = $this.MeasurePowerUsage
-            Name              = $this.Name
             Pools             = ($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
             Profit            = $this.Profit
             Profit_Bias       = $this.Profit_Bias
             Reason            = If ($this.Status -eq [MinerStatus]::Failed) { $this.StatusMessage } Else { "" }
             Type              = $this.Type
+            WorkerName        = $this.WorkerName
         } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
 
         $this.StatusMessage = If ($this.Status -eq [MinerStatus]::Idle) { "Idle" } Else { "Failed $($this.Info)" }

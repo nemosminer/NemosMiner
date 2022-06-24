@@ -400,7 +400,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
             $DeconfiguredPools = $Pools | Where-Object Name -notin $PoolNames
             $Pools = $Pools | Where-Object Name -in $PoolNames
 
-            If ($ComparePools = @(Compare-Object -PassThru @($Variables.NewPools | Select-Object) @($Pools | Select-Object) -Property Name, Algorithm, Host, Port, SSL -IncludeEqual)) { 
+            If ($ComparePools = @(Compare-Object -PassThru @($Variables.NewPools | Select-Object) @($Pools | Select-Object) -Property Name, Algorithm, Host, Port, SSL, WorkerName -IncludeEqual)) { 
                 # Find new pools
                 $Variables.AddedPools = @($ComparePools | Where-Object SideIndicator -eq "<=" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ })
                 $Variables.UpdatedPools = @($ComparePools | Where-Object SideIndicator -eq "==" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ })
@@ -416,7 +416,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                     $_.Best = $false
                     $_.Reasons = $null
 
-                    If ($Pool = $Variables.UpdatedPools | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Host -EQ $_.Host | Where-Object Port -EQ $_.Port | Where-Object SSL -EQ $_.SSL | Select-Object -First 1) { 
+                    If ($Pool = $Variables.UpdatedPools | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Host -EQ $_.Host | Where-Object Port -EQ $_.Port | Where-Object SSL -EQ $_.SSL | Where-Object WorkerName -EQ $_.WorkerName | Select-Object -First 1) { 
                         $_.Accuracy                 = $Pool.Accuracy
                         $_.CoinName                 = $Pool.CoinName
                         $_.Currency                 = $Pool.Currency
@@ -429,6 +429,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                         $_.Updated                  = $Pool.Updated
                         $_.User                     = $Pool.User
                         $_.Workers                  = $Pool.Workers
+                        $_.WorkerName               = $Pool.WorkerName
                     }
 
                     If ($_.Algorithm -eq "EthashLowMem" -and $Variables.EthashLowMemCurrency) { 
@@ -723,23 +724,25 @@ While ($Variables.NewMiningStatus -eq "Running") {
         $NewMiners = @(
             $NewMiners_Jobs | ForEach-Object { $_ | Get-Job -ErrorAction Ignore | Wait-Job -Timeout 60 | Receive-Job } | Where-Object { $_.Content.API } | ForEach-Object { 
                 [PSCustomObject]@{ 
-                    Algorithms     = [String[]]$_.Content.Algorithms
-                    API            = [String]$_.Content.API
-                    Arguments      = [String]$_.Content.Arguments
-                    BaseName       = [String]($_.Content.Name -split '-' | Select-Object -Index 0)
-                    DeviceNames    = [String[]]$_.Content.DeviceNames
-                    Devices        = [Device[]]($Variables.Devices | Where-Object Name -In $_.Content.DeviceNames)
-                    EnvVars        = [String[]]$_.Content.EnvVars
-                    LogFile        = [String]$_.Content.LogFile
-                    MinerUri       = [String]$_.Content.MinerUri
-                    Name           = [String]$_.Content.Name
-                    Path           = [String]$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Content.Path)
-                    Port           = [UInt16]$_.Content.Port
-                    Type           = [String]$_.Content.Type
-                    URI            = [String]$_.Content.URI
-                    Version        = [String]($_.Content.Name -split '-' | Select-Object -Index 1)
-                    WarmupTimes    = [Int[]]$_.Content.WarmupTimes
-                    Workers        = [Worker[]]@(ForEach ($Algorithm in $_.Content.Algorithms) { @{ Pool = $MinerPools.$Algorithm; Fee = If ($Config.IgnoreMinerFee) { 0 } Else { [Double]($_.Content.Fee | Select-Object -Index $_.Content.Algorithms.IndexOf($Algorithm)) } } })
+                    Algorithms       = [String[]]$_.Content.Algorithms
+                    API              = [String]$_.Content.API
+                    Arguments        = [String]$_.Content.Arguments
+                    BaseName         = [String]($_.Content.Name -split '-' | Select-Object -Index 0)
+                    DeviceNames      = [String[]]$_.Content.DeviceNames
+                    Devices          = [Device[]]($Variables.Devices | Where-Object Name -In $_.Content.DeviceNames)
+                    EnvVars          = [String[]]$_.Content.EnvVars
+                    LogFile          = [String]$_.Content.LogFile
+                    MinerUri         = [String]$_.Content.MinerUri
+                    Name             = [String]$_.Content.Name
+                    Path             = [String]$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Content.Path)
+                    Port             = [UInt16]$_.Content.Port
+                    PrerequisitePath = [String]$_.Content.PrerequisitePath
+                    PrerequisiteURI  = [String]$_.Content.PrerequisiteURI
+                    Type             = [String]$_.Content.Type
+                    URI              = [String]$_.Content.URI
+                    Version          = [String]($_.Content.Name -split '-' | Select-Object -Index 1)
+                    WarmupTimes      = [Int[]]$_.Content.WarmupTimes
+                    Workers          = [Worker[]]@(ForEach ($Algorithm in $_.Content.Algorithms) { @{ Pool = $MinerPools.$Algorithm; Fee = If ($Config.IgnoreMinerFee) { 0 } Else { [Double]($_.Content.Fee | Select-Object -Index $_.Content.Algorithms.IndexOf($Algorithm)) } } })
                 } -as $_.Content.API
             }
         )
@@ -811,6 +814,11 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 $_.Reasons += "Binary missing"
                 $Variables.MinersMissingBinary += $_
             }
+            $Variables.MinersMissingPrerequisite = @()
+            $Miners | Where-Object Available -EQ $true | Where-Object { $_.PrerequisitePath } | ForEach-Object { 
+                $_.Reasons += "Prerequisite missing ($(Split-Path -Path $_.PrerequisitePath -Leaf))"
+                $Variables.MinersMissingPrerequisite += $_
+            }
 
             # Apply watchdog to miners
             If ($Config.Watchdog) { 
@@ -837,22 +845,22 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             Write-Message -Level Info "Loaded $($Miners.Count) miner$(If ($Miners.Count -ne 1) { "s" }), filtered out $(($Miners | Where-Object Available -NE $true).Count) miner$(If (($Miners | Where-Object Available -NE $true).Count -ne 1) { "s" }). $(($Miners | Where-Object Available -EQ $true).Count) available miner$(If (($Miners | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (($Miners | Where-Object Available -EQ $true).Count -eq 1) { "s" })."
 
-            If ($Variables.MinersMissingBinary) { 
+            $DownloadList = @($Variables.MinersMissingPrerequisite | Select-Object @{ Name = "URI"; Expression = { $_.PrerequisiteURI } }, @{ Name = "Path"; Expression = { $_.PrerequisitePath } }, @{ Name = "Searchable"; Expression = { $false } }) + @($Variables.MinersMissingBinary | Select-Object URI, Path, @{ Name = "Searchable"; Expression = { $Miner = $_; ($Variables.Miners | Where-Object { (Split-Path $_.Path -Leaf) -eq (Split-Path $Miner.Path -Leaf) }).Count -eq 0 } }) | Select-Object * -Unique
+            If ($DownloadList -and $Variables.Downloader.State -ne "Running") { 
                 # Download miner binaries
-                If ($Variables.Downloader.State -ne "Running") { 
-                    Write-Message -Level Info "Some miners binaries are missing, starting downloader..."
-                    $Downloader_Parameters = @{ 
-                        Config = $Config
-                        DownloadList = @($Variables.MinersMissingBinary | Select-Object URI, Path, @{ Name = "Searchable"; Expression = { $Miner = $_; @($Miners | Where-Object { (Split-Path $_.Path -Leaf) -eq (Split-Path $Miner.Path -Leaf) }).Count -eq 0 } }) | Select-Object * -Unique
-                        Variables = $Variables
-                    }
-                    $Variables.Downloader = Start-ThreadJob -ThrottleLimit 99 -Name Downloader -InitializationScript ([scriptblock]::Create("Set-Location '$($Variables.MainPath)'")) -ArgumentList $Downloader_Parameters -FilePath ".\Includes\Downloader.ps1"
-                    Remove-Variable Downloader_Parameters
+                Write-Message -Level Info "Some miners binaries are missing ($($DownloadList.Count) item$(If ($DownloadList.Count -ne 1) { "s" })), starting downloader..."
+                $Downloader_Parameters = @{ 
+                    Config = $Config
+                    DownloadList = $DownloadList
+                    Variables = $Variables
                 }
-                ElseIf (-not ($Miners | Where-Object Available -EQ $true)) { 
-                    Write-Message -Level Info "Waiting 30 seconds for downloader to install binaries..."
-                }
+                $Variables.Downloader = Start-ThreadJob -ThrottleLimit 99 -Name Downloader -InitializationScript ([scriptblock]::Create("Set-Location '$($Variables.MainPath)'")) -ArgumentList $Downloader_Parameters -FilePath ".\Includes\Downloader.ps1"
+                Remove-Variable Downloader_Parameters
             }
+            ElseIf (-not ($Miners | Where-Object Available -EQ $true)) { 
+                Write-Message -Level Info "Waiting 30 seconds for downloader to install binaries..."
+            }
+            Remove-Variable DownloadList
 
             # Open firewall ports for all miners
             If ($Config.OpenFirewallPorts) { 

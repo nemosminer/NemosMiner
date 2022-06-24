@@ -32,28 +32,32 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # Get arguments for available miner devices
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
+                $PrerequisitePath = ""
+                $PrerequisiteURI = ""
                 If ($_.Algorithm -eq "VertHash") { 
-                    If (Test-Path -Path ".\Cache\VertHash.dat" -PathType Leaf) { 
-                        $_.Arguments += " --verthash-data ..\..\Cache\VertHash.dat"
+                    If ((Get-Item -Path $Variables.VerthashDatPath -ErrorAction Ignore).length -eq 1283457024) { 
+                        New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath -ErrorAction Ignore | Out-Null
                     }
                     Else { 
-                        $_.Arguments += " --gen-verthash-data ..\..\Cache\VertHash.dat"
-                        $_.WarmupTimes[0] += 600; $_.WarmupTimes[0] += 600 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat
+                        $PrerequisitePath = $Variables.VerthashDatPath
+                        $PrerequisiteURI = "https://github.com/Minerx117/miners/releases/download/Verthash.Dat/VertHash.dat"
                     }
                 }
 
                 [PSCustomObject]@{ 
-                    Name        = $Miner_Name
-                    DeviceNames = $AvailableMiner_Devices.Name
-                    Type        = $AvailableMiner_Devices.Type
-                    Path        = $Path
-                    Arguments   = ("$($_.Arguments) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass)" -replace "\s+", " ").trim()
-                    Algorithms  = $_.Algorithm
-                    API         = "NoAPI"
-                    Port        = $MinerAPIPort
-                    URI         = $Uri
-                    Fee         = 0.01
-                    WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
+                    Name             = $Miner_Name
+                    DeviceNames      = $AvailableMiner_Devices.Name
+                    Type             = $AvailableMiner_Devices.Type
+                    Path             = $Path
+                    Arguments        = ("$($_.Arguments) $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',') --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User) --pass $($Pools.($_.Algorithm).Pass) --verthash-data ..\..\Cache\VertHash.dat" -replace "\s+", " ").trim()
+                    Algorithms       = $_.Algorithm
+                    API              = "NoAPI"
+                    Port             = $MinerAPIPort
+                    URI              = $Uri
+                    Fee              = 0.01
+                    WarmupTimes      = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
+                    PrerequisitePath = $PrerequisitePath
+                    PrerequisiteURI  = $PrerequisiteURI
                 }
             }
         }
