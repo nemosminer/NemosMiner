@@ -3,6 +3,7 @@
   "Asia":     ["Asia", "HongKong", "Japan", "Russia", "Europe", "USA East", "USA West"],
   "aspac":    ["Asia", "HongKong", "Japan", "Russia", "Europe", "USA East", "USA West"],
   "eu":       ["Europe", "Russia", "USA West", "USA East", "HongKong", "Asia", "Japan"],
+  "eu-west":  ["Europe", "Russia", "USA West", "USA East", "HongKong", "Asia", "Japan"],
   "Europe":   ["Europe", "Russia", "USA West", "USA East", "HongKong", "Asia", "Japan"],
   "hk":       ["HongKong", "Asia", "Japan", "Russia", "Europe", "USA East", "USA West"],
   "HongKong": ["HongKong", "Asia", "Japan", "Russia", "Europe", "USA East", "USA West"],
