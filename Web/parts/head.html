@@ -34,49 +34,36 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.4.1/chart.min.js" integrity="sha512-5vwN8yor2fFT9pgPS9p9R7AszYaNn0LkQElTXIsZFCL7ucT8zDCAqlQXDdaqgA1mZP47hdvztBMsIoFxq/FyyQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js" integrity="sha512-RNLkV3d+aLtfcpEyFG8jRbnWHxUqVZozacROI4J2F1sTaDqo1dPQYs01OMi1t1w9Y2FdbSCDSQ2ZVdAC8bzgAg==" crossorigin="anonymous"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js" integrity="sha512-37T7leoNS06R80c8Ulq7cdCDU5MNQBwlYoy1TX/WUsLFC2eYNqtKlV0QjH7r8JpG/S0GUMZwebnVFLPd6SU5yg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/additional-methods.min.js" integrity="sha512-XZEy8UQ9rngkxQVugAdOuBRDmJ5N4vCuNXCh8KlniZgDKTvf7zl75QBtaVG1lEhMFe2a2DuA22nZYY+qsI2/xA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.4/jquery.validate.min.js" integrity="sha512-FOhq9HThdn7ltbK8abmGn60A/EMtEzIzv1rvuh+DqzJtSGq8BRdEN0U+j0iKEIffiw/yEtVuladk6rsG4X6Uqg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.4/additional-methods.min.js" integrity="sha512-XJiEiB5jruAcBaVcXyaXtApKjtNie4aCBZ5nnFDIEFrhGIAvitoqQD6xd9ayp5mLODaCeaXfqQMeVs1ZfhKjRQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script src="/js/utilities.js"></script>
   </head>
 <!-- Start of page scripts 'head.html' -->
   <script type='text/javascript'>
-    let config = {};
-    let maincurrency = '';
-    let rate = 0;
-    let version = '';
+    var btc = 0;
+    var config = {};
+    var rate = 0;
+    var version = '';
 
-    // Get current config
-    $.ajax({
-      async: false,
-      dataType: 'json',
-      timeout: 10,
-      url: '/config',
-      success: function(result) {
-        config = result;
-      }
-    });
-
-    // get main currency
-    $.ajax({
-      async: false,
-      dataType: 'text',
-      timeout: 10,
-      url: '/currency',
-      success: function(result) {
-        maincurrency = result;
-      }
-    });
-
-    $(document).ready(function() {
-      // set the values in the header
-      updateHeader();
-      window.setInterval(function() { 
-        updateHeader();
-      }, 10000);
-    });
+    //get stored variables
+    var config = JSON.parse(localStorage.getItem('config'));
+    var rate = JSON.parse(localStorage.getItem('rate'));
+    var rate = JSON.parse(localStorage.getItem('summary'));
 
     function updateHeader() {
+      // Get current config
+      $.ajax({
+        async: false,
+        dataType: 'json',
+        timeout: 10,
+        url: '/config',
+        success: function(result) {
+          config = result;
+          localStorage.setItem('config', JSON.stringify(config));
+        }
+      });
+
       // get BTC rate for first currency
       $.ajax({
         async: false,
@@ -85,6 +72,7 @@
         url: '/btc',
         success: function(result) {
           rate = result;
+          localStorage.setItem('btc', JSON.stringify(config));
         }
       });
 
@@ -96,45 +84,57 @@
         url: '/summary',
         success: function(result) {
           $('#summary').empty().append(result);
+          localStorage.setItem('summary', JSON.stringify(config));
+
         }
       });
 
       //Set mining button status
-      $.ajax({
-        async: false,
-        dataType: 'json',
-        timeout: 10,
-        url: '/functions/mining/getstatus',
-        success: function(result) {
-          switch (result) {
-            case 'Running': 
-              document.getElementById('miningstart').disabled = true;
-              document.getElementById('miningstart').title = "Mining processes are already running.";
-              document.getElementById('miningpause').disabled = false;
-              document.getElementById('miningpause').title = "Pause mining processes. Background processes remain running.";
-              document.getElementById('miningstop').disabled = false;
-              document.getElementById('miningstop').title = "Stop mining processes. Background processes will also stop.";
-              break;
-            case 'Paused':
-              document.getElementById('miningstart').disabled = false;
-              document.getElementById('miningstart').title ="Start the mining process.";
-              document.getElementById('miningpause').disabled = true;
-              document.getElementById('miningpause').title = "Mining processes are stopped. Background processes remain running.";
-              document.getElementById('miningstop').disabled = false;
-              document.getElementById('miningstop').title = "Stop mining processes. Background processes will also stop.";
-              break;
-            case 'Idle':
-              document.getElementById('miningstart').disabled = false;
-              document.getElementById('miningstart').title ="Start the mining process.";
-              document.getElementById('miningpause').disabled = false;
-              document.getElementById('miningpause').title = "Mining will not start. Background processes will start.";
-              document.getElementById('miningstop').disabled = true;
-              document.getElementById('miningstop').title = "All mining processes are already stopped.";
-              break;
+      if (document.getElementById('miningstart')) {
+        $.ajax({
+          async: false,
+          dataType: 'json',
+          timeout: 10,
+          url: '/functions/mining/getstatus',
+          success: function(result) {
+            switch (result) {
+              case 'Running': 
+                document.getElementById('miningstart').disabled = true;
+                document.getElementById('miningstart').title = "Mining processes are already running.";
+                document.getElementById('miningpause').disabled = false;
+                document.getElementById('miningpause').title = "Pause mining processes. Background processes remain running.";
+                document.getElementById('miningstop').disabled = false;
+                document.getElementById('miningstop').title = "Stop mining processes. Background processes will also stop.";
+                break;
+              case 'Paused':
+                document.getElementById('miningstart').disabled = false;
+                document.getElementById('miningstart').title ="Start the mining process.";
+                document.getElementById('miningpause').disabled = true;
+                document.getElementById('miningpause').title = "Mining processes are stopped. Background processes remain running.";
+                document.getElementById('miningstop').disabled = false;
+                document.getElementById('miningstop').title = "Stop mining processes. Background processes will also stop.";
+                break;
+              case 'Idle':
+                document.getElementById('miningstart').disabled = false;
+                document.getElementById('miningstart').title ="Start the mining process.";
+                document.getElementById('miningpause').disabled = false;
+                document.getElementById('miningpause').title = "Mining will not start. Background processes will start.";
+                document.getElementById('miningstop').disabled = true;
+                document.getElementById('miningstop').title = "All mining processes are already stopped.";
+                break;
+            }
           }
-        },
-      });
+        });
+      }
     }
+
+    $(document).ready(function() {
+      // set the values in the header
+      window.setInterval(function() { 
+        updateHeader();
+      }, 10000);
+      updateHeader();
+    });
   </script>
 <!-- End of page scripts 'head.html' -->
   <body>

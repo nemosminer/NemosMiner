@@ -37,7 +37,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-        $Algorithms | Where-Object { $Pools.($_.Algorithm).BaseName -notin $_.ExcludePool } | ForEach-Object { 
+        $Algorithms | Where-Object { $Pools.($_.Algorithm).BaseName -notin $_.ExcludePool } | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
 
             $MinComputeCapability = $_.MinComputeCapability
 
@@ -49,6 +49,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "intensity") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                 $_.Arguments += " --url stratum+$(If ($Pools.($_.Algorithm).SSL) { "ssl" } Else { "tcp" } )://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User)"
+                If ($Pools.($_.Algorithm).WorkerName) { $_.Arguments += ".$($Pools.($_.Algorithm).WorkerName)" }
                 $_.Arguments += " --pass $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
 
                 [PSCustomObject]@{ 

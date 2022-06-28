@@ -313,7 +313,7 @@
                   <div style="padding-top: 0.5rem" title="NemosMiner will ignore the pool fee for earning & profit calculation">
                     <input type="checkbox" class="toggle-switch" id="IgnorePoolFee" name="IgnorePoolFee"> Ignore pool fees
                   </div>
-                  <div style="padding-top: 0.5rem" title="Minimum workers mining the algorithm at the pool&#10;If less miners are mining the algorithm then the pool will be disabled.&#10;This is also a per-pool setting configurable in 'PoolsConfig.json'&#10;(min=0, max=99; [Default: 10; 0 disables this check] workers)"> Minimum
+                  <div style="padding-top: 0.5rem" title="Minimum workers mining the algorithm at the pool&#10;If less miners are mining the algorithm then the pool will be disabled.&#10;This is also a per pool setting configurable in 'PoolsConfig.json'&#10;(min=0, max=99; [Default: 10; 0 disables this check] workers)"> Minimum
                     <input type="number" step=1 min=0 max=99 value=10 size=3 id="MinWorker" name="MinWorker"> workers at pool
                   </div>
                   <div style="padding-top: 0.3rem" title="Default factor with which NemosMiner multiplies the prices reported by ALL pools.&#10;E.g. If you feel that the effective earnings seen at the pools are 20% lower than what NemosMiner projects&#10;then set Earnings Adjustment Factor to 0.80&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')&#10;(min=0.00, max=1.00 [Default: 1.00])" for="EarningsAdjustmentFactor"> Earnings adjustment factor
@@ -344,7 +344,7 @@
                       <option value='light' title="Information about miners run in the past, failed miners & watchdog timers will not be shown">light</option>
                     </select>
                   </div>
-                  <div style="padding-top: 1rem" title="Show the 'PowerCost' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'c' in the text window while waiting for the next cycle">
+                  <div style="padding-top: 0.8rem" title="Show the 'PowerCost' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'c' in the text window while waiting for the next cycle">
                     <input type="checkbox" class="toggle-switch" id="ShowPowerCost" name="ShowPowerCost"> Show power cost column
                   </div>
                   <div style="padding-top: 0.5rem" title="Show the 'PowerUsage' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'w' in the text window while waiting for the next cycle">
@@ -406,9 +406,7 @@
             const devicescontainer = document.getElementById('Devices');
 
             var configfile = '';
-            var poolnames = [];
             var regions = [];
-            var devicenames = [];
 
             $(document).ready(function () {
               //Edit config file
@@ -897,7 +895,7 @@
                     required: false,
                     minlength: 3,
                     maxlength: 64,
-                    pattern: '^([A-Za-z0-9]{3,4}?)+(?:,([A-Za-z0-9$]{3,4})+)*$'
+                    pattern: '^([A-Za-z0-9$]{3,4}?)+(?:,([A-Za-z0-9$]{3,4})+)*$'
                   },
                   IdleSec: {
                     digits: true,

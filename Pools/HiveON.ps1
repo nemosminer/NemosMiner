@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveOn.ps1
-Version:        4.0.1.2
-Version date:   23 June 2022
+Version:        4.0.1.3
+Version date:   28 June 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -61,23 +61,24 @@ If ($PoolConfig.Wallets) {
             $Region_Norm = Get-Region $Server.Region
 
             [PSCustomObject]@{ 
-                Name                     = [String]$PoolVariant
-                BaseName                 = [String]$Name
-                Algorithm                = [String]$Algorithm_Norm
-                Currency                 = [String]$Currency
-                Price                    = [Double]$Stat.Live
-                StablePrice              = [Double]$Stat.Week
                 Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
+                Algorithm                = [String]$Algorithm_Norm
+                BaseName                 = [String]$Name
+                Currency                 = [String]$Currency
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+                Fee                      = [Decimal]0
                 Host                     = [String]$Server.host
-                Port                     = [UInt16]$Server.ports[0]
-                User                     = "$($PoolConfig.Wallets.$Currency).$($PoolConfig.WorkerName)"
+                Name                     = [String]$PoolVariant
                 Pass                     = "x"
+                Port                     = [UInt16]$Server.ports[0]
+                Price                    = [Double]$Stat.Live
                 Region                   = [String]$Region_Norm
                 SSL                      = $false
-                Fee                      = [Decimal]0
+                StablePrice              = [Double]$Stat.Week
                 Updated                  = [DateTime]$Stat.Updated
+                User                     = "$($PoolConfig.Wallets.$Currency).$($PoolConfig.WorkerName)"
                 Workers                  = [Int]$Workers
+                WorkerName               = ""
             }
         }
     }

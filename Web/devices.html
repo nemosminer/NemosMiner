@@ -235,18 +235,8 @@
             };
 
             $('#enableddevices').bootstrapTable({
-              onAll: function () {
-                try {
-                  if ($('#enableddevices').bootstrapTable('getSelections').length >= 1) {
-                    document.getElementById('disable-device').disabled = false;
-                  } else {
-                    document.getElementById('disable-device').disabled = true;
-                  }
-                } catch {}
-              },
-
-              onPostBody: function () {
-                if (config.WebGUIUseColor == true) {
+              onPostBody: function() {
+                if (config.WebGUIUseColor == true && !$('#enableddevices tr th')[5].hidden) {
                   $('#enableddevices td:nth-child(6)').each(function () {
                     switch(this.innerText) {
                       case this.innerText.match(/^Mining/)?.input:
@@ -267,11 +257,21 @@
                     };
                   });
                 }
+              },
+
+              onAll: function() {
+                try {
+                  if ($('#enableddevices').bootstrapTable('getSelections').length >= 1) {
+                    document.getElementById('disable-device').disabled = false;
+                  } else {
+                    document.getElementById('disable-device').disabled = true;
+                  }
+                } catch {}
               }
             });
 
             $('#disableddevices').bootstrapTable({
-              onAll: function () {
+              onAll: function() {
                 try {
                   if ($('#disableddevices').bootstrapTable('getSelections').length >= 1) {
                     document.getElementById('enable-device').disabled = false;

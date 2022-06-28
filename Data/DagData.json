@@ -1,28 +1,28 @@
 {
   "Currency": {
     "*": {
-      "BlockHeight": 15390783,
+      "BlockHeight": 15419404,
       "CoinName": "*",
-      "DAGsize": 5268040832,
-      "Epoch": 500
+      "DAGsize": 5276434304,
+      "Epoch": 501
     },
     "AKA": {
-      "BlockHeight": 7301367,
+      "BlockHeight": 7329114,
       "CoinName": "Akroma",
-      "DAGsize": 3112173184,
-      "Epoch": 243
+      "DAGsize": 3120562048,
+      "Epoch": 244
     },
     "ATH": {
-      "BlockHeight": 5730894,
+      "BlockHeight": 5747920,
       "CoinName": "Atheios",
       "DAGsize": 2675965312,
       "Epoch": 191
     },
     "CLO": {
-      "BlockHeight": 10161854,
+      "BlockHeight": 10190691,
       "CoinName": "Callisto",
-      "DAGsize": 3909087872,
-      "Epoch": 338
+      "DAGsize": 3917478784,
+      "Epoch": 339
     },
     "DBIX": {
       "BlockHeight": 1728025,
@@ -31,10 +31,10 @@
       "Epoch": 57
     },
     "EGEM": {
-      "BlockHeight": 10739368,
+      "BlockHeight": 10769219,
       "CoinName": "EtherGem",
-      "DAGsize": 4068472448,
-      "Epoch": 357
+      "DAGsize": 4076862848,
+      "Epoch": 358
     },
     "ERE": {
       "BlockHeight": 484111,
@@ -43,28 +43,28 @@
       "Epoch": 16
     },
     "ERG": {
-      "BlockHeight": 778123,
+      "BlockHeight": 780998,
       "CoinName": "Ergo",
       "DAGsize": 2528702085,
-      "Epoch": 352
+      "Epoch": 355
     },
     "ESN": {
-      "BlockHeight": 6355763,
+      "BlockHeight": 6356353,
       "CoinName": "EtherSocial",
       "DAGsize": 2843734144,
       "Epoch": 211
     },
     "ETC": {
-      "BlockHeight": 15390783,
+      "BlockHeight": 15419404,
       "CoinName": "Ethereum Classic",
       "DAGsize": 3221224064,
       "Epoch": 256
     },
     "ETH": {
-      "BlockHeight": 15013242,
+      "BlockHeight": 15036473,
       "CoinName": "Ethereum",
-      "DAGsize": 5268040832,
-      "Epoch": 500
+      "DAGsize": 5276434304,
+      "Epoch": 501
     },
     "ETHO": {
       "BlockHeight": 8709768,
@@ -73,52 +73,52 @@
       "Epoch": 290
     },
     "ETP": {
-      "BlockHeight": 6788044,
+      "BlockHeight": 6805692,
       "CoinName": "Metaverse",
       "DAGsize": 2969565568,
       "Epoch": 226
     },
     "EXP": {
-      "BlockHeight": 6425297,
+      "BlockHeight": 6442826,
       "CoinName": "Expanse",
       "DAGsize": 2868900992,
       "Epoch": 214
     },
     "FIRO": {
-      "BlockHeight": 490167,
+      "BlockHeight": 492616,
       "CoinName": "Firo",
-      "DAGsize": 4236246656,
-      "Epoch": 377
+      "DAGsize": 4244633728,
+      "Epoch": 378
     },
     "MOAC": {
-      "BlockHeight": 9439598,
+      "BlockHeight": 9468274,
       "CoinName": "Moac",
-      "DAGsize": 3707764352,
-      "Epoch": 314
+      "DAGsize": 3716152448,
+      "Epoch": 315
     },
     "NILU": {
-      "BlockHeight": 6181687,
+      "BlockHeight": 6181961,
       "CoinName": "Nilu",
       "DAGsize": 2801794432,
       "Epoch": 206
     },
     "NUKO": {
-      "BlockHeight": 7862181,
+      "BlockHeight": 7884739,
       "CoinName": "Nekonium",
       "DAGsize": 3271556224,
       "Epoch": 262
     },
     "PGC": {
-      "BlockHeight": 4696077,
+      "BlockHeight": 4705883,
       "CoinName": "PegasCoin",
       "DAGsize": 2382363008,
       "Epoch": 156
     },
     "QKC": {
-      "BlockHeight": 10122294,
+      "BlockHeight": 10159968,
       "CoinName": "QuarkChain",
-      "DAGsize": 3900702592,
-      "Epoch": 337
+      "DAGsize": 3909087872,
+      "Epoch": 338
     },
     "REOSC": {
       "BlockHeight": 7114083,
@@ -127,27 +127,27 @@
       "Epoch": 237
     },
     "RVN": {
-      "BlockHeight": 2333082,
+      "BlockHeight": 2339302,
       "CoinName": "RavenCoin",
       "DAGsize": 3682597504,
       "Epoch": 311
     },
     "TSF": {
-      "BlockHeight": 2366927,
+      "BlockHeight": 2375573,
       "CoinName": "TransactionServiceFee",
-      "DAGsize": 1728047744,
-      "Epoch": 78
+      "DAGsize": 1736434816,
+      "Epoch": 79
     },
     "UBQ": {
-      "BlockHeight": 2441707,
+      "BlockHeight": 2458774,
       "CoinName": "UBIQ",
       "DAGsize": 1753218944,
       "Epoch": 81
     }
   },
   "Updated": {
-    "https://explorer.firo.org/api/status": "2022-06-23T13:48:04.8169541Z",
-    "https://minerstat.com/dag-size-calculator": "2022-06-23T13:48:02.234331Z",
-    "https://prohashing.com/api/v1/currencies": "2022-06-23T13:48:03.7486082Z"
+    "https://explorer.firo.org/api/status": "2022-06-27T21:54:50.8947319Z",
+    "https://minerstat.com/dag-size-calculator": "2022-06-27T21:54:48.3959751Z",
+    "https://prohashing.com/api/v1/currencies": "2022-06-27T21:54:49.8238382Z"
   }
 }

@@ -34,18 +34,18 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
                 If ($Pools.($_.Algorithm).DAGsizeGB -ne $null -and $Pools.($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { 
                     $_.Arguments += " -esm 3"
-                    $Protocol = If ($Pools.($_.Algorithm).SSL) { "stratum+ssl://" } Else { "stratum+tcp://" }
+                    $_.Arguments += If ($Pools.($_.Algorithm).SSL) { " -epool stratum+ssl://" } Else { " -epool stratum+tcp://" }
                 }
                 Else { 
-                    $Protocol = If ($Pools.($_.Algorithm).SSL) { "ssl://" } Else { "" }
+                    $_.Arguments += If ($Pools.($_.Algorithm).SSL) { " -epool ssl://" } Else { " -epool " }
                 }
+                $_.Arguments += "$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) -ewal $($Pools.($_.Algorithm).User)"
+                $_.Arguments += " -epsw $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
+                If ($Pools.($_.Algorithm).WorkerName) { $_.Arguments += " -eworker $($Pools.($_.Algorithm).WorkerName)" }
                 If ($Pools.($_.Algorithm).SSL) { $_.Arguments += " -checkcert 0" }
 
                 # Apply tuning parameters
                 If ($Variables.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
-                
-                $_.Arguments += " -epool $Protocol$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) -ewal $($Pools.($_.Algorithm).User)"
-                $_.Arguments += " -epsw $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
 
                 [PSCustomObject]@{ 
                     Name        = $Miner_Name

@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.1.2
-Version date:   23 June 2022
+Version:        4.0.1.3
+Version date:   28 June 2022
 #>
 
 # Start transcript log
@@ -339,9 +339,6 @@ While ($true) {
         }
 
         $Variables.EarningsChartData = [PSCustomObject]@{ 
-            # CumulatedEarnings = $CumulatedEarnings 
-            Currency = $Config.Currency
-            BTCrate = [Double]$Variables.Rates.BTC.($Config.Currency)
             Labels = @(
                 $ChartData.Group.Date | Sort-Object -Unique | ForEach-Object { 
                     [DateTime]::parseexact($_, "yyyy-MM-dd", $null).ToShortDateString()

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.0.1.2
-Version date:   23 June 2022
+Version:        4.0.1.3
+Version date:   28 June 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -46,8 +46,6 @@ If ($PoolConfig.UserName) {
 
         $Divisor = 1000000000
 
-        $User = "$($PoolConfig.UserName).$($($PoolConfig.WorkerName -replace "^ID="))"
-
         $Request.return | Where-Object profit | ForEach-Object { 
             $Current = $_
 
@@ -66,9 +64,10 @@ If ($PoolConfig.UserName) {
             # Temp fix
             $PoolRegions = If ($Current.host_list.split(";").count -eq 1) { @("n/a") } Else { $PoolConfig.Region }
             Switch ($Algorithm_Norm) { 
-                # "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
-                "Neoscrypt" { $Current.host_list = $Current.host } # Error in API
+                # "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }) } # temp fix
+                "KawPoW"    { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("us-east") }) } # temp fix
                 "Lyra2RE2"  { $Current.host_list = $Current.host } # Error in API
+                "Neoscrypt" { $Current.host_list = $Current.host } # Error in API
                 "Skein"     { $Current.host_list = $Current.host } # Error in API
                 "VertHash"  { $Current.host_list = $Current.host } # Error in API
                 "Yescrypt"  { $Current.host_list = $Current.host } # Error in API
@@ -79,21 +78,22 @@ If ($PoolConfig.UserName) {
                 $Region_Norm = Get-Region $Region
 
                 [PSCustomObject]@{ 
-                    Name                     = [String]$PoolVariant
-                    BaseName                 = [String]$Name
-                    Algorithm                = [String]$Algorithm_Norm
-                    Currency                 = [String]$Currency
-                    Price                    = [Double]$Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * [Math]::Min($Stat.Day_Fluctuation, 1)
-                    StablePrice              = [Double]$Stat.Week
                     Accuracy                 = [Double](1 - $Stat.Week_Fluctuation)
+                    Algorithm                = [String]$Algorithm_Norm
+                    BaseName                 = [String]$Name
+                    Currency                 = [String]$Currency
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+                    Fee                      = $Fee
                     Host                     = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
-                    Port                     = [UInt16]$Port
-                    User                     = [String]$User
+                    Name                     = [String]$PoolVariant
                     Pass                     = "x"
+                    Port                     = [UInt16]$Port
+                    Price                    = [Double]$Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * [Math]::Min($Stat.Day_Fluctuation, 1)
                     Region                   = [String]$Region_Norm
                     SSL                      = $false
-                    Fee                      = $Fee
+                    StablePrice              = [Double]$Stat.Week
+                    User                     = "$($PoolConfig.UserName).$($PoolConfig.WorkerName)"
+                    WorkerName               = ""
                 }
             }
         }
@@ -108,8 +108,6 @@ If ($PoolConfig.UserName) {
 
         $Divisor = 1000000000
 
-        $User = "$($PoolConfig.UserName).$($($PoolConfig.WorkerName -replace "^ID="))"
-
         $Request.return | Where-Object profit | ForEach-Object { 
             $Current = $_
 
@@ -121,8 +119,9 @@ If ($PoolConfig.UserName) {
             # Temp fix
             $PoolRegions = If ($Current.all_host_list.split(";").count -eq 1) { @("n/a") } Else { $PoolConfig.Region }
             Switch ($Algorithm_Norm) { 
-                # "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("Asia", "US") }) } # temp fix
-                "VertHash" { $Port = 20534 }
+                # "Ethash"   { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }) } # temp fix
+                "KawPoW"     { $PoolRegions = @($PoolConfig.Region | Where-Object { $_ -in @("us-east") }) } # temp fix
+                "VertHash"   { $Port = 20534 }
                 # Default    { $Port = $Current.algo_switch_port }
             }
 
@@ -130,21 +129,22 @@ If ($PoolConfig.UserName) {
                 $Region_Norm = Get-Region $Region
 
                 [PSCustomObject]@{ 
-                    Name                     = [String]$PoolVariant
-                    BaseName                 = [String]$Name
-                    Algorithm                = [String]$Algorithm_Norm
-                    Currency                 = [String]$Current.current_mining_coin_symbol
-                    Price                    = [Double]$Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1))
-                    StablePrice              = [Double]$Stat.Week
                     Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
+                    Algorithm                = [String]$Algorithm_Norm
+                    BaseName                 = [String]$Name
+                    Currency                 = [String]$Current.current_mining_coin_symbol
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+                    Fee                      = [Decimal]$PoolConfig.Fee
                     Host                     = [String]($Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
-                    Port                     = [UInt16]$Port
-                    User                     = [String]$User
+                    Name                     = [String]$PoolVariant
                     Pass                     = "x"
+                    Port                     = [UInt16]$Port
+                    Price                    = [Double]($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1)))
                     Region                   = [String]$Region_Norm
                     SSL                      = $false
-                    Fee                      = [Decimal]$PoolConfig.Fee
+                    StablePrice              = [Double]$Stat.Week
+                    User                     = "$($PoolConfig.UserName).$($PoolConfig.WorkerName)"
+                    WorkerName               = ""
                 }
             }
         }

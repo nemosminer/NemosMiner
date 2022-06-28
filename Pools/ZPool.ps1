@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool.ps1
-Version:        4.0.1.2
-Version date:   23 June 2022
+Version:        4.0.1.3
+Version date:   28 June 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -88,6 +88,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
                 Fee                      = [Decimal]$Fee
                 Updated                  = [DateTime]$Updated
                 Workers                  = [Int]$Workers
+                WorkerName               = ""
             }
         }
     }

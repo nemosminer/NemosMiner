@@ -69,8 +69,8 @@ function formatMiners(data) {
     // Format Total Mining Duration (TimeSpan)
     item.tTotalMiningDuration = formatTimeSpan(item.TotalMiningDuration);
 
-    // Format Mining Duration (TimeSpan)
-    item.tMiningDuration = formatTimeSince(item.BeginTime).replace(' ago', '').replace('just now', 'just started');
+    // Format Mining Duration (DateTime)
+    item.tMiningDuration = formatTimeSince(item.BeginTime).replace('-', 'just started');
 
     // Format status
     const enumstatus = ['Running', 'Idle', 'Failed', 'Disabled'];
@@ -78,21 +78,26 @@ function formatMiners(data) {
 
     // Format status message
     if (item.StatusMessage) item.tStatusMessage = item.StatusMessage.replace(/ \{.+/g, '');
+    else item.tStatusMessage = item.tStatus;
   });
   return data;
 }
 
+function formatTimeSpan(timespan) {
+  var duration = '-';
+  if (timespan) {
+    duration = timespan.Days + ' days ';
+    duration = duration + timespan.Hours + ' hrs ';
+    duration = duration + timespan.Minutes + ' min ';
+    duration = duration + timespan.Seconds + ' sec ';
+  }
+  return duration;
+}
+
 function formatTimeSince(value) {
   var value = (new Date).getTime() - (new Date(value)).getTime();
-  var localtime = new Date().getTime();
-  var lastupdated = '';
-  if (isNaN(value)) value = localtime - parseInt(kicked.replace('/Date(', '').replace(')/', ''));
-
-  seconds = value / 1000;
-  lastupdated = formatTime(seconds)
-
-  if (lastupdated == '') return 'just now';
-  else return lastupdated.trim() + ' ago';
+  if (value == 0) return '-';
+  return formatTime(value / 1000).trim();
 }
 
 function formatTime(seconds) {
@@ -121,7 +126,7 @@ function formatTime(seconds) {
 }
 
 function formatHashrateValue(value) {
-  if (value == null) return '';
+  if (value == undefined) return '';
   if (value === 0) return '0 H/s';
   if (value > 0) {
     var sizes = ['H/s', 'kH/s', 'MH/s', 'GH/s', 'TH/s', 'PH/s', 'EH/s', 'ZH/s', 'YH/s'];
@@ -328,17 +333,6 @@ function formatBytes(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   }
   return '-';
-}
-
-function formatTimeSpan(timespan) {
-  var duration = '-';
-  if (timespan) {
-    duration = timespan.Days + ' days ';
-    duration = duration + timespan.Hours + ' hrs ';
-    duration = duration + timespan.Minutes + ' min ';
-    duration = duration + timespan.Seconds + ' sec ';
-  }
-  return duration;
 }
 
 function createUUID() {

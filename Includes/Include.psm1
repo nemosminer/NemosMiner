@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.1.2
-Version date:   23 June 2022
+Version:        4.0.1.3
+Version date:   28 June 2022
 #>
 
 # Window handling
@@ -683,6 +683,7 @@ Function Stop-IdleDetection {
     If ($Variables.IdleRunspace) { 
         $Variables.IdleRunspace.Close()
         If ($Variables.IdleRunspace.PowerShell) { $Variables.IdleRunspace.PowerShell.Dispose() }
+        $Variables.IdleRunspace.Dispose()
         $Variables.Remove("IdleRunspace")
         Write-Message -Level Verbose "Stopped idle detection."
     }
@@ -730,6 +731,7 @@ Function Stop-Mining {
 
         $Variables.CoreRunspace.Close()
         If ($Variables.CoreRunspace.PowerShell) { $Variables.CoreRunspace.PowerShell.Dispose() }
+        $Variables.CoreRunspace.Dispose()
         $Variables.Remove("Timer")
         $Variables.Remove("CoreRunspace")
 
@@ -851,7 +853,6 @@ Function Initialize-Application {
     Get-ChildItem -Path ".\Logs\SwitchingLog_*.csv" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse
     Get-ChildItem -Path "$($Variables.ConfigFile)_*.backup" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse
 
-    $Variables.ScriptStartDate = (Get-Date).ToUniversalTime()
     If ([Net.ServicePointManager]::SecurityProtocol -notmatch [Net.SecurityProtocolType]::Tls12) { [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12 }
 
     # Set process priority to BelowNormal to avoid hashrate drops on systems with weak CPUs
@@ -2989,6 +2990,12 @@ Function Update-ConfigFile {
     # Remove AHashPool config & stat data
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "AhashPool*" }
     Remove-Item ".\Stats\AhashPool*.txt" -Force -ErrorAction Ignore
+    # Remove TonPool config & stat data
+    $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "TonPool*" }
+    Remove-Item ".\Stats\TonPool*.txt" -Force -ErrorAction Ignore
+    # Remove TonWhales config & stat data
+    $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "TonWhales*" }
+    Remove-Item ".\Stats\TonWhales*.txt" -Force -ErrorAction Ignore
 
     $Config | Add-Member ConfigFileVersion ($Variables.Branding.Version.ToString()) -Force
     Write-Config -ConfigFile $ConfigFile

@@ -19,22 +19,25 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.1.2
-Version date:   23 June 2022
+Version:        4.0.1.3
+Version date:   28 June 2022
 #>
 
 using module .\Include.psm1
 using module .\API.psm1
 
-$ProgressPreference = "SilentlyContinue"
+$ProgressPreference = "Ignore"
 
 Get-ChildItem -Path ".\Includes\MinerAPIs" -File | ForEach-Object { . $_.FullName }
 
 While ($Variables.NewMiningStatus -eq "Running") { 
 
+    $Error.Clear()
+
     $Variables.LogFile = "$($Variables.MainPath)\Logs\$($Variables.Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd").log"
 
     # Always get the latest config
+    $Variables.PoolName = $Config.PoolName
     Read-Config -ConfigFile $Variables.ConfigFile
 
     If ($Config.IdleDetection -and $Variables.IdleRunspace -and $Variables.IdleRunspace.NewMiningStatus -eq "Mining" -and $Variables.NewMiningStatus -eq "Running") { 
@@ -70,7 +73,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
         $Pools = [Pool[]]$Variables.Pools
 
         # Skip stuff if previous cycle was shorter than half of what it should
-        If (-not $Variables.Pools -or -not $Variables.Miners -or -not $Variables.Timer -or $Variables.Timer.AddSeconds([Int]($Config.Interval / 2)) -lt (Get-Date).ToUniversalTime() -or (Compare-Object @($Config.ExtraCurrencies | Select-Object) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "<=")) { 
+        If ($Config.Pools -ne $Variables.Pools -or -not $Variables.Miners -or -not $Variables.Timer -or $Variables.Timer.AddSeconds([Int]($Config.Interval / 2)) -lt (Get-Date).ToUniversalTime() -or (Compare-Object @($Config.ExtraCurrencies | Select-Object) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "<=")) { 
 
             # Set master timer
             $Variables.Timer = (Get-Date).ToUniversalTime()
@@ -182,7 +185,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 })
 
                 $Variables.DAGdata = $Variables.DAGdata | Get-SortedObject 
-                $Variables.DAGdata | ConvertTo-Json -ErrorAction Ignore | Out-File -FilePath ".\Data\DagData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+                $Variables.DAGdata | ConvertTo-Json -ErrorAction Ignore | Out-File -FilePath ".\Data\DagData.json" -Force -Encoding utf8NoBOM -ErrorAction Ignore
             }
 
             If (-not $Variables.DAGdata.Currency."*") { 
@@ -251,15 +254,15 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             # Load information about the pools
             If ($PoolNames) { 
-                If ($Variables.Pools) { 
+                If ($Variables.CycleStarts.Count -gt 1) { 
                     Write-Message -Level Verbose "Loading pool data from '$($PoolNames -join ', ')'..."
                 }
                 Else { 
                     If ($Variables.BrainJobs.Keys) {
-                        # Allow extra 30 seconds for brains to get ready
-                        $Variables.Summary = "Loading pool data from '$($PoolNames -join ', ')'.<br>This will take more than 30 seconds..."
+                        # Allow extra 20 seconds for brains to get ready
+                        $Variables.Summary = "Loading pool data from '$($PoolNames -join ', ')'.<br>This will take more than 20 seconds..."
                         Write-Message -Level Verbose ($Variables.Summary -replace "<br>", " ")
-                        Start-Sleep -Seconds 30
+                        Start-Sleep -Seconds 20
                     }
                     Else { 
                         $Variables.Summary = "Loading pool data from '$($PoolNames -join ', ')'.<br>This wil take while..."
@@ -287,7 +290,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 If ($Variables.EnabledDevices.Count -ge 1) { 
                     # HWiNFO64 verification
                     $RegKey = "HKCU:\Software\HWiNFO64\VSB"
-                    If ($RegValue = Get-ItemProperty -Path $RegKey -ErrorAction SilentlyContinue) { 
+                    If ($RegValue = Get-ItemProperty -Path $RegKey -ErrorAction Ignore) { 
                         If ([String]$Variables.HWInfo64RegValue -eq [String]$RegValue) { 
                             Write-Message -Level Warn "Power usage info in registry has not been updated [HWiNFO64 not running???] - disabling power usage calculations."
                             $Variables.CalculatePowerCost = $false
@@ -398,7 +401,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             # Remove de-configured pools
             $DeconfiguredPools = $Pools | Where-Object Name -notin $PoolNames
-            $Pools = $Pools | Where-Object Name -in $PoolNames
+            $Pools = @($Pools | Where-Object Name -in $PoolNames)
 
             If ($ComparePools = @(Compare-Object -PassThru @($Variables.NewPools | Select-Object) @($Pools | Select-Object) -Property Name, Algorithm, Host, Port, SSL, WorkerName -IncludeEqual)) { 
                 # Find new pools
@@ -479,7 +482,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                         }
                     }
                 }
-                Remove-Variable PriceThreshold -ErrorAction SilentlyContinue
+                Remove-Variable PriceThreshold -ErrorAction Ignore
                 # Algorithms disabled
                 $Pools | Where-Object { "-$($_.Algorithm)" -in $Config.Algorithm } | ForEach-Object { $_.Reasons += "Algorithm disabled (``-$($_.Algorithm)`` in generic config)" }
                 $Pools | Where-Object { "-$($_.Algorithm)" -in $PoolsConfig.$(Get-PoolBaseName $_.BaseName).Algorithm } | ForEach-Object { $_.Reasons += "Algorithm disabled (``-$($_.Algorithm)`` in $($_.BaseName) pool config)" }
@@ -492,8 +495,8 @@ While ($Variables.NewMiningStatus -eq "Running") {
                 $Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $PoolsConfig.$($_.BaseName).MinWorker } | ForEach-Object { $_.Reasons += "Not enough workers at pool (MinWorker ``$($PoolsConfig.$($_.BaseName).MinWorker)`` in $($_.BaseName) pool config)" }
                 $Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $Config.MinWorker } | ForEach-Object { $_.Reasons += "Not enough workers at pool (MinWorker ``$($Config.MinWorker)`` in generic config)" }
                 # Update pools last used, required for BalancesKeepAlive
-                If ($Variables.PoolsLastUsed) { $Variables.PoolsLastUsed | Get-SortedObject | ConvertTo-Json | Out-File -FilePath ".\Data\PoolsLastUsed.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue}
-                If ($Variables.AlgorithmsLastUsed) { $Variables.AlgorithmsLastUsed | Get-SortedObject | ConvertTo-Json | Out-File -FilePath ".\Data\AlgorithmsLastUsed.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue}
+                If ($Variables.PoolsLastUsed) { $Variables.PoolsLastUsed | Get-SortedObject | ConvertTo-Json | Out-File -FilePath ".\Data\PoolsLastUsed.json" -Force -Encoding utf8NoBOM -ErrorAction Ignore}
+                If ($Variables.AlgorithmsLastUsed) { $Variables.AlgorithmsLastUsed | Get-SortedObject | ConvertTo-Json | Out-File -FilePath ".\Data\AlgorithmsLastUsed.json" -Force -Encoding utf8NoBOM -ErrorAction Ignore}
 
                 # Apply watchdog to pools
                 If ($Config.Watchdog) { 
@@ -509,7 +512,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                     $Pools | Where-Object Available -EQ $true | Group-Object -Property Algorithm, Name | ForEach-Object { 
                         # Suspend algorithm@pool if > 50% of all possible miners for algorithm failed
                         $WatchdogCount = ($Variables.WatchdogCount, (($Variables.Miners | Where-Object Algorithm -contains $_.Group[0].Algorithm).Count / 2) | Measure-Object -Maximum).Maximum + 1
-                        If ($PoolsToSuspend = $_.Group | Where-Object { @($Variables.WatchdogTimers | Where-Object Algorithm -EQ $_.Algorithm | Where-Object PoolName -EQ $_.Name | Where-Object Kicked -LT $Variables.Timer).Count -gt $WatchdogCount }) { 
+                        If ($PoolsToSuspend = $_.Group | Where-Object { @($Variables.WatchdogTimers | Where-Object Algorithm -EQ $_.Algorithm | Where-Object PoolName -EQ $_.Name | Where-Object Kicked -LT $Variables.CycleStarts[-2]).Count -gt $WatchdogCount }) { 
                             $PoolsToSuspend | ForEach-Object { $_.Reasons += "Algorithm@Pool suspended by watchdog" }
                             Write-Message -Level Warn "Algorithm@Pool '$($_.Group[0].Algorithm)@$($_.Group[0].Name)' is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object Algorithm -EQ $_.Group[0].Algorithm | Where-Object PoolName -EQ $_.Group[0].Name | Where-Object Kicked -LT $Variables.Timer).Kicked | Sort-Object | Select-Object -First 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))."
                         }
@@ -630,6 +633,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                                     MinerName     = $Miner.Name
                                     MinerVersion  = $Miner.Version
                                     PoolName      = $Worker.Pool.Name
+                                    PoolBaseName  = $Worker.Pool.BaseName
                                     PoolRegion    = $Worker.Pool.Region
                                 }
                             }
@@ -796,9 +800,6 @@ While ($Variables.NewMiningStatus -eq "Running") {
             If ($Config.DisableDualAlgoMining) { $Miners | Where-Object Workers.Count -EQ 2 | ForEach-Object { $_.Reasons += "Config.DisableDualAlgoMining" } }
             If ($Config.DisableSingleAlgoMining) { $Miners | Where-Object Workers.Count -EQ 1 | ForEach-Object { $_.Reasons += "Config.DisableSingleAlgoMining" } }
 
-            $Variables.MinersNeedingBenchmark = @($Miners | Where-Object Available -EQ $true | Where-Object Benchmark -EQ $true)
-            $Variables.MinersNeedingPowerUsageMeasurement = @($Miners | Where-Object Available -EQ $true | Where-Object MeasurePowerUsage -EQ $true)
-
             # Detect miners with unreal earning (> x times higher than average of the next best 10% or at least 5 miners)
             If ($Config.UnrealMinerEarningFactor -gt 1) { 
                 $Miners | Where-Object { -not $_.Reasons} | Group-Object { $_.DeviceNames } | ForEach-Object { 
@@ -843,22 +844,27 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             $Miners | Where-Object Reasons | ForEach-Object { $_.Available = $false }
 
+            $Variables.MinersNeedingBenchmark = @($Miners | Where-Object Available -EQ $true | Where-Object Benchmark -EQ $true)
+            $Variables.MinersNeedingPowerUsageMeasurement = @($Miners | Where-Object Available -EQ $true | Where-Object MeasurePowerUsage -EQ $true)
+
             Write-Message -Level Info "Loaded $($Miners.Count) miner$(If ($Miners.Count -ne 1) { "s" }), filtered out $(($Miners | Where-Object Available -NE $true).Count) miner$(If (($Miners | Where-Object Available -NE $true).Count -ne 1) { "s" }). $(($Miners | Where-Object Available -EQ $true).Count) available miner$(If (($Miners | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (($Miners | Where-Object Available -EQ $true).Count -eq 1) { "s" })."
 
             $DownloadList = @($Variables.MinersMissingPrerequisite | Select-Object @{ Name = "URI"; Expression = { $_.PrerequisiteURI } }, @{ Name = "Path"; Expression = { $_.PrerequisitePath } }, @{ Name = "Searchable"; Expression = { $false } }) + @($Variables.MinersMissingBinary | Select-Object URI, Path, @{ Name = "Searchable"; Expression = { $Miner = $_; ($Variables.Miners | Where-Object { (Split-Path $_.Path -Leaf) -eq (Split-Path $Miner.Path -Leaf) }).Count -eq 0 } }) | Select-Object * -Unique
-            If ($DownloadList -and $Variables.Downloader.State -ne "Running") { 
-                # Download miner binaries
-                Write-Message -Level Info "Some miners binaries are missing ($($DownloadList.Count) item$(If ($DownloadList.Count -ne 1) { "s" })), starting downloader..."
-                $Downloader_Parameters = @{ 
-                    Config = $Config
-                    DownloadList = $DownloadList
-                    Variables = $Variables
+            If ($DownloadList) { 
+                If ($Variables.Downloader.State -ne "Running") { 
+                    # Download miner binaries
+                    Write-Message -Level Info "Some miners binaries are missing ($($DownloadList.Count) item$(If ($DownloadList.Count -ne 1) { "s" })), starting downloader..."
+                    $Downloader_Parameters = @{ 
+                        Config = $Config
+                        DownloadList = $DownloadList
+                        Variables = $Variables
+                    }
+                    $Variables.Downloader = Start-ThreadJob -ThrottleLimit 99 -Name Downloader -InitializationScript ([scriptblock]::Create("Set-Location '$($Variables.MainPath)'")) -ArgumentList $Downloader_Parameters -FilePath ".\Includes\Downloader.ps1"
+                    Remove-Variable Downloader_Parameters
                 }
-                $Variables.Downloader = Start-ThreadJob -ThrottleLimit 99 -Name Downloader -InitializationScript ([scriptblock]::Create("Set-Location '$($Variables.MainPath)'")) -ArgumentList $Downloader_Parameters -FilePath ".\Includes\Downloader.ps1"
-                Remove-Variable Downloader_Parameters
-            }
-            ElseIf (-not ($Miners | Where-Object Available -EQ $true)) { 
-                Write-Message -Level Info "Waiting 30 seconds for downloader to install binaries..."
+                ElseIf (-not ($Miners | Where-Object Available -EQ $true)) { 
+                    Write-Message -Level Info "Waiting 30 seconds for downloader to install binaries..."
+                }
             }
             Remove-Variable DownloadList
 
@@ -866,7 +872,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
             If ($Config.OpenFirewallPorts) { 
                 If (Get-Command "Get-MpPreference" -ErrorAction Ignore) { 
                     $ProgressPreferenceBackup = $ProgressPreference
-                    $ProgressPreference = "SilentlyContinue"
+                    $ProgressPreference = "Ignore"
                     If ((Get-Command "Get-MpComputerStatus" -ErrorAction Ignore) -and (Get-MpComputerStatus -ErrorAction Ignore)) { 
                         If (Get-Command "Get-NetFirewallRule" -ErrorAction Ignore) { 
                             $MinerFirewallRules = @((Get-NetFirewallApplicationFilter).Program)
@@ -1035,18 +1041,18 @@ While ($Variables.NewMiningStatus -eq "Running") {
         # Kill stuck miners
         $Loops = 0
         While ($StuckMiners = @((Get-CimInstance CIM_Process | Where-Object ExecutablePath | Where-Object { @($Variables.Miners.Path | Sort-Object -Unique) -contains $_.ExecutablePath } | Where-Object { $Variables.Miners.ProcessID -notcontains $_.ProcessID }).ProcessID)) { 
-            $StuckMiners | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }
+            $StuckMiners | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction Ignore }
             Start-Sleep -MilliSeconds 500
             $Loops ++
             If ($Loops -gt 100) { 
                 $Message = "Error stopping miner."
                 If ($Config.AutoReboot) { 
-                    Write-Message -Level Error "$Message Restarting computer in 10 seconds..."
-                    shutdown.exe /r /t 15 /c "NemosMiner detected stuck miner$(If ($StuckMiners.Count -gt 1) { "s" }) and will reboot the computer in 15 seconds."
+                    Write-Message -Level Error "$Message Restarting computer in 30 seconds..."
+                    shutdown.exe /r /t 30 /c "NemosMiner detected stuck miner$(If ($StuckMiners.Count -gt 1) { "s" }) and will reboot the computer in 30 seconds."
                 }
                 Else { 
                     Write-Message -Level Error $Message
-                    Start-Sleep -Seconds 10
+                    Start-Sleep -Seconds 30
                 }
             }
         }
@@ -1133,6 +1139,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
                             MinerName     = $Miner.Name
                             MinerVersion  = $Miner.Version
                             PoolName      = $Worker.Pool.Name
+                            PoolBaseName  = $Worker.Pool.BaseName
                             PoolRegion    = $Worker.Pool.Region
                         }
                     }
@@ -1286,7 +1293,7 @@ While ($Variables.NewMiningStatus -eq "Running") {
 
             } While ((Get-Date).ToUniversalTime() -le $Variables.EndLoopTime -or $BenchmarkingOrMeasuringMiners)
 
-            Remove-Variable BenchmarkingOrMeasuringMiners, FailedMiners, Interval, Message, Miner, NextLoop, RunningMiners, Sample, Samples -ErrorAction SilentlyContinue
+            Remove-Variable BenchmarkingOrMeasuringMiners, FailedMiners, Interval, Message, Miner, NextLoop, RunningMiners, Sample, Samples -ErrorAction Ignore
 
             Break
         }

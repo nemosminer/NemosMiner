@@ -15,31 +15,31 @@
             Chart.defaults.font.size = 16;
 
             // Colors = ['#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#FFEB3B', '#FFC107', '#FF9800', '#E91E63', '#9C27B0', '#3F51B5'];
-            let Colors = ['#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#FFEB3B', '#FFC107', '#FF9800', '#E91E63', '#9C27B0', '#3F51B5'];
+            var Colors = ['#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#FFEB3B', '#FFC107', '#FF9800', '#E91E63', '#9C27B0', '#3F51B5'];
 
             function HslColor (items, item) {
-              let hue = Math.trunc(360 / items * item);
-              // let saturation = 70;
-              let saturation = 50 + (25 * (item % 2));
-              let lightness = 50 + (25 * (item % 2));
+              var hue = Math.trunc(360 / items * item);
+              // var saturation = 70;
+              var saturation = 50 + (25 * (item % 2));
+              var lightness = 50 + (25 * (item % 2));
               return 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
             };
 
             function HsvColor (items, item) {
-              let hue = Math.trunc(360 / items * item);
-              let saturation = 0.8;
-              let value = 0.95;
+              var hue = Math.trunc(360 / items * item);
+              var saturation = 0.8;
+              var value = 0.95;
               return 'rgb(' + hsv2rgb(hue, saturation, value) + ')';
             };
 
             function RGBcolor (items, item) {
-              let delta = 255 / 3
-              let step = Math.trunc(255 / (items + 1));
+              var delta = 255 / 3
+              var step = Math.trunc(255 / (items + 1));
 
-              let red = step * item;
-              let green = step * item + delta;
+              var red = step * item;
+              var green = step * item + delta;
               if (green >= 255) { green -= 255};
-              let blue = step * item + 2 * delta;
+              var blue = step * item + 2 * delta;
               if (blue >= 255) { blue -= 255};
               return 'rgb(' + red + ', ' + green + ', ' + blue + ')';
             };
@@ -49,10 +49,10 @@
               // saturation, value in range [0,1]
               // return [r,g,b] each in range [0,255]
               // See: https://en.wikipedia.org/wiki/HSL_and_HSV#From_HSV
-              let chroma = value * saturation;
-              let hue1 = hue / 60;
-              let x = chroma * (1- Math.abs((hue1 % 2) - 1));
-              let r1, g1, b1;
+              var chroma = value * saturation;
+              var hue1 = hue / 60;
+              var x = chroma * (1- Math.abs((hue1 % 2) - 1));
+              var r1, g1, b1;
               if (hue1 >= 0 && hue1 <= 1) {
                 ([r1, g1, b1] = [chroma, x, 0]);
               } else if (hue1 >= 1 && hue1 <= 2) {
@@ -67,8 +67,8 @@
                 ([r1, g1, b1] = [chroma, 0, x]);
               }
 
-              let m = value - chroma;
-              let [r,g,b] = [r1+m, g1+m, b1+m];
+              var m = value - chroma;
+              var [r,g,b] = [r1+m, g1+m, b1+m];
 
               // Change r,g,b values from [0,1] to [0,255]
               return [255*r,255*g,255*b];
@@ -130,7 +130,7 @@
                       enabled: true,
                       callbacks: {
                         label: function(context) {
-                          let label = context.dataset.label || '';
+                          var label = context.dataset.label || '';
 
                           if (label) {
                             label = ' ' + label + ': ';
@@ -175,7 +175,7 @@
 
                   for (var pool in earningsdata.Earnings) {
                     var BTCvalue = [];
-                    for (var index in earningsdata.Earnings[pool]) BTCvalue.push(earningsdata.BTCrate * (earningsdata.Earnings[pool][index]));
+                    for (var index in earningsdata.Earnings[pool]) BTCvalue.push(rate * earningsdata.Earnings[pool][index]);
                     var earnings = {
                       label: pool.replace('Internal', '(Internal)').replace('External', '(External)'),
                       data: BTCvalue,
@@ -186,7 +186,7 @@
                     };
                     datasets.push(earnings);
                   }
-                  renderChart(earningsdata.Labels, datasets, earningsdata.Currency);
+                  renderChart(earningsdata.Labels, datasets, config.Currency);
                 }
               });
             }

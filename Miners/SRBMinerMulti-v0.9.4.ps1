@@ -66,16 +66,13 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # Get arguments for available miner devices
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algorithm") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $DeviceArguments = " --gpu-id $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',') --disable-cpu"
-
-                $_.Arguments += " --pool $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --wallet $($Pools.($_.Algorithm).User)$(If ($Pools.($_.Algorithm).User -notlike "*$($Pools.($_.Algorithm).WorkerName)*") { " --worker $($Pools.($_.Algorithm).WorkerName)" })"
+                $_.Arguments += " --pool $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --wallet $($Pools.($_.Algorithm).User)"
+                If ($Pools.($_.Algorithm).WorkerName) { " --worker $($Pools.($_.Algorithm).WorkerName)" }
                 $_.Arguments += " --password $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
-
                 If ($Pools.($_.Algorithm).SSL) { $_.Arguments += " --ssl true" }
                 If ($Pools.($_.Algorithm).DAGsizeGB -ne $null -and $Pools.($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { $_.Arguments += " --nicehash true" }
                 If ($Pools.($_.Algorithm).DAGsizeGB -ne $null -and $Pools.($_.Algorithm).BaseName -eq "ProHashing") { $_.Arguments += " --esm 1" }
-
-                # If ($Pools.($_.Algorithm).BaseName -eq "MiningPoolHub") { $_.WarmupTimes[0] += 15 } # Allow extra seconds for MPH because of long connect issue
+                $_.Arguments += " --gpu-id $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',') --disable-cpu"
 
                 $PrerequisitePath = ""
                 $PrerequisiteURI = ""
@@ -88,12 +85,13 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                         $PrerequisiteURI = "https://github.com/Minerx117/miners/releases/download/Verthash.Dat/VertHash.dat"
                     }
                 }
+
                 [PSCustomObject]@{ 
                     Name             = $Miner_Name
                     DeviceNames      = $AvailableMiner_Devices.Name
                     Type             = $AvailableMiner_Devices.Type
                     Path             = $Path
-                    Arguments        = ("$($_.Arguments) --disable-workers-ramp-up --api-enable --api-port $MinerAPIPort$DeviceArguments" -replace "\s+", " ").trim()
+                    Arguments        = ("$($_.Arguments) --disable-workers-ramp-up --api-enable --api-port $MinerAPIPort" -replace "\s+", " ").trim()
                     Algorithms       = $_.Algorithm
                     API              = "SRBMiner"
                     Port             = $MinerAPIPort

@@ -53,18 +53,18 @@
               >
               <thead>
                 <tr>
-                  <th data-field="Worker" data-sortable="true" data-filter-control="select">Worker</th>
-                  <th data-field="Status" data-sortable="true" data-filter-control="select">Status</th>
-                  <th data-field="LastSeen" data-sortable="true" data-formatter="formatTimeSince">Last seen</th>
-                  <th data-field="Version" data-sortable="true" data-filter-control="select">Version</th>
-                  <th data-field="Currency" data-sortable="true" data-filter-control="select">Currency</th>
-                  <th data-field="EstimatedEarning" data-align="right" data-sortable="true" data-formatter="formatDigitsFromValue">Estimated<br>Earning/day</th>
-                  <th data-field="EstimatedProfit" data-align="right" data-sortable="true" data-formatter="formatDigitsFromValue">Estimated<br>Profit/day</th>
-                  <th data-field="Miner" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Miner(s)</th>
-                  <th data-field="Pool" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Pool(s)</th>
-                  <th data-field="Algorithm" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Algorithm(s)</th>
-                  <th data-field="Live Hashrate" data-align="right" data-sortable="true">Live<br>Hashrate(s)</th>
-                  <th data-field="Benchmark Hashrate" data-align="right" data-sortable="true">Benchmark<br>Hashrate(s)</th>
+                  <th class="align-top" data-field="Worker" data-sortable="true" data-filter-control="select">Worker</th>
+                  <th class="align-top" data-field="Status" data-sortable="true" data-filter-control="select">Status</th>
+                  <th class="align-top" data-field="LastSeen" data-sortable="true" data-formatter="formatTimeSince">Last seen</th>
+                  <th class="align-top" data-field="Version" data-sortable="true" data-filter-control="select">Version</th>
+                  <th class="align-top" data-field="Currency" data-sortable="true" data-filter-control="select">Currency</th>
+                  <th class="align-top" data-field="EstimatedEarning" data-align="right" data-sortable="true" data-formatter="formatDigitsFromValue">Estimated<br>Earning/day</th>
+                  <th class="align-top" data-field="EstimatedProfit" data-align="right" data-sortable="true" data-formatter="formatDigitsFromValue">Estimated<br>Profit/day</th>
+                  <th class="align-top" data-field="Miner" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Miner(s)</th>
+                  <th class="align-top" data-field="Pool" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Pool(s)</th>
+                  <th class="align-top" data-field="Algorithm" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Algorithm(s)</th>
+                  <th class="align-top" data-field="Live Hashrate" data-align="right" data-sortable="true">Live<br>Hashrate(s)</th>
+                  <th class="align-top" data-field="Benchmark Hashrate" data-align="right" data-sortable="true">Benchmark<br>Hashrate(s)</th>
                 </tr>
               </thead>
             </table>
@@ -72,12 +72,6 @@
 <!-- Start of page scripts 'rigmonitor.html' -->
           <script type="text/javascript">
             var $table = $('#workers');
-
-            $table.on('pre-body.bs.table', function () {
-              $('#workers thead tr th').each(function () {
-                $(this).addClass('align-top');
-              });
-            });
 
             $table.on('post-body.bs.table', function () {
               if (config.WebGUIUseColor == true) {
@@ -103,7 +97,6 @@
             });
 
             $(document).ready(function () {
-
               // Get config file name
               $.ajax({
                 async: false,

@@ -51,20 +51,19 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # Get arguments for available miner devices
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                If ($_.Algorithm -match "^EtcHash$|^Ethash.*|^Cuck.*") { 
+                If ($_.Algorithm -match "^Cuck.*|^EtcHash$|^Ethash.*|^KawPoW$") { 
                     If ($Pools.($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash")) { 
-                        $Protocol = "nicehash+tcp://"
+                        $_.Arguments += " --url nicehash"
                     }
                     Else { 
-                        $Protocol = "ethproxy+tcp://"
+                        $_.Arguments += " --url ethproxy"
                     }
                 }
                 Else { 
-                    $Protocol = "stratum+tcp://"
+                    $_.Arguments += " --url stratum"
                 }
-                If ($Pools.($_.Algorithm).SSL) { $Protocol = $Protocol -replace '\+tcp\://$', '+ssl://' }
-
-                $_.Arguments += " --url $($Protocol)$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User)"
+                $_.Arguments += If ($Pools.($_.Algorithm).SSL) { "+ssl://" } Else  { "+tcp://" }
+                $_.Arguments += "$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User)$(If ($Pools.($_.Algorithm).WorkerName) { ".$($Pools.($_.Algorithm).WorkerName)" })"
                 $_.Arguments += " --password $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
 
                 # Optionally disable dev fee mining

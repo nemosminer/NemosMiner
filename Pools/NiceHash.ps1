@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.0.1.2
-Version date:   23 June 2022
+Version:        4.0.1.3
+Version date:   19 June 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -36,9 +36,7 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
 $Fee = $PoolConfig.Variant.$PoolVariant.Fee
 $PayoutCurrency = $PoolConfig.Variant.$PoolVariant.PayoutCurrency
-$Regions = If ($Config.UseAnycast -and $PoolConfig.Region -contains "n/a (Anycast)") { "n/a (Anycast)" } Else { $PoolConfig.Region | Where-Object { $_ -ne "n/a (Anycast)" }  }
 $Wallet = $PoolConfig.Variant.$PoolVariant.Wallets.$PayoutCurrency
-$User = "$Wallet.$($PoolConfig.WorkerName -replace "^ID=")"
 
 If ($Wallet) { 
     Try { 
@@ -50,7 +48,7 @@ If ($Wallet) {
 
     If (-not $Request) { Return }
 
-    $HostSuffix = "nicehash.com"
+    $HostSuffix = "auto.nicehash.com"
 
     $Request.miningAlgorithms | Where-Object { $_.algodetails.enabled -and [Double]$_.paying -gt 0 -and [Double]$_.speed -gt 0 } | ForEach-Object { 
         $Algorithm = $_.Algorithm
@@ -80,36 +78,24 @@ If ($Wallet) {
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor) -FaultDetection $false
 
-        ForEach ($Region in $Regions) { 
-            $Region_Norm = Get-Region $Region
-
-            If ($Region -eq "n/a (Anycast)") { 
-                $PoolHost = "$Algorithm.Auto.$HostSuffix"
-                $PoolPort = 9200
-            }
-            Else { 
-                $PoolHost = "$Algorithm.$Region.$HostSuffix"
-                $PoolPort = $_.algodetails.port
-            }
-
-            [PSCustomObject]@{ 
-                Name                     = [String]$PoolVariant
-                BaseName                 = [String]$Name
-                Algorithm                = [String]$Algorithm_Norm
-                Currency                 = [String]$Currency
-                Price                    = [Double]$Stat.Live
-                StablePrice              = [Double]$Stat.Week
-                Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Minute_5_Fluctuation), 1)) # Use short timespan to counter price peaks
-                EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                Host                     = [String]$PoolHost.ToLower()
-                Port                     = [UInt16]$PoolPort
-                User                     = [String]$User
-                Pass                     = "x"
-                Region                   = [String]$Region_Norm
-                SSL                      = $false
-                Fee                      = [Decimal]$Fee
-                Updated                  = [DateTime]$Stat.Updated
-            }
+        [PSCustomObject]@{ 
+            Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Minute_5_Fluctuation), 1)) # Use short timespan to counter price peaks
+            Algorithm                = [String]$Algorithm_Norm
+            BaseName                 = [String]$Name
+            Currency                 = [String]$Currency
+            EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+            Fee                      = [Decimal]$Fee
+            Host                     = "$Algorithm.$HostSuffix".ToLower()
+            Name                     = [String]$PoolVariant
+            Pass                     = "x"
+            Port                     = [UInt16]9200
+            Price                    = [Double]$Stat.Live
+            Region                   = [String]$PoolConfig.Region
+            SSL                      = $false
+            StablePrice              = [Double]$Stat.Week
+            Updated                  = [DateTime]$Stat.Updated
+            User                     = "$Wallet.$($PoolConfig.WorkerName)"
+            WorkerName               = ""
         }
     }
 }

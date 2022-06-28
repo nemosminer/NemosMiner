@@ -3,8 +3,8 @@ using module ..\Includes\Include.psm1
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -ne "NVIDIA" -or $_.OpenCL.ComputeCapability -gt 5.0 })) { Return }
 
 $Uri = Switch ($Variables.DriverVersion.CUDA) { 
-    { $_ -ge "11.0" } { "https://github.com/nanopool/nanominer/releases/download/v3.6.5/nanominer-windows-3.6.5-cuda11.zip"; Break }
-    Default           { "https://github.com/nanopool/nanominer/releases/download/v3.6.5/nanominer-windows-3.6.5.zip" }
+    { $_ -ge "11.0" } { "https://github.com/nanopool/nanominer/releases/download/v3.6.6/nanominer-windows-3.6.6-cuda11.zip"; Break }
+    Default           { "https://github.com/nanopool/nanominer/releases/download/v3.6.6/nanominer-windows-3.6.6.zip" }
 }
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\nanominer.exe"
@@ -47,19 +47,22 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or $_.MemoryGB -ge $MinMemGB }) { 
 
-                If ($AvailableMiner_Devices.Type -eq "NVIDIA" -and $AvailableMiner_Devices.Model -match "^GTX 1660 SUPER 6GB$" -and $_.Algorithm -eq "Octopus") { Return } # 0 hashrate
+                If ($AvailableMiner_Devices.Type -eq "NVIDIA" -and $AvailableMiner_Devices.Model -match "^GTX 1660 SUPER 6GB$" -and $_.Algorithm -match "^xKawPoW$|^Octopus$") { Return } # 0 hashrate
 
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
-                $Arguments = "-mport 0 -webPort $MinerAPIPort -checkForUpdates false -noLog true -watchdog false"
+                $Arguments = " -coin $($_.Coin)"
+                If (($Pools.($_.Algorithm).DAGsizeGB -gt 0 -or $_.Algorithm -in @("FiroPoW")) -and $Pools.($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash")) { $Arguments += " -protocol stratum" }
+                $Arguments += " -pool1 $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)"
+                $Arguments += " -wallet $($Pools.($_.Algorithm).User)"
+                $Arguments += " -rigName '' -rigPassword $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
+                If ($Pools.($_.Algorithm).WorkerName) { $Arguments += " -rigName $($Pools.($_.Algorithm).WorkerName)" }
                 $Arguments += " -useSSL $("$($Pools.($_.Algorithm).SSL)".toLower())"
-                $Arguments += " -rigName $($Config.WorkerName) -rigPassword $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
+                $Arguments += " -mport 0 -webPort $MinerAPIPort -checkForUpdates false -noLog true -watchdog false"
                 $Arguments += " -devices $(($AvailableMiner_Devices | Sort-Object Name -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')"
 
                 # Apply tuning parameters
                 If ($Variables.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
-
-                $Arguments += " -coin $($_.Coin) -pool1 $($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) -wallet $($Pools.($_.Algorithm).User -split '\.' | Select-Object -First 1)$(If (($Pools.($_.Algorithm).DAGsizeGB -gt 0 -or $_.Algorithm -in @("FiroPoW")) -and $Pools.($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash")) { " -protocol stratum" } )"
 
                 $PrerequisitePath = ""
                 $PrerequisiteURI = ""
@@ -78,8 +81,8 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     DeviceNames = $AvailableMiner_Devices.Name
                     Type        = $AvailableMiner_Devices.Type
                     Path        = $Path
-                    Arguments   = $Arguments
-                    Algorithms  = ($_.Algorithm -replace "\s+", " ").trim()
+                    Arguments   = ($Arguments -replace "\s+", " ").trim()
+                    Algorithms  = $_.Algorithm
                     API         = "NanoMiner"
                     Port        = $MinerAPIPort
                     URI         = $Uri

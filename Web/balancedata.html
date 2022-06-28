@@ -28,19 +28,19 @@
             >
             <thead>
               <tr>
-                <th data-field="state" data-checkbox="true"></th>
-                <th data-field="DateTime" data-sortable="true" data-filter-control="input" data-formatter="formatDate">Date & Time</th>
-                <th data-field="Pool" data-sortable="true" data-filter-control="select">Pool</th>
-                <th data-field="Wallet" data-sortable="true" data-visible="true" data-filter-control="select">Account</th>
-                <th data-field="Currency" data-sortable="true" data-filter-control="select">Currency</th>
-                <th data-field="Pending" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Pending</th>
-                <th data-field="Balance" data-align="right" data-sortable="true" data-formatter="formatDigits10">Balance</th>
-                <th data-field="Unpaid" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Unpaid</th>
-                <th data-field="Earnings" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Earnings</th>
-                <th data-field="Delta" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Delta</th>
-                <th data-field="Payout" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Payout</th>
-                <th data-field="Paid" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Paid</th>
-                <th data-field="HiddenPending" data-align="right" data-sortable="true" data-visible="false" data-formatter="formatDigits10">Hidden Pending</th>
+                <th class="align-top" data-field="state" data-checkbox="true"></th>
+                <th class="align-top" data-field="DateTime" data-sortable="true" data-filter-control="input" data-formatter="formatDate">Date & Time</th>
+                <th class="align-top" data-field="Pool" data-sortable="true" data-filter-control="select">Pool</th>
+                <th class="align-top" data-field="Wallet" data-sortable="true" data-visible="true" data-filter-control="select">Account</th>
+                <th class="align-top" data-field="Currency" data-sortable="true" data-filter-control="select">Currency</th>
+                <th class="align-top" data-field="Pending" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Pending</th>
+                <th class="align-top" data-field="Balance" data-align="right" data-sortable="true" data-formatter="formatDigits10">Balance</th>
+                <th class="align-top" data-field="Unpaid" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Unpaid</th>
+                <th class="align-top" data-field="Earnings" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Earnings</th>
+                <th class="align-top" data-field="Delta" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Delta</th>
+                <th class="align-top" data-field="Payout" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Payout</th>
+                <th class="align-top" data-field="Paid" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Paid</th>
+                <th class="align-top" data-field="HiddenPending" data-align="right" data-sortable="true" data-visible="false" data-formatter="formatDigits10">Hidden Pending</th>
               </tr>
             </thead>
           </table>
@@ -50,13 +50,7 @@
             var $querysize = 16000;
 
             $table.bootstrapTable({
-              onPostBody: function () {
-                $('#balanceobjects thead tr th').each(function () {
-                  $(this).addClass('align-top');
-                })
-              },
-
-              onAll: function () {
+              onAll: function() {
                 document.getElementById('remove-entry').disabled = !Boolean($table.bootstrapTable('getSelections').length);
               },
 

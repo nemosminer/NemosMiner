@@ -7,6 +7,36 @@ Breaking changes (from 3.8.x.x code base):
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
 
+ChangeLog NemosMiner 4.0.1.3 28.06.2022
+=======================================
+
+Changes:
+- Remove TON mining (TON mining is almost over: https://ton.app/)
+
+Enhancements:
+- Algorithms.json: Rename 'CryptonightXhv' to 'CryptonightHeavyXhv'
+- Core: Download 'Verthash.dat' from repo when needed
+- Core: Update Powershell Core to v7.2.5
+- Main text window / Balances: Added 'Earned last 6 hours' & 'Earned last 30 days' data
+- Web GUI / Balances: Minimize API requests
+- Web GUI / Miners: Keep colored background when hiding 'Status' column
+
+Fixes:
+- Core: Do not count watchdog disabled miners as benchmarking or power usage measuring miners
+- Web GUI: Various jQuery errors, e.g. jQuery.Deferred exception: Cannot set properties of null (setting 'checked')
+
+Miner changes:
+- lolMiner-v1.52
+- NanoMiner-v3.6.6
+- Remove NsgMiner-v0.9.4 (Not working with latest ADM drivers)
+- TeamBlackMiner-v1.65
+- TeamRedMiner-v0.10.2
+- XmRig-v6.17.0
+
+Pool changes:
+- Removed pools 'TonPool' & 'TonWhales' (TON mining is over: https://ton.app/)
+
+
 ChangeLog NemosMiner 4.0.1.2 23.06.2022
 =======================================
 

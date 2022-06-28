@@ -3,7 +3,11 @@ using module ..\Includes\Include.psm1
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "NVIDIA")) { Return }
 
 $Uri = Switch ($Variables.DriverVersion.CUDA) { 
-    { $_ -ge "11.1" } { "https://github.com/Minerx117/miners/releases/download/Z-Enemy/z-enemy-2.6.3-win-cuda11.1.zip"; Break }
+    { $_ -ge "11.1" } { Return } # Use 2.6.3
+    { $_ -ge "10.1" } { "https://github.com/zealot-rvn/z-enemy/releases/download/kawpow262/z-enemy-2.6.2-win-cuda10.1.zip"; Break }
+    { $_ -ge "10.0" } { "https://github.com/zealot-rvn/z-enemy/releases/download/kawpow262/z-enemy-2.6.2-win-cuda10.0.zip"; Break }
+    { $_ -ge "9.2" }  { "https://github.com/zealot-rvn/z-enemy/releases/download/kawpow262/z-enemy-2.6.2-win-cuda9.2.zip"; Break }
+    { $_ -ge "9.1" }  { "https://github.com/zealot-rvn/z-enemy/releases/download/kawpow262/z-enemy-2.6.2-win-cuda9.1.zip"; Break }
     Default { Return }
 }
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
@@ -61,7 +65,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     Port        = $MinerAPIPort
                     URI         = $Uri
                     Fee         = 0.01 # dev fee
-                    MinerUri    = "http://localhost:$($MinerAPIPort)"
+                    # MinerUri    = "http://localhost:$($MinerAPIPort)" # Always offline
                     WarmupTimes = @($_.WarmupTimes) # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
                 }
             }

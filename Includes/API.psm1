@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.1.2
-Version date:   23 June 2022
+Version:        4.0.1.3
+Version date:   28 June 2022
 #>
 
 Function Initialize-API { 
@@ -808,10 +808,6 @@ Function Start-APIServer {
                     }
                     "/pooldata" { 
                         $Data = ConvertTo-Json -Depth 10 $Variables.PoolData
-                        break
-                    }
-                    "/poolnames" { 
-                        $Data = ConvertTo-Json -Depth 10 $Variables.PoolNames
                         break
                     }
                     "/pools" { 

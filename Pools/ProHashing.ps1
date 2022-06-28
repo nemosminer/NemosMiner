@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.0.1.2
-Version date:   23 June 2022
+Version:        4.0.1.3
+Version date:   28 June 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -69,22 +69,23 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
             $Region_Norm = Get-Region $Region
 
             [PSCustomObject]@{ 
-                Name                     = [String]$PoolVariant
-                BaseName                 = [String]$Name
-                Algorithm                = [String]$Algorithm_Norm
-                Currency                 = [String]$Currency
-                Price                    = [Double]$Stat.Live
-                StablePrice              = [Double]$Stat.Week
                 Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
+                Algorithm                = [String]$Algorithm_Norm
+                BaseName                 = [String]$Name
+                Currency                 = [String]$Currency
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+                Fee                      = [Decimal]$Fee
                 Host                     = "$(If ($Region -eq "EU") { "eu." })$PoolHost"
-                Port                     = [UInt16]$PoolPort
-                User                     = [String]$PoolConfig.UserName
+                Name                     = [String]$PoolVariant
                 Pass                     = [String]$Pass
+                Port                     = [UInt16]$PoolPort
+                Price                    = [Double]$Stat.Live
                 Region                   = [String]$Region_Norm
                 SSL                      = $false
-                Fee                      = [Decimal]$Fee
+                StablePrice              = [Double]$Stat.Week
                 Updated                  = [DateTime]$Stat.Updated
+                User                     = [String]$PoolConfig.UserName
+                WorkerName               = ""
             }
         }
     }

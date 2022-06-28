@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.1.2
-Version date:   23 June 2022
+Version:        4.0.1.3
+Version date:   28 June 2022
 #>
 
 [CmdletBinding()]
@@ -264,7 +264,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.1.2"
+    Version      = [System.Version]"4.0.1.3"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -322,7 +322,6 @@ If (-not $Variables.FIATcurrencies) {
 }
 # Load pool data
 $Variables.PoolData = Get-Content -Path ".\Data\PoolData.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore | Get-SortedObject
-$Variables.PoolNames = @($Variables.PoolData.Keys)
 $Variables.PoolVariants = @(($Variables.PoolData.Keys | ForEach-Object { $Variables.PoolData.$_.Variant.Keys -replace " External$| Internal$" }) | Sort-Object -Unique)
 If (-not $Variables.PoolVariants) { 
     Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\PoolData.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file. Please restore it from your original download."
