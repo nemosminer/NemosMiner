@@ -1443,7 +1443,7 @@ Function Set-Stat {
             Return
         }
         Else { 
-            If ($Value -eq 0 -or $Stat.ToleranceExceeded -ge $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1) { 
+            If (-not $Disabled -and ($Value -eq 0 -or $Stat.ToleranceExceeded -ge $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1)) { 
                 If ($Value -gt 0 -and $Stat.ToleranceExceeded -ge $ToleranceExceeded) { 
                     If ($Name -match ".+_Hashrate$") { 
                         Write-Message -Level Warn "Hashrate '$($Name -replace '_Hashrate$')' was forcefully updated. $(($Value | ConvertTo-Hash) -replace '\s+', ' ') was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' '))$(If ($Stat.Week_Fluctuation -lt 1) { " for $($Stats.($Stat.Name).ToleranceExceeded) times in a row." })"
@@ -1531,7 +1531,7 @@ Function Set-Stat {
         Duration              = [String]$Stat.Duration
         Updated               = [DateTime]$Stat.Updated
         Disabled              = [Boolean]$Stat.Disabled
-    } | ConvertTo-Json | Out-File -FilePath $Path -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+    } | ConvertTo-Json | Out-File -FilePath $Path -Force -Encoding utf8NoBOM -ErrorAction Ignore
 
     $Stat
 }
