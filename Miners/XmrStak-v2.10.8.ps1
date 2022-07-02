@@ -43,7 +43,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightLite";     MinMemGB = 1; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(75, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";   MinMemGB = 1; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(75, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc"; MinMemGB = 1; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(75, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";    MinMemGB = 1; Type = "NVIDIA"; MinerSet = 1; WarmupTimes = @(75, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } # CryptoDredge-v0.26.0 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";    MinMemGB = 1; Type = "NVIDIA"; MinerSet = 1; WarmupTimes = @(75, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } # CryptoDredge-v0.27.0 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightMsr";      MinMemGB = 2; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(75, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
     # [PSCustomObject]@{ Algorithm = "CryptonightR";        MinMemGB = 2; Type = "NVIDIA"; MinerSet = 1; WarmupTimes = @(75, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } # Is never profitable
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";   MinMemGB = 2; Type = "NVIDIA"; MinerSet = 1; WarmupTimes = @(75, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } # XmRig-v6.18.0 is fastest

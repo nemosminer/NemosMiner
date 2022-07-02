@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiniZ.ps1
-Version:        4.0.1.3
-Version date:   28 June 2022
+Version:        4.0.2.0
+Version date:   02 July 2022
 #>
 
 class MiniZ : Miner { 
@@ -27,7 +27,6 @@ class MiniZ : Miner {
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
         $PowerUsage = [Double]0
-        $Sample = [PSCustomObject]@{ }
 
         $Request = '{ "id":"0", "method":"getstat" }'
         $Response = ""

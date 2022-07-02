@@ -7,6 +7,38 @@ Breaking changes (from 3.8.x.x code base):
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
 
+ChangeLog NemosMiner 4.0.2.0 02.07.2022
+=======================================
+
+Enhancements:
+- API: Added '/currencyalgorithm' URL
+- Core: Allow at least 10 seconds for miner to get data from API
+- Core / Initialize-Autoupdate: Remove all TON stat files, TON mining is over
+- Core: Minor code improvements
+- Core: Log errors to 'Logs\Error.txt file'
+- Miner APIs: Speed up funtion GetMinerData()
+- Web GUI / Devices: Keep colored background when hiding 'Status' column
+- Web GUI / Rig Monitor: Keep colored background when hiding 'Status' column
+- Web GUI / Switching Log: Keep colored background when hiding 'Action' column
+
+Fixes:
+- API / APILog: remove double parameter value output
+- API / '/functions/stat/remove': Not removing doal algo stats, hashrate value not cleared
+- Core: Region 'eu-west' for NLPool not resolving to 'Europe'
+- Core / Set-Stat: Disabling 0 valued stats not woking (property 'disabled' remained 'false')
+- Core: 'Pause mining' also stopped brain jobs
+- Core: 'Pause mining' & 'Stop mining' not stopping all running miners
+- Web GUI / Miners & Pools: Fix column alignment (regression from 4.0.1.3)
+
+Miner changes:
+- lolMiner-v1.52a
+- NanoMiner-v3.6.7
+- SPMinerVertHash-v5 (removed, use SRBMinerMulti or TeamBlackMiner)
+- SRBMinerMulti-v0.9.8
+- Wildrig-v0.31.7
+- VertHashMiner-v0.7.2.ps1 (removed, use SRBMinerMulti or TeamBlackMiner)
+
+
 ChangeLog NemosMiner 4.0.1.3 28.06.2022
 =======================================
 
@@ -40,14 +72,12 @@ Pool changes:
 ChangeLog NemosMiner 4.0.1.2 23.06.2022
 =======================================
 
-API: 
-- Added '/donationdata' url
-
 Changes:
 - Changed config item 'PoolBalancesUpdateInterval' to 'BalancesTrackerPollInterval'
 - Donation list: Removed 'MrPlus', re-added 'grantemsley'
 
 Enhancements:
+- API: Added '/donationdata' url
 - Core: Always load DAG data from file, update when new data is available
 - Web GUI / Balances: Minimize API requests
 - Web GUI / Balances: More compact layout

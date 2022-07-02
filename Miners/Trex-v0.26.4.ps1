@@ -26,9 +26,9 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Octopus");              Fee = @(0.02);       MinMemGB = 6.1;                             MemReserveGB = 0;    MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(60, 15);  Arguments = " --algo octopus" } # 6GB is not enough
     [PSCustomObject]@{ Algorithm = @("ProgPoW");              Fee = @(0.01);       MinMemGB = $Pools."ProgPoW".DAGSizeGB;      MemReserveGB = 0.41; MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(30, 0);   Arguments = " --algo progpow" }
     [PSCustomObject]@{ Algorithm = @("Tensority");            Fee = @(0.01);       MinMemGB = 2;                               MemReserveGB = 0;    MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(30, 0);   Arguments = " --algo tensority --intensity 25" }
-    [PSCustomObject]@{ Algorithm = @("Veil");                 Fee = @(0.01);       MinMemGB = 2;                               MemReserveGB = 0;    MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(30, 0);   Arguments = " --algo progpow-veil --intensity 24" }
-    [PSCustomObject]@{ Algorithm = @("VeriBlock");            Fee = @(0.01);       MinMemGB = 2;                               MemReserveGB = 0;    MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(30, 0);   Arguments = " --algo progpow-veriblock" }
-    [PSCustomObject]@{ Algorithm = @("Zano");                 Fee = @(0.01);       MinMemGB = 2;                               MemReserveGB = 0;    MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(30, 0);   Arguments = " --algo progpowz --intensity 25" }
+    [PSCustomObject]@{ Algorithm = @("ProgPoWVeil");          Fee = @(0.01);       MinMemGB = 2;                               MemReserveGB = 0;    MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(30, 0);   Arguments = " --algo progpow-veil --intensity 24" }
+    [PSCustomObject]@{ Algorithm = @("ProgPoWVeriblock");     Fee = @(0.01);       MinMemGB = 2;                               MemReserveGB = 0;    MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(30, 0);   Arguments = " --algo progpow-veriblock" }
+    [PSCustomObject]@{ Algorithm = @("ProgPoWZano");          Fee = @(0.01);       MinMemGB = 2;                               MemReserveGB = 0;    MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(30, 0);   Arguments = " --algo progpowz --intensity 25" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm[0]).Host -and (-not $_.Algorithm[1] -or $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
@@ -55,13 +55,11 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 $_.Arguments += " --pass $($Pools.($_.Algorithm[0]).Pass)$(If ($Pools.($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
                 If ($Pools.($_.Algorithm[0]).WorkerName) { $_.Arguments += " --worker $($Pools.($_.Algorithm[0]).WorkerName)" }
 
-                If ($_.Algorithm[0] -in @("ProgPoW", "Zano")) { 
-                    If ($Pools.($_.Algorithm[0]).Currency -in @("SERO", "ZANO")) { 
-                        $_.Arguments += " --coin $($Pools.($_.Algorithm[0]).Currency)"
-                    }
-                    Else { 
-                        Return
-                    }
+                If ($Pools.($_.Algorithm[0]).Currency -in @("CLO", "ETC", "ETH", "EPIC", "ETP", "EXP", "MUSIC", "PIRL", "RVN", "SERO", "TCR", "UBQ", "VBK", "VEIL", "ZANO", "ZCOIN", "ZELS")) { 
+                    $_.Arguments += " -coin $($Pools.($_.Algorithm[0]).Currency)"
+                }
+                ElseIf ($_.Algorithm[0] -eq "ProgPoW") { # No coin
+                    Return
                 }
 
                 If ($_.Algorithm[1]) { 

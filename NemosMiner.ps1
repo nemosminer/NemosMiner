@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.1.3
-Version date:   28 June 2022
+Version:        4.0.2.0
+Version date:   02 July 2022
 #>
 
 [CmdletBinding()]
@@ -244,6 +244,8 @@ param(
 
 Set-Location (Split-Path $MyInvocation.MyCommand.Path)
 
+$ProgressPreference = "SilentlyContinue"
+
 @"
 NemosMiner
 Copyright (c) 2018-$((Get-Date).Year) Nemo, MrPlus & UselessGuru
@@ -264,7 +266,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.1.3"
+    Version      = [System.Version]"4.0.2.0"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -303,6 +305,13 @@ If (-not $Variables.Algorithms) {
 $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 If (-not $Global:CoinNames) { 
     Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CoinNames.json' is not a valid JSON file. Please restore it from your original download."
+    Start-Sleep -Seconds 10
+    Exit
+}
+# Load currency algorithm data
+$Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+If (-not $Global:CurrencyAlgorithm) { 
+    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CurrencyAlgorithm.json' is not a valid JSON file. Please restore it from your original download."
     Start-Sleep -Seconds 10
     Exit
 }
@@ -872,19 +881,14 @@ Function Global:TimerUITick {
                     $TimerUI.Stop
 
                     If ($Variables.MiningStatus) { 
-                        $Variables.Summary = "'Pause mining' button pressed<br>Pausing $($Variables.Branding.ProductLabel)..."
+                        $Variables.Summary = "'Pause mining' button pressed.<br>Pausing $($Variables.Branding.ProductLabel)..."
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                     }
-
-                    If ($Variables.MiningStatus -eq "Running") { 
-                        Stop-Mining
-                        Stop-BrainJob
-                        Stop-IdleDetection
-                    }
-                    Else { 
-                        Initialize-Application
-                        Start-BalancesTracker
-                    }
+                    Stop-Mining
+                    Stop-IdleDetection
+                    Initialize-Application
+                    Start-BalancesTracker
+                    Start-Brainjob @(If ($Variables.NiceHashWalletIsInternal) { $Config.PoolName -replace "NiceHash", "NiceHash Internal" } Else { $Config.PoolName -replace "NiceHash", "NiceHash External" })
                     Update-MonitoringData
 
                     $LabelMiningStatus.Text = "Paused | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
@@ -905,6 +909,7 @@ Function Global:TimerUITick {
 
                     Initialize-Application
                     Start-BalancesTracker
+                    Start-Brainjob @(If ($Variables.NiceHashWalletIsInternal) { $Config.PoolName -replace "NiceHash", "NiceHash Internal" } Else { $Config.PoolName -replace "NiceHash", "NiceHash External" })
                     Start-Mining
 
                     $LabelMiningStatus.Text = "Running | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"

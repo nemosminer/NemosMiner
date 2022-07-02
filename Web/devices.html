@@ -4,7 +4,7 @@
           </div>
           <div class="alert alert-info" role="alert">These are the devices (GPUs and CPUs) detected by NemosMiner. Configuration changes made will become active in the next cycle.</div>
           <div id="toolbarenableddevices">
-            <button id="disable-device" class="btn btn-danger" disabled>Disable Device</button>
+            <button id="btn-disable-device" class="btn btn-danger" disabled>Disable Device</button>
           </div>
           <h3>Enabled Devices</h3>
           <table id="enableddevices" class="table"
@@ -16,19 +16,18 @@
             data-show-button-text="true"
             data-filter-control="true"
             data-disable-control-when-search="true"
-            data-show-search-clear-button="true"
             data-show-columns="true"
             data-show-toggle="true"
             data-show-refresh="true"
             data-detail-view="true"
             data-detail-formatter="detailFormatter"
             data-url="/devices/enabled"
+            data-maintain-meta-data="true"
             data-response-handler="formatDevices"
-            data-sort-name="Name"
-            data-sort-order="asc"
             >
             <thead>
               <tr>
+                <th data-switchable="false" data-field="Status" data-class="hidden"></th>
                 <th data-field="state" data-checkbox="true"></th>
                 <th data-field="Name" data-sortable="true">Name</th>
                 <th data-field="Vendor" data-sortable="true">Vendor</th>
@@ -72,7 +71,7 @@
 
           <h3>Disabled Devices</h3>
           <div id="toolbardisableddevices">
-              <button id="enable-device" class="btn btn-success" disabled>Enable Device</button>
+              <button id="btn-enable-device" class="btn btn-success" disabled>Enable Device</button>
           </div>
           <table id="disableddevices" class="table"
             data-toolbar="#toolbardisableddevices"
@@ -83,16 +82,14 @@
             data-show-button-text="true"
             data-filter-control="true"
             data-disable-control-when-search="true"
-            data-show-search-clear-button="true"
             data-show-columns="true"
             data-show-toggle="true"
             data-show-refresh="true"
             data-detail-view="true"
             data-detail-formatter="detailFormatter"
             data-url="/devices/disabled"
+            data-maintain-meta-data="true"
             data-response-handler="formatDevices"
-            data-sort-name="Name"
-            data-sort-order="asc"
             >
             <thead>
               <tr>
@@ -147,16 +144,14 @@
               data-show-button-text="true"
               data-filter-control="true"
               data-disable-control-when-search="true"
-              data-show-search-clear-button="true"
-              data-show-columns="true"
+                data-show-columns="true"
               data-show-toggle="true"
               data-show-refresh="true"
               data-detail-view="true"
               data-detail-formatter="detailFormatter"
               data-url="/devices/unsupported"
+              data-maintain-meta-data="true"
               data-response-handler="formatDevices"
-              data-sort-name="Name"
-              data-sort-order="asc"
               >
               <thead>
                 <tr>
@@ -236,8 +231,8 @@
 
             $('#enableddevices').bootstrapTable({
               onPostBody: function() {
-                if (config.WebGUIUseColor == true && !$('#enableddevices tr th')[5].hidden) {
-                  $('#enableddevices td:nth-child(6)').each(function () {
+                if (config.WebGUIUseColor == true) {
+                  $('#enableddevices td:nth-child(2)').each(function () {
                     switch(this.innerText) {
                       case this.innerText.match(/^Mining/)?.input:
                         $(this).parent('tr').addClass('miner-running');
@@ -260,34 +255,22 @@
               },
 
               onAll: function() {
-                try {
-                  if ($('#enableddevices').bootstrapTable('getSelections').length >= 1) {
-                    document.getElementById('disable-device').disabled = false;
-                  } else {
-                    document.getElementById('disable-device').disabled = true;
-                  }
-                } catch {}
+                document.getElementById('btn-disable-device').disabled = !Boolean($('#enableddevices').bootstrapTable('getSelections').length);
               }
             });
 
             $('#disableddevices').bootstrapTable({
               onAll: function() {
-                try {
-                  if ($('#disableddevices').bootstrapTable('getSelections').length >= 1) {
-                    document.getElementById('enable-device').disabled = false;
-                  } else {
-                    document.getElementById('enable-device').disabled = true;
-                  }
-                } catch {}
+                document.getElementById('btn-enable-device').disabled = !Boolean($('#disableddevices').bootstrapTable('getSelections').length);
               }
             });
 
             $(document).ready(function () {
               $(function () {
-                $('#disable-device').click(function () {
+                $('#btn-disable-device').click(function () {
                   var command = 'functions/config/device/disable?ExcludeDeviceName=' + encodeURIComponent($('#enableddevices').bootstrapTable('getSelections').map(item => item.Name));
                   $('.modal-body').load(command, function() {
-                    $('.modal-title').text($('#disable-device').text());
+                    $('.modal-title').text($('#btn-disable-device').text());
                     $('#myModal').modal({show:true});
                   });
                   $('#enableddevices').bootstrapTable('refresh');
@@ -296,10 +279,10 @@
               });
 
               $(function () {
-                $('#enable-device').click(function () {
+                $('#btn-enable-device').click(function () {
                   var command = 'functions/config/device/enable?DeviceName=' + encodeURIComponent($('#disableddevices').bootstrapTable('getSelections').map(item => item.Name));
                   $('.modal-body').load(command, function() {
-                    $('.modal-title').text($('#enable-device').text());
+                    $('.modal-title').text($('#btn-enable-device').text());
                     $('#myModal').modal({show:true});
                   });
                   $('#enableddevices').bootstrapTable('refresh');

@@ -50,6 +50,7 @@
     var config = JSON.parse(localStorage.getItem('config'));
     var rate = JSON.parse(localStorage.getItem('rate'));
     var rate = JSON.parse(localStorage.getItem('summary'));
+    var version = JSON.parse(localStorage.getItem('version'));
 
     function updateHeader() {
       // Get current config
@@ -90,7 +91,7 @@
       });
 
       //Set mining button status
-      if (document.getElementById('miningstart')) {
+      if (document.getElementById('btn-miningstart')) {
         $.ajax({
           async: false,
           dataType: 'json',
@@ -99,28 +100,28 @@
           success: function(result) {
             switch (result) {
               case 'Running': 
-                document.getElementById('miningstart').disabled = true;
-                document.getElementById('miningstart').title = "Mining processes are already running.";
-                document.getElementById('miningpause').disabled = false;
-                document.getElementById('miningpause').title = "Pause mining processes. Background processes remain running.";
-                document.getElementById('miningstop').disabled = false;
-                document.getElementById('miningstop').title = "Stop mining processes. Background processes will also stop.";
+                document.getElementById('btn-miningstart').disabled = true;
+                document.getElementById('btn-miningstart').title = "Mining processes are already running.";
+                document.getElementById('btn-miningpause').disabled = false;
+                document.getElementById('btn-miningpause').title = "Pause mining processes. Background processes remain running.";
+                document.getElementById('btn-miningstop').disabled = false;
+                document.getElementById('btn-miningstop').title = "Stop mining processes. Background processes will also stop.";
                 break;
               case 'Paused':
-                document.getElementById('miningstart').disabled = false;
-                document.getElementById('miningstart').title ="Start the mining process.";
-                document.getElementById('miningpause').disabled = true;
-                document.getElementById('miningpause').title = "Mining processes are stopped. Background processes remain running.";
-                document.getElementById('miningstop').disabled = false;
-                document.getElementById('miningstop').title = "Stop mining processes. Background processes will also stop.";
+                document.getElementById('btn-miningstart').disabled = false;
+                document.getElementById('btn-miningstart').title ="Start the mining process.";
+                document.getElementById('btn-miningpause').disabled = true;
+                document.getElementById('btn-miningpause').title = "Mining processes are stopped. Background processes remain running.";
+                document.getElementById('btn-miningstop').disabled = false;
+                document.getElementById('btn-miningstop').title = "Stop mining processes. Background processes will also stop.";
                 break;
               case 'Idle':
-                document.getElementById('miningstart').disabled = false;
-                document.getElementById('miningstart').title ="Start the mining process.";
-                document.getElementById('miningpause').disabled = false;
-                document.getElementById('miningpause').title = "Mining will not start. Background processes will start.";
-                document.getElementById('miningstop').disabled = true;
-                document.getElementById('miningstop').title = "All mining processes are already stopped.";
+                document.getElementById('btn-miningstart').disabled = false;
+                document.getElementById('btn-miningstart').title ="Start the mining process.";
+                document.getElementById('btn-miningpause').disabled = false;
+                document.getElementById('btn-miningpause').title = "Mining will not start. Background processes will start.";
+                document.getElementById('btn-miningstop').disabled = true;
+                document.getElementById('btn-miningstop').title = "All mining processes are already stopped.";
                 break;
             }
           }
@@ -141,9 +142,9 @@
     <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
       <a class="navbar-brand" href="/">NemosMiner</a>
       <div class="navbar-button">
-        <button id="miningstart" class="btn btn-success btn-lg" disabled>Start mining</button>
-        <button id="miningpause" class="btn btn-info btn-lg" disabled>Pause mining</button>
-        <button id="miningstop" class="btn btn-danger btn-lg" disabled>Stop mining</button>
+        <button id="btn-miningstart" class="btn btn-success btn-lg" disabled>Start mining</button>
+        <button id="btn-miningpause" class="btn btn-info btn-lg" disabled>Pause mining</button>
+        <button id="btn-miningstop" class="btn btn-danger btn-lg" disabled>Stop mining</button>
       </div>
       <div class="navbar-summary" id="summary">
     </nav>

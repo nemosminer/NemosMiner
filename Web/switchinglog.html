@@ -4,7 +4,7 @@
           </div>
           <div class="alert alert-info" role="alert">Lists the executed miners and the command lines used (last 1000 entries).</div>
           <div id="toolbar">
-            <button id="clear-log" class="btn btn-warning">Clear Switching Log</button>
+            <button id="btn-clear-log" class="btn btn-warning">Clear Switching Log</button>
           </div>
           <table id="switchinglog" class="table"
             data-toolbar="#toolbar"
@@ -15,7 +15,6 @@
             data-show-button-text="true"
             data-filter-control="true"
             data-disable-control-when-search="true"
-            data-show-search-clear-button="true"
             data-show-columns="true"
             data-show-toggle="true"
             data-show-refresh="true"
@@ -23,12 +22,12 @@
             data-auto-refresh="true"
             data-auto-refresh-status="true"
             data-detail-formatter="detailFormatter"
+            data-response-handler="formatData"
             data-url="/switchinglog"
-            data-sort-name="Date"
-            data-sort-order="desc"
             >
             <thead>
               <tr>
+                <th data-switchable="false" data-field="tAction" data-class="hidden"></th>
                 <th class="align-top" data-field="DateTime" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatDate">Date & Time</th>
                 <th class="align-top" data-field="Action" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Action</th>
                 <th class="align-top" data-field="Name" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Name</th>
@@ -53,10 +52,18 @@
           <script type="text/javascript">
             var $table = $('#switchinglog');
 
+            function formatData(data) {
+              $.each(data, function(index, item) {
+                // Format the action
+                item.tAction = item.Action;
+              });
+              return data;
+            }
+
             $table.bootstrapTable({
               onPostBody: function() {
                 if (config.WebGUIUseColor == true) {
-                  $('#switchinglog td:nth-child(3)').each(function () {
+                  $('#switchinglog td:nth-child(2)').each(function () {
                     switch(this.innerText) {
                       case this.innerText.match('Launched')?.input:
                         $(this).parent('tr').addClass('miner-running');
@@ -77,10 +84,10 @@
             });
 
             $(document).ready(function () {
-              $('#clear-log').click(function () {
+              $('#btn-clear-log').click(function () {
                 $command = '/functions/switchinglog/clear';
                 $('.modal-body').load($command, function() {
-                  $('.modal-title').text($('#clear-log').text());
+                  $('.modal-title').text($('#btn-clear-log').text());
                   $('#myModal').modal({show:true});
                 });
                 $('#myModal').on('hidden.bs.modal', function () {

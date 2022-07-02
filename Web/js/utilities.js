@@ -144,7 +144,7 @@ function formatHashrate(value) {
   return values.map(formatHashrate).toString();
 };
 
-function digitsFromValue(value, maxdigits) {
+function getDigitsFromValue(value, maxdigits) {
   // The bigger the number, the more decimal digits
 
   // Output will have as many digits as the integer value is to the power of 10
@@ -159,16 +159,16 @@ function digitsFromValue(value, maxdigits) {
 function formatDigitsFromBTC(value) {
   if (value == null) return '';
   if (isNaN(value)) return 'n/a';
-  if (value == 0) return (0).toFixed(12 - digitsFromValue(rate, 10));
-  if (value != 0) return parseFloat(value * rate).toFixed(12 - digitsFromValue(rate, 10));
+  if (value == 0) return (0).toFixed(12 - getDigitsFromValue(rate, 10));
+  if (value != 0) return parseFloat(value * rate).toFixed(12 - getDigitsFromValue(rate, 10));
   return 'n/a';
 };
 
 function formatDigitsFromValue(value) {
   if (value == null) return ''
   if (isNaN(value)) return 'n/a';
-  if (value == 0) return (0).toFixed(8 - digitsFromValue(value, 8));
-  if (value != 0) return parseFloat(value).toFixed(8 - digitsFromValue(value, 8));
+  if (value == 0) return (0).toFixed(8 - getDigitsFromValue(value, 8));
+  if (value != 0) return parseFloat(value).toFixed(8 - getDigitsFromValue(value, 8));
   return 'n/a';
 };
 

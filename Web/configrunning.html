@@ -4,8 +4,8 @@
           </div>
           <div id="configrunning" class="alert alert-info" role="alert">This is the full configuration NemosMiner is currently using</div>
           <div id="toolbar">
-            <button type="button" class="btn btn-primary" id="editconfig-button" name="editconfig-button" title="Edit configuration file&#10;It will become active in next cycle.">Edit Config file</button>
-            <button type="button" class="btn btn-primary" id="editpoolsconfig-button" name="editpoolsconfig-button" title="Edit pools config file&#10;It will become active in next cycle.">Edit PoolsConfig file</button>
+            <button type="button" class="btn btn-primary" id="btn-editconfig" name="btn-editconfig" title="Edit configuration file&#10;It will become active in next cycle.">Edit Config file</button>
+            <button type="button" class="btn btn-primary" id="btn-editpoolsconfig" name="btn-editpoolsconfig" title="Edit pools config file&#10;It will become active in next cycle.">Edit PoolsConfig file</button>
           </div>
           <br>
 
@@ -16,9 +16,9 @@
 
             $(document).ready(function () {
               //Edit config file
-              $('#editconfig-button').click(function () {
-                document.getElementById('editconfig-button').disabled = true;
-                document.getElementById('editpoolsconfig-button').disabled = true;
+              $('#btn-editconfig').click(function () {
+                document.getElementById('btn-editconfig').disabled = true;
+                document.getElementById('btn-editpoolsconfig').disabled = true;
                 $('.modal-body').load('/functions/file/edit?FileName=' + configfile, function () {
                   if (this.outerText) {
                     $('.modal-title').text('Edit Config file');
@@ -29,15 +29,15 @@
                       location.reload(true);
                     })
                   }
-                  document.getElementById('editconfig-button').disabled = false;
-                  document.getElementById('editpoolsconfig-button').disabled = false;
+                  document.getElementById('btn-editconfig').disabled = false;
+                  document.getElementById('btn-editpoolsconfig').disabled = false;
                 });
               });
 
               //Edit poolsconfig file
-              $('#editpoolsconfig-button').click(function () {
-                document.getElementById('editconfig-button').disabled = true;
-                document.getElementById('editpoolsconfig-button').disabled = true;
+              $('#btn-editpoolsconfig').click(function () {
+                document.getElementById('btn-editconfig').disabled = true;
+                document.getElementById('btn-editpoolsconfig').disabled = true;
                 $('.modal-body').load('/functions/file/edit?FileName=' + poolsconfigfile, function () {
                   if (this.outerText) {
                     $('.modal-title').text('Edit PoolsConfig file');
@@ -45,8 +45,8 @@
                       show: true
                     });
                   }
-                  document.getElementById('editconfig-button').disabled = false;
-                  document.getElementById('editpoolsconfig-button').disabled = false;
+                  document.getElementById('btn-editconfig').disabled = false;
+                  document.getElementById('btn-editpoolsconfig').disabled = false;
                 });
               });
 

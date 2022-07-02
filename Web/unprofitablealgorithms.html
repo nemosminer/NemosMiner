@@ -4,7 +4,7 @@
           </div>
           <div class="alert alert-info" role="alert">This is the static list of unprofitable algorithms (stored in '.\Data\UnprofitableAlgorithms.json'). Feel free to edit it to match your requirements.</br></div>
           <div id="toolbar">
-            <button type="button" class="btn btn-primary" id="editunprofitablealgorithms-button" name="editunprofitablealgorithms-button" title="Edit Unprofitable Algorithms file&#10;It will become active in next cycle.">Edit Unprofitable Algorithms File</button>
+            <button type="button" class="btn btn-primary" id="btn-editunprofitablealgorithms" name="btn-editunprofitablealgorithms" title="Edit Unprofitable Algorithms file&#10;It will become active in next cycle.">Edit Unprofitable Algorithms File</button>
           </div>
           <br>
           <pre id="unprofitablealgorithms" style="height: calc(100vh - 350px); overflow: auto;"></pre>
@@ -24,8 +24,8 @@
               });
 
               //Edit unprofitable algorithms file
-              $('#editunprofitablealgorithms-button').click(function () {
-                document.getElementById('editunprofitablealgorithms-button').disabled = true;
+              $('#btn-editunprofitablealgorithms').click(function () {
+                document.getElementById('btn-editunprofitablealgorithms').disabled = true;
                 $('.modal-body').load('/functions/file/edit?FileName=.\\Data\\UnprofitableAlgorithms.json', function () {
                   if (this.outerText) {
                     $('.modal-title').text('Edit Unprofitable Algorithms file');
@@ -36,7 +36,7 @@
                       location.reload(true);
                     })
                   }
-                  document.getElementById('editunprofitablealgorithms-button').disabled = false;
+                  document.getElementById('btn-editunprofitablealgorithms').disabled = false;
                 });
               });
             });

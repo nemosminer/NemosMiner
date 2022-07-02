@@ -16,7 +16,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "MTP";          Fee = 0.01; MinMemGB = 3;                               MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo MTP -intensity 21" } # CcminerMTP-v1.3.2 is faster
     [PSCustomObject]@{ Algorithm = "ProgPoW";      Fee = 0.01; MinMemGB = $Pools."ProgPoW".DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOW" } # Sero
     [PSCustomObject]@{ Algorithm = "UbqHash";      Fee = 0.01; MinMemGB = $Pools."UbqHash".DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo UBQHASH -intensity 15" }
-    [PSCustomObject]@{ Algorithm = "Zano";         Fee = 0.01; MinMemGB = 2;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOWZ" }
+    [PSCustomObject]@{ Algorithm = "ProgPoWZano";  Fee = 0.01; MinMemGB = 2;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOWZ" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 

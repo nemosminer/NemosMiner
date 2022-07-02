@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.0.1.3
-Version date:   28 June 2022
+Version:        4.0.2.0
+Version date:   02 July 2022
 #>
 
 using module ..\Includes\Include.psm1

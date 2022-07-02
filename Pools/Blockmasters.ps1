@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Blockmasters.ps1
-Version:        4.0.1.3
-Version date:   28 June 2022
+Version:        4.0.2.0
+Version date:   02 July 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -31,6 +31,8 @@ param(
     [String]$PoolVariant,
     [Hashtable]$Variables
 )
+
+$ProgressPreference = "SilentlyContinue"
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
@@ -61,11 +63,9 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
         $Workers = $Request.$_.workers
 
         # Add coin name
-        If ($Request.$_.CoinName -and $Currency -and -not (Get-CoinName $Currency)) { 
-            Add-CoinName -Currency $Currency -CoinName $Request.$_.CoinName
-        }
+        If ($Request.$_.CoinName -and $Currency){ Add-CoinName -Currency $Currency -CoinName $Request.$_.CoinName }
 
-        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.$_.$PriceField / $Divisor) -FaultDetection $false
+        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
         ForEach ($Region in $PoolConfig.Region) { 
             $Region_Norm = Get-Region $Region

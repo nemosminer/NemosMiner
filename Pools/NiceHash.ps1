@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.0.1.3
+Version:        4.0.2.0
 Version date:   19 June 2022
 #>
 
@@ -31,6 +31,8 @@ param(
     [String]$PoolVariant,
     [Hashtable]$Variables
 )
+
+$ProgressPreference = "SilentlyContinue"
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
@@ -76,7 +78,7 @@ If ($Wallet) {
 
         $Divisor = 100000000
 
-        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor) -FaultDetection $false
+        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)_Profit" -Value ($_.paying / $Divisor) -FaultDetection $false
 
         [PSCustomObject]@{ 
             Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Minute_5_Fluctuation), 1)) # Use short timespan to counter price peaks

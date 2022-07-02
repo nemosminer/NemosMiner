@@ -4,9 +4,9 @@
           </div>
           <div class="alert alert-info" role="alert">This is the pool data of all configured pools.</div>
           <div id="toolbar">
-            <button id="reset-data" class="btn btn-warning" disabled>Reset Pool Stat Data</button>
-            <button id="enable" class="btn btn-success" disabled>Enable Algorithm @ Pool</button>
-            <button id="disable" class="btn btn-danger" disabled>Disable Algorithm @ Pool</button>
+            <button id="btn-reset-data" class="btn btn-warning" disabled>Reset Pool Stat Data</button>
+            <button id="btn-enable" class="btn btn-success" disabled>Enable Algorithm @ Pool</button>
+            <button id="btn-disable" class="btn btn-danger" disabled>Disable Algorithm @ Pool</button>
           </div>
           <table id="pools" class="table"
             data-toolbar="#toolbar"
@@ -17,7 +17,6 @@
             data-show-button-text="true"
             data-filter-control="true"
             data-disable-control-when-search="true"
-            data-show-search-clear-button="true"
             data-show-columns="true"
             data-show-toggle="true"
             data-show-refresh="true"
@@ -26,7 +25,6 @@
             data-auto-refresh-status="false"
             data-detail-formatter="detailFormatter"
             data-url="/pools"
-            data-maintain-meta-data="true"
             data-undefined-text=""
             data-show-fullscreen="true"
             >
@@ -75,9 +73,9 @@
               },
 
               onAll: function() {
-                document.getElementById('reset-data').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-                document.getElementById('enable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-                document.getElementById('disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                document.getElementById('btn-reset-data').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                document.getElementById('btn-enable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                document.getElementById('btn-disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
               },
 
               autoRefreshInterval: (parseInt(config.Interval / 2)), // refresh once per interval
@@ -85,7 +83,7 @@
             });
 
             $(document).ready(function () {
-              $('#reset-data').click(function () {
+              $('#btn-reset-data').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
                   $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm, Currency: $element.Currency, Region: $element.Region})));
@@ -96,7 +94,7 @@
                     $('body').css('cursor', 'progress');
                     $command = '/functions/stat/remove?Pools=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
-                      $('.modal-title').text($('#reset-data').text());
+                      $('.modal-title').text($('#btn-reset-data').text());
                       $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });
@@ -105,7 +103,7 @@
                 }
               });
 
-              $('#enable').click(function () {
+              $('#btn-enable').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
                   $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
@@ -116,7 +114,7 @@
                     $('body').css('cursor', 'progress');
                     $command = '/functions/pool/enable?Pools=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
-                      $('.modal-title').text($('#enable').text());
+                      $('.modal-title').text($('#btn-enable').text());
                       $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });
@@ -125,7 +123,7 @@
                 }
               });
 
-              $('#disable').click(function () {
+              $('#btn-disable').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
                   $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
@@ -136,7 +134,7 @@
                     $('body').css('cursor', 'progress');
                     $command = '/functions/pool/disable?Pools=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
-                      $('.modal-title').text($('#disable').text());
+                      $('.modal-title').text($('#btn-disable').text());
                       $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });

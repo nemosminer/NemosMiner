@@ -4,7 +4,7 @@
           </div>
           <div id="watchdog" class="alert alert-info" role="alert"></div>
           <div id="toolbar">
-            <button id="removewatchdogs" class="btn btn-warning">Remove all Watchdog Timers</button>
+            <button id="btn-removewatchdogs" class="btn btn-warning">Remove all Watchdog Timers</button>
           </div>
           <table id="watchdogtimers" class="table"
             data-toolbar="#toolbar"
@@ -15,7 +15,6 @@
             data-show-button-text="true"
             data-filter-control="true"
             data-disable-control-when-search="true"
-            data-show-search-clear-button="true"
             data-show-columns="true"
             data-show-toggle="true"
             data-show-refresh="true"
@@ -61,10 +60,10 @@
                 }
               });
 
-              $('#removewatchdogs').click(function () {
+              $('#btn-removewatchdogs').click(function () {
                 $command = '/functions/watchdogtimers/reset';
                 $('.modal-body').load($command, function() {
-                  $('.modal-title').text($('#removewatchdogs').text());
+                  $('.modal-title').text($('#btn-removewatchdogs').text());
                   $('#myModal').modal({show:true});
                 });
                 $('#watchdogtimers').bootstrapTable('refresh');

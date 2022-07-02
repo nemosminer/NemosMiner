@@ -16,14 +16,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 Product:        NemosMiner
 File:           API.psm1
-version:        4.0.1.3
-version date:   28 June 2022-->
+version:        4.0.2.0
+version date:   02 July 2022-->
 
 
 <html>
 
 <body>
-  <h1>NemosMiner API (version 0.4.6.5)</h1>
+  <h1>NemosMiner API (version 0.4.6.6)</h1>
 
   API data is available at http://localhost:[API port]/&lt;resource&gt.
   (The default API port is 3999)
@@ -43,11 +43,17 @@ version date:   28 June 2022-->
   <a href="http://localhost:3999/algorithms/lastused">/algorithms/lastused</a>
   <p>Date & time when algorithms were last used (data is stored in '\Data\algorithmsUsed.json').</p>
   <br>
+  <a href="http://localhost:3999/allcurrencies">/allcurrencies</a>
+  <p>Returns the list of all currencies (main currency, extra currency and all currencies from balances)</p>
+  <br>
   <a href="http://localhost:3999/apiversion">/apiversion</a>
   <p>Returns the version number of NemosMiner API.</p>
   <br>
   <a href="http://localhost:3999/balances">/balances</a>
   <p>Returns the current balance information calculated by the balance tracker.</p>
+  <br>
+  <a href="http://localhost:3999/balancescurrencies">/balancescurrencies</a>
+  <p>Returns the list of balances currencies</p>
   <br>
   <a href="http://localhost:3999/balancedata">/balancedata</a>
   <p>Returns the balances collected by the balances tracker used to calculate balance information.</p>
@@ -73,11 +79,8 @@ version date:   28 June 2022-->
   <a href="http://localhost:3999/currency">/currency</a>
   <p>Returns the main currency.</p>
   <br>
-  <a href="http://localhost:3999/allcurrencies">/allcurrencies</a>
-  <p>Returns the list of all currencies (main currency, extra currency and all currencies from balances)</p>
-  <br>
-  <a href="http://localhost:3999/balancescurrencies">/balancescurrencies</a>
-  <p>Returns the list of balances currencies</p>
+  <a href="http://localhost:3999/currencyalgorithm">/currencyalgorithm</a>
+  <p>Shows the Currency / Algorithm mapping (defined in '\Data\CurrencyAlgorithm.json').</p>
   <br>
   <a href="http://localhost:3999/dagdata">/dagdata</a>
   <p>Returns the DAG data (Ethash & EtcHash).</p>

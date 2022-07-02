@@ -34,15 +34,14 @@
             </div>
             <table id="workers" class="table"
               data-toolbar="#toolbar"
-              data-icons="icons"
               data-url="/displayworkers"
               data-cache="false"
               data-toggle="table"
+              data-icons="icons"
               data-show-button-text="true"
               data-filter-control="true"
               data-disable-control-when-search="true"
-              data-show-search-clear-button="true"
-              data-show-columns="true"
+                data-show-columns="true"
               data-show-toggle="true"
               data-detail-view="true"
               data-show-refresh="true"
@@ -50,11 +49,13 @@
               data-sort-order="desc"
               data-click-to-select="true"
               data-detail-formatter="detailFormatter"
+              data-response-handler="formatWorker"
               >
               <thead>
                 <tr>
+                  <th data-switchable="false" data-field="Status" data-class="hidden"></th>
                   <th class="align-top" data-field="Worker" data-sortable="true" data-filter-control="select">Worker</th>
-                  <th class="align-top" data-field="Status" data-sortable="true" data-filter-control="select">Status</th>
+                  <th class="align-top" data-field="tStatus" data-sortable="true" data-filter-control="select">Status</th>
                   <th class="align-top" data-field="LastSeen" data-sortable="true" data-formatter="formatTimeSince">Last seen</th>
                   <th class="align-top" data-field="Version" data-sortable="true" data-filter-control="select">Version</th>
                   <th class="align-top" data-field="Currency" data-sortable="true" data-filter-control="select">Currency</th>
@@ -73,25 +74,34 @@
           <script type="text/javascript">
             var $table = $('#workers');
 
-            $table.on('post-body.bs.table', function () {
-              if (config.WebGUIUseColor == true) {
-                $('#workers td:nth-child(3)').each(function () {
-                  switch(this.innerHTML) {
-                    case this.innerHTML.match(/^Offline/)?.input:
-                      $(this).parent('tr').addClass('miner-failed');
-                      break;
-                    case this.innerHTML.match(/^Paused/)?.input:
-                      $(this).parent('tr').addClass('miner-disabled');
-                      break;
-                    case this.innerHTML.match(/^Running/)?.input:
-                      $(this).parent('tr').addClass('miner-running');
-                      break;
-                  };
-                });
-              };
-            });
+            function formatWorker(data) {
+              $.each(data, function(index, item) {
+                // Format the worker status
+                if (item.Status) item.tStatus = item.Status;
+                else item.tStatus = 'n/a';
+              });
+              return data;
+            }
 
             $table.bootstrapTable({
+              onPostBody: function () {
+                if (config.WebGUIUseColor == true) {
+                  $('#workers td:nth-child(2)').each(function () {
+                    switch(this.innerHTML) {
+                      case this.innerHTML.match(/^Offline/)?.input:
+                        $(this).parent('tr').addClass('miner-failed');
+                        break;
+                      case this.innerHTML.match(/^Paused/)?.input:
+                        $(this).parent('tr').addClass('miner-disabled');
+                        break;
+                      case this.innerHTML.match(/^Running/)?.input:
+                        $(this).parent('tr').addClass('miner-running');
+                        break;
+                    };
+                  });
+                }
+              },
+
               autoRefreshInterval: (parseInt(config.Interval / 2)), // refresh once per interval
               height: $(window).height() - $('#workers').offset().top + 20
             });

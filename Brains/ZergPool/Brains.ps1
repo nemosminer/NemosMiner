@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Brains.ps1
-version:        4.0.1.3
-version date:   28 June 2022
+version:        4.0.2.0
+version date:   02 July 2022
 #>
 
 Set-Location ($args[0])
@@ -91,7 +91,7 @@ While (Test-Path -Path ".\BrainConfig.xml" -PathType Leaf) {
     $RetryInterval = 0
 
     Try { 
-        $CurrenciesData = Invoke-RestMethod -Uri $PoolCurrenciesUri -Headers @{ "Cache-Control" = "no-cache" } # -SkipCertificateCheck
+        $CurrenciesData = Invoke-RestMethod -Uri $PoolCurrenciesUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck
         If ($args[1] -match "Coins(|Plus)$"){ 
             $AlgoData = [PSCustomObject]@{ }
             $CurrenciesArray = @()

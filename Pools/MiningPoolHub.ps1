@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.0.1.3
-Version date:   28 June 2022
+Version:        4.0.2.0
+Version date:   02 July 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -31,6 +31,8 @@ param(
     [String]$PoolVariant,
     [Hashtable]$Variables
 )
+
+$ProgressPreference = "SilentlyContinue"
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
@@ -55,11 +57,9 @@ If ($PoolConfig.UserName) {
             $Port = $Current.port
 
             # Add coin name
-            If ($Current.coin_name -and $Currency -and -not (Get-CoinName $Currency)) { 
-                Add-CoinName -Currency $Currency -CoinName $Current.coin_name
-            }
+            If ($Current.coin_name -and $Currency) { Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Current.coin_name }
 
-            $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $false
+            $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ($_.profit / $Divisor) -FaultDetection $false
 
             # Temp fix
             $PoolRegions = If ($Current.host_list.split(";").count -eq 1) { @("n/a") } Else { $PoolConfig.Region }

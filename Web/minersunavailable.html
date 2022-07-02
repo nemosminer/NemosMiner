@@ -4,11 +4,11 @@
           </div>
           <div class="alert alert-info" role="alert">These are all unavailable miners. The column 'Reasons' shows the filter criteria(s) that made the miner unavailable.</div>
           <div id="toolbar">
-            <button id="re-benchmark" class="btn btn-primary" disabled title="The marked miners will re-benchmark&#10;Use this if the recorded hashrate is unreal or to re-enable disabled miners">Re-benchmark</button>
-            <button id="re-measure" class="btn btn-primary" disabled title="The marked miners will re-measure power usage&#10;Use this if the recorded power usage is unreal">Re-measure Power Usage</button>
-            <button id="remove-watchdog" class="btn btn-success" disabled title="Remove the watchdog timers for the marked miners">Remove Watchdog</button>
-            <button id="failed" class="btn btn-danger" disabled title="The marked miners will be marked as failed&#10;Use this if the miners fail benchmarking or produce unpredictable results">Mark as failed</button>
-            <button id="disable" class="btn btn-warning" disabled title="The marked miners will be marked as disabled&#10;To re-enable trigger re-benchmarking">Disable</button>
+            <button id="btn-re-benchmark" class="btn btn-primary" disabled title="The marked miners will re-benchmark&#10;Use this if the recorded hashrate is unreal or to re-enable disabled miners">Re-benchmark</button>
+            <button id="btn-re-measure" class="btn btn-primary" disabled title="The marked miners will re-measure power usage&#10;Use this if the recorded power usage is unreal">Re-measure Power Usage</button>
+            <button id="btn-remove-watchdog" class="btn btn-success" disabled title="Remove the watchdog timers for the marked miners">Remove Watchdog</button>
+            <button id="btn-failed" class="btn btn-danger" disabled title="The marked miners will be marked as failed&#10;Use this if the miners fail benchmarking or produce unpredictable results">Mark as failed</button>
+            <button id="btn-disable" class="btn btn-warning" disabled title="The marked miners will be marked as disabled&#10;To re-enable trigger re-benchmarking">Disable</button>
           </div>
           <table id="miners" class="table"
             data-toolbar="#toolbar"
@@ -19,7 +19,6 @@
             data-show-button-text="true"
             data-filter-control="true"
             data-disable-control-when-search="true"
-            data-show-search-clear-button="true"
             data-show-columns="true"
             data-show-toggle="true"
             data-show-refresh="true"
@@ -29,9 +28,6 @@
             data-detail-formatter="detailFormatter"
             data-response-handler="formatMiners"
             data-url="/miners/unavailable"
-            data-sort-name="tDevices"
-            data-sort-order="asc"
-            data-maintain-meta-data="true"
             data-undefined-text=""
             data-show-fullscreen="true"
             >
@@ -111,7 +107,7 @@
                 }
               },
 
-              onPostBody: function(data) {
+              onPostBody: function() {
                 if (config.WebGUIUseColor == true) {
                   const enumstatus = ['Running', 'Idle', 'Failed', 'Disabled'];
                   $('#miners td:nth-child(2').each(function () {
@@ -124,11 +120,11 @@
               },
 
               onAll: function() {
-                document.getElementById('re-benchmark').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-                document.getElementById('re-measure').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-                document.getElementById('remove-watchdog').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-                document.getElementById('failed').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-                document.getElementById('disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                document.getElementById('btn-re-benchmark').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                document.getElementById('btn-re-measure').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                document.getElementById('btn-remove-watchdog').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                document.getElementById('btn-failed').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                document.getElementById('btn-disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
               },
 
               autoRefreshInterval: (parseInt(config.Interval / 2)), // refresh once per interval
@@ -136,7 +132,7 @@
             });
 
             $(document).ready(function () {
-              $('#remove-watchdog').click(function () {
+              $('#btn-remove-watchdog').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
                   $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
@@ -147,7 +143,7 @@
                     $('body').css('cursor', 'progress');
                     $command = '/functions/watchdogtimers/remove?Miners=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
-                      $('.modal-title').text($('#remove-watchdog').text());
+                      $('.modal-title').text($('#btn-remove-watchdog').text());
                       $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });
@@ -156,7 +152,7 @@
                 }
               });
 
-              $('#re-benchmark').click(function () {
+              $('#btn-re-benchmark').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
                   $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
@@ -167,7 +163,7 @@
                     $('body').css('cursor', 'progress');
                     $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=HashRate';
                     $('.modal-body').load($command, function() {
-                      $('.modal-title').text($('#re-benchmark').text());
+                      $('.modal-title').text($('#btn-re-benchmark').text());
                       $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });
@@ -176,7 +172,7 @@
                 }
               });
 
-              $('#re-measure').click(function () {
+              $('#btn-re-measure').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
                   $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
@@ -187,7 +183,7 @@
                     $('body').css('cursor', 'progress');
                     $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=PowerUsage';
                     $('.modal-body').load($command, function() {
-                      $('.modal-title').text($('#re-measure').text());
+                      $('.modal-title').text($('#btn-re-measure').text());
                       $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });
@@ -196,7 +192,7 @@
                 }
               });
 
-              $('#failed').click(function () {
+              $('#btn-failed').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
                   $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
@@ -207,7 +203,7 @@
                     $('body').css('cursor', 'progress');
                     $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=HashRate&Value=0';
                     $('.modal-body').load($command, function() {
-                      $('.modal-title').text($('#failed').text());
+                      $('.modal-title').text($('#btn-failed').text());
                       $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });
@@ -216,7 +212,7 @@
                 }
               });
 
-              $('#disable').click(function () {
+              $('#btn-disable').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
                   $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
@@ -227,7 +223,7 @@
                     $('body').css('cursor', 'progress');
                     $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=HashRate&Value=-1';
                     $('.modal-body').load($command, function() {
-                      $('.modal-title').text($('#disable').text());
+                      $('.modal-title').text($('#btn-disable').text());
                       $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });

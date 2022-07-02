@@ -11,7 +11,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "C11";       MinMemGB = 3; MinerSet = 0; WarmupTimes = @(60, 0); Arguments = " --algo c11 --intensity 22" }
     [PSCustomObject]@{ Algorithm = "Keccak";    MinMemGB = 3; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo keccak --diff-multiplier 2 --intensity 29" }
     [PSCustomObject]@{ Algorithm = "Lyra2RE2";  MinMemGB = 3; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo lyra2v2" }
-    [PSCustomObject]@{ Algorithm = "Neoscrypt"; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(30, 0); Arguments = " --algo neoscrypt --intensity 15.5" } # CryptoDredge-v0.26.0 is fastest
+    [PSCustomObject]@{ Algorithm = "Neoscrypt"; MinMemGB = 3; MinerSet = 1; WarmupTimes = @(30, 0); Arguments = " --algo neoscrypt --intensity 15.5" } # CryptoDredge-v0.27.0 is fastest
     [PSCustomObject]@{ Algorithm = "Skein";     MinMemGB = 3; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo skein" }
     [PSCustomObject]@{ Algorithm = "Skein2";    MinMemGB = 3; MinerSet = 0; WarmupTimes = @(60, 0); Arguments = " --algo skein2 --intensity 31.9" }
     [PSCustomObject]@{ Algorithm = "Veltor";    MinMemGB = 2; MinerSet = 0; WarmupTimes = @(40, 0); Arguments = " --algo veltor --intensity 23" }

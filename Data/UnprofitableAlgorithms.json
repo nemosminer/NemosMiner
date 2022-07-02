@@ -46,6 +46,7 @@
   "ScryptN":  "*",
   "Sha256":  "*",
   "Sha256AsicBoost":  "*",
+  "_SHA256csm":  "*",
   "SHA256d":  "*",
   "SHA256t":  "*",
   "Sia":  "1",

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveOn.ps1
-Version:        4.0.1.3
-Version date:   28 June 2022
+Version:        4.0.2.0
+Version date:   02 July 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -31,6 +31,8 @@ param(
     [String]$PoolVariant,
     [Hashtable]$Variables
 )
+
+$ProgressPreference = "SilentlyContinue"
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
@@ -51,11 +53,9 @@ If ($PoolConfig.Wallets) {
         $_.Servers | ForEach-Object { $_.Region = $_.Region -replace 'all', 'n/a' }
 
         # Add coin name
-        If ($_.title -and $Currency -and -not (Get-CoinName $Currency)) { 
-            Add-CoinName -Currency $Currency -CoinName $_.title
-        }
+        If ($_.title -and $Currency) { Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $_.title }
 
-        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ([Double]$Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
+        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
 
         ForEach ($Server in ($_.Servers | Where-Object { $_.Region -in $PoolConfig.Region -or  $_.Region -eq "n/a" } )) { 
             $Region_Norm = Get-Region $Server.Region

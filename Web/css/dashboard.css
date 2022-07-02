@@ -135,6 +135,11 @@ footer {
   clear: both;
 }
 
+.hidden{
+  display: none;
+  visibility: hidden;
+}
+
 /*
 * Modal
 */
@@ -176,7 +181,7 @@ legend {
 * Table colors
 */
 .miner-disabled {
-  background-color: rgb(255, 241, 195);
+  background-color: rgb(254, 245, 220);
 }
 .miner-failed {
   background-color: rgb(255, 230, 230);
@@ -195,11 +200,6 @@ legend {
 }
 .miner-measuring {
   background-color: rgb(248, 239, 223);
-}
-
-.hidden{
-  display: none;
-  visibility: hidden;
 }
 
 /*

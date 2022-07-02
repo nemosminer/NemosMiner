@@ -12,46 +12,46 @@
         $('#'+$('#title').data('navbaractive')).addClass('active');
       });
 
-      $('#miningpause').click(function () {
+      $('#btn-miningpause').click(function () {
         $command = '/functions/mining/pause';
         $('.modal-body').load($command, function() {
           if (this.outerText) {
             updateHeader();
-            $('.modal-title').text($('#miningpause').text());
+            $('.modal-title').text($('#btn-miningpause').text());
             $('#myModal').modal({show:true});
           };
         });
-        document.getElementById('miningpause').disabled = true;
-        document.getElementById('miningstart').disabled = true;
-        document.getElementById('miningstop').disabled = true;
+        document.getElementById('btn-miningpause').disabled = true;
+        document.getElementById('btn-miningstart').disabled = true;
+        document.getElementById('btn-miningstop').disabled = true;
       });
 
-      $('#miningstart').click(function () {
+      $('#btn-miningstart').click(function () {
         $command = '/functions/mining/start';
         $('.modal-body').load($command, function() {
           if (this.outerText) {
             updateHeader();
-            $('.modal-title').text($('#miningstart').text());
+            $('.modal-title').text($('#btn-miningstart').text());
             $('#myModal').modal({show:true});
           };
         });
-        document.getElementById('miningpause').disabled = true;
-        document.getElementById('miningstart').disabled = true;
-        document.getElementById('miningstop').disabled = true;
+        document.getElementById('btn-miningpause').disabled = true;
+        document.getElementById('btn-miningstart').disabled = true;
+        document.getElementById('btn-miningstop').disabled = true;
       });
 
-      $('#miningstop').click(function () {
+      $('#btn-miningstop').click(function () {
         $command = '/functions/mining/stop';
         $('.modal-body').load($command, function() {
           if (this.outerText) {
             updateHeader();
-            $('.modal-title').text($('#miningstop').text());
+            $('.modal-title').text($('#btn-miningstop').text());
             $('#myModal').modal({show:true});
           };
         });
-        document.getElementById('miningpause').disabled = true;
-        document.getElementById('miningstart').disabled = true;
-        document.getElementById('miningstop').disabled = true;
+        document.getElementById('btn-miningpause').disabled = true;
+        document.getElementById('btn-miningstart').disabled = true;
+        document.getElementById('btn-miningstop').disabled = true;
       });
 
       // set the footer
@@ -64,6 +64,7 @@
           success: function(result) {
             version = result
             $('#footer').empty().append(version.join('&nbsp;/&nbsp;') + '&nbsp;/&nbsp;All earnings and profit numbers are estimates based on data provided by the pools APIs&nbsp;/&nbsp&copy; www.nemosminer.com');
+            localStorage.setItem('config', JSON.stringify(config));
           }
         });
       }

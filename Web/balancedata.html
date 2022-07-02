@@ -4,7 +4,7 @@
           </div>
           <div id="balancedata" class="alert alert-info" role="alert">This is the balance data for the last 30 days that was collected by the balance tracker.</div>
           <div id="toolbar">
-            <button id="remove-entry" class="btn btn-warning">Delete entry</button>
+            <button id="btn-remove-entry" class="btn btn-warning">Remove entry</button>
           </div>
           <table id="balanceobjects" class="table"
             data-toolbar="#toolbar"
@@ -15,7 +15,6 @@
             data-show-button-text="true"
             data-filter-control="true"
             data-disable-control-when-search="true"
-            data-show-search-clear-button="true"
             data-show-columns="true"
             data-show-toggle="false"
             data-show-fullscreen="true"
@@ -50,8 +49,8 @@
             var $querysize = 16000;
 
             $table.bootstrapTable({
-              onAll: function() {
-                document.getElementById('remove-entry').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+              onAll: function() { 
+                document.getElementById('btn-remove-entry').disabled = !Boolean($table.bootstrapTable('getSelections').length);
               },
 
               // refresh once per pool balance update interval
@@ -60,7 +59,7 @@
             });
 
             $(document).ready(function () {
-              $('#remove-entry').click(function () {
+              $('#btn-remove-entry').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
                   $data = JSON.stringify($data.map($element => ({DateTime: $element.DateTime, Pool: $element.Pool, Currency: $element.Currency, Wallet: $element.Wallet})));
@@ -70,22 +69,12 @@
                   else {
                     $command = '/functions/balancedata/remove?Data=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
-                      $('.modal-title').text($('#remove-entry').text());
+                      $('.modal-title').text($('#btn-remove-entry').text());
                       $('#myModal').modal({show:true});
                     });
                     $table.bootstrapTable('refresh');
                   }
                 }
-              });
-
-              $('#balanceobjects').on('post-body.bs.table', function () {
-                try {
-                  if ($('#balanceobjects').bootstrapTable('getSelections').length >= 1) {
-                    document.getElementById('remove-entry').disabled = false;
-                  } else {
-                    document.getElementById('remove-entry').disabled = true;
-                  }
-                } catch {}
               });
             });
           </script>

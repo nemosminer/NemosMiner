@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.1.3
-Version date:   28 June 2022
+Version:        4.0.2.0
+Version date:   02 July 2022
 #>
 
 # Window handling
@@ -224,11 +224,14 @@ Class Miner {
     hidden StartDataReader() { 
         $ScriptBlock = { 
             $ScriptBody = "using module .\Includes\Include.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
+
             Try { 
                 # Load miner API file
                 . ".\Includes\MinerAPIs\$($args[0]).ps1"
+                $ProgressPreference = "SilentlyContinue"
                 $Miner = ($args[1] | ConvertFrom-Json) -as $args[0]
                 Start-Sleep -Seconds 2
+                $Miner.DataCollectInterval = $Miner.DataCollectInterval - 0.5
                 While ($true) { 
                     $NextLoop = (Get-Date).AddSeconds($Miner.DataCollectInterval)
                     $Miner.GetMinerData()
@@ -412,23 +415,23 @@ Class Miner {
     }
 
     [DateTime]GetActiveLast() { 
-        If ($this.BeginTime -and $this.EndTime) { 
-            Return $this.EndTime.ToUniversalTime()
+        If ($this.Process.PSBeginTime -and $this.Process.PSEndTime) { 
+            Return $this.Process.PSEndTime
         }
-        ElseIf ($this.BeginTime) { 
-            Return [DateTime]::Now.ToUniversalTime()
+        ElseIf ($this.Process.PSBeginTime) { 
+            Return [DateTime]::Now
         }
         Else { 
-            Return [DateTime]::MinValue.ToUniversalTime()
+            Return [DateTime]::MinValue
         }
     }
 
     [TimeSpan]GetActiveTime() { 
-        If ($this.BeginTime -and $this.EndTime) { 
-            Return $this.Active + $this.EndTime - $this.BeginTime
+        If ($this.Process.PSBeginTime -and $this.Process.PSEndTime) { 
+            Return $this.Active + ($this.Process.PSEndTime - $this.Process.PSBeginTime)
         }
-        ElseIf ($this.BeginTime) { 
-            Return $this.Active + ((Get-Date) - $this.BeginTime)
+        ElseIf ($this.Process.PSBeginTime) { 
+            Return $this.Active + ([DateTime]::Now - $this.Process.PSBeginTime)
         }
         Else { 
             Return $this.Active
@@ -509,8 +512,8 @@ Class Miner {
 
         $this.Benchmark = $false
 
-        $this.Earning = 0
-        $this.Earning_Bias = 0
+        $this.Earning = [Double]::NaN
+        $this.Earning_Bias = [Double]::NaN
         $this.Earning_Accuracy = 0
 
         $this.MeasurePowerUsage = $false
@@ -531,8 +534,6 @@ Class Miner {
                 $_.Earning_Accuracy = [Double]$_.Pool.Accuracy
                 $_.TotalMiningDuration = $Stat.Duration
                 $_.Updated = $Stat.Updated
-                $this.Earning += $_.Earning
-                $this.Earning_Bias += $_.Earning_Bias
             }
             Else { 
                 $_.Disabled = $false
@@ -541,10 +542,15 @@ Class Miner {
             If ($_.Pool.Reasons -contains "Prioritized by BalancesKeepAlive") { $this.Prioritize = $true }
         }
 
-        If ($this.Workers | Where-Object Disabled) { 
-            $this.Status = [MinerStatus]::Disabled
+        $this.Earning = ($this.Workers.Earning | Measure-Object -Sum).Sum
+        $this.Earning_Bias = ($this.Workers.Earning_Bias | Measure-Object -Sum).Sum
+
+        If ($this.Workers[0].Hashrate -EQ 0) { # Allow 0 hashrate on secondary algorithm
+            $this.Status = [MinerStatus]::Failed
             $this.Available = $false
-            $this.Disabled = $true
+            $this.Earning = [Double]::NaN
+            $this.Earning_Bias = [Double]::NaN
+            $this.Earning_Accuracy = [Double]::NaN
         }
         ElseIf ($this.Workers | Where-Object { [Double]::IsNaN($_.Hashrate) }) { 
             $this.Benchmark = $true
@@ -552,16 +558,15 @@ Class Miner {
             $this.Earning_Bias = [Double]::NaN
             $this.Earning_Accuracy = [Double]::NaN
         }
-        ElseIf ($this.Workers[0].Hashrate -EQ 0) { # Allow 0 hashrate on secondary algorithm
-            $this.Status = [MinerStatus]::Failed
-            $this.Available = $false
-            $this.Disabled = $false
-            $this.Earning = [Double]::NaN
-            $this.Earning_Bias = [Double]::NaN
-            $this.Earning_Accuracy = [Double]::NaN
-        }
         Else { $this.Workers | ForEach-Object { $this.Earning_Accuracy += (($_.Earning_Accuracy * $_.Earning) / $this.Earning) } }
+
         If ($this.Earning -eq 0) { $this.Earning_Accuracy = 0 }
+
+        If ($this.Workers | Where-Object Disabled) { 
+            $this.Status = [MinerStatus]::Disabled
+            $this.Available = $false
+            $this.Disabled = $true
+        }
 
         $this.TotalMiningDuration = ($this.Workers.TotalMiningDuration | Measure-Object -Minimum).Minimum
         $this.Updated = ($this.Workers.Updated | Measure-Object -Minimum).Minimum
@@ -589,6 +594,7 @@ Function Start-IdleDetection {
     $IdleRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
 
     $Variables.IdleRunspace = $IdleRunspace
+    $Variables.IdleRunspace | Add-Member MiningStatus "Running" -Force
 
     $PowerShell = [PowerShell]::Create()
     $PowerShell.Runspace = $IdleRunspace
@@ -598,8 +604,6 @@ Function Start-IdleDetection {
             Set-Location (Split-Path $MyInvocation.MyCommand.Path)
 
             $ScriptBody = "using module .\Includes\Include.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
-            
-            $Variables.IdleRunspace | Add-Member NewMiningStatus "Idle" -Force
 
             # No native way to check how long the system has been idle in PowerShell. Have to use .NET code.
             Add-Type -TypeDefinition @'
@@ -649,22 +653,24 @@ namespace PInvoke.Win32 {
             $ProgressPreference = "SilentlyContinue"
             $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
 
-            Write-Message -Level Verbose "Started idle detection.$(If ($IdleSeconds -le $Config.IdleSec) { " $($Variables.Branding.ProductLabel) will start mining when the system is idle for more than $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" })..." })"
+            $Variables.IdleRunspace | Add-Member NewMiningStatus "Idle" -Force
+
+            Write-Message -Level Verbose "Started idle detection."
 
             While ($true) { 
                 $IdleSeconds = [Math]::Round(([PInvoke.Win32.UserInput]::IdleTime).TotalSeconds)
 
                 # Activity detected, pause mining
-                If ($IdleSeconds -lt $Config.IdleSec -and $Variables.IdleRunspace.NewMiningStatus -ne "Idle") { 
-                    $Variables.IdleRunspace | Add-Member NewMiningStatus "Idle" -Force
+                If ($IdleSeconds -lt $Config.IdleSec -and $Variables.IdleRunspace.MiningStatus -ne "Idle") { 
+                    $Variables.IdleRunspace | Add-Member MiningStatus "Idle" -Force
 
                     $LabelMiningStatus.Text = "Idle | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
                 }
 
                 # System has been idle long enough, start mining
-                If ($IdleSeconds -ge $Config.IdleSec -and $Variables.IdleRunspace.NewMiningStatus -ne "Mining") { 
-                    $Variables.IdleRunspace | Add-Member NewMiningStatus "Mining" -Force
+                If ($IdleSeconds -ge $Config.IdleSec -and $Variables.IdleRunspace.MiningStatus -ne "Running") { 
+                    $Variables.IdleRunspace | Add-Member MiningStatus "Running" -Force
 
                     $LabelMiningStatus.Text = "Running | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
@@ -724,40 +730,25 @@ Function Start-Mining {
 Function Stop-Mining { 
 
     If ($Variables.CoreRunspace) { 
-
-        If ($Variables.MiningStatus -eq "Running") { Write-Message -Level Info "Ending cycle." }
-
-        Stop-MiningProcess
-
+        # Give core loop time to shut down gracefully
+        $Timestamp = (Get-Date).AddSeconds(30)
+        While (($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }) -and (Get-Date) -le $Timestamp) { 
+            Start-Sleep -Seconds 1
+        }
+        $Variables.BestMiners = @()
+        $Variables.WatchdogTimers = @()
+    
         $Variables.CoreRunspace.Close()
         If ($Variables.CoreRunspace.PowerShell) { $Variables.CoreRunspace.PowerShell.Dispose() }
         $Variables.CoreRunspace.Dispose()
         $Variables.Remove("Timer")
         $Variables.Remove("CoreRunspace")
 
+        $Variables.MiningStatus = "Idle"
+
         $Variables.Summary = "Mining processes stopped."
         Write-Host $Variables.Summary
     }
-}
-
-Function Stop-MiningProcess { 
-
-    If ($Variables.Miners | Where-Object ProcessID) { 
-        $Variables.Summary = "Stopping mining processes..."
-        Write-Message -Level Info $Variables.Summary
-
-        # Give core loop time to shut down gracefully
-        $Timestamp = (Get-Date).AddSeconds(30)
-        While (($Variables.CoreRunspace.MiningStatus -eq "Running" -and -not $Variables.IdleRunspace) -and (Get-Date) -le $Timestamp) { 
-            Start-Sleep -Seconds 1
-        }
-        $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { $_.SetStatus([MinerStatus]::Idle) }
-    }
-
-    $Variables.BestMiners = @()
-    $Variables.WatchdogTimers = @()
-
-    $Variables.MiningStatus = "Idle"
 }
 
 Function Start-BrainJob { 
@@ -780,7 +771,7 @@ Function Start-BrainJob {
             }
         }
     }
-    If ($JobNames.Count -gt 0) { Write-Message -Level Verbose "Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" }) for '$(($JobNames | Sort-Object) -join ", ")' running." }
+    If ($JobNames.Count -gt 0) { Write-Message -Level Info "Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" }) for '$(($JobNames | Sort-Object) -join ", ")' running." }
 }
 
 Function Stop-BrainJob { 
@@ -800,7 +791,7 @@ Function Stop-BrainJob {
             $JobNames += $_
         }
 
-        If ($JobNames.Count -gt 0) { Write-Message -Level Verbose  "Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" }) for '$(($JobNames | Sort-Object) -join ", ")' stopped." }
+        If ($JobNames.Count -gt 0) { Write-Message -Level Info  "Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" }) for '$(($JobNames | Sort-Object) -join ", ")' stopped." }
     }
 }
 
@@ -836,13 +827,13 @@ Function Start-BalancesTracker {
 Function Stop-BalancesTracker { 
 
     If ($Variables.BalancesTrackerRunspace) { 
-        $Variables.Summary += "\nStopping Balances Tracker..."
-        Write-Message -Level Info "Stopping Balances Tracker..."
 
         $Variables.BalancesTrackerRunspace.Close()
         If ($Variables.BalancesTrackerRunspace.PowerShell) { $Variables.BalancesTrackerRunspace.PowerShell.Dispose() }
 
         $Variables.Remove("BalancesTrackerRunspace")
+        $Variables.Summary += "\nBalances Tracker stopped."
+        Write-Message -Level Info "Balances Tracker stopped."
     }
 }
 
@@ -2586,22 +2577,45 @@ Function Add-CoinName {
 
     Param(
         [Parameter(Mandatory = $true)]
+        [String]$Algorithm,
+        [Parameter(Mandatory = $true)]
         [String]$Currency,
         [Parameter(Mandatory = $true)]
         [String]$CoinName
     )
 
-    # Get mutex. Mutexes are shared across all threads and processes. 
-    # This lets us ensure only one thread is trying to write to the file at a time. 
-    $Mutex = New-Object System.Threading.Mutex($false, "$($PWD -replace '[^A-Z0-9]')DataCoinnames.json")
-
-    # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, update the coin names file and release mutex. Otherwise, display an error. 
-    If ($Mutex.WaitOne(1000)) { 
-
+    If (-not (Test-Path Variable:Global:CoinNames -ErrorAction SilentlyContinue)) { 
         $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
-        $Global:CoinNames | Add-Member $Currency ((Get-Culture).TextInfo.ToTitleCase($CoinName.Trim().ToLower()) -replace '[^A-Z0-9\$\.]' -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin') -Force
-        $Global:CoinNames | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CoinNames.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
-        [void]$Mutex.ReleaseMutex()
+    }
+    If (-not (Test-Path Variable:Global:CurrencyAlgorithm -ErrorAction SilentlyContinue)) { 
+        $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+    }
+
+    If ($Global:CoinNames.$Currency -and $Global:CurrencyAlgorithm.$Currency) { 
+       Return
+    }
+    Else { 
+
+        # Get mutex. Mutexes are shared across all threads and processes. 
+        # This lets us ensure only one thread is trying to write to the file at a time. 
+        $Mutex = New-Object System.Threading.Mutex($false, "$($PWD -replace '[^A-Z0-9]')_CoinData")
+
+        # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, update the coin names file and release mutex. Otherwise, display an error. 
+        If ($Mutex.WaitOne(1000)) { 
+
+            If (-not $Global:CurrencyAlgorithm.$Currency) { 
+                $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+                $Global:CurrencyAlgorithm | Add-Member $Currency $Algorithm -Force
+                $Global:CurrencyAlgorithm | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
+            }
+            If (-not $Global:CoinNames.$Currency) { 
+                $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+                $Global:CoinNames | Add-Member $Currency ((Get-Culture).TextInfo.ToTitleCase($CoinName.Trim().ToLower()) -replace '[^A-Z0-9\$\.]' -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin') -Force
+                $Global:CoinNames | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CoinNames.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
+            }
+ 
+            [void]$Mutex.ReleaseMutex()
+        }
     }
 }
 
@@ -2623,6 +2637,29 @@ Function Get-CoinName {
         $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
         If ($Global:CoinNames.$Currency) { 
             Return $Global:CoinNames.$Currency
+        }
+    }
+    Return $null
+}
+
+Function Get-CurrencyAlgorithm { 
+
+    Param(
+        [Parameter(Mandatory = $false)]
+        [String]$Currency
+    )
+
+    If (-not (Test-Path Variable:Global:CurrencyAlgorithm -ErrorAction SilentlyContinue)) { 
+        $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+    }
+
+    If ($Global:CurrencyAlgorithm.$Currency) { 
+       Return $Global:CurrencyAlgorithm.$Currency
+    }
+    If ($Currency) { 
+        $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+        If ($Global:CurrencyAlgorithm.$Currency) { 
+            Return $Global:CurrencyAlgorithm.$Currency
         }
     }
     Return $null
@@ -2796,8 +2833,7 @@ Function Initialize-Autoupdate {
     Start-LogReader
 
     # Remove obsolete miner stat files; must be done after new miner files have been unpacked
-    $ObsoleteMinerStats = Get-ObsoleteMinerStats
-    If ($ObsoleteMinerStats) { 
+    If ($ObsoleteMinerStats = Get-ObsoleteMinerStats) { 
         "Removing obsolete stat files from miners that no longer exist..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
         $ObsoleteMinerStats | ForEach-Object { 
             Remove-Item -Path ".\Stats\$($_).txt" -Force -ErrorAction Ignore
@@ -2805,6 +2841,12 @@ Function Initialize-Autoupdate {
         }
     }
     Remove-Variable ObsoleteMinerStats
+
+    # Remove all TON (SHA256ton) stat files
+    Get-ChildItem -Path ".\Stats" -ErrorAction Ignore | Where-Object { $_.Name -match '^.+_SHA256ton_.+\.txt$' } | ForEach-Object { 
+        Remove-Item -Path "\Stats\$($_.Name)" -Force -ErrorAction Ignore
+        "Removed '$($_Name)'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+    }
 
     # Remove temp files
     "Removing temporary files..." | Tee-Object -FilePath $UpdateLog -Append | Write-Message -Level Verbose
