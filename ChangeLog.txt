@@ -7,7 +7,7 @@ Breaking changes (from 3.8.x.x code base):
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
 
-ChangeLog NemosMiner 4.0.2.1 nn.07.2022
+ChangeLog NemosMiner 4.0.2.1 07.07.2022
 =======================================
 
 Enhancements
