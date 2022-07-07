@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Blockmasters.ps1
-Version:        4.0.2.0
-Version date:   02 July 2022
+Version:        4.0.2.1
+Version date:   07 July 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -40,11 +40,12 @@ $PriceField = $Variables.PoolData.$Name.Variant.$PoolVariant.PriceField
 $DivisorMultiplier = $Variables.PoolData.$Name.Variant.$PoolVariant.DivisorMultiplier
 $PayoutCurrency = $PoolConfig.Wallets.Keys | Select-Object -First 1
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
+$TransferFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Data\BrainData_" + (Get-Item $MyInvocation.MyCommand.Path).BaseName + ".json"
 
 If ($DivisorMultiplier -and $PriceField -and $Wallet) { 
 
     Try { 
-        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\$($Name)\$($Name).json") -ErrorAction Stop | ConvertFrom-Json
+        $Request = Get-Content $TransferFile -ErrorAction Stop | ConvertFrom-Json
     }
     Catch { Return }
 
@@ -63,7 +64,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
         $Workers = $Request.$_.workers
 
         # Add coin name
-        If ($Request.$_.CoinName -and $Currency){ Add-CoinName -Currency $Currency -CoinName $Request.$_.CoinName }
+        If ($Request.$_.CoinName -and $Currency) { Add-CoinName -Currency $Currency -CoinName $Request.$_.CoinName }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 

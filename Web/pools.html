@@ -19,14 +19,15 @@
             data-disable-control-when-search="true"
             data-show-columns="true"
             data-show-toggle="true"
-            data-show-refresh="true"
             data-detail-view="true"
+            data-show-refresh="true"
             data-auto-refresh="true"
-            data-auto-refresh-status="false"
+            data-auto-refresh-status="true"
             data-detail-formatter="detailFormatter"
             data-url="/pools"
             data-undefined-text=""
             data-show-fullscreen="true"
+            data-header-style="headerStyleAlignTop"
             >
             <thead>
               <tr>
@@ -66,19 +67,13 @@
             var $querysize = 20000;
 
             $table.bootstrapTable({
-              onPostBody: function() {
-                $('#pools thead tr th').each(function () {
-                  $(this).addClass('align-top');
-                })
-              },
-
               onAll: function() {
                 document.getElementById('btn-reset-data').disabled = !Boolean($table.bootstrapTable('getSelections').length);
                 document.getElementById('btn-enable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
                 document.getElementById('btn-disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
               },
 
-              autoRefreshInterval: (parseInt(config.Interval / 2)), // refresh once per interval
+              autoRefreshInterval: parseInt(config.Interval), // refresh once per interval
               height: $(window).height() - $table.offset().top + 30
             });
 

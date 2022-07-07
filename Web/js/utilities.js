@@ -58,7 +58,8 @@ function formatMiners(data) {
     catch (error) { }
 
     // Format margin of error
-    item.tEarningAccuracy = formatPercent(item.Earning_Accuracy);
+    if (isNaN(item.Earning_Accuracy)) item.tEarningAccuracy = 'n/a'; 
+    else item.tEarningAccuracy = formatPercent(item.Earning_Accuracy);
 
     // Format the live speed(s)
     if (item.Hashrates_Live) {
@@ -67,10 +68,12 @@ function formatMiners(data) {
     }
 
     // Format Total Mining Duration (TimeSpan)
-    item.tTotalMiningDuration = formatTimeSpan(item.TotalMiningDuration);
+    if (item.TotalMiningDuration.Ticks > 0) item.tTotalMiningDuration = formatTimeSpan(item.TotalMiningDuration);
+    else item.tTotalMiningDuration = "n/a";
 
     // Format Mining Duration (DateTime)
-    item.tMiningDuration = formatTimeSince(item.BeginTime).replace('-', 'just started');
+    if (item.BeginTime == "0001-01-01T00:00:00") item.tMiningDuration = "n/a";
+    else item.tMiningDuration = formatTimeSince(item.BeginTime).replace('-', 'just started');
 
     // Format status
     const enumstatus = ['Running', 'Idle', 'Failed', 'Disabled'];
@@ -341,3 +344,7 @@ function createUUID() {
     return v.toString(16);
   });
 }
+
+function headerStyleAlignTop() {
+  return { classes: 'align-top' }
+};

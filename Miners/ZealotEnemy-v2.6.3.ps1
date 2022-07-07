@@ -16,11 +16,11 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Bitcore";    MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo bitcore --intensity 22 --statsavg 5" }
     [PSCustomObject]@{ Algorithm = "C11";        MinMemGB = 3;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algo c11 --intensity 24 --statsavg 5" }
     [PSCustomObject]@{ Algorithm = "Hex";        MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo hex --intensity 24 --statsavg 5" }
-    # [PSCustomObject]@{ Algorithm = "KawPoW";     MinMemGB = $Pools."KawPoW".DAGSizeGB; MemReserveGB = 0.41; MinerSet = 1; WarmupTimes = @(60, 0);  Arguments = " --algo kawpow --statsavg 1 --diff-factor 5" } # No hashrate in time
+#   [PSCustomObject]@{ Algorithm = "KawPoW";     MinMemGB = $Pools."KawPoW".DAGSizeGB; MemReserveGB = 0.41; MinerSet = 1; WarmupTimes = @(60, 0);  Arguments = " --algo kawpow --statsavg 1 --diff-factor 5" } # No hashrate in time
     [PSCustomObject]@{ Algorithm = "Phi";        MinMemGB = 3;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo phi --statsavg 5" }
     [PSCustomObject]@{ Algorithm = "Phi2";       MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo phi2 --statsavg 5" }
     [PSCustomObject]@{ Algorithm = "Polytimos";  MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo poly --statsavg 5" }
-    [PSCustomObject]@{ Algorithm = "SkunkHash";  MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo skunk --statsavg 1" }
+#   [PSCustomObject]@{ Algorithm = "SkunkHash";  MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo skunk --statsavg 1" } # No hashrate in time
     [PSCustomObject]@{ Algorithm = "Sonoa";      MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo sonoa --statsavg 1" }
     [PSCustomObject]@{ Algorithm = "Timetravel"; MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo timetravel --statsavg 5" }
     [PSCustomObject]@{ Algorithm = "Tribus";     MinMemGB = 3;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo tribus --statsavg 1" }
@@ -56,7 +56,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     Type        = $AvailableMiner_Devices.Type
                     Path        = $Path
                     Arguments   = ("$($_.Arguments) --url stratum+tcp://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User)$(If ($Pools.($_.Algorithm).WorkerName) { ".$($Pools.($_.Algorithm).WorkerName)" }) --pass $($Pools.($_.Algorithm).Pass) --api-bind 0 --api-bind-http $MinerAPIPort --retry-pause 1 --quiet --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
-                    Algorithms  = $_.Algorithm
+                    Algorithms  = @($_.Algorithm)
                     API         = "Trex"
                     Port        = $MinerAPIPort
                     URI         = $Uri

@@ -701,7 +701,7 @@
                   dataType: 'json',
                   url: '/defaultAlgorithm',
                   success: function (result) {
-                    Algorithm.value = '+' + result.join(',+');
+                    Algorithm.value = result.join(',');
                   }
                 });
               });
@@ -1102,13 +1102,13 @@
                   // Select mining devices
                   config.ExcludeDeviceName = [];
                   $.each(devices, function (key, value) {
-                    if (document.getElementById(('device-' + value.Name.toLowerCase())).checked == false && value.State != 2) (config.ExcludeDeviceName).push(value.Name);
+                    if (document.getElementById(('device-' + value.Name.toLowerCase())).checked == false && value.State != 2) config.ExcludeDeviceName.push(value.Name);
                   });
 
                   // Select one or more pools
                   config.PoolName = [];
                   $.each(poolvariants, function (key, value) {
-                    if (document.getElementById(('pool-' + value.toLowerCase())).checked == true) (config.PoolName).push(value);
+                    if (document.getElementById(('pool-' + value.toLowerCase())).checked == true) config.PoolName.push(value);
                   });
 
                   // Select the region closest to your location
@@ -1121,9 +1121,9 @@
                   config.MinerInstancePerDeviceModel = document.getElementById('MinerInstancePerDeviceModel').checked;
                   config.MinerSet = parseInt(document.getElementById('MinerSet').value);
                   config.ExcludeMinerName = []; // Enforce array
-                  if (document.getElementById('ExcludeMinerName').value) config.ExcludeMinerName = (document.getElementById('ExcludeMinerName').value).replace(' ', '').split(',');
+                  if (document.getElementById('ExcludeMinerName').value) config.ExcludeMinerName = document.getElementById('ExcludeMinerName').value.replace(' ', '').split(',');
                   config.Algorithm = []; // Enforce array
-                  if (document.getElementById('Algorithm').value) config.Algorithm = (document.getElementById('Algorithm').value).replace(' ', '').split(',');
+                  if (document.getElementById('Algorithm').value) config.Algorithm = document.getElementById('Algorithm').value.replace(' ', '').split(',');
                   config.DisableMinersWithFee = document.getElementById('DisableMinersWithFee').checked;
                   config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
                   config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;

@@ -54,9 +54,9 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
                 $PrerequisitePath = ""
                 $PrerequisiteURI = ""
-                If ($_.Algorithm -eq "VertHash") { 
-                    If ((Get-Item -Path $Variables.VerthashDatPath -ErrorAction Ignore).length -eq 1283457024) { 
-                        New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath -ErrorAction Ignore | Out-Null
+                If ($_.Algorithm -eq "VertHash" -and -not (Test-Path -Path ".\Bin\$($Name)\VertHash.dat" -ErrorAction SilentlyContinue)) { 
+                    If ((Get-Item -Path $Variables.VerthashDatPath).length -eq 1283457024) { 
+                        New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath | Out-Null
                     }
                     Else { 
                         $PrerequisitePath = $Variables.VerthashDatPath
@@ -70,7 +70,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     Type             = $AvailableMiner_Devices.Type
                     Path             = $Path
                     Arguments        = ("$($_.Arguments) --api --api-port $MinerAPIPort$($DeviceSelector.($_.Type)) [$(($AvailableMiner_Devices.($DeviceEnumerator.($_.Type)) | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')]" -replace "\s+", " ").trim()
-                    Algorithms       = $_.Algorithm
+                    Algorithms       = @($_.Algorithm)
                     API              = "TeamBlackMiner"
                     Port             = $MinerAPIPort
                     URI              = $Uri

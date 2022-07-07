@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           GMiner.ps1
-Version:        4.0.2.0
-Version date:   02 July 2022
+Version:        4.0.2.1
+Version date:   07 July 2022
 #>
 
 class Gminer : Miner { 
@@ -47,7 +47,7 @@ class Gminer : Miner {
         $Shares_Rejected = [Int64]$Data.total_rejected_shares
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
 
-        If ($HashRate_Name = [String]($this.Algorithms -ne $HashRate_Name)){
+        If ($HashRate_Name = [String]($this.Algorithms -ne $HashRate_Name)) {
             $HashRate_Value = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
             $Shares_Accepted = [Int64]$Data.total_accepted_shares2
             $Shares_Rejected = [Int64]$Data.total_rejected_shares2

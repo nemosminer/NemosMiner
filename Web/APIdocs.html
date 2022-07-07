@@ -16,14 +16,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 Product:        NemosMiner
 File:           API.psm1
-version:        4.0.2.0
-version date:   02 July 2022-->
+version:        4.0.2.1
+version date:   07 July 2022-->
 
 
 <html>
 
 <body>
-  <h1>NemosMiner API (version 0.4.6.6)</h1>
+  <h1>NemosMiner API (version 0.4.6.7)</h1>
 
   API data is available at http://localhost:[API port]/&lt;resource&gt.
   (The default API port is 3999)
@@ -116,16 +116,19 @@ version date:   02 July 2022-->
   <p>Returns the list of all available FIAT currencies (defined in '\Data\FIATcurrencies.json').</p>
   <br>
   <a href="http://localhost:3999/miners">/miners</a>
-  <p>Shows all available miners data, use for debugging.</p>
+  <p>Shows all miners data, use for debugging.</p>
   <br>
   <a href="http://localhost:3999/miners/available">/miners/available</a>
   <p>Shows the available miners data, use for debugging.</p>
   <br>
   <a href="http://localhost:3999/miners/best">/miners/best</a>
-  <p>Shows the best miners data, use for debugging.</p>
+  <p>Shows the minersbest data, use for debugging.</p>
   <br>
-  <a href="http://localhost:3999/miners/bestminers_combo">/miners/bestminers_combo</a>
-  <p>Shows the bestminers_combo data, use for debugging.</p>
+  <a href="http://localhost:3999/miners/best_combo">/miners/best_combo</a>
+  <p>Shows the minersbest_combo data, use for debugging.</p>
+  <br>
+  <a href="http://localhost:3999/miners/best_combos">/miners/best_combos</a>
+  <p>Shows the minersbest_combos data, use for debugging.</p>
   <br>
   <a href="http://localhost:3999/miners/mostprofitable">/miners/mostprofitable</a>
   <p>Shows the most profitable miners data, use for debugging.</p>
@@ -292,19 +295,19 @@ version date:   02 July 2022-->
   <br>
   <br>/functions/stat/get
   <br>Retrieve stats data
-  <br>Parameters: Stat filter (Optional), Type=[HashRate|PowerUsage|Profit], Value=Stat.Live (If value is omitted all stat data of given type is returned)
-  <br>e.g.: /functions/stat/get?Type=HashRate&Value=0
+  <br>Parameters: Stat filter (Optional), Type=[Hashrate|PowerUsage|Profit], Value=Stat.Live (If value is omitted all stat data of given type is returned)
+  <br>e.g.: /functions/stat/get?Type=Hashrate&Value=0
   <br>Returns: array of stats
   <br>
   <br>/functions/stat/remove
   <br>Remove stats data
-  <br>Parameters: Stat filter; Type=[HashRate|PowerUsage|Profit], Value=Stat.Live (If value is omitted all stat data of given type are removed)
-  <br>e.g.: /functions/stat/remove?Type=HashRate&Value=0
+  <br>Parameters: Stat filter; Type=[Hashrate|PowerUsage|Profit], Value=Stat.Live (If value is omitted all stat data of given type are removed)
+  <br>e.g.: /functions/stat/remove?Type=Hashrate&Value=0
   <br>
   <br>/functions/stat/set
   <br>Set miner hashrate value (not useful for pool stats)
-  <br>Parameters: Miner stat filter; Name=StatName, Algorithm=Algorithm(s), Type=HashRate, Value (0=failed; -1=disabled)
-  <br>e.g.: /functions/stat/set?Miners=%5B{"Name"%3A"PhoenixMiner-v6.2c-1xRadeonRX5808GB-EtcHash%26Blake2s-40"%2C"Algorithm"%3A%5B"EtcHash"%2C"Blake2s"%5D}%5D&Type=HashRate&Value=-1
+  <br>Parameters: Miner stat filter; Name=StatName, Algorithm=Algorithm(s), Type=Hashrate, Value (0=failed; -1=disabled)
+  <br>e.g.: /functions/stat/set?Miners=%5B{"Name"%3A"PhoenixMiner-v6.2c-1xRadeonRX5808GB-EtcHash%26Blake2s-40"%2C"Algorithm"%3A%5B"EtcHash"%2C"Blake2s"%5D}%5D&Type=Hashrate&Value=-1
   <br>
   <br>/functions/pool/enable
   <br>Enable disabled pool

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.0.2.0
-Version date:   02 July 2022
+Version:        4.0.2.1
+Version date:   07 July 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -41,6 +41,7 @@ $DivisorMultiplier = $Variables.PoolData.$Name.Variant.$PoolVariant.DivisorMulti
 $PayoutCurrency = $PoolConfig.Wallets.Keys | Select-Object -First 1
 $Regions = If ($Config.UseAnycast -and $PoolConfig.Region -contains "n/a (Anycast)") { "n/a (Anycast)" } Else { $PoolConfig.Region | Where-Object { $_ -ne "n/a (Anycast)" }  }
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
+$TransferFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Data\BrainData_" + (Get-Item $MyInvocation.MyCommand.Path).BaseName + ".json"
 
 If ($DivisorMultiplier -and $Regions -and $Wallet) {
 
@@ -49,7 +50,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
     $PayoutThresholdParameter = ",pl=$([Double]$PayoutThreshold)"
 
     Try { 
-        $Request = Get-Content ((Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Brains\$($Name)\$($Name).json") -ErrorAction Stop | ConvertFrom-Json
+        $Request = Get-Content $TransferFile -ErrorAction Stop | ConvertFrom-Json
     }
     Catch { Return }
 
@@ -61,6 +62,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $Currency = "$($Request.$_.currency)".Trim()
+        $Currency_Norm = $Currency -replace "-.+$"
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
         $Fee = $Request.$_.Fees / 100
         $PoolPort = $Request.$_.port
@@ -70,8 +72,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
         # Add coin name
         If ($Request.$_.CoinName -and $Currency) { Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName }
 
-        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
-
+        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency_Norm) { "-$($Currency_Norm)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
         ForEach ($Region in $Regions) { 
 
@@ -81,7 +82,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
                 Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
                 Algorithm                = [String]$Algorithm_Norm
                 BaseName                 = [String]$Name
-                Currency                 = [String]$Currency
+                Currency                 = [String]$Currency_Norm
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                 Fee                      = [Decimal]$Fee
                 Host                     = [String]$PoolHost

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.2.0
-Version date:   02 July 2022
+Version:        4.0.2.1
+Version date:   07 July 2022
 #>
 
 # Window handling
@@ -206,7 +206,7 @@ Class Miner {
     hidden [TimeSpan]$Active = [TimeSpan]::Zero
 
     [String[]]GetProcessNames() { 
-        Return @(([IO.FileInfo]($this.Path | Split-Path -Leaf -ErrorAction Ignore)).BaseName)
+        Return @(([IO.FileInfo]($this.Path | Split-Path -Leaf)).BaseName)
     }
 
     [String]GetCommandLineParameters() { 
@@ -231,7 +231,6 @@ Class Miner {
                 $ProgressPreference = "SilentlyContinue"
                 $Miner = ($args[1] | ConvertFrom-Json) -as $args[0]
                 Start-Sleep -Seconds 2
-                $Miner.DataCollectInterval = $Miner.DataCollectInterval - 0.5
                 While ($true) { 
                     $NextLoop = (Get-Date).AddSeconds($Miner.DataCollectInterval)
                     $Miner.GetMinerData()
@@ -247,13 +246,12 @@ Class Miner {
     }
 
     hidden StopDataReader() { 
-        # Stop Miner data reader
-        $this.DataReaderJob | Stop-Job -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
+        # Before stopping read data
+        If ($this.DataReaderJob.HasMoreData) { $this.Data += @($this.DataReaderJob | Receive-Job | Select-Object) }
+        $this.DataReaderJob | Stop-Job | Remove-Job -Force
     }
 
     hidden RestartDataReader() { 
-        # Before restarting read data if available
-        If ($this.DataReaderJob.HasMoreData) { $this.Data += @($this.DataReaderJob | Receive-Job | Select-Object) }
         $this.StopDataReader()
         $this.StartDataReader()
     }
@@ -271,7 +269,7 @@ Class Miner {
 
         If ($this.Process) { 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
-                $this.Process | Remove-Job -Force -ErrorAction Ignore
+                $this.Process | Remove-Job -Force
             }
 
             If (-not ($this.Process | Get-Job -ErrorAction SilentlyContinue)) { 
@@ -307,7 +305,7 @@ Class Miner {
                 Reason            = ""
                 Type              = $this.Type
                 WorkerName        = $this.WorkerName
-            } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
+            } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation
 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
                 For ($WaitForPID = 0; $WaitForPID -le 20; $WaitForPID++) { 
@@ -315,7 +313,7 @@ Class Miner {
                         $this.StatusMessage = "Warming up $($this.Info)"
                         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
                         $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
-                        $this.Hashrates_Live = @($this.Algorithms[0] | ForEach-Object { [Double]::NaN })
+                        $this.Hashrates_Live = @($this.Workers | ForEach-Object { [Double]::NaN })
                         $this.WorkersRunning = $this.Workers
                         $this.StartDataReader()
                         Break
@@ -375,12 +373,12 @@ Class Miner {
 
         If ($this.ProcessId) { 
             If (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue) { 
-                Stop-Process -Id $this.ProcessId -Force -ErrorAction Ignore
+                Stop-Process -Id $this.ProcessId -Force
             }
             $this.ProcessId = $null
         }
         If ($this.Process) { 
-            $this.Process | Remove-Job -Force -ErrorAction Ignore
+            $this.Process | Remove-Job -Force
             $this.Process = $null 
         }
 
@@ -409,7 +407,7 @@ Class Miner {
             Reason            = If ($this.Status -eq [MinerStatus]::Failed) { $this.StatusMessage } Else { "" }
             Type              = $this.Type
             WorkerName        = $this.WorkerName
-        } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation -ErrorAction Ignore
+        } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation
 
         $this.StatusMessage = If ($this.Status -eq [MinerStatus]::Idle) { "Idle" } Else { "Failed $($this.Info)" }
     }
@@ -446,7 +444,7 @@ Class Miner {
         $TotalPowerUsage = [Double]0
 
         # Read power usage from HwINFO64 reg key, otherwise use hardconfigured value
-        $RegistryData = Get-ItemProperty $RegistryHive -ErrorAction Ignore
+        $RegistryData = Get-ItemProperty $RegistryHive
         ForEach ($Device in $this.Devices) { 
             If ($RegistryEntry = $RegistryData.PSObject.Properties | Where-Object { ($_.Value -split " ") -contains $Device.Name }) { 
                 $TotalPowerUsage += [Double]($RegistryData.($RegistryEntry.Name -replace "Label", "Value") -split ' ' | Select-Object -First 1)
@@ -527,7 +525,7 @@ Class Miner {
         $this.Workers | ForEach-Object { 
             If ($Stat = Get-Stat "$($this.Name)_$($_.Pool.Algorithm)_Hashrate") { 
                 $_.Hashrate = $Stat.Hour
-                $Factor = [Double]($_.Hashrate * (1 - $_.Fee) * (1 - $_.Pool.Fee))
+                $Factor = [Double]($_.Hashrate * (1 - $_.Fee - $_.Pool.Fee))
                 $_.Disabled = $Stat.Disabled
                 $_.Earning = [Double]($_.Pool.Price * $Factor)
                 $_.Earning_Bias = [Double]($_.Pool.Price_Bias * $Factor)
@@ -558,7 +556,7 @@ Class Miner {
             $this.Earning_Bias = [Double]::NaN
             $this.Earning_Accuracy = [Double]::NaN
         }
-        Else { $this.Workers | ForEach-Object { $this.Earning_Accuracy += (($_.Earning_Accuracy * $_.Earning) / $this.Earning) } }
+        Else { $this.Workers | ForEach-Object { $this.Earning_Accuracy += ($_.Earning_Accuracy * $_.Earning / $this.Earning) } }
 
         If ($this.Earning -eq 0) { $this.Earning_Accuracy = 0 }
 
@@ -762,15 +760,16 @@ Function Start-BrainJob {
     $JobNames = @()
 
     $Jobs | Select-Object | ForEach-Object { 
-        If (-not $Variables.BrainJobs.$_) { 
-            $BrainPath = "$($Variables.MainPath)\Brains\$(Get-PoolBaseName $_)"
-            $BrainName = "$BrainPath\Brains.ps1"
-            If (Test-Path $BrainName -PathType Leaf) { 
-                $Variables.BrainJobs.$_ = Start-ThreadJob -Name "BrainJob_$($_)" -ThrottleLimit 99 -FilePath $BrainName -ArgumentList @($BrainPath, $_)
+        $BrainName = Get-PoolBaseName $_
+        If ($Config.PoolsConfig.$BrainName.BrainConfig -and -not $Variables.BrainJobs.$_) { 
+            $BrainScript = ".\Brains\$($BrainName).ps1"
+            If (Test-Path -Path $BrainScript -PathType Leaf) { 
+                $Variables.BrainJobs.$_ = Start-ThreadJob -Name "BrainJob_$($_)" -ThrottleLimit 99 -FilePath $BrainScript -ArgumentList $BrainName, $_, $Config.PoolsConfig.$BrainName.BrainConfig
                 $JobNames += $_
             }
         }
     }
+
     If ($JobNames.Count -gt 0) { Write-Message -Level Info "Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" }) for '$(($JobNames | Sort-Object) -join ", ")' running." }
 }
 
@@ -855,16 +854,9 @@ Function Initialize-Application {
 
 Function Get-DefaultAlgorithm { 
 
-    # Try { 
-    #     $PoolsAlgos = (Invoke-WebRequest -Uri "https://nemosminer.com/data/PoolsAlgos.json" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
-    #     $PoolsAlgos | ConvertTo-Json | Out-File -FilePath ".\Config\PoolsAlgos.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-    # }
-    # Catch { 
-        If (Test-Path -Path ".\Config\PoolsAlgos.json" -PathType Leaf) { 
-            $PoolsAlgos = Get-Content ".\Config\PoolsAlgos.json" | ConvertFrom-Json -ErrorAction Ignore
-        }
-    # }
-    If ($PoolsAlgos = $PoolsAlgos.PSObject.Properties | Where-Object Name -in @(Get-PoolBaseName $Config.PoolName)) { Return $PoolsAlgos.Value | Sort-Object -Unique }
+    If (Test-Json ".\Data\PoolsConfig-Recommended.json") { 
+        If ($PoolsAlgos = Get-Content ".\Data\PoolsConfig-Recommended.json" | ConvertFrom-Json) {Return ($PoolsAlgos.PSObject.Properties | Where-Object Name -in @(Get-PoolBaseName $Config.PoolName) | ForEach-Object {$_.Value.Algorithm }) | Sort-Object -Unique }
+    }
     Return
 }
 
@@ -874,7 +866,7 @@ Function Get-CommandLineParameters {
         [String]$Arguments
     )
 
-    If (Test-Json $Arguments -ErrorAction Ignore) { Return ($Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue).Arguments }
+    If (Test-Json $Arguments) { Return ($Arguments | ConvertFrom-Json).Arguments }
     Return $Arguments
 }
 
@@ -885,19 +877,19 @@ Function Get-Rate {
     $Variables.BalancesCurrencies = @($Variables.Balances.Keys | ForEach-Object { $Variables.Balances.$_.Currency } | Sort-Object -Unique)
 
     Try { 
-        If (-not $Variables.AllCurrencies -and (Test-Path -Path $RatesFile)) { 
-            $Variables.AllCurrencies = @((Get-Content -Path $RatesFile -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore).PSObject.Properties.Name | ForEach-Object { $_ -replace '^m' } | Sort-Object -Unique )
+        If (-not $Variables.AllCurrencies -and (Test-Json $RatesFile)) { 
+            $Variables.AllCurrencies = @((Get-Content -Path $RatesFile | ConvertFrom-Json).PSObject.Properties.Name | ForEach-Object { $_ -replace '^m' } | Sort-Object -Unique )
         }
         Else { 
             $Variables.AllCurrencies = @((@($Config.Currency) + @($Config.Wallets.PSObject.Properties.Name) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies)) | Select-Object -Unique)
         }
         If (-not $Variables.Rates.BTC.($Config.Currency) -or (Compare-Object @($Variables.Rates.PSObject.Properties.Name | Select-Object) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "=>") -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-(3, $Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum))) { 
             If ($Rates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$((@("BTC") + @($Variables.AllCurrencies | Where-Object { $_ -ne "mBTC" }) | Select-Object -Unique) -join ',')&extraParams=$($Variables.Branding.BrandWebSite)" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) { 
-                $Currencies = ($Rates.BTC | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name
+                $Currencies = ($Rates.BTC | Get-Member -MemberType NoteProperty).Name
                 $Currencies | Where-Object { $_ -ne "BTC" } | ForEach-Object { 
                     $Currency = $_
-                    $Rates | Add-Member $Currency ($Rates.BTC | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) -ErrorAction Ignore
-                    ($Rates.$Currency | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object { 
+                    $Rates | Add-Member $Currency ($Rates.BTC | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json)
+                    ($Rates.$Currency | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
                         $Rates.$Currency | Add-Member $_ ([Double]$Rates.BTC.$_ / $Rates.BTC.$Currency) -Force
                     }
                 }
@@ -906,13 +898,13 @@ Function Get-Rate {
                     $Currency = $_
                     $mCurrency = "m$($Currency)"
                     $Rates | Add-Member $mCurrency ($Rates.$Currency | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json)
-                    ($Rates.$mCurrency | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object { 
+                    ($Rates.$mCurrency | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
                         $Rates.$mCurrency | Add-Member $_ ([Double]$Rates.$Currency.$_ / 1000) -Force
                     }
                 }
-                ($Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object { 
+                ($Rates | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
                     $Currency = $_
-                    ($Rates | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | Where-Object { $_ -in $Currencies } | ForEach-Object { 
+                    ($Rates | Get-Member -MemberType NoteProperty).Name | Where-Object { $_ -in $Currencies } | ForEach-Object { 
                         $mCurrency = "m$($_)"
                         $Rates.$Currency | Add-Member $mCurrency ([Double]$Rates.$Currency.$_ * 1000)
                     }
@@ -923,7 +915,7 @@ Function Get-Rate {
                 $Variables.RatesUpdated = (Get-Date).ToUniversalTime()
             }
             Else { 
-                If (Test-Path -Path $RatesFile) { 
+                If (Test-Json $RatesFile) { 
                     $Variables.Rates = (Get-Content -Path $RatesFile -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop)
                     $Variables.RatesUpdated = "FromFile: $((Get-Item -Path $RatesFile).CreationTime.ToUniversalTime())"
                     Write-Message -Level Warn "Could not load exchange rates from CryptoCompare. Using stored data from $((Get-Item -Path $RatesFile).CreationTime)."
@@ -935,7 +927,7 @@ Function Get-Rate {
         }
     }
     Catch { 
-        If (Test-Path -Path $RatesFile) { 
+        If (Test-Json $RatesFile) { 
             $Variables.Rates = (Get-Content -Path $RatesFile -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop)
             $Variables.RatesUpdated = "FromFile: $((Get-Item -Path $RatesFile).CreationTime.ToUniversalTime())"
             Write-Message -Level Warn "Could not load exchange rates from CryptoCompare. Using cached data from $((Get-Item -Path $RatesFile).CreationTime)."
@@ -1156,7 +1148,7 @@ Function Read-Config {
 
         # Add default enabled pools
         If (Test-Path -Path ".\Data\PoolsConfig-Recommended.json" -PathType Leaf) { 
-            $Temp = (Get-Content ".\Data\PoolsConfig-Recommended.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore)
+            $Temp = (Get-Content ".\Data\PoolsConfig-Recommended.json" | ConvertFrom-Json)
             $Config.PoolName = $Temp.PSObject.Properties.Name | Where-Object { $_ -ne "Default" } | ForEach-Object { $Temp.$_.Variant.PSObject.Properties.Name }
             Remove-Variable Temp
         }
@@ -1176,8 +1168,8 @@ Function Read-Config {
     }
 
     # Load the configuration
-    If (Test-Path -PathType Leaf $ConfigFile) { 
-        $Config_Tmp = Get-Content $ConfigFile | ConvertFrom-Json -ErrorAction Ignore | Select-Object
+    If (Test-Path -Path $ConfigFile -PathType Leaf) { 
+        $Config_Tmp = Get-Content $ConfigFile | ConvertFrom-Json | Select-Object
         If ($Config_Tmp.PSObject.Properties.Count -eq 0 -or $Config_Tmp -isnot [PSCustomObject]) { 
             $CorruptConfigFile = "$($ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").corrupt"
             Move-Item -Path $ConfigFile $CorruptConfigFile -Force
@@ -1196,7 +1188,7 @@ Function Read-Config {
                 If ($Variables.AllCommandLineParameters.$_ -is [Array] -and $Config.$_ -isnot [Array]) { $Config.$_ = @($Config.$_ -replace " " -split ",") }
             }
         }
-        Remove-Variable Config_Tmp -ErrorAction Ignore
+        Remove-Variable Config_Tmp
     }
     Else { 
         Write-Message -Level Warn "No valid configuration file '$ConfigFile' found."
@@ -1207,10 +1199,10 @@ Function Read-Config {
     $DefaultPoolData = $Variables.PoolData
 
     # Build custom pools configuration, create case insensitive hashtable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
-    If ($Variables.PoolsConfigFile -and (Test-Path -PathType Leaf $Variables.PoolsConfigFile)) { 
+    If ($Variables.PoolsConfigFile -and (Test-Path -Path $Variables.PoolsConfigFile -PathType Leaf)) { 
         $CustomPoolsConfig = [Ordered]@{ }
         Try { 
-            $Temp = (Get-Content $Variables.PoolsConfigFile -ErrorAction Ignore | ConvertFrom-Json -NoEnumerate -AsHashTable -ErrorAction Ignore)
+            $Temp = (Get-Content $Variables.PoolsConfigFile | ConvertFrom-Json -NoEnumerate -AsHashTable)
             $Temp.Keys | Sort-Object | ForEach-Object { $CustomPoolsConfig += @{ $_ = $Temp.$_ } }
             $Variables.PoolsConfigData = $CustomPoolsConfig
         }
@@ -1235,7 +1227,7 @@ Function Read-Config {
                 "HiveON" { 
                     If (-not $PoolConfig.Wallets) { 
                         $PoolConfig.Wallets = [PSCustomObject]@{ }
-                        ($Config.Wallets | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | Where-Object { $_ -in $PoolConfig.PayoutCurrencies } | ForEach-Object { 
+                        ($Config.Wallets | Get-Member -MemberType NoteProperty).Name | Where-Object { $_ -in $PoolConfig.PayoutCurrencies } | ForEach-Object { 
                             $PoolConfig.Wallets | Add-Member $_ ($Config.Wallets.$_)
                         }
                     }
@@ -1283,7 +1275,7 @@ Function Write-Config {
 "// This file was generated by $($Variables.Branding.ProductLabel)
 // $($Variables.Branding.ProductLabel) will automatically add / convert / rename / update new settings when updating to a new version
 "
-    If (Test-Path $ConfigFile -PathType Leaf) { 
+    If (Test-Path -Path $ConfigFile -PathType Leaf) { 
         Copy-Item -Path $ConfigFile -Destination "$($ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").backup"
         Get-ChildItem -Path "$($ConfigFile)_*.backup" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse # Keep 10 backup copies
     }
@@ -1293,7 +1285,7 @@ Function Write-Config {
     $SortedConfig.Keys | Where-Object { $_ -notin @("ConfigFile", "PoolsConfig") } | ForEach-Object { 
         $ConfigTmp[$_] = $SortedConfig.$_
     }
-    "$Header$($ConfigTmp | ConvertTo-Json -Depth 10)" | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM -ErrorAction Ignore
+    "$Header$($ConfigTmp | ConvertTo-Json -Depth 10)" | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM
 }
 Function Edit-File { 
 
@@ -1304,7 +1296,7 @@ Function Edit-File {
         [String]$FileName
     )
 
-    $FileWriteTime = (Get-Item -Path $FileName -ErrorAction Ignore).LastWriteTime
+    $FileWriteTime = (Get-Item -Path $FileName).LastWriteTime
 
     If (-not ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)"))) { 
         Notepad.exe $FileName
@@ -1325,7 +1317,7 @@ Function Edit-File {
         }
     }
 
-    If ($FileWriteTime -ne (Get-Item -Path $FileName -ErrorAction Ignore).LastWriteTime) { 
+    If ($FileWriteTime -ne (Get-Item -Path $FileName).LastWriteTime) { 
         Write-Message -Level Verbose "Saved '$(($FileName))'. Changes will become active in next cycle."
         Return "Saved '$(($FileName))'`nChanges will become active in next cycle."
     }
@@ -1341,7 +1333,7 @@ Function Get-SortedObject {
         [Object]$Object
     )
 
-    $Object = $Object | ConvertTo-Json -Depth 20 | ConvertFrom-Json -NoEnumerate -ErrorAction Ignore
+    $Object = $Object | ConvertTo-Json -Depth 20 | ConvertFrom-Json -NoEnumerate
 
     # Build an ordered hashtable of the property-value pairs.
     $SortedObject = [Ordered]@{ }
@@ -1522,7 +1514,7 @@ Function Set-Stat {
         Duration              = [String]$Stat.Duration
         Updated               = [DateTime]$Stat.Updated
         Disabled              = [Boolean]$Stat.Disabled
-    } | ConvertTo-Json | Out-File -FilePath $Path -Force -Encoding utf8NoBOM -ErrorAction Ignore
+    } | ConvertTo-Json | Out-File -FilePath $Path -Force -Encoding utf8NoBOM
 
     $Stat
 }
@@ -1533,7 +1525,7 @@ Function Get-Stat {
         [Parameter(Mandatory = $false)]
         [String[]]$Name = (
             & { 
-                [String[]]$StatFiles = ((Get-ChildItem -Path "Stats" -File -ErrorAction Ignore).BaseName | Sort-Object -Unique)
+                [String[]]$StatFiles = ((Get-ChildItem -Path "Stats" -File).BaseName | Sort-Object -Unique)
                 ($Global:Stats.Keys | Select-Object | Where-Object { $_ -notin $StatFiles }) | ForEach-Object { $Global:Stats.Remove($_) } # Remove stat if deleted on disk
                 $StatFiles
             }
@@ -1596,7 +1588,7 @@ Function Remove-Stat {
 
     Param(
         [Parameter(Mandatory = $false)]
-        [String[]]$Name = @($Global:Stats.Keys | Select-Object) + @((Get-ChildItem -Path "Stats" -Directory -ErrorAction Ignore ).BaseName)
+        [String[]]$Name = @($Global:Stats.Keys | Select-Object) + @((Get-ChildItem -Path "Stats" -Directory ).BaseName)
     )
 
     $Name | Sort-Object -Unique | ForEach-Object { 
@@ -1942,7 +1934,7 @@ Function Get-Device {
             $Name_Split += @("*") * (100 - $Name_Split.Count)
 
             $Name_Device = $DeviceList.("{0}" -f $Name_Split) | Select-Object *
-            ($Name_Device | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object { $Name_Device.$_ = $Name_Device.$_ -f $Name_Split }
+            ($Name_Device | Get-Member -MemberType NoteProperty).Name | ForEach-Object { $Name_Device.$_ = $Name_Device.$_ -f $Name_Split }
 
             $Name_Device
         }
@@ -1956,7 +1948,7 @@ Function Get-Device {
             $ExcludeName_Split += @("*") * (100 - $ExcludeName_Split.Count)
 
             $ExcludeName_Device = $DeviceList.("{0}" -f $ExcludeName_Split) | Select-Object *
-            ($ExcludeName_Device | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object { $ExcludeName_Device.$_ = $ExcludeName_Device.$_ -f $ExcludeName_Split }
+            ($ExcludeName_Device | Get-Member -MemberType NoteProperty).Name | ForEach-Object { $ExcludeName_Device.$_ = $ExcludeName_Device.$_ -f $ExcludeName_Split }
 
             $ExcludeName_Device
         }
@@ -2046,7 +2038,7 @@ Function Get-Device {
                 Get-PnpDevice $Device_CIM.PNPDeviceID | Get-PnpDeviceProperty | ForEach-Object { $Device_PNP | Add-Member $_.KeyName $_.Data }
                 $Device_PNP = $Device_PNP | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
 
-                $Device_Reg = Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\$($Device_PNP.DEVPKEY_Device_Driver)" -ErrorAction Ignore | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
+                $Device_Reg = Get-ItemProperty "Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\$($Device_PNP.DEVPKEY_Device_Driver)" | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
 
                 # Add normalised values
                 $Variables.Devices += $Device = [PSCustomObject]@{ 
@@ -2271,8 +2263,8 @@ Function Get-Device {
         $Device.Bus_Vendor_Index = @(($Variables.Devices | Where-Object Vendor -EQ $Device.Vendor).Bus | Sort-Object).IndexOf([Int]$Device.Bus)
         $Device.Bus_Platform_Index = @(($Variables.Devices | Where-Object Platform -EQ $Device.Platform).Bus | Sort-Object).IndexOf([Int]$Device.Bus)
 
-        If (-not $Name -or ($Name_Devices | Where-Object { ($Device | Select-Object (($_ | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name)) -like ($_ | Select-Object (($_ | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name)) })) { 
-            If (-not $ExcludeName -or -not ($ExcludeName_Devices | Where-Object { ($Device | Select-Object (($_ | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name)) -like ($_ | Select-Object (($_ | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name)) })) { 
+        If (-not $Name -or ($Name_Devices | Where-Object { ($Device | Select-Object (($_ | Get-Member -MemberType NoteProperty).Name)) -like ($_ | Select-Object (($_ | Get-Member -MemberType NoteProperty).Name)) })) { 
+            If (-not $ExcludeName -or -not ($ExcludeName_Devices | Where-Object { ($Device | Select-Object (($_ | Get-Member -MemberType NoteProperty).Name)) -like ($_ | Select-Object (($_ | Get-Member -MemberType NoteProperty).Name)) })) { 
                 $Device
             }
         }
@@ -2365,7 +2357,7 @@ Function Invoke-CreateProcess {
         [Parameter(Mandatory = $false)]
         [String]$MinerWindowStyle = "minimized", 
         [Parameter(Mandatory = $false)]
-        [String]$StartF = 0x00000001, # STARTF_USESHOWWINDOW
+        [String]$StartF = 0x00000081, # STARTF_USESHOWWINDOW, STARTF_FORCEOFFFEEDBACK
         [Parameter(Mandatory = $false)]
         [String]$JobName, 
         [Parameter(Mandatory = $false)]
@@ -2454,8 +2446,9 @@ public static class Kernel32
 
         [PSCustomObject]@{ProcessId = $Process.Id; ProcessHandle = $Process.Handle }
 
-        Do { If ($ControllerProcess.WaitForExit(1000)) { $Process.CloseMainWindow() | Out-Null } }
-        While ($Process.HasExited -eq $false)
+        Do { 
+            If ($ControllerProcess.WaitForExit(1000)) { $Process.CloseMainWindow() | Out-Null }
+        } While ($Process.HasExited -eq $false)
     }
 
     Return $Job
@@ -2508,7 +2501,7 @@ Function Expand-WebRequest {
     If (-not (Test-Path -Path ".\Downloads" -PathType Container)) { New-Item "Downloads" -ItemType "directory" | Out-Null }
     $FileName = Join-Path ".\Downloads" (Split-Path $Uri -Leaf)
 
-    If (Test-Path $FileName -PathType Leaf) { Remove-Item $FileName }
+    If (Test-Path -Path $FileName -PathType Leaf) { Remove-Item $FileName }
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Invoke-WebRequest -Uri $Uri -OutFile $FileName -TimeoutSec 5 -UseBasicParsing
 
@@ -2519,10 +2512,10 @@ Function Expand-WebRequest {
         $Path_Old = (Join-Path (Split-Path (Split-Path $Path)) ([IO.FileInfo](Split-Path $Uri -Leaf)).BaseName)
         $Path_New = Split-Path $Path
 
-        If (Test-Path $Path_Old -PathType Container) { Remove-Item $Path_Old -Recurse -Force }
+        If (Test-Path -Path $Path_Old -PathType Container) { Remove-Item $Path_Old -Recurse -Force }
         Start-Process ".\Utils\7z" "x `"$([IO.Path]::GetFullPath($FileName))`" -o`"$([IO.Path]::GetFullPath($Path_Old))`" -y -spe" -Wait -WindowStyle Hidden
 
-        If (Test-Path $Path_New -PathType Container) { Remove-Item $Path_New -Recurse -Force }
+        If (Test-Path -Path $Path_New -PathType Container) { Remove-Item $Path_New -Recurse -Force }
 
         # use first (topmost) directory, some miners, e.g. ClaymoreDual_v11.9, contain multiple miner binaries for different driver versions in various sub dirs
         $Path_Old = (Get-ChildItem -Path $Path_Old -File -Recurse | Where-Object { $_.Name -EQ $(Split-Path $Path -Leaf) }).Directory | Select-Object -First 1
@@ -2530,7 +2523,7 @@ Function Expand-WebRequest {
         If ($Path_Old) { 
             Move-Item $Path_Old $Path_New -PassThru | ForEach-Object -Process { $_.LastWriteTime = Get-Date }
             $Path_Old = (Join-Path (Split-Path (Split-Path $Path)) ([IO.FileInfo](Split-Path $Uri -Leaf)).BaseName)
-            If (Test-Path $Path_Old -PathType Container) { Remove-Item -Path $Path_Old -Recurse -Force }
+            If (Test-Path -Path $Path_Old -PathType Container) { Remove-Item -Path $Path_Old -Recurse -Force }
         }
         Else { 
             Throw "Error: Cannot find '$Path'."
@@ -2545,7 +2538,7 @@ Function Get-Algorithm {
         [String]$Algorithm
     )
 
-    If (-not (Test-Path Variable:Global:Algorithms -ErrorAction SilentlyContinue)) { 
+    If (-not (Test-Path -Path Variable:Global:Algorithms -ErrorAction SilentlyContinue)) { 
         $Global:Algorithms = Get-Content ".\Data\Algorithms.json" | ConvertFrom-Json
     }
 
@@ -2564,7 +2557,7 @@ Function Get-Region {
         [Switch]$List = $false
     )
 
-    If (-not (Test-Path Variable:Global:Regions -ErrorAction SilentlyContinue)) { 
+    If (-not (Test-Path -Path Variable:Global:Regions -ErrorAction SilentlyContinue)) { 
         $Global:Regions = Get-Content -Path ".\Data\Regions.json" -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
     }
 
@@ -2584,11 +2577,11 @@ Function Add-CoinName {
         [String]$CoinName
     )
 
-    If (-not (Test-Path Variable:Global:CoinNames -ErrorAction SilentlyContinue)) { 
-        $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+    If (-not (Test-Path -Path Variable:Global:CoinNames -ErrorAction SilentlyContinue)) { 
+        $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
     }
-    If (-not (Test-Path Variable:Global:CurrencyAlgorithm -ErrorAction SilentlyContinue)) { 
-        $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+    If (-not (Test-Path -Path Variable:Global:CurrencyAlgorithm -ErrorAction SilentlyContinue)) { 
+        $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
     }
 
     If ($Global:CoinNames.$Currency -and $Global:CurrencyAlgorithm.$Currency) { 
@@ -2604,12 +2597,12 @@ Function Add-CoinName {
         If ($Mutex.WaitOne(1000)) { 
 
             If (-not $Global:CurrencyAlgorithm.$Currency) { 
-                $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+                $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
                 $Global:CurrencyAlgorithm | Add-Member $Currency $Algorithm -Force
                 $Global:CurrencyAlgorithm | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
             }
             If (-not $Global:CoinNames.$Currency) { 
-                $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+                $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
                 $Global:CoinNames | Add-Member $Currency ((Get-Culture).TextInfo.ToTitleCase($CoinName.Trim().ToLower()) -replace '[^A-Z0-9\$\.]' -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin') -Force
                 $Global:CoinNames | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CoinNames.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
             }
@@ -2626,15 +2619,15 @@ Function Get-CoinName {
         [String]$Currency
     )
 
-    If (-not (Test-Path Variable:Global:CoinNames -ErrorAction SilentlyContinue)) { 
-        $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+    If (-not (Test-Path -Path Variable:Global:CoinNames -ErrorAction SilentlyContinue)) { 
+        $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
     }
 
     If ($Global:CoinNames.$Currency) { 
        Return $Global:CoinNames.$Currency
     }
     If ($Currency) { 
-        $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+        $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
         If ($Global:CoinNames.$Currency) { 
             Return $Global:CoinNames.$Currency
         }
@@ -2649,15 +2642,15 @@ Function Get-CurrencyAlgorithm {
         [String]$Currency
     )
 
-    If (-not (Test-Path Variable:Global:CurrencyAlgorithm -ErrorAction SilentlyContinue)) { 
-        $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+    If (-not (Test-Path -Path Variable:Global:CurrencyAlgorithm -ErrorAction SilentlyContinue)) { 
+        $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
     }
 
     If ($Global:CurrencyAlgorithm.$Currency) { 
        Return $Global:CurrencyAlgorithm.$Currency
     }
     If ($Currency) { 
-        $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+        $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
         If ($Global:CurrencyAlgorithm.$Currency) { 
             Return $Global:CurrencyAlgorithm.$Currency
         }
@@ -2824,7 +2817,7 @@ Function Initialize-Autoupdate {
             }
         }
         Else { 
-            Copy-Item -Path $_ -Destination $DestPath -Force -ErrorAction Ignore
+            Copy-Item -Path $_ -Destination $DestPath -Force
             "Copied '$($_.Name)' to '$Destpath'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
         }
     }
@@ -2836,16 +2829,16 @@ Function Initialize-Autoupdate {
     If ($ObsoleteMinerStats = Get-ObsoleteMinerStats) { 
         "Removing obsolete stat files from miners that no longer exist..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
         $ObsoleteMinerStats | ForEach-Object { 
-            Remove-Item -Path ".\Stats\$($_).txt" -Force -ErrorAction Ignore
+            Remove-Item -Path ".\Stats\$($_).txt" -Force
             "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
         }
     }
     Remove-Variable ObsoleteMinerStats
 
     # Remove all TON (SHA256ton) stat files
-    Get-ChildItem -Path ".\Stats" -ErrorAction Ignore | Where-Object { $_.Name -match '^.+_SHA256ton_.+\.txt$' } | ForEach-Object { 
-        Remove-Item -Path "\Stats\$($_.Name)" -Force -ErrorAction Ignore
-        "Removed '$($_Name)'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+    (Get-ChildItem -Path ".\Stats" | Where-Object { $_.Name -match '^.+_SHA256ton_.+\.txt$' }).Name | ForEach-Object { 
+        Remove-Item -Path "\Stats\$_" -Force
+        "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
     }
 
     # Remove temp files
@@ -2900,7 +2893,7 @@ Function Initialize-Autoupdate {
 
 Function Start-LogReader { 
 
-    If ((Test-Path $Config.SnakeTailExe -PathType Leaf -ErrorAction Ignore) -and (Test-Path $Config.SnakeTailConfig -PathType Leaf -ErrorAction Ignore)) { 
+    If ((Test-Path -Path $Config.SnakeTailExe -PathType Leaf) -and (Test-Path -Path $Config.SnakeTailConfig -PathType Leaf)) { 
         $Variables.SnakeTailConfig = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailConfig)
         $Variables.SnakeTailExe = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailExe)
         If ($SnaketailProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -EQ "$($Variables.SnakeTailExe) $($Variables.SnakeTailConfig)")) { 
@@ -2986,7 +2979,7 @@ Function Update-ConfigFile {
             If ($Value -is [Switch]) { $Value = [Boolean]$Value }
             $Config.$_ = $Value
         }
-        Remove-Variable Value -ErrorAction Ignore
+        Remove-Variable Value
     }
 
     # Change currency names, remove mBTC
@@ -2996,10 +2989,10 @@ Function Update-ConfigFile {
     }
 
     # Move [PayoutCurrency] wallet to wallets
-    If ($PoolsConfig = Get-Content .\Config\PoolsConfig.json -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore) { 
+    If ($PoolsConfig = Get-Content .\Config\PoolsConfig.json | ConvertFrom-Json) { 
         ($PoolsConfig | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
             If (-not $PoolsConfig.$_.Wallets -and $PoolsConfig.$_.Wallet) { 
-                $PoolsConfig.$_ | Add-Member Wallets @{ "$($PoolsConfig.$_.PayoutCurrency)" = $PoolsConfig.$_.Wallet } -ErrorAction Ignore
+                $PoolsConfig.$_ | Add-Member Wallets @{ "$($PoolsConfig.$_.PayoutCurrency)" = $PoolsConfig.$_.Wallet }
                 $PoolsConfig.$_.PSObject.Members.Remove("Wallet")
             }
         }
@@ -3031,18 +3024,18 @@ Function Update-ConfigFile {
 
     # Remove AHashPool config & stat data
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "AhashPool*" }
-    Remove-Item ".\Stats\AhashPool*.txt" -Force -ErrorAction Ignore
+    Remove-Item ".\Stats\AhashPool*.txt" -Force
     # Remove TonPool config & stat data
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "TonPool*" }
-    Remove-Item ".\Stats\TonPool*.txt" -Force -ErrorAction Ignore
+    Remove-Item ".\Stats\TonPool*.txt" -Force
     # Remove TonWhales config & stat data
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "TonWhales*" }
-    Remove-Item ".\Stats\TonWhales*.txt" -Force -ErrorAction Ignore
+    Remove-Item ".\Stats\TonWhales*.txt" -Force
 
     $Config | Add-Member ConfigFileVersion ($Variables.Branding.Version.ToString()) -Force
     Write-Config -ConfigFile $ConfigFile
     "Updated configuration file '$($ConfigFile)' to version $($Variables.Branding.Version.ToString())." | Write-Message -Level Verbose 
-    Remove-Variable New_Config_Items -ErrorAction Ignore
+    Remove-Variable New_Config_Items
 }
 
 Function Get-ObsoleteMinerStats { 

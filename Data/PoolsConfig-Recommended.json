@@ -1,65 +1,88 @@
 {
-  "Blockmasters" : {
-    "Algorithm" : [
-        "+m7m"
-    ],
-    "Variant": {
-      "BlockmastersPlus": {
-      }
-    }
+  "Blockmasters": {
+    "Algorithm": [
+      "+Argon2dDyn",
+      "+HMQ1725",
+      "+Yescrypt"
+    ]
+  },
+  "HiveOn": {
+    "Algorithm": [
+      "+EtcHash",
+      "+Ethash"
+    ]
   },
   "MiningPoolHub": {
-    "Algorithm" :[
-        "+Ethash",
-        "+KawPoW"
-    ],
-    "Variant": {
-      "MiningPoolHubCoins": {
-      }
-    }
+    "Algorithm": [
+      "+EtcHash",
+      "+Ethash",
+      "+KawPoW",
+      "+VertHash"
+    ]
   },
   "NiceHash": {
     "Algorithm": [
-        "+Cuckaroom",
-        "+Cuckaroo29bfc",
-        "+Cuckarooz29",
-        "+Cuckoocycle",
-        "+Cuckaroo29",
-        "+Cuckarood29",
-        "+Cuckatoo31",
-        "+Cuckatoo32",
-        "+Eaglesong",
-        "+Ethash",
-        "+Handshake"
-    ],
-    "Variant": {
-      "NiceHash External": {
-      }
-    }
+      "+Autolykos2",
+      "+BeamV3",
+      "+Blake2s",
+      "+Cuckatoo31",
+      "+Cuckatoo32",
+      "+Cuckoo29",
+      "+Equihash1254",
+      "+EquihashBTG",
+      "+Ethash",
+      "+KawPoW",
+      "+Keccak",
+      "+Lyra2Z",
+      "+Neoscript",
+      "+X16r",
+      "+X16rv2"
+    ]
+  },
+  "NLPool": {
+    "Algorithm": [
+      "+Allium",
+      "+Equihash1445",
+      "+Equihash1927",
+      "+YescryptR32"
+    ]
+  },
+  "ProHashing": {
+    "Algorithm": [
+      "+Equihash1445",
+      "+EtcHash",
+      "+Ethash",
+      "+EthashLowMem",
+      "+KawPoW",
+      "+Lyra2RE2",
+      "+Neoscrypt"
+    ]
   },
   "ZergPool": {
     "Algorithm": [
-        "+CryptonightConceal",
-        "+CryptonightHaven",
-        "+CryptonightHeavy",
-        "+CryptonightHeavyx",
-        "+CryptonightUpx",
-        "+Ethash",
-        "+Randomsfx",
-        "+Randomwow",
-        "+VerusHash",
-        "+YescryptR8g",
-        "+Yespoweriots"
-    ],
-    "Variant": {
-      "ZergPoolCoinsPlus": {
-      }
-    }
+      "+Allium",
+      "+Argon2d16000",
+      "+Argon2dDyn",
+      "+CurveHash",
+      "+Equihash1254",
+      "+Equihash1927",
+      "+NeoscryptXaya",
+      "+Skein2",
+      "+UbqHash",
+      "+Verthash"
+    ]
   },
   "ZPool": {
-    "Variant": {
-      "ZPoolPlus": {
-      }
-    }
+    "Algorithm": [
+      "+Argon2d16000",
+      "+Argon2dDyn",
+      "+CurveHash",
+      "+Equihash1254",
+      "+KawPoW",
+      "+NeoscryptXaya",
+      "+SHA256csm",
+      "+Skein2",
+      "+Verthash"
+    ]
   }
 }

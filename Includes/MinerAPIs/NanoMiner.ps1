@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NanoMiner.ps1
-Version:        4.0.2.0
-Version date:   02 July 2022
+Version:        4.0.2.1
+Version date:   07 July 2022
 #>
 
 class NanoMiner : Miner { 
@@ -29,7 +29,7 @@ class NanoMiner : Miner {
         Try { 
             $ConfigFile = "$(Split-Path $this.Path)\$($Parameters.ConfigFile.FileName)"
             #Write config files. Do not overwrite existing files to preserve optional manual customization
-            If (-not (Test-Path $ConfigFile -PathType Leaf)) { 
+            If (-not (Test-Path -Path $ConfigFile -PathType Leaf)) { 
                 $Parameters.ConfigFile.Content | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
             }
         }

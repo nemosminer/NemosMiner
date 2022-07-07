@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BMiner.ps1
-Version:        4.0.2.0
-Version date:   02 July 2022
+Version:        4.0.2.1
+Version date:   07 July 2022
 #>
 
 class BMiner : Miner { 
@@ -38,7 +38,7 @@ class BMiner : Miner {
             Return $null
         }
 
-        If (-not (($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object { $Data.devices.$_.solvers })) { Return $null }
+        If (-not (($Data.devices | Get-Member -MemberType NoteProperty).Name | ForEach-Object { $Data.devices.$_.solvers })) { Return $null }
 
         #Read stratum info from API
         Try { 
@@ -61,12 +61,12 @@ class BMiner : Miner {
         $this.Algorithms | ForEach-Object { 
             $Index = $this.Algorithms.IndexOf($_)
             $HashRate_Name = $_
-            $HashRate_Value = [Double]((($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object { $Data.devices.$_.solvers[$Index] }).speed_info.hash_rate | Measure-Object -Sum).Sum
-            If (-not $HashRate_Value) { $HashRate_Value = [Double]((($Data.devices | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | ForEach-Object { $Data.devices.$_.solvers[$Index] }).speed_info.solution_rate | Measure-Object -Sum).Sum}
+            $HashRate_Value = [Double]((($Data.devices | Get-Member -MemberType NoteProperty).Name | ForEach-Object { $Data.devices.$_.solvers[$Index] }).speed_info.hash_rate | Measure-Object -Sum).Sum
+            If (-not $HashRate_Value) { $HashRate_Value = [Double]((($Data.devices | Get-Member -MemberType NoteProperty).Name | ForEach-Object { $Data.devices.$_.solvers[$Index] }).speed_info.solution_rate | Measure-Object -Sum).Sum}
             $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
-            $Shares_Accepted = [Int64]$Data.stratums.(($Data.stratums | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | Where-Object { (Get-Algorithm $_) -eq $HashRate_Name }).accepted_shares
-            $Shares_Rejected = [Int64]$Data.stratums.(($Data.stratums | Get-Member -MemberType NoteProperty -ErrorAction Ignore).Name | Where-Object { (Get-Algorithm $_) -eq $HashRate_Name }).rejected_shares
+            $Shares_Accepted = [Int64]$Data.stratums.(($Data.stratums | Get-Member -MemberType NoteProperty).Name | Where-Object { (Get-Algorithm $_) -eq $HashRate_Name }).accepted_shares
+            $Shares_Rejected = [Int64]$Data.stratums.(($Data.stratums | Get-Member -MemberType NoteProperty).Name | Where-Object { (Get-Algorithm $_) -eq $HashRate_Name }).rejected_shares
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
         }
 

@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.2.0
-Version date:   02 July 2022
+Version:        4.0.2.1
+Version date:   07 July 2022
 #>
 
 [CmdletBinding()]
@@ -244,6 +244,7 @@ param(
 
 Set-Location (Split-Path $MyInvocation.MyCommand.Path)
 
+$ErrorActionPreference = "SilentlyContinue"
 $ProgressPreference = "SilentlyContinue"
 
 @"
@@ -266,7 +267,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.2.0"
+    Version      = [System.Version]"4.0.2.1"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -276,7 +277,7 @@ If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") {
 }
 
 # Create directories
-If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null }
+If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory | Out-Null }
 If (-not (Test-Path -Path ".\Config" -PathType Container)) { New-Item -Path . -Name "Config" -ItemType Directory | Out-Null }
 If (-not (Test-Path -Path ".\Logs" -PathType Container)) { New-Item -Path . -Name "Logs" -ItemType Directory | Out-Null }
 
@@ -288,49 +289,49 @@ $Variables.PoolsConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolve
 $Variables.BalancesTrackerConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.BalancesTrackerConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
 
 # Verify donation data
-$Variables.DonationData = Get-Content -Path ".\Data\DonationData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore -NoEnumerate
+$Variables.DonationData = Get-Content -Path ".\Data\DonationData.json" | ConvertFrom-Json -NoEnumerate
 If (-not $Variables.DonationData) { 
     Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\DonationData.json' is not a valid JSON file. Please restore it from your original download."
     Start-Sleep -Seconds 10
     Exit
 }
 # Load algorithm list
-$Variables.Algorithms = Get-Content -Path ".\Data\Algorithms.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+$Variables.Algorithms = Get-Content -Path ".\Data\Algorithms.json" | ConvertFrom-Json
 If (-not $Variables.Algorithms) { 
     Write-Message -Level Error "Terminating Error - Cannot continue! File '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Data\Algorithms.json'))' is not a valid JSON file. Please restore it from your original download."
     Start-Sleep -Seconds 10
     Exit
 }
 # Load coin names
-$Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+$Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
 If (-not $Global:CoinNames) { 
     Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CoinNames.json' is not a valid JSON file. Please restore it from your original download."
     Start-Sleep -Seconds 10
     Exit
 }
 # Load currency algorithm data
-$Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+$Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
 If (-not $Global:CurrencyAlgorithm) { 
     Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CurrencyAlgorithm.json' is not a valid JSON file. Please restore it from your original download."
     Start-Sleep -Seconds 10
     Exit
 }
 # Load regions list
-$Variables.Regions = Get-Content -Path ".\Data\Regions.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+$Variables.Regions = Get-Content -Path ".\Data\Regions.json" | ConvertFrom-Json
 If (-not $Variables.Regions) { 
     Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\Regions.json' is not a valid JSON file. Please restore it from your original download."
     Start-Sleep -Seconds 10
     Exit
 }
 # Load FIAT currencies list
-$Variables.FIATcurrencies = Get-Content -Path ".\Data\FIATcurrencies.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+$Variables.FIATcurrencies = Get-Content -Path ".\Data\FIATcurrencies.json" | ConvertFrom-Json
 If (-not $Variables.FIATcurrencies) { 
     Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\FIATcurrencies.json' is not a valid JSON file. Please restore it from your original download."
     Start-Sleep -Seconds 10
     Exit
 }
 # Load pool data
-$Variables.PoolData = Get-Content -Path ".\Data\PoolData.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore | Get-SortedObject
+$Variables.PoolData = Get-Content -Path ".\Data\PoolData.json" | ConvertFrom-Json -AsHashtable | Get-SortedObject
 $Variables.PoolVariants = @(($Variables.PoolData.Keys | ForEach-Object { $Variables.PoolData.$_.Variant.Keys -replace " External$| Internal$" }) | Sort-Object -Unique)
 If (-not $Variables.PoolVariants) { 
     Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\PoolData.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file. Please restore it from your original download."
@@ -338,24 +339,24 @@ If (-not $Variables.PoolVariants) {
     Exit
 }
 # Load DAG data, if not available it will get recreated, strip update info
-$Variables.DAGdata = Get-Content ".\Data\DagData.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore
+$Variables.DAGdata = Get-Content ".\Data\DagData.json" | ConvertFrom-Json -AsHashtable
 If ($Variables.DAGdata.Updated) { $Variables.DAGdata.Remove("Updated") }
 # Load PoolsLastUsed data
-$Variables.PoolsLastUsed = (Get-Content -Path ".\Data\PoolsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore)
+$Variables.PoolsLastUsed = (Get-Content -Path ".\Data\PoolsLastUsed.json" | ConvertFrom-Json -AsHashtable)
 If (-not $Variables.PoolsLastUsed.Keys) { $Variables.PoolsLastUsed = @{ } }
 
 # Load AlgorithmsLastUsed data
-$Variables.AlgorithmsLastUsed = (Get-Content -Path ".\Data\AlgorithmsLastUsed.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore)
+$Variables.AlgorithmsLastUsed = (Get-Content -Path ".\Data\AlgorithmsLastUsed.json" | ConvertFrom-Json -AsHashtable)
 If (-not $Variables.AlgorithmsLastUsed.Keys) { $Variables.AlgorithmsLastUsed = @{ } }
 
 # Load EarningsChart data to make it available early in Web GUI
-If (Test-Path -Path ".\Data\EarningsChartData.json" -PathType Leaf) { $Variables.EarningsChartData = Get-Content ".\Data\EarningsChartData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore }
+If (Test-Path -Path ".\Data\EarningsChartData.json" -PathType Leaf) { $Variables.EarningsChartData = Get-Content ".\Data\EarningsChartData.json" | ConvertFrom-Json }
 
 $Variables.AllCommandLineParameters = [Ordered]@{ }
-$MyInvocation.MyCommand.Parameters.Keys | Where-Object { Get-Variable $_ -ErrorAction Ignore } | ForEach-Object { 
-    $Variables.AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly -ErrorAction Ignore
+$MyInvocation.MyCommand.Parameters.Keys | Where-Object { Get-Variable $_ } | ForEach-Object { 
+    $Variables.AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly
     If ($Variables.AllCommandLineParameters.$_ -is [Switch]) { $Variables.AllCommandLineParameters.$_ = [Boolean]$Variables.AllCommandLineParameters.$_ }
-    Remove-Variable $_ -ErrorAction Ignore
+    Remove-Variable $_
 }
 
 # Read configuration
@@ -384,7 +385,7 @@ $Prerequisites = @(
     "$env:SystemRoot\System32\VCRUNTIME140_1.dll"
 )
 
-If ($PrerequisitesMissing = @($Prerequisites | Where-Object { -not (Test-Path $_ -PathType Leaf) })) { 
+If ($PrerequisitesMissing = @($Prerequisites | Where-Object { -not (Test-Path -Path $_ -PathType Leaf) })) { 
     $PrerequisitesMissing | ForEach-Object { Write-Message -Level Warn "$_ is missing." }
     Write-Message -Level Error "Please install the required runtime modules. Download and extract"
     Write-Message -Level Error "https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip"
@@ -393,7 +394,7 @@ If ($PrerequisitesMissing = @($Prerequisites | Where-Object { -not (Test-Path $_
     Exit
 }
 
-If ([System.Environment]::OSVersion.Version -lt [Version]"10.0.0.0" -and -not (Get-Command Get-PnpDevice -ErrorAction Ignore)) { 
+If ([System.Environment]::OSVersion.Version -lt [Version]"10.0.0.0" -and -not (Get-Command Get-PnpDevice)) { 
     Write-Message -Level Error "Windows Management Framework 5.1 is missing."
     Write-Message -Level Error "Please install the required runtime modules from https://www.microsoft.com/en-us/download/details.aspx?id=54616"
     Start-Sleep -Seconds 10
@@ -411,7 +412,7 @@ Try {
     Add-Type -Path ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll" -ErrorAction Stop
 }
 Catch { 
-    Remove-Item ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll" -Force -ErrorAction Ignore
+    Remove-Item ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll" -Force
     Add-Type -Path ".\Includes\OpenCL\*.cs" -OutputAssembly ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll"
     Add-Type -Path ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll"
 }
@@ -420,7 +421,7 @@ Try {
     Add-Type -Path ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll" -ErrorAction Stop
 }
 Catch { 
-    Remove-Item ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll" -Force -ErrorAction Ignore
+    Remove-Item ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll" -Force
     Add-Type -Path ".\Includes\CPUID.cs" -OutputAssembly ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
     Add-Type -Path ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
 }
@@ -434,7 +435,7 @@ Import-Module Defender -ErrorAction SilentlyContinue -SkipEditionCheck
 If (Get-Item .\* -Stream Zone.*) { 
     Write-Host "Unblocking files that were downloaded from the internet..." -ForegroundColor Yellow
     If (Get-Command "Unblock-File" -ErrorAction SilentlyContinue) { Get-ChildItem -Path . -Recurse | Unblock-File }
-    If ((Get-Command "Get-MpPreference" -ErrorAction Ignore) -and (Get-MpComputerStatus -ErrorAction Ignore) -and (Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) { 
+    If ((Get-Command "Get-MpPreference") -and (Get-MpComputerStatus) -and (Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) { 
         Start-Process "pwsh" "-Command Import-Module Defender; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
     }
 }
@@ -504,9 +505,9 @@ $Variables.DriverVersion | Add-Member "CUDA" $(Switch ([System.Version]$Variable
 $Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "NVIDIA" } | ForEach-Object { $_ | Add-Member CUDAVersion $Variables.DriverVersion.CUDA }
 
 # Driver version have changed
-If ((Get-Content -Path ".\Data\DriverVersion.json" -ErrorAction Ignore | ConvertFrom-Json | ConvertTo-Json -compress) -ne ($Variables.DriverVersion | ConvertTo-Json -compress)) { 
+If ((Get-Content -Path ".\Data\DriverVersion.json" | ConvertFrom-Json | ConvertTo-Json -compress) -ne ($Variables.DriverVersion | ConvertTo-Json -compress)) { 
     If (Test-Path -Path ".\Data\DriverVersion.json" -PathType Leaf) { Write-Message -Level Warn "Graphis card driver version data changed. It is recommended to re-download all binaries." }
-    $Variables.DriverVersion | ConvertTo-Json | Out-File -FilePath ".\Data\DriverVersion.json" -Encoding utf8NoBOM -ErrorAction Ignore -Force
+    $Variables.DriverVersion | ConvertTo-Json | Out-File -FilePath ".\Data\DriverVersion.json" -Encoding utf8NoBOM -Force
 }
 
 # Align CUDA id with nvidia-smi order
@@ -527,10 +528,10 @@ If (Test-Path -Path $Variables.VerthashDatPath -PathType Leaf) {
         Write-Message -Level Verbose "VertHash data file integrity check: OK."
     }
     Else { 
-        Remove-Item -Path $Variables.VerthashDatPath -Force -ErrorAction Ignore
+        Remove-Item -Path $Variables.VerthashDatPath -Force
         Write-Message -Level Warn "VertHash data file '$($Variables.VerthashDatPath)' is corrupt -> file deleted. It will be reloaded if needed."
     }
-    Remove-Variable VertHashDatCheckJob -ErrorAction Ignore
+    Remove-Variable VertHashDatCheckJob
 }
 
 If ($Variables.FreshConfig) { 
@@ -559,7 +560,7 @@ Function Get-Chart {
 
     If (Test-Path -Path ".\Data\DailyEarnings.csv" -PathType Leaf) { 
 
-        $DatasourceRaw = Import-Csv ".\Data\DailyEarnings.csv" -ErrorAction Ignore
+        $DatasourceRaw = Import-Csv ".\Data\DailyEarnings.csv"
         $DatasourceRaw | ForEach-Object { $_.Date = [DateTime]::parseexact($_.Date, "yyyy-MM-dd", $null) }
 
         $Datasource = $DatasourceRaw | Where-Object Date -le (Get-Date).AddDays(-1)
@@ -716,7 +717,7 @@ Function Update-TabControl {
                     $EarningsDGV.Columns[7].FillWeight = 100
                 }
 
-                $LabelEarnings.Text = "Earnings statistics per pool - Updated $((Get-ChildItem -Path ".\Data\DailyEarnings.csv" -ErrorAction Ignore).LastWriteTime.ToString())"
+                $LabelEarnings.Text = "Earnings statistics per pool - Updated $((Get-ChildItem -Path ".\Data\DailyEarnings.csv").LastWriteTime.ToString())"
             }
             Else { $LabelEarnings.Text = "Waiting for data..." }
         }
@@ -958,7 +959,7 @@ Function Global:TimerUITick {
                 Write-Host "                        $(($_.Balance / $_.PayoutThreshold).ToString('P2')) of $(($_.PayoutThreshold * $mBTCfactor).ToString()) $($Currency) payment threshold"
                 Write-Host "Projected payment date: $(If ($_.ProjectedPayDate -is [DateTime]) { $_.ProjectedPayDate.ToString("G") } Else { $_.ProjectedPayDate })`n"
             }
-            Remove-Variable Currency -ErrorAction Ignore
+            Remove-Variable Currency
         }
         If ($Variables.MinersMissingBinary) { 
             Write-Host "`n"
@@ -1013,7 +1014,7 @@ Function Global:TimerUITick {
 
             # Display benchmarking progress
             If ($MinersDeviceGroupNeedingBenchmark) { 
-                "Benchmarking for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingBenchmark.Count) miner$(If ($MinersDeviceGroupNeedingBenchmark.Count -gt 1){ 's' }) left to complete benchmark." | Out-Host
+                "Benchmarking for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingBenchmark.Count) miner$(If ($MinersDeviceGroupNeedingBenchmark.Count -gt 1) { 's' }) left to complete benchmark." | Out-Host
             }
             # Display power usage measurement progress
             If ($MinersDeviceGroupNeedingPowerUsageMeasurement) { 
@@ -1025,11 +1026,11 @@ Function Global:TimerUITick {
             Write-Host "Running $(If ($ProcessesRunning.Count -eq 1) { "miner:" } Else { "miners: $($ProcessesRunning.Count)" })"
             [System.Collections.ArrayList]$Miner_Table = @(
                 @{ Label = "Hashrate(s)"; Expression = { (($_.Hashrates_Live | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "n/a" } }) -join ' & ') -replace '\s+', ' ' }; Align = "right" }
-                If ($Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ($_.PowerUsage_Live) { "$($_.PowerUsage_Live.ToString("N2")) W" } Else { "n/a" } }; Align = "right" } }
+                If ($Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If (-not [Double]::IsNaN($_.PowerUsage_Live)) { "$($_.PowerUsage_Live.ToString("N2")) W" } Else { "n/a" } }; Align = "right" } }
                 @{ Label = "Active (this run)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f ((Get-Date).ToUniversalTime() - $_.BeginTime) } }
                 @{ Label = "Active (total)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f ($_.TotalMiningDuration) } }
                 @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
-                @{ Label = "Device"; Expression = { $_.DeviceNames -join ',' } }
+                @{ Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }
                 @{ Label = "Name"; Expression = { $_.Name } }
                 @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
             )
@@ -1045,7 +1046,7 @@ Function Global:TimerUITick {
                     @{ Label = "Time since last run"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }
                     @{ Label = "Active (total)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $_.TotalMiningDuration } }
                     @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
-                    @{ Label = "Device"; Expression = { $_.DeviceNames -join ',' } }
+                    @{ Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }
                     @{ Label = "Name"; Expression = { $_.Name } }
                     @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
                 )
@@ -1061,7 +1062,7 @@ Function Global:TimerUITick {
                     @{ Label = "Active (total)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $_.TotalMiningDuration } }
                     @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
                     @{ Label = "Device"; Expression = { $_.DeviceNames -join ',' } }
-                    @{ Label = "Name"; Expression = { $_.Name } }
+                    @{ Label = "Name(s)"; Expression = { $_.Name } }
                     @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
                 )
                 $ProcessesFailed | Sort-Object { If ($_.Process) { $_.Process.StartTime } Else { [DateTime]0 } } | Format-Table $Miner_Table -Wrap | Out-Host
@@ -1070,10 +1071,10 @@ Function Global:TimerUITick {
             If ($Config.Watchdog -eq $true) { 
                 # Display watchdog timers
                 $Variables.WatchdogTimers | Where-Object Kicked -GT $Variables.Timer.AddSeconds(-$Variables.WatchdogReset) | Format-Table -Wrap (
-                    @{Label = "Miner Watchdog Timers"; Expression = { $_.MinerName } }, 
+                    @{Label = "Miner Watchdog Timer"; Expression = { $_.MinerName } }, 
                     @{Label = "Pool"; Expression = { $_.PoolName } }, 
                     @{Label = "Algorithm"; Expression = { $_.Algorithm } }, 
-                    @{Label = "Device"; Expression = { $_.DeviceNames -join ',' } }, 
+                    @{Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }, 
                     @{Label = "Last Updated"; Expression = { "{0:mm} min {0:ss} sec ago" -f ((Get-Date).ToUniversalTime() - $_.Kicked) }; Align = "right" }
                 ) | Out-Host
             }
@@ -1719,8 +1720,8 @@ Function MainForm_Resize {
 
 $MainForm.Add_Load(
     { 
-        If (Test-Path ".\Config\WindowSettings.json" -PathType Leaf) { 
-            $WindowSettings = Get-Content -Path ".\Config\WindowSettings.json" -ErrorAction Ignore | ConvertFrom-Json -AsHashtable -ErrorAction Ignore
+        If (Test-Path -Path ".\Config\WindowSettings.json" -PathType Leaf) { 
+            $WindowSettings = Get-Content -Path ".\Config\WindowSettings.json" | ConvertFrom-Json -AsHashtable
             # Restore window size
             $MainForm.Width = If ($WindowSettings.Width -gt $MainForm.MinimumSize.Width) { $WindowSettings.Width }
             $MainForm.Height = If ($WindowSettings.Height -gt $MainForm.MinimumSize.Height) { $WindowSettings.Height }
@@ -1758,7 +1759,7 @@ $MainForm.Add_FormClosing(
         Stop-BalancesTracker
 
         # Save window settings
-        $MainForm.DesktopBounds | ConvertTo-Json -ErrorAction Ignore | Out-File -FilePath ".\Config\WindowSettings.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+        $MainForm.DesktopBounds | ConvertTo-Json | Out-File -FilePath ".\Config\WindowSettings.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
 
         Write-Message -Level Info "$($Variables.Branding.ProductLabel) has shut down."
 

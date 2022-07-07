@@ -70,7 +70,7 @@
             $(document).ready(function () {
               $('#showzerohashrateminers').on('click',function() {
                 document.body.style.cursor = 'wait';
-                $(".modal-body").load("functions/stat/get?Type=HashRate&Value=0", function() {
+                $(".modal-body").load("functions/stat/get?Type=Hashrate&Value=0", function() {
                   $('.modal-title').text($('#showzerohashrateminers').text());
                   document.body.style.cursor = 'default';
                   $('#myModal').modal({show:true});
@@ -79,7 +79,7 @@
 
               $('#resetzerohashrateminers').on('click',function() {
                 document.body.style.cursor = 'wait';
-                $('.modal-body').load('functions/stat/remove?Type=HashRate&Value=0', function() {
+                $('.modal-body').load('functions/stat/remove?Type=Hashrate&Value=0', function() {
                   $('.modal-title').text($('#resetzerohashrateminers').text());
                   document.body.style.cursor = 'default';
                   $('#myModal').modal({show:true});
@@ -115,7 +115,7 @@
 
               $('#resetallbenchmarks').on('click',function() {
                 document.body.style.cursor = 'wait';
-                $('.modal-body').load('functions/stat/remove?Type=HashRate', function() {
+                $('.modal-body').load('functions/stat/remove?Type=Hashrate', function() {
                   $('.modal-title').text($('#resetallbenchmarks').text());
                   document.body.style.cursor = 'default';
                   $('#myModal').modal({show:true});

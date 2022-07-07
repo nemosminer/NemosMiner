@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.2.0
-Version date:   02 July 2022
+Version:        4.0.2.1
+Version date:   07 July 2022
 #>
 
 Function Initialize-API { 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.6.6"
+    $APIVersion = "0.4.6.7"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
@@ -166,9 +166,9 @@ Function Start-APIServer {
                         If ($Parameters.Data) { 
                             $BalanceDataEntries = ($Parameters.Data | ConvertFrom-Json -ErrorAction SilentlyContinue)
                             $Variables.BalanceData = @((Compare-Object $Variables.BalanceData $BalanceDataEntries -PassThru -Property DateTime, Pool, Currency, Wallet) | Select-Object -ExcludeProperty SideIndicator)
-                            $Variables.BalanceData | ConvertTo-Json | Out-File ".\Logs\BalancesTrackerData.json" -ErrorAction Ignore
+                            $Variables.BalanceData | ConvertTo-Json | Out-File ".\Logs\BalancesTrackerData.json"
                             If ($BalanceDataEntries.Count -gt 0) { 
-                                $Variables.BalanceData | ConvertTo-Json | Out-File ".\Logs\BalancesTrackerData.json" -ErrorAction Ignore
+                                $Variables.BalanceData | ConvertTo-Json | Out-File ".\Logs\BalancesTrackerData.json"
                                 $Message = "$($BalanceDataEntries.Count) $(If ($BalanceDataEntries.Count -eq 1) { "balance data entry" } Else { "balance data entries" }) removed."
                                 Write-Message -Level Verbose "Web GUI: $Message"
                                 $Data = $Message
@@ -270,7 +270,7 @@ Function Start-APIServer {
                             $Variables.ShowProfit = $Config.ShowProfit
                             $Variables.ShowProfitBias = $Config.ShowProfitBias
 
-                            Write-Message -Level Verbose "Web GUI: Configuration applied."
+                            Write-Message -Level Verbose "Web GUI: Configuration applied. It will become active in next cycle."
                             $Data = "Config saved to '$($Variables.ConfigFile)'. It will become active in next cycle."
                         }
                         Catch { 
@@ -284,7 +284,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/functions/file/showcontent" {
-                        $Data = (Get-Content -Path $Parameters.FileName -Raw -ErrorAction Ignore)  -replace "(?<!\x0d)\x0a", "<br>"
+                        $Data = (Get-Content -Path $Parameters.FileName -Raw)  -replace "(?<!\x0d)\x0a", "<br>"
                         Break
                     }
                     "/functions/log/get" { 
@@ -325,7 +325,7 @@ Function Start-APIServer {
                     }
                     "/functions/pool/disable" { 
                         If ($Parameters.Pools) { 
-                            $PoolsConfig = Get-Content -Path $Variables.PoolsConfigFile -ErrorAction Ignore | ConvertFrom-Json
+                            $PoolsConfig = Get-Content -Path $Variables.PoolsConfigFile | ConvertFrom-Json
                             $Pools = @(($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue) | Sort-Object Name, Algorithm -Unique)
                             $Pools | Group-Object Name | ForEach-Object { 
                                 $PoolName = $_.Name -replace " External$| Internal$"
@@ -353,7 +353,7 @@ Function Start-APIServer {
                             $DisabledPoolsCount = $Pools.Count
                             If ($DisabledPoolsCount -gt 0) { 
                                 # Write PoolsConfig
-                                $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Set-Content -Path $Variables.PoolsConfigFile -Force -ErrorAction Ignore
+                                $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Set-Content -Path $Variables.PoolsConfigFile -Force
                                 $Message = "$DisabledPoolsCount $(If ($DisabledPoolsCount -eq 1) { "algorithm" } Else { "algorithms" }) disabled."
                                 Write-Message -Level Verbose "Web GUI: $Message"
                                 $Data += "`n$Message"
@@ -363,7 +363,7 @@ Function Start-APIServer {
                     }
                     "/functions/pool/enable" { 
                         If ($Parameters.Pools) { 
-                            $PoolsConfig = Get-Content -Path $Variables.PoolsConfigFile -ErrorAction Ignore | ConvertFrom-Json
+                            $PoolsConfig = Get-Content -Path $Variables.PoolsConfigFile | ConvertFrom-Json
                             $Pools = @(($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue) | Sort-Object Name, Algorithm -Unique)
                             $Pools | Group-Object Name | ForEach-Object { 
                                 $PoolName = $_.Name -replace " External$| Internal$"
@@ -390,7 +390,7 @@ Function Start-APIServer {
                             $EnabledPoolsCount = $Pools.Count
                             If ($EnabledPoolsCount -gt 0) { 
                                 # Write PoolsConfig
-                                $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Set-Content -Path $Variables.PoolsConfigFile -Force -ErrorAction Ignore
+                                $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Set-Content -Path $Variables.PoolsConfigFile -Force
                                 $Message = "$EnabledPoolsCount $(If ($EnabledPoolsCount -eq 1) { "algorithm" } Else { "algorithms" }) enabled."
                                 Write-Message -Level Verbose "Web GUI: $Message"
                                 $Data += "`n$Message"
@@ -446,7 +446,7 @@ Function Start-APIServer {
                             }
                             Break
                         }
-                        ElseIf ($Parameters.Miners -and $Parameters.Type -eq "HashRate") { 
+                        ElseIf ($Parameters.Miners -and $Parameters.Type -eq "Hashrate") { 
                             If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithms)) { 
                                 $Miners | Sort-Object Name, Algorithms | ForEach-Object { 
                                     If ($_.Earning -eq 0) { $_.Available = $true }
@@ -523,7 +523,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/functions/stat/set" { 
-                        If ($Parameters.Miners -and $Parameters.Type -eq "HashRate" -and $null -ne $Parameters.Value) { 
+                        If ($Parameters.Miners -and $Parameters.Type -eq "Hashrate" -and $null -ne $Parameters.Value) { 
                             If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithms)) {
                                 $Miners | Sort-Object Name, Algorithms | ForEach-Object {
                                     $_.Data = @()
@@ -656,7 +656,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/coinnames" { 
-                        $Data = Get-Content -Path ".\Data\CoinNames.json" -ErrorAction Ignore
+                        $Data = Get-Content -Path ".\Data\CoinNames.json"
                         Break
                     }
                     "/config" {
@@ -679,7 +679,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/currencyalgorithm" { 
-                        $Data = Get-Content -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction Ignore
+                        $Data = Get-Content -Path ".\Data\CurrencyAlgorithm.json"
                         Break
                     }
                      "/dagdata" { 
@@ -758,15 +758,15 @@ Function Start-APIServer {
                         Break
                     }
                     "/miners/best" { 
-                        $Data = ConvertTo-Json -Depth 4 @($Variables.BestMiners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process | ConvertTo-Json -Depth 4 | ConvertFrom-Json | ForEach-Object { If ($_.WorkersRunning) { $_ | Add-Member Workers $_.WorkersRunning -Force }; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning | Sort-Object DeviceName)
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process | ConvertTo-Json -Depth 4 | ConvertFrom-Json | ForEach-Object { If ($_.WorkersRunning) { $_ | Add-Member Workers $_.WorkersRunning -Force }; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning | Sort-Object DeviceName)
                         Break
                     }
-                    "/miners/bestminers_combo" { 
-                        $Data = ConvertTo-Json -Depth 4 @($Variables.BestMiners_Combo | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process)
+                    "/miners/best_combo" { 
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest_Combo | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process)
                         Break
                     }
-                    "/miners/bestminers_combos" { 
-                        $Data = ConvertTo-Json -Depth 4 @($Variables.BestMiners_Combos | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process)
+                    "/miners/best_combos" { 
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest_Combos | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process)
                         Break
                     }
                     "/miners/disabled" { 
@@ -830,7 +830,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/pools/best" { 
-                        $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Best -EQ $true | Select-Object | Sort-Object Algorithm, Name, Region)
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.PoolsBest | Select-Object | Sort-Object Algorithm, Name, Region)
                         Break
                     }
                     "/pools/new" { 
@@ -911,7 +911,7 @@ Function Start-APIServer {
 
                         # Check if there is a file with the requested path
                         $Filename = "$BasePath$Path"
-                        If (Test-Path $Filename -PathType Leaf -ErrorAction SilentlyContinue) { 
+                        If (Test-Path -Path $Filename -PathType Leaf) { 
                             # If the file is a PowerShell script, execute it and return the output. A $Parameters parameter is sent built from the query string
                             # Otherwise, just return the contents of the file
                             $File = Get-ChildItem $Filename -File
@@ -928,7 +928,7 @@ Function Start-APIServer {
                                     $IncludeRegex = [regex]'<!-- *#include *file="(.*)" *-->'
                                     $IncludeRegex.Matches($Data) | Foreach-Object { 
                                         $IncludeFile = $BasePath + '/' + $_.Groups[1].Value
-                                        If (Test-Path $IncludeFile -PathType Leaf) { 
+                                        If (Test-Path -Path $IncludeFile -PathType Leaf) { 
                                             $IncludeData = Get-Content $IncludeFile -Raw
                                             $Data = $Data -replace $_.Value, $IncludeData
                                         }

@@ -194,7 +194,7 @@
 
               window.setInterval(function() {
                 updateEarningsChart();
-              }, (parseInt(config.BalancesTrackerPollInterval) * 1000 * 60));
+              }, parseInt(config.BalancesTrackerPollInterval) * 1000 * 60);   // refresh once per balances tracker interval
             });
 
             </script>

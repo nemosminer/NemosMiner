@@ -35,32 +35,31 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         # Get arguments for available miner devices
         # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $Devices.$DeviceEnumerator
 
-        If ($_.Algorithm -eq "VertHash") { 
-            If (Test-Path -Path ".\Cache\VertHash.dat" -PathType Leaf) { 
-                $_.Arguments += " --data-file ..\..\Cache\VertHash.dat"
-            }
-            ElseIf (Test-Path -Path ".\VertHash.dat" -PathType Leaf) { 
-                New-Item -Path . -Name "Cache" -ItemType Directory -ErrorAction Ignore | Out-Null
-                Move-Item -Path ".\VertHash.dat" -Destination ".\Cache" -ErrorAction Ignore
-                $_.Arguments += " --data-file ..\..\Cache\VertHash.dat"
+        $PrerequisitePath = ""
+        $PrerequisiteURI = ""
+        If ( -not (Test-Path -Path ".\Bin\$($Name)\VertHash.dat" -ErrorAction SilentlyContinue)) { 
+            If ((Get-Item -Path $Variables.VerthashDatPath).length -eq 1283457024) { 
+                New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath | Out-Null
             }
             Else { 
-                $_.Arguments += " --verify"
-                $_.WarmupTimes[0] += 480; $_.WarmupTimes[1] += 480 # Seconds, max. wait time until first data sample, allow extra time to build verthash.dat}
+                $PrerequisitePath = $Variables.VerthashDatPath
+                $PrerequisiteURI = "https://github.com/Minerx117/miners/releases/download/Verthash.Dat/VertHash.dat"
             }
         }
 
         [PSCustomObject]@{ 
-            Name        = $Miner_Name
-            DeviceNames = $AvailableMiner_Devices.Name
-            Type        = $AvailableMiner_Devices.Type
-            Path        = $Path
-            Arguments   = ("$($_.Arguments) --url $(If ($Pools.($_.Algorithm).SSL) { "stratum+ssl" } Else { "stratum+tcp" })://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User)$(If ($Pools.($_.Algorithm).WorkerName) { ".$($Pools.($_.Algorithm).WorkerName)" }) --pass $($Pools.($_.Algorithm).Pass) --hash-meter --stratum-keepalive --quiet --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
-            Algorithms  = $_.Algorithm
-            API         = "Ccminer"
-            Port        = $MinerAPIPort
-            URI         = $Uri
-            WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
+            Name             = $Miner_Name
+            DeviceNames      = $AvailableMiner_Devices.Name
+            Type             = $AvailableMiner_Devices.Type
+            Path             = $Path
+            Arguments        = ("$($_.Arguments) --url $(If ($Pools.($_.Algorithm).SSL) { "stratum+ssl" } Else { "stratum+tcp" })://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User)$(If ($Pools.($_.Algorithm).WorkerName) { ".$($Pools.($_.Algorithm).WorkerName)" }) --pass $($Pools.($_.Algorithm).Pass) --hash-meter --stratum-keepalive --quiet --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
+            Algorithms       = @($_.Algorithm)
+            API              = "Ccminer"
+            Port             = $MinerAPIPort
+            URI              = $Uri
+            WarmupTimes      = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
+            PrerequisitePath = $PrerequisitePath
+            PrerequisiteURI  = $PrerequisiteURI
         }
     }
 }

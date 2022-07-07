@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Downloader.ps1
-Version:        4.0.2.0
-Version date:   02 July 2022
+Version:        4.0.2.1
+Version date:   07 July 2022
 #>
 
 using module .\Includes\Include.psm1
@@ -35,7 +35,7 @@ $DownloadList | Select-Object | ForEach-Object {
     $Path = $_.Path
     $Searchable = $_.Searchable
 
-    If (-not (Test-Path $Path -PathType Leaf)) { 
+    If (-not (Test-Path -Path $Path -PathType Leaf)) { 
         Try { 
             Write-Message -Level Info "Downloader: Initiated download of '$URI'."
 
@@ -57,12 +57,12 @@ $DownloadList | Select-Object | ForEach-Object {
             If ($Searchable) { 
                 Write-Message -Level Info "Downloader: Searching for $(Split-Path $Path -Leaf) on local computer..."
 
-                $Path_Old = Get-PSDrive -PSProvider FileSystem | ForEach-Object { Get-ChildItem -Path $_.Root -Include (Split-Path $Path -Leaf) -Recurse -ErrorAction Ignore } | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+                $Path_Old = Get-PSDrive -PSProvider FileSystem | ForEach-Object { Get-ChildItem -Path $_.Root -Include (Split-Path $Path -Leaf) -Recurse } | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
                 $Path_New = $Path
             }
 
             If ($Path_Old) { 
-                If (Test-Path (Split-Path $Path_New) -PathType Container) { (Split-Path $Path_New) | Remove-Item -Recurse -Force }
+                If (Test-Path -Path (Split-Path $Path_New) -PathType Container) { (Split-Path $Path_New) | Remove-Item -Recurse -Force }
                 (Split-Path $Path_Old) | Copy-Item -Destination (Split-Path $Path_New) -Recurse -Force
                 Write-Message -Level Verbose "Downloader: Copied '$Path' from local repository '$PathOld'."
             }

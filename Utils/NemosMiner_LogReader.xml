@@ -62,7 +62,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>Some miners binaries are missing, starting downloader...</Keyword>
+          <Keyword>Some miners binaries are missing</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>false</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>

@@ -21,15 +21,16 @@
             data-disable-control-when-search="true"
             data-show-columns="true"
             data-show-toggle="true"
-            data-show-refresh="true"
             data-detail-view="true"
+            data-show-refresh="true"
             data-auto-refresh="true"
-            data-auto-refresh-status="false"
+            data-auto-refresh-status="true"
             data-detail-formatter="detailFormatter"
             data-response-handler="formatMiners"
             data-url="/miners/unavailable"
             data-undefined-text=""
             data-show-fullscreen="true"
+            data-header-style="headerStyleAlignTop"
             >
             <thead>
               <tr>
@@ -114,9 +115,6 @@
                     $(this).parent('tr').addClass('miner-' + enumstatus[this.innerText].toLowerCase());
                   });
                 };
-                $('#miners thead tr th').each(function () {
-                  $(this).addClass('align-top');
-                })
               },
 
               onAll: function() {
@@ -127,7 +125,7 @@
                 document.getElementById('btn-disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
               },
 
-              autoRefreshInterval: (parseInt(config.Interval / 2)), // refresh once per interval
+              autoRefreshInterval: parseInt(config.Interval), // refresh once per interval
               height: $(window).height() - $table.offset().top + 26
             });
 
@@ -161,7 +159,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=HashRate';
+                    $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=Hashrate';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-re-benchmark').text());
                       $('body').css('cursor', 'default');
@@ -201,7 +199,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=HashRate&Value=0';
+                    $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=Hashrate&Value=0';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-failed').text());
                       $('body').css('cursor', 'default');
@@ -221,7 +219,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=HashRate&Value=-1';
+                    $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=Hashrate&Value=-1';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-disable').text());
                       $('body').css('cursor', 'default');

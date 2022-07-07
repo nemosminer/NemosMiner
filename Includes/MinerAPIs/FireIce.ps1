@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           FireIce.ps1
-Version:        4.0.2.0
-Version date:   02 July 2022
+Version:        4.0.2.1
+Version date:   07 July 2022
 #>
 
 class Fireice : Miner { 
@@ -66,7 +66,7 @@ class Fireice : Miner {
                         }
                         Start-Sleep -Milliseconds 500
                     }
-                    Stop-Process -Id $this.ProcessId -Force -ErrorAction Ignore
+                    Stop-Process -Id $this.ProcessId -Force
                     $this.Process = $null
                 }
                 Else { 

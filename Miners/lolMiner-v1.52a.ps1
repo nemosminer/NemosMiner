@@ -39,7 +39,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29B");               Type = "NVIDIA"; Fee = @(0.02);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 30); Arguments = " --algo CR29-40" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29S");               Type = "NVIDIA"; Fee = @(0.02);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 30); Arguments = " --algo CR29-32" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo30CTX");             Type = "NVIDIA"; Fee = @(0.025);      MinMemGB = 8.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 30); Arguments = " --algo C30CTX" }
-    [PSCustomObject]@{ Algorithm = @("CuckarooD29");               Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " --algo C29D" } # GMiner-v3.01 is fastest
+    [PSCustomObject]@{ Algorithm = @("CuckarooD29");               Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " --algo C29D" } # GMiner-v3.03 is fastest
     [PSCustomObject]@{ Algorithm = @("CuckarooM29");               Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 6.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 30); Arguments = " --algo C29M" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo31");                Type = "NVIDIA"; Fee = @(0.02);       MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 30); Arguments = " --algo C31" }
     [PSCustomObject]@{ Algorithm = @("Cuckatoo32");                Type = "NVIDIA"; Fee = @(0.02);       MinMemGB = 4.0;                             MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 30); Arguments = " --algo C32" }
@@ -90,17 +90,17 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 }
     
                 [PSCustomObject]@{ 
-                    Name            = $Miner_Name
-                    DeviceNames    = $AvailableMiner_Devices.Name
-                    Type            = $AvailableMiner_Devices.Type
-                    Path            = $Path
-                    Arguments       = ("$($_.Arguments) --log off --apiport $MinerAPIPort --shortstats 7 --longstats 30 --digits 6 --watchdog exit --dns-over-https 1 --devicesbypcie --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0}:0' -f $_ }) -join ',')" -replace "\s+", " ").trim()
-                    Algorithms      = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
-                    API             = "lolMiner"
-                    Port            = $MinerAPIPort
-                    URI             = $Uri
-                    Fee             = $_.Fee
-                    WarmupTimes     = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
+                    Name        = $Miner_Name
+                    DeviceNames = $AvailableMiner_Devices.Name
+                    Type        = $AvailableMiner_Devices.Type
+                    Path        = $Path
+                    Arguments   = ("$($_.Arguments) --log off --apiport $MinerAPIPort --shortstats 7 --longstats 30 --digits 6 --watchdog exit --dns-over-https 1 --devicesbypcie --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0}:0' -f $_ }) -join ',')" -replace "\s+", " ").trim()
+                    Algorithms  = ($_.Algorithm[0], $_.Algorithm[1]) | Select-Object
+                    API         = "lolMiner"
+                    Port        = $MinerAPIPort
+                    URI         = $Uri
+                    Fee         = $_.Fee
+                    WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
                 }
             }
         }

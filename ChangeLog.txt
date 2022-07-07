@@ -7,6 +7,26 @@ Breaking changes (from 3.8.x.x code base):
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
 
+ChangeLog NemosMiner 4.0.2.1 nn.07.2022
+=======================================
+
+Enhancements
+- BrainJobs: Move configuration data to 'PoolData.json'
+- Core: Minor code improvements
+- Code: Mouse click in freshly started miner windows does no longer block process
+
+Fixes:
+- Core: Do not keep miners with deconfigured pools
+- Core: Do not print 'Failed to load DAG data from 'https://explorer.firo.org/api/status' message even when data was loaded successfully
+- Core: Not starting an miners (https://github.com/Minerx117/NemosMiner/issues/84)
+
+Miner changes:
+- ClaymoreNeoscrypt-v1.2.ps1 re-added (AMD, for driver versions older than 26.20.15011.10003)
+- GMiner-v3.03
+- SRBMinerMulti-v0.9.9
+- Wildrig-v0.32.0
+
+
 ChangeLog NemosMiner 4.0.2.0 02.07.2022
 =======================================
 
@@ -84,10 +104,13 @@ Enhancements:
 - Web GUI / Config Editor: Display currency names
 
 Fixes:
+- Core / Includes.psm1 Function 'Get-DefaultAlgorithm' broken
+- Core: Stop all running miners if no more pools are available
 - Invalid Ergo (ERG) DAG size (Thanks to Rainbowminer)
 - NBMiner: Changed download link to NemosMiner repo (original DL links are dead)
 - Web GUI / Balances: Invalid tootip values calculated when 'UsemBTC' is true (Regression from 4.0.0.36)
 - Web GUI / Earnings chart: Graph not updating automatically
+- Web GUI / Config editor: 'DefaultAlgorithm' broken
 
 Miner updates:
 - GMiner-v3.01
@@ -374,8 +397,8 @@ Miner updates:
 - Trex-v0.25.15
 
 Web GUI:
-- configuration Editor: Added new section 'Auto Update Settings'
-- configuration editor: Re-arranged some items
+- Configuration Editor: Added new section 'Auto Update Settings'
+- Configuration Editor: Re-arranged some items
 - SwitchingLog:  Added 'hh:mm:ss' to 'Running Time' header
 
 
@@ -440,7 +463,7 @@ Pools:
 - ZergPoolCoins: Fixed PriceField for earnings calculation ('estimate_current' instead of 'Plus_Pricce')
 
 Web GUI:
-- configuration editor: Improve input validation
+- Configuration Editor: Improve input validation
 - Update font-awesome to version 6.1.1
 
 
@@ -652,7 +675,7 @@ Changelog NemosMiner 4.0.0.16 (RC16) 31.01.2022
 ===============================================
 
 Core:
-- Unified pools, variants defined in PoolData.json
+- Unified pools, variants defined in 'PoolData.json'
 
 Fixes:
 - '-Algorithm' in pool configuration not disabling pool 
@@ -863,6 +886,9 @@ Enhancements:
 - Core: Optimize mail loop processing, do other things while waiting for pool data
 - Web GUI: Update jquery to version 3.6.0
 
+Fixes:
+- Web GUI / Dashboard: Balances not shown if 'BalancesShowInAllCurrencies' set to 'true'
+
 Miner Updates:
 - JayddeeCpu-v3.18.2
 - lolMiner-v1.34
@@ -882,7 +908,7 @@ Enhancements:
 - Web GUI / configuration Editor: add configuration items 'ShowCoinName' & 'ShowCurrency'
 
 Fixes:
-- NHec miner API: Reported HashRate in H/s instead of MH/s
+- NHec miner API: Reported Hashrate in H/s instead of MH/s
 - Trex-v0.24.0: Dual mining broken
 - Web GUI: Revert bootstrap to version 4.6.1
 

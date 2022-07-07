@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { (($_.Type -eq "AMD" -and $_.Architecture -ne "Other") -or $_.OpenCL.ClVersion -ge "OpenCL C 2.0") -or $_.Type -eq "CPU" })) { Return }
 
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.9.8/SRBMiner-Multi-0-9-8-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.9.9/SRBMiner-Multi-0-9-9-win64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
 $Miner_Devices = $Devices 
@@ -16,7 +16,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Argon2Chukwa");        Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 45); Arguments = " --algorithm argon2id_chukwa" }
     [PSCustomObject]@{ Algorithm = @("Argon2Chukwa2");       Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 45); Arguments = " --algorithm argon2id_chukwa2" }
     [PSCustomObject]@{ Algorithm = @("Autolykos2");          Type = "AMD"; Fee = 0.015;  MinMemGB = $Pools."Autolykos2".DAGSizeGB;   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 15); Arguments = " --algorithm autolykos2" }
-    [PSCustomObject]@{ Algorithm = @("Blake2b");             Type = "AMD"; Fee = 0;      MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm blake2b" }
+#   [PSCustomObject]@{ Algorithm = @("Blake2b");             Type = "AMD"; Fee = 0;      MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm blake2b" } # Algorithm broken
     [PSCustomObject]@{ Algorithm = @("Blake2s");             Type = "AMD"; Fee = 0;      MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm blake2s" }
     [PSCustomObject]@{ Algorithm = @("Blake3");              Type = "AMD"; Fee = 0.0085; MinMemGB = 2;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm blake3_alephium" }
     [PSCustomObject]@{ Algorithm = @("CircCash");            Type = "AMD"; Fee = 00085;  MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm circcash" }
@@ -26,7 +26,8 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("CryptonightUpx");      Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 0);  Arguments = " --algorithm cryptonight_upx" } # TeamRedMiner-v0.10.2 is fastest
     [PSCustomObject]@{ Algorithm = @("CryptonightTurtle");   Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 0);  Arguments = " --algorithm cryptonight_turtle" } # TeamRedMiner-v0.10.2 is fastest
     [PSCustomObject]@{ Algorithm = @("CryptonightHeavyXhv"); Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm cryptonight_xhv" }
-  # [PSCustomObject]@{ Algorithm = @("DynamoCoin");          Type = "AMD"; Fee = 0.01;   MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algorithm dynamo" } # Algorithm 'dynamo' supports only 'pool' mode (yiimp stratum compatibility removed)
+    [PSCustomObject]@{ Algorithm = @("CurveHash");           Type = "AMD"; Fee = 0.0085; MinMemGB = 2;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm curvehash" }
+#   [PSCustomObject]@{ Algorithm = @("DynamoCoin");          Type = "AMD"; Fee = 0.01;   MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algorithm dynamo" } # Algorithm 'dynamo' supports only 'pool' mode (yiimp stratum compatibility removed)
     [PSCustomObject]@{ Algorithm = @("EtcHash");             Type = "AMD"; Fee = 0.0065; MinMemGB = $Pools."EtcHash".DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(90, 75); Arguments = " --algorithm etchash --gpu-boost 50 --gpu-auto-tune 2" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = @("Ethash");              Type = "AMD"; Fee = 0.0065; MinMemGB = $Pools."Ethash".DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(90, 75); Arguments = " --algorithm ethash --gpu-boost 50 --gpu-auto-tune 2" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = @("EthashLowMem");        Type = "AMD"; Fee = 0.0065; MinMemGB = $Pools."EthashLowMem".DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(90, 75); Arguments = " --algorithm ethash --gpu-boost 50 --gpu-auto-tune 2" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
@@ -36,7 +37,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Kangaroo12");          Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm k12" }
     [PSCustomObject]@{ Algorithm = @("Kaspa");               Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm kaspa" }
     [PSCustomObject]@{ Algorithm = @("KawPoW");              Type = "AMD"; Fee = 0.085;  MinMemGB = $Pools."KawPoW".DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(90, 75); Arguments = " --algorithm kawpow --gpu-boost 50 --gpu-auto-tune 2" }
-    [PSCustomObject]@{ Algorithm = @("Keccak");              Type = "AMD"; Fee = 0;      MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm keccak" }
+#   [PSCustomObject]@{ Algorithm = @("Keccak");              Type = "AMD"; Fee = 0;      MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm keccak" } # ASIC
     [PSCustomObject]@{ Algorithm = @("Lyra2v2Webchain");     Type = "AMD"; Fee = 0.0085; MinMemGB = 1;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm lyra2v2_webchain" }
     [PSCustomObject]@{ Algorithm = @("ProgPoWEpic");         Type = "AMD"; Fee = 0.0065; MinMemGB = 2;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm progpow_epic" }
     [PSCustomObject]@{ Algorithm = @("ProgPoWSero");         Type = "AMD"; Fee = 0.0065; MinMemGB = 2;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algorithm progpow_sero" }
@@ -70,18 +71,18 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Cosa");                 Type = "CPU"; Fee = 0.02;   MinerSet = 0; WarmupTimes = @(60, 15);   Arguments = " --algorithm cosa" }
     [PSCustomObject]@{ Algorithm = @("CpuPower");             Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 15);   Arguments = " --algorithm cpupower" }
     [PSCustomObject]@{ Algorithm = @("CurveHash");            Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 15);   Arguments = " --algorithm curvehash" }
-  # [PSCustomObject]@{ Algorithm = @("DynamoCoin");           Type = "CPU"; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algorithm dynamo" } # Algorithm 'dynamo' supports only 'pool' mode (yiimp stratum compatibility removed)
-  # [PSCustomObject]@{ Algorithm = @("EtcHash");              Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algorithm etchash" } # Not profitable with CPU
-  # [PSCustomObject]@{ Algorithm = @("Ethash");               Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algorithm ethash" } # Not profitable with CPU
-  # [PSCustomObject]@{ Algorithm = @("EthashLowMem");         Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algorithm ethash" } # Not profitable with CPU
-  # [PSCustomObject]@{ Algorithm = @("FiroPoW");              Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm firopow" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = @("DynamoCoin");           Type = "CPU"; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algorithm dynamo" } # Algorithm 'dynamo' supports only 'pool' mode (yiimp stratum compatibility removed)
+#   [PSCustomObject]@{ Algorithm = @("EtcHash");              Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algorithm etchash" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = @("Ethash");               Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algorithm ethash" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = @("EthashLowMem");         Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algorithm ethash" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = @("FiroPoW");              Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm firopow" } # Not profitable with CPU
     [PSCustomObject]@{ Algorithm = @("FrkHash");              Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm frkhash" }
     [PSCustomObject]@{ Algorithm = @("GhostRider");           Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm ghostrider" }
     [PSCustomObject]@{ Algorithm = @("HeavyHash");            Type = "CPU"; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm heavyhash" }
     [PSCustomObject]@{ Algorithm = @("K12");                  Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm K12" }
-  # [PSCustomObject]@{ Algorithm = @("KawPoW");               Type = "CPU"; Fee = 0.085;  MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algorithm kawpow" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = @("KawPoW");               Type = "CPU"; Fee = 0.085;  MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algorithm kawpow" } # Not profitable with CPU
     [PSCustomObject]@{ Algorithm = @("Kaspa");                Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm kaspa" }
-    [PSCustomObject]@{ Algorithm = @("Keccak");               Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm keccak" }
+#   [PSCustomObject]@{ Algorithm = @("Keccak");               Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm keccak" } # ASIC
     [PSCustomObject]@{ Algorithm = @("Lyra2v2Webchain");      Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm lyra2v2_webchain" }
     [PSCustomObject]@{ Algorithm = @("Minotaur");             Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm minotaur" }
     [PSCustomObject]@{ Algorithm = @("Minotaurx");            Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm minotaurx" }
@@ -98,13 +99,13 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("RandomL");              Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algorithm randoml --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = @("RandomSfx");            Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm randomsfx --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = @("RandomWow");            Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algorithm randomwow --randomx-use-1gb-pages" }
-  # [PSCustomObject]@{ Algorithm = @("RandomX");              Type = "CPU"; Fee = 0.0085; MinerSet = 1; WarmupTimes = @(60, 0);  Arguments = " --algorithm randomx --randomx-use-1gb-pages" } # Not profitable at all
+#   [PSCustomObject]@{ Algorithm = @("RandomX");              Type = "CPU"; Fee = 0.0085; MinerSet = 1; WarmupTimes = @(60, 0);  Arguments = " --algorithm randomx --randomx-use-1gb-pages" } # Not profitable at all
     [PSCustomObject]@{ Algorithm = @("RandomxKeva");          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm randomkeva --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = @("RandomxL");             Type = "CPU"; Fee = 0;      MinerSet = 1; WarmupTimes = @(60, 0);  Arguments = " --algorithm randomxl --randomx-use-1gb-pages" } # XmRig-v6.18.0 is fastest
     [PSCustomObject]@{ Algorithm = @("RandomYada");           Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algorithm randomyada" }
     [PSCustomObject]@{ Algorithm = @("ScryptN2");             Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm scryptn2" }
     [PSCustomObject]@{ Algorithm = @("SHA3d");                Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm sha3d" }
-  # [PSCustomObject]@{ Algorithm = @("UbqHash");              Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTimes = @(60, 0);  Arguments = " --algorithm ubqhash" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = @("UbqHash");              Type = "CPU"; Fee = 0.0065; MinerSet = 1; WarmupTimes = @(60, 0);  Arguments = " --algorithm ubqhash" } # Not profitable with CPU
     [PSCustomObject]@{ Algorithm = @("VertHash");             Type = "CPU"; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm verthash --verthash-dat-path ..\..\Cache\VertHash.dat" }
     [PSCustomObject]@{ Algorithm = @("VerusHash");            Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algorithm verushash" }
     [PSCustomObject]@{ Algorithm = @("Xdag");                 Type = "CPU"; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algorithm xdag" }
@@ -163,9 +164,9 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
                 $PrerequisitePath = ""
                 $PrerequisiteURI = ""
-                If ($_.Algorithm -eq "VertHash") { 
-                    If ((Get-Item -Path $Variables.VerthashDatPath -ErrorAction Ignore).length -eq 1283457024) { 
-                        New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath -ErrorAction Ignore | Out-Null
+                If ($_.Algorithm -eq "VertHash" -and -not (Test-Path -Path ".\Bin\$($Name)\VertHash.dat" -ErrorAction SilentlyContinue)) { 
+                    If ((Get-Item -Path $Variables.VerthashDatPath).length -eq 1283457024) { 
+                        New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath | Out-Null
                     }
                     Else { 
                         $PrerequisitePath = $Variables.VerthashDatPath
@@ -179,7 +180,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     Type             = $AvailableMiner_Devices.Type
                     Path             = $Path
                     Arguments        = ("$($_.Arguments) --disable-workers-ramp-up --api-enable --api-port $MinerAPIPort" -replace "\s+", " ").trim()
-                    Algorithms       = $_.Algorithm[0]
+                    Algorithms       = @($_.Algorithm[0])
                     API              = "SRBMiner"
                     Port             = $MinerAPIPort
                     URI              = $Uri

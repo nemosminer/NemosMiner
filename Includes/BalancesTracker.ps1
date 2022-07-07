@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.2.0
-Version date:   02 July 2022
+Version:        4.0.2.1
+Version date:   07 July 2022
 #>
 
 # Start transcript log
@@ -55,7 +55,7 @@ ForEach($Filename in (Get-ChildItem ".\Data\DailyEarnings*.csv" | Sort-Object -D
     $Earnings = @(Import-Csv $FileName -ErrorAction SilentlyContinue)
     If ($Earnings.Count -gt $PoolData.Count / 2) { Break }
 }
-Remove-Variable FileName -ErrorAction Ignore
+Remove-Variable FileName
 
 While ($true) { 
 
@@ -279,7 +279,7 @@ While ($true) {
             }
 
             If ($Config.BalancesTrackerLog -eq $true) { 
-                $EarningsObject | Export-Csv -NoTypeInformation -Append ".\Logs\BalancesTrackerLog.csv" -Force -ErrorAction Ignore
+                $EarningsObject | Export-Csv -NoTypeInformation -Append ".\Logs\BalancesTrackerLog.csv" -Force
             }
 
             $PoolTodayEarning = $Earnings | Where-Object Pool -EQ $PoolBalanceObject.Pool | Where-Object Currency -EQ $PoolBalanceObject.Currency | Where-Object Wallet -EQ $PoolBalanceObject.Wallet | Select-Object -Last 1
@@ -310,7 +310,7 @@ While ($true) {
                 }
             }
 
-            Remove-Variable PoolTodayEarning, EarningsObject -ErrorAction Ignore
+            Remove-Variable PoolTodayEarning, EarningsObject
         }
 
         # Always keep pools sorted, even when new pools were added
@@ -365,7 +365,7 @@ While ($true) {
         }
 
         Try { 
-            $Earnings | Export-Csv ".\Data\DailyEarnings.csv" -NoTypeInformation -Force -ErrorAction Ignore
+            $Earnings | Export-Csv ".\Data\DailyEarnings.csv" -NoTypeInformation -Force
         }
         Catch { 
             Write-Message -Level Warn "Balances Tracker failed to save earnings data to '.\Data\DailyEarnings.csv' (should have $($Earnings.count) entries)."

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           XmRig.ps1
-Version:        4.0.2.0
-Version date:   02 July 2022
+Version:        4.0.2.1
+Version date:   07 July 2022
 #>
 
 class XmRig : Miner { 
@@ -40,7 +40,7 @@ class XmRig : Miner {
                 #Check if we have a valid hw file for all installed hardware. If hardware / device order has changed we need to re-create the config files. 
                 $ThreadsConfig = Get-Content $ThreadsConfigFile -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue
                 If ($ThreadsConfig.Count -lt 1) { 
-                    If (Test-Path "$(Split-Path $this.Path)\$($this.Algorithms[0] | Select-Object -First 1)-*.json" -PathType Leaf) { 
+                    If (Test-Path -Path "$(Split-Path $this.Path)\$($this.Algorithms[0] | Select-Object -First 1)-*.json" -PathType Leaf) { 
                         #Remove old config files, thread info is no longer valid
                         Write-Message -Level Warn "Hardware change detected. Deleting existing configuration files for miner '$($this.Info)'."
                         Remove-Item "$(Split-Path $this.Path)\ThreadsConfig-$($this.Algorithms[0] | Select-Object -First 1)-*.json" -Force -ErrorAction SilentlyContinue
@@ -63,7 +63,7 @@ class XmRig : Miner {
                             }
                             Start-Sleep -Milliseconds 500
                         }
-                        Stop-Process -Id $this.ProcessId -Force -ErrorAction Ignore
+                        Stop-Process -Id $this.ProcessId -Force
                         $this.Process = $null
                     }
                     Else { 
