@@ -7,6 +7,25 @@ Breaking changes (from 3.8.x.x code base):
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
 
+ChangeLog NemosMiner 4.0.2.2 10.07.2022
+=======================================
+
+Enhancements:
+- Core: Get CUDA version from 'Data\CUDAVersion.json'
+
+Fixes:
+- Core: Dual mining broken (regression from 4.0.2.1)
+- Core: Config item 'DisableDualAlgoMining' ignored (regression from 4.0.0.7)
+- Core: Config item 'DisableSingleAlgoMining' ignored (regression from 4.0.0.7)
+- Core: Config item 'DisableMinersWithFee' ignored (regression from 4.0.0.7)
+- Main text window: Do not show 'PowerUsage' rows when config item 'CalculatePowerCost' is set to $false
+
+Miner changes:
+- CcminerLyraYesscrypt-v8.21r18v5: Invalid miner path
+- JayddeeCpu-v3.19.8: Add more algorithms
+- SRBMinerMulti-v1.0.0
+
+
 ChangeLog NemosMiner 4.0.2.1 07.07.2022
 =======================================
 

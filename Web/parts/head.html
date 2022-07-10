@@ -61,7 +61,7 @@
         url: '/config',
         success: function(result) {
           config = result;
-          localStorage.setItem('config', JSON.stringify(config));
+          localStorage.setItem('config', JSON.stringify(result));
         }
       });
 
@@ -73,7 +73,7 @@
         url: '/btc',
         success: function(result) {
           rate = result;
-          localStorage.setItem('btc', JSON.stringify(config));
+          localStorage.setItem('btc', JSON.stringify(result));
         }
       });
 
@@ -85,8 +85,7 @@
         url: '/summary',
         success: function(result) {
           $('#summary').empty().append(result);
-          localStorage.setItem('summary', JSON.stringify(config));
-
+          localStorage.setItem('summary', JSON.stringify(result));
         }
       });
 

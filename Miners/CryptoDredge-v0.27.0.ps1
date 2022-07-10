@@ -11,14 +11,13 @@ $Path = ".\Bin\$($Name)\CryptoDredge.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Argon2d250";        Fee = 0.01; MinMemGB = 2;                               MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo argon2d250 --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Argon2d4096";       Fee = 0.01; MinMemGB = 2;                               MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algo argon2d4096 --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Argon2dDyn";        Fee = 0.01; MinMemGB = 2;                               MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algo argon2d-dyn --intensity 6" }
     [PSCustomObject]@{ Algorithm = "Argon2dNim";        Fee = 0.01; MinMemGB = 2;                               MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo argon2d-nim --intensity 6" }
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";      Fee = 0.01; MinMemGB = 1;                               MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo chukwa --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Argon2ChukwaV2";    Fee = 0.01; MinMemGB = 1;                               MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo chukwa2 --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "CryptonightXeq";    Fee = 0.01; MinMemGB = 1;                               MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo cngpu --intensity 8" } # CryptonightGPU (XEQ Zergpool)
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";    Fee = 0.01; MinMemGB = 1;                               MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo cnconceal --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "CryptonightGpu";    Fee = 0.01; MinMemGB = 1;                               MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo cngpu --intensity 8" }
     [PSCustomObject]@{ Algorithm = "CryptonightHeavy";  Fee = 0.01; MinMemGB = 1;                               MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo cnheavy --intensity 8" }
     [PSCustomObject]@{ Algorithm = "CryptonightTurtle"; Fee = 0.01; MinMemGB = 1;                               MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo cnturtle --intensity 8" }
     [PSCustomObject]@{ Algorithm = "CryptonightUpx";    Fee = 0.01; MinMemGB = 2;                               MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo cnupx2 --intensity 8" }
@@ -49,7 +48,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "intensity") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                 $_.Arguments += " --url stratum+$(If ($Pools.($_.Algorithm).SSL) { "ssl" } Else { "tcp" } )://$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User)"
-                If ($Pools.($_.Algorithm).WorkerName) { $_.Arguments += ".$($Pools.($_.Algorithm).WorkerName)" }
+                If ($Pools.($_.Algorithm).WorkerName) { $_.Arguments += " --worker $($Pools.($_.Algorithm).WorkerName)" }
                 $_.Arguments += " --pass $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
 
                 [PSCustomObject]@{ 

@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { (($_.Type -eq "AMD" -and $_.Architecture -ne "Other") -or $_.OpenCL.ClVersion -ge "OpenCL C 2.0") -or $_.Type -eq "CPU" })) { Return }
 
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.9.9/SRBMiner-Multi-0-9-9-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/1.0.0/SRBMiner-Multi-1-0-0-win64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
 $Miner_Devices = $Devices 
@@ -58,7 +58,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Argon2Chukwa");         Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 15);   Arguments = " --algorithm argon2id_chukwa" }
     [PSCustomObject]@{ Algorithm = @("Argon2Chukwa2");        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 15);   Arguments = " --algorithm argon2id_chukwa2" }
     [PSCustomObject]@{ Algorithm = @("Autolykos2");           Type = "CPU"; Fee = 0.015;  MinerSet = 0; WarmupTimes = @(120, 15);  Arguments = " --algorithm autolykos2 --gpu-autolykos2-preload 3" }
-    [PSCustomObject]@{ Algorithm = @("Blake2b");              Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(90, 15);   Arguments = " --algorithm blake2b" }
+#   [PSCustomObject]@{ Algorithm = @("Blake2b");              Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(90, 15);   Arguments = " --algorithm blake2b" } # Algo broken
     [PSCustomObject]@{ Algorithm = @("Blake2s");              Type = "CPU"; Fee = 0;      MinerSet = 0; WarmupTimes = @(30, 15);   Arguments = " --algorithm blake2s" }
     [PSCustomObject]@{ Algorithm = @("Blake3");               Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 15);   Arguments = " --algorithm blake3_alephium" }
     [PSCustomObject]@{ Algorithm = @("CircCash");             Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 15);   Arguments = " --algorithm circcash" }
@@ -166,7 +166,9 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 $PrerequisiteURI = ""
                 If ($_.Algorithm -eq "VertHash" -and -not (Test-Path -Path ".\Bin\$($Name)\VertHash.dat" -ErrorAction SilentlyContinue)) { 
                     If ((Get-Item -Path $Variables.VerthashDatPath).length -eq 1283457024) { 
-                        New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath | Out-Null
+                        If (Test-Path -Path .\Bin\$($Name) -PathType Container) { 
+                            New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath | Out-Null
+                        }
                     }
                     Else { 
                         $PrerequisitePath = $Variables.VerthashDatPath

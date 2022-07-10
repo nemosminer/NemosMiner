@@ -10,7 +10,7 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "0x10";        Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 30); Arguments = " --algo 0x10" }
     [PSCustomObject]@{ Algorithm = "Aergo";       Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo aergo" }
-    [PSCustomObject]@{ Algorithm = "Anime";       Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo anime" }
+    [PSCustomObject]@{ Algorithm = "Anime";       Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo anime" }
     [PSCustomObject]@{ Algorithm = "AstralHash";  Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo glt-astralhash" }
     [PSCustomObject]@{ Algorithm = "BCD";         Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo bcd" }
     [PSCustomObject]@{ Algorithm = "Bitcore";     Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo bitcore" }
@@ -70,12 +70,14 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Xevan";       Type = "AMD"; Fee = @(0.02); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo xevan" }
 
     [PSCustomObject]@{ Algorithm = "0x10";        Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo 0x10 --watchdog" }
+    [PSCustomObject]@{ Algorithm = "Aergo";       Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo aergo --watchdog" }
+    [PSCustomObject]@{ Algorithm = "Anime";       Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo anime --watchdog" }
     [PSCustomObject]@{ Algorithm = "AstralHash";  Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo glt-astralhash --watchdog" }
     [PSCustomObject]@{ Algorithm = "BCD";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo bcd --watchdog" }
+    [PSCustomObject]@{ Algorithm = "Bitcore";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo bitcore --watchdog" }
     [PSCustomObject]@{ Algorithm = "Blake2bBtcc"; Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo blake2b-btcc --watchdog" }
     [PSCustomObject]@{ Algorithm = "Blake2bGlt";  Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo blake2b-glt --watchdog" }
     [PSCustomObject]@{ Algorithm = "Bmw512";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(60, 15); Arguments = " --algo bmw512 --watchdog" } # CcminerBmw512-v2.2.5 is fastest
-    [PSCustomObject]@{ Algorithm = "Bitcore";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo bitcore --watchdog" }
     [PSCustomObject]@{ Algorithm = "C11";         Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo c11 --watchdog" }
     [PSCustomObject]@{ Algorithm = "CurveHash";   Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo curvehash --watchdog" }
     [PSCustomObject]@{ Algorithm = "Dedal";       Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo dedal --watchdog" } # CryptoDredge-v0.27.0 is fastest
@@ -90,6 +92,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "KawPoW";      Type = "NVIDIA"; Fee = @(0.01); MinMemGB = $Pools."KawPoW".DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo kawpow --watchdog" } # NBMiner-v42.2 is fastest
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";    Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo lyra2v3 --watchdog" } # CcminerLyraYesscrypt-v8.21r18v5 is fastest
     [PSCustomObject]@{ Algorithm = "Lyra2TDC";    Type = "NVIDIA"; Fee = @(0.02); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo lyra2tdc --watchdog" }
+    [PSCustomObject]@{ Algorithm = "Lyra2vc0ban"; Type = "NVIDIA"; Fee = @(0.02); MinMemGB = 2;                         MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo lyra2vc0ban --watchdog" }
     [PSCustomObject]@{ Algorithm = "MegaBtx";     Type = "NVIDIA"; Fee = @(0.02); MinMemGB = 1;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 15); Arguments = " --algo megabtx --watchdog" }
     [PSCustomObject]@{ Algorithm = "MegaMec";     Type = "NVIDIA"; Fee = @(0.01); MinMemGB = 1;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo megamec --watchdog" }
     [PSCustomObject]@{ Algorithm = "Minotaur";    Type = "NVIDIA"; Fee = @(0.05); MinMemGB = 1;                         MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo minotaur --watchdog" }

@@ -73,9 +73,11 @@
   "NOBL": "m7m",
   "NYX": "Neoscrypt",
   "OBTC": "HeavyHash",
+  "OCP": "Sha256t",
   "OMEGA": "X11",
   "ONION": "X13",
   "PGN": "X21s",
+  "PHL": "X16r",
   "PLSR": "CurveHash",
   "PLUS1": "HMQ1725",
   "PPCN": "Bmw512",
@@ -96,6 +98,7 @@
   "STAK": "Lyra2RE2",
   "SUGAR": "YespowerSugar",
   "TDC": "YespowerTide",
+  "TLR": "Lyra2Z",
   "TNET": "Blake2b",
   "UBQ": "UbqHash",
   "UFO": "Neoscrypt",
@@ -121,5 +124,6 @@
   "ZCL": "EquihashZCL",
   "ZEC": "Equihash",
   "ZEN": "Equihash",
-  "ZER": "Equihash1927"
+  "ZER": "Equihash1927",
+  "ZOC": "Neoscrypt"
 }

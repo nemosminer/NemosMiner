@@ -71,14 +71,14 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "YespowerARWN";  MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerarwn" }
     [PSCustomObject]@{ Algorithm = "YespowerIc";    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerIC" }
     [PSCustomObject]@{ Algorithm = "YespowerIots";  MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerIOTS" }
-    [PSCustomObject]@{ Algorithm = "YespowerItc";   MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerITC" }
+    [PSCustomObject]@{ Algorithm = "YespowerItc";   MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerITC" } # SRBMminerMulti is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "YespowerLitb";  MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerLITB" }
     [PSCustomObject]@{ Algorithm = "YespowerLtncg"; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerLTNCG" }
-    [PSCustomObject]@{ Algorithm = "YespowerR16";   MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo yespowerr16" }
+    [PSCustomObject]@{ Algorithm = "YespowerR16";   MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo yespowerr16" } # SRBMminerMulti is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "YespowerRes";   MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerRes" }
-    [PSCustomObject]@{ Algorithm = "YespowerSugar"; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerSugar" }
+    [PSCustomObject]@{ Algorithm = "YespowerSugar"; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerSugar" } # SRBMminerMulti is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "YespowerTIDE";  MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerTIDE" }
-    [PSCustomObject]@{ Algorithm = "YespowerUrx";   MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerURX" }
+    [PSCustomObject]@{ Algorithm = "YespowerUrx";   MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerURX" } # JayddeeCpu-v3.19.8 is faster, SRBMminerMulti is fastest, but has 0.85% miner fee
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 

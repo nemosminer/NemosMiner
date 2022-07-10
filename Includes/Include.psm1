@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.2.1
-Version date:   07 July 2022
+Version:        4.0.2.2
+Version date:   10 July 2022
 #>
 
 # Window handling
@@ -144,15 +144,15 @@ Enum MinerStatus {
 
 Class Miner { 
     [Int]$Activated = 0
-    [String[]]$Algorithms = @() # derived from workers
-    [String]$API
-    [String]$Arguments
+    [String[]]$Algorithms = @("") # derived from workers
+    [String]$API = ""
+    [String]$Arguments = ""
     [Boolean]$Available = $true
-    [String]$BaseName
+    [String]$BaseName = ""
     [DateTime]$BeginTime
     [Boolean]$Benchmark = $false # derived from stats
     [Boolean]$Best = $false
-    [String]$CommandLine
+    [String]$CommandLine = ""
     [Int]$DataCollectInterval = 5 # Seconds
     [String[]]$DeviceNames = @() # derived from devices
     [Device[]]$Devices = @()
@@ -163,40 +163,40 @@ Class Miner {
     [DateTime]$EndTime
     [String[]]$EnvVars = @()
     [Double[]]$Hashrates_Live = @()
-    [String]$Info
+    [String]$Info = ""
     [Boolean]$KeepRunning = $false # do not stop miner even if not best (MinInterval)
-    [String]$LogFile
+    [String]$LogFile = ""
     [Boolean]$MeasurePowerUsage = $false
     [Int]$MinDataSamples # for safe hashrate values
-    [String]$MinerUri
+    [String]$MinerUri = ""
     [Bool]$MostProfitable
-    [String]$Name
-    [String]$Path
-    [String]$PrerequisitePath
-    [String]$PrerequisiteURI
+    [String]$Name = ""
+    [String]$Path = ""
+    [String]$PrerequisitePath = ""
+    [String]$PrerequisiteURI = ""
     [UInt16]$Port
     [Double]$PowerCost
     [Double]$PowerUsage
-    [Double]$PowerUsage_Live
+    [Double]$PowerUsage_Live = [Double]::NaN
     [Boolean]$Prioritize = $false # derived from BalancesKeepAlive
     [Int32]$ProcessId = 0
     [Int]$ProcessPriority = -1
     [Double]$Profit
     [Double]$Profit_Bias
     [Boolean]$ReadPowerUsage = $false
-    [String[]]$Reasons # Why is a miner unavailable?
+    [String[]]$Reasons = @("") # Why is a miner unavailable?
     [Boolean]$Restart = $false 
     [DateTime]$StatStart
     [DateTime]$StatEnd
     [MinerStatus]$Status = [MinerStatus]::Idle
-    [String]$StatusMessage
+    [String]$StatusMessage = ""
     [TimeSpan]$TotalMiningDuration # derived from pool and stats
     [String]$Type
     [DateTime]$Updated
     [String]$URI
     [Worker[]]$Workers = @()
     [Worker[]]$WorkersRunning = @()
-    [String]$Version
+    [String]$Version = ""
     [Int[]]$WarmupTimes # First value: time (in seconds) until first hashrate sample is valid (default 0, accept first sample), second value: time (in seconds) the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed (default 15)
     [String]$WindowStyle = "minimized"
 
@@ -503,24 +503,20 @@ Class Miner {
     }
 
     Refresh([Double]$PowerCostBTCperW, [Boolean]$CalculatePowerCost) { 
-        $this.Reasons = @()
         $this.Available = $true
+        $this.Benchmark = $false
         $this.Best = $false
         $this.Disabled = $false
-
-        $this.Benchmark = $false
-
         $this.Earning = [Double]::NaN
-        $this.Earning_Bias = [Double]::NaN
         $this.Earning_Accuracy = 0
-
+        $this.Earning_Bias = [Double]::NaN
         $this.MeasurePowerUsage = $false
-        $this.Prioritize = $false
-
-        $this.PowerUsage = [Double]::NaN
         $this.PowerCost = [Double]::NaN
+        $this.PowerUsage = [Double]::NaN
+        $this.Prioritize = $false
         $this.Profit = [Double]::NaN
         $this.Profit_Bias = [Double]::NaN
+        $this.Reasons = @("")
 
         $this.Workers | ForEach-Object { 
             If ($Stat = Get-Stat "$($this.Name)_$($_.Pool.Algorithm)_Hashrate") { 
@@ -556,9 +552,8 @@ Class Miner {
             $this.Earning_Bias = [Double]::NaN
             $this.Earning_Accuracy = [Double]::NaN
         }
+        ElseIf ($this.Earning -eq 0) { $this.Earning_Accuracy = 0 }
         Else { $this.Workers | ForEach-Object { $this.Earning_Accuracy += ($_.Earning_Accuracy * $_.Earning / $this.Earning) } }
-
-        If ($this.Earning -eq 0) { $this.Earning_Accuracy = 0 }
 
         If ($this.Workers | Where-Object Disabled) { 
             $this.Status = [MinerStatus]::Disabled
@@ -733,7 +728,7 @@ Function Stop-Mining {
         While (($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }) -and (Get-Date) -le $Timestamp) { 
             Start-Sleep -Seconds 1
         }
-        $Variables.BestMiners = @()
+        $Variables.MinersBest_Combo = @()
         $Variables.WatchdogTimers = @()
     
         $Variables.CoreRunspace.Close()
@@ -2835,8 +2830,16 @@ Function Initialize-Autoupdate {
     }
     Remove-Variable ObsoleteMinerStats
 
-    # Remove all TON (SHA256ton) stat files
+    # Remove all TON stat files
     (Get-ChildItem -Path ".\Stats" | Where-Object { $_.Name -match '^.+_SHA256ton_.+\.txt$' }).Name | ForEach-Object { 
+        Remove-Item -Path "\Stats\$_" -Force
+        "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+    }
+    (Get-ChildItem -Path ".\Stats" | Where-Object { $_.Name -match '^TonPool*_.+\.txt$' }).Name | ForEach-Object { 
+        Remove-Item -Path "\Stats\$_" -Force
+        "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+    }
+    (Get-ChildItem -Path ".\Stats" | Where-Object { $_.Name -match '^TonWhales*_.+\.txt$' }).Name | ForEach-Object { 
         Remove-Item -Path "\Stats\$_" -Force
         "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
     }
@@ -3025,12 +3028,10 @@ Function Update-ConfigFile {
     # Remove AHashPool config & stat data
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "AhashPool*" }
     Remove-Item ".\Stats\AhashPool*.txt" -Force
-    # Remove TonPool config & stat data
-    $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "TonPool*" }
-    Remove-Item ".\Stats\TonPool*.txt" -Force
-    # Remove TonWhales config & stat data
-    $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "TonWhales*" }
-    Remove-Item ".\Stats\TonWhales*.txt" -Force
+    # Remove TonPool config
+    $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "TonPool" }
+    # Remove TonWhales config
+    $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "TonWhales" }
 
     $Config | Add-Member ConfigFileVersion ($Variables.Branding.Version.ToString()) -Force
     Write-Config -ConfigFile $ConfigFile

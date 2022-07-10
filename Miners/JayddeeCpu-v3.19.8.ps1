@@ -16,12 +16,20 @@ ElseIf ((Compare-Object $AvailableMiner_Devices.CpuFeatures @("aes", "sse42")   
 Else { Return }
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "HMQ1725";   MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo hmq1725" }
-    [PSCustomObject]@{ Algorithm = "Lyra2z330"; MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo lyra2z330" }
-    [PSCustomObject]@{ Algorithm = "m7m";       MinerSet = 2; WarmupTimes = @(45, 40); Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
-    [PSCustomObject]@{ Algorithm = "SHA3d";     MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo SHA3d" }
-    [PSCustomObject]@{ Algorithm = "ScryptN11"; MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo scrypt(N,1,1)" }
-    [PSCustomObject]@{ Algorithm = "VertHash";  MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo verthash" }
+    [PSCustomObject]@{ Algorithm = "Blake2b";       MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo blake2b" }
+    [PSCustomObject]@{ Algorithm = "HMQ1725";       MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo hmq1725" }
+    [PSCustomObject]@{ Algorithm = "Lyra2z330";     MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo lyra2z330" }
+    [PSCustomObject]@{ Algorithm = "m7m";           MinerSet = 2; WarmupTimes = @(45, 40); Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
+    [PSCustomObject]@{ Algorithm = "SHA3d";         MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo SHA3d" }
+    [PSCustomObject]@{ Algorithm = "ScryptN11";     MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo scrypt(N,1,1)" }
+    [PSCustomObject]@{ Algorithm = "ScryptN2";      MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo scrypt --param-n 1048576" }
+    [PSCustomObject]@{ Algorithm = "VertHash";      MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo verthash" }
+    [PSCustomObject]@{ Algorithm = "YespowerIc";    MinerSet = 0; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "IsotopeC"' }
+    [PSCustomObject]@{ Algorithm = "YespowerIots";  MinerSet = 0; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-key "Iots is committed to the development of IOT"' }
+    [PSCustomObject]@{ Algorithm = "YespowerLitb";  MinerSet = 0; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "LITBpower: The number of LITB working or available for proof-of-work mini"' }
+    [PSCustomObject]@{ Algorithm = "YespowerLtncg"; MinerSet = 0; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "LTNCGYES"' }
+    [PSCustomObject]@{ Algorithm = "YespowerSugar"; MinerSet = 0; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "Satoshi Nakamoto 31/Oct/2008 Proof-of-work is essentially one-CPU-one-vote"' } # SRBMminerMulti is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "YespowerUrx";   MinerSet = 0; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "UraniumX"' } # SRBMminerMulti is fastest, but has 0.85% miner fee
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
@@ -39,7 +47,9 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         $PrerequisiteURI = ""
         If ( -not (Test-Path -Path ".\Bin\$($Name)\VertHash.dat" -ErrorAction SilentlyContinue)) { 
             If ((Get-Item -Path $Variables.VerthashDatPath).length -eq 1283457024) { 
-                New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath | Out-Null
+                If (Test-Path -Path .\Bin\$($Name) -PathType Container) { 
+                    New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath | Out-Null
+                }
             }
             Else { 
                 $PrerequisitePath = $Variables.VerthashDatPath
