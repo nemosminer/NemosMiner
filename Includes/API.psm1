@@ -762,7 +762,7 @@ Function Start-APIServer {
                         Break
                     }
                     "/miners/best_combo" { 
-                        $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest_Combo | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process)
+                        $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest_Combo | Sort-Object DeviceNames | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process)
                         Break
                     }
                     "/miners/best_combos" { 
