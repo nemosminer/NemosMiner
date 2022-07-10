@@ -729,7 +729,7 @@ Do {
             $NewMiners = @(
                 (Get-ChildItem -Path ".\Miners" -File -Include "*.ps1" -Recurse -ErrorAction SilentlyContinue | Sort-Object | ForEach-Object { 
                     & $_.FullName
-                }) | ForEach-Object { 
+                }) | Select-Object | ForEach-Object { 
                     $_ | Add-Member BaseName ([String]($_.Name -split '-' | Select-Object -Index 0))
                     $_ | Add-Member Devices  ([Device[]]($Variables.Devices | Where-Object Name -In $_.DeviceNames))
                     $_ | Add-Member Path     ([String]$ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Path)) -Force
