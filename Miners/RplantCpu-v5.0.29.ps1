@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
 
-$Uri = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/5.0.27/cpuminer-opt-win.zip"
+$Uri = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/5.0.29/cpuminer-opt-win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\cpuminer-sse42.exe"
 
@@ -18,7 +18,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Balloon";       MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo balloon" }
     [PSCustomObject]@{ Algorithm = "Blake2b";       MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo blake2b" }
     [PSCustomObject]@{ Algorithm = "Bmw";           MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo bmw" }
-#   [PSCustomObject]@{ Algorithm = "Bmw512";        MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo bmw512" } # ASIC
+    [PSCustomObject]@{ Algorithm = "Bmw512";        MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo bmw512" }
 #   [PSCustomObject]@{ Algorithm = "C11";           MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo c11" } # ASIC
     [PSCustomObject]@{ Algorithm = "Circcash";      MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo circcash" }
     [PSCustomObject]@{ Algorithm = "CpuPower";      MinerSet = 0; WarmupTimes = @(60, 60); Arguments = " --algo cpupower" }
@@ -42,6 +42,7 @@ $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Lyra2RE3";      MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo lyra2rev3" } # ASIC
     [PSCustomObject]@{ Algorithm = "Lyra2z";        MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo lyra2z" }
     [PSCustomObject]@{ Algorithm = "Lyra2z330";     MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo lyra2z330" }
+    [PSCustomObject]@{ Algorithm = "Mike";          MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo mike" }
     [PSCustomObject]@{ Algorithm = "Minotaur";      MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo minotaur" }
     [PSCustomObject]@{ Algorithm = "MinotaurX";     MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo minotaurx" }
 #   [PSCustomObject]@{ Algorithm = "MyriadGroestl"; MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo myr-gr" } # ASIC
@@ -78,7 +79,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "YespowerRes";   MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerRes" }
     [PSCustomObject]@{ Algorithm = "YespowerSugar"; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerSugar" } # SRBMminerMulti is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "YespowerTIDE";  MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerTIDE" }
-    [PSCustomObject]@{ Algorithm = "YespowerUrx";   MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerURX" } # JayddeeCpu-v3.19.8 is faster, SRBMminerMulti is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "YespowerUrx";   MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerURX" } # JayddeeCpu-v3.19.9 is faster, SRBMminerMulti is fastest, but has 0.85% miner fee
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 

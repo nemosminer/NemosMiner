@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           SRBminer.ps1
-Version:        4.0.2.2
-Version date:   10 July 2022
+Version:        4.0.2.3
+Version date:   16 July 2022
 #>
 
 class SRBMiner : Miner { 
@@ -38,27 +38,27 @@ class SRBMiner : Miner {
             Return $null
         }
 
+        $Type = If ($Data.total_cpu_workers -gt 0) {"cpu"} Else {"gpu"}
+
         $HashRate = [PSCustomObject]@{ }
         $HashRate_Name = [String]$this.Algorithms[0]
-        $HashRate_Value = [Double]0
-        If ($Data.algorithms) { $HashRate_Value = [Double]$Data.algorithms[0].hashrate.gpu.total }
-        If (-not $HashRate_Value) { $HashRate_Value = [Double]$Data.algorithms[0].hashrate.cpu.total }
-        If (-not $HashRate_Value) { $HashRate_Value = [Double]$Data.algorithms[0].hashrate.now }
-        If (-not $HashRate_Value) { $HashRate_Value = [Double]$Data.hashrate_total_now }
+        $HashRate_Value = [Double]$Data.algorithms[0].hashrate.$Type.total
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
         $Shares = [PSCustomObject]@{ }
-        $Shares_Accepted = [Int64]0
-        $Shares_Rejected = [Int64]0
-        If ($Data.algorithms) { 
-            $Shares_Accepted = [Int64]$Data.algorithms[0].shares.accepted
-            $Shares_Rejected = [Int64]$Data.algorithms[0].shares.rejected 
-        }
-        Else { 
-            $Shares_Accepted = [Int64]$Data.shares.accepted
-            $Shares_Rejected = [Int64]$Data.shares.rejected
-        }
+        $Shares_Accepted = [Int64]$Data.algorithms[0].shares.accepted
+        $Shares_Rejected = [Int64]$Data.algorithms[0].shares.rejected 
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
+
+        If ($this.Algorithms[1]) { 
+            $HashRate_Name = [String]$this.Algorithms[1]
+            $HashRate_Value = [Double]$Data.algorithms[1].hashrate.$Type.total
+            $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
+
+            $Shares_Accepted = [Int64]$Data.algorithms[1].shares.accepted
+            $Shares_Rejected = [Int64]$Data.algorithms[1].shares.rejected 
+            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
+        }
 
         If ($this.ReadPowerUsage) { 
             $PowerUsage = $this.GetPowerUsage()

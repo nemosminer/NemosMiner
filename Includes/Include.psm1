@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.2.2
-Version date:   10 July 2022
+Version:        4.0.2.3
+Version date:   16 July 2022
 #>
 
 # Window handling
@@ -144,15 +144,15 @@ Enum MinerStatus {
 
 Class Miner { 
     [Int]$Activated = 0
-    [String[]]$Algorithms = @("") # derived from workers
-    [String]$API = ""
-    [String]$Arguments = ""
+    [String[]]$Algorithms # derived from workers
+    [String]$API
+    [String]$Arguments
     [Boolean]$Available = $true
-    [String]$BaseName = ""
+    [String]$BaseName
     [DateTime]$BeginTime
     [Boolean]$Benchmark = $false # derived from stats
     [Boolean]$Best = $false
-    [String]$CommandLine = ""
+    [String]$CommandLine
     [Int]$DataCollectInterval = 5 # Seconds
     [String[]]$DeviceNames = @() # derived from devices
     [Device[]]$Devices = @()
@@ -163,17 +163,17 @@ Class Miner {
     [DateTime]$EndTime
     [String[]]$EnvVars = @()
     [Double[]]$Hashrates_Live = @()
-    [String]$Info = ""
+    [String]$Info
     [Boolean]$KeepRunning = $false # do not stop miner even if not best (MinInterval)
-    [String]$LogFile = ""
+    [String]$LogFile
     [Boolean]$MeasurePowerUsage = $false
     [Int]$MinDataSamples # for safe hashrate values
-    [String]$MinerUri = ""
+    [String]$MinerUri
     [Bool]$MostProfitable
-    [String]$Name = ""
-    [String]$Path = ""
-    [String]$PrerequisitePath = ""
-    [String]$PrerequisiteURI = ""
+    [String]$Name
+    [String]$Path
+    [String]$PrerequisitePath
+    [String]$PrerequisiteURI
     [UInt16]$Port
     [Double]$PowerCost
     [Double]$PowerUsage
@@ -184,19 +184,19 @@ Class Miner {
     [Double]$Profit
     [Double]$Profit_Bias
     [Boolean]$ReadPowerUsage = $false
-    [String[]]$Reasons = @("") # Why is a miner unavailable?
+    [String[]]$Reasons # Why is a miner unavailable?
     [Boolean]$Restart = $false 
     [DateTime]$StatStart
     [DateTime]$StatEnd
     [MinerStatus]$Status = [MinerStatus]::Idle
-    [String]$StatusMessage = ""
+    [String]$StatusMessage
     [TimeSpan]$TotalMiningDuration # derived from pool and stats
     [String]$Type
     [DateTime]$Updated
     [String]$URI
     [Worker[]]$Workers = @()
     [Worker[]]$WorkersRunning = @()
-    [String]$Version = ""
+    [String]$Version
     [Int[]]$WarmupTimes # First value: time (in seconds) until first hashrate sample is valid (default 0, accept first sample), second value: time (in seconds) the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed (default 15)
     [String]$WindowStyle = "minimized"
 
@@ -363,7 +363,7 @@ Class Miner {
             Write-Message -Level Info $this.StatusMessage
         }
         Else { 
-            Write-Message -Level ERROR $this.StatusMessage
+            Write-Message -Level Error $this.StatusMessage
         }
 
         # Stop Miner data reader
@@ -516,7 +516,6 @@ Class Miner {
         $this.Prioritize = $false
         $this.Profit = [Double]::NaN
         $this.Profit_Bias = [Double]::NaN
-        $this.Reasons = @("")
 
         $this.Workers | ForEach-Object { 
             If ($Stat = Get-Stat "$($this.Name)_$($_.Pool.Algorithm)_Hashrate") { 
@@ -729,6 +728,7 @@ Function Stop-Mining {
             Start-Sleep -Seconds 1
         }
         $Variables.MinersBest_Combo = @()
+        $Variables.Miners = @()
         $Variables.WatchdogTimers = @()
     
         $Variables.CoreRunspace.Close()
@@ -944,19 +944,19 @@ Function Write-Message {
         [String]$Level = "Info"
     )
 
-    If ($Config.GetEnumerator() -notcontains "LogToScreen" -or $Level -in $Config.LogToScreen) { 
-        # Update status text box in GUI
-        If ($Variables.LabelStatus) { 
-            $Variables.LabelStatus.Lines += $Message
+    # Update status text box in GUI
+    If ($Variables.LabelStatus) { 
+        $Variables.LabelStatus.Lines += $Message
 
-            # Keep only 100 lines, more lines impact performance
-            $Variables.LabelStatus.Lines = @($Variables.LabelStatus.Lines | Select-Object -Last 100)
+        # Keep only 100 lines, more lines impact performance
+        $Variables.LabelStatus.Lines = @($Variables.LabelStatus.Lines | Select-Object -Last 100)
 
-            $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
-            $Variables.LabelStatus.ScrollToCaret()
-            $Variables.LabelStatus.Refresh()
-        }
+        $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
+        $Variables.LabelStatus.ScrollToCaret()
+        $Variables.LabelStatus.Refresh()
+    }
 
+    If ($Config.LogToScreen -and $Level -in $Config.LogToScreen) { 
         # Write to console
         Switch ($Level) { 
             "Error"   { Write-Host $Message -ForegroundColor "Red" }
@@ -2270,6 +2270,7 @@ Filter ConvertTo-Hash {
 
     $Units = " kMGTPEZY" # k(ilo) in small letters, see https://en.wikipedia.org/wiki/Metric_prefix
 
+    If ( $_ -eq $null -or [Double]::IsNaN($_)) { Return 'n/a' }
     $Base1000 = [Math]::Truncate([Math]::Log([Math]::Abs([Double]$_), [Math]::Pow(1000, 1)))
     $Base1000 = [Math]::Max([Double]0, [Math]::Min($Base1000, $Units.Length - 1))
     $UnitValue = $_ / [Math]::Pow(1000, $Base1000)

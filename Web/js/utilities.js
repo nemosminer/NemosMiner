@@ -16,6 +16,8 @@ function formatMiners(data) {
       item.tPrimaryHashrate = item.Workers[0].Hashrate;
       if (item.Workers[0].Pool) {
         item.tPrimaryAlgorithm = item.Workers[0].Pool.Algorithm;
+        item.tPrimaryCurrency = item.Workers[0].Pool.Currency;
+        item.tPrimaryCoinName = item.Workers[0].Pool.CoinName;
         item.tPrimaryPool = item.Workers[0].Pool.Name;
         item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
         item.tPrimaryPoolUser = item.Workers[0].Pool.User;
@@ -25,6 +27,8 @@ function formatMiners(data) {
         item.tSecondaryMinerFee = item.Workers[1].Fee;
         if (item.Workers[1].Pool) {
           item.tSecondaryAlgorithm = item.Workers[1].Pool.Algorithm;
+          item.tSecondaryCurrency = item.Workers[1].Pool.Currency;
+          item.tSecondaryCoinName = item.Workers[1].Pool.CoinName;
           item.tSecondaryPool = item.Workers[1].Pool.Name;
           item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
           item.tSecondaryPoolUser = item.Workers[1].Pool.User;
@@ -38,6 +42,8 @@ function formatMiners(data) {
         item.tPrimaryHashrate = item.WorkersRunning[0].Hashrate;
         if (item.WorkersRunning[0].Pool) {
           item.tPrimaryAlgorithm = item.WorkersRunning[0].Pool.Algorithm;
+          item.tPrimaryCurrency = item.WorkersRunning[0].Pool.Currency;
+          item.tPrimaryCoinName = item.WorkersRunning[0].Pool.CoinName;
           item.tPrimaryPool = item.WorkersRunning[0].Pool.Name;
           item.tPrimaryPoolFee = item.WorkersRunning[0].Pool.Fee;
           item.tPrimaryPoolUser = item.WorkersRunning[0].Pool.User;
@@ -48,6 +54,8 @@ function formatMiners(data) {
           item.tSecondaryMinerFee = item.WorkersRunning[1].Fee;
           if (item.WorkersRunning[1].Pool) {
             item.tSecondaryAlgorithm = item.WorkersRunning[1].Pool.Algorithm;
+            item.tSecondaryCurrency = item.WorkersRunning[1].Pool.Currency;
+            item.tSecondaryCoinName = item.WorkersRunning[1].Pool.CoinName;
             item.tSecondaryPool = item.WorkersRunning[1].Pool.Name;
             item.tSecondaryPoolFee = item.WorkersRunning[1].Pool.Fee;
             item.tSecondaryPoolUser = item.WorkersRunning[1].Pool.User;
@@ -87,14 +95,19 @@ function formatMiners(data) {
 }
 
 function formatTimeSpan(timespan) {
-  var duration = '-';
+  var duration = '';
   if (timespan) {
-    duration = timespan.Days + ' days ';
-    duration = duration + timespan.Hours + ' hrs ';
-    duration = duration + timespan.Minutes + ' min ';
-    duration = duration + timespan.Seconds + ' sec ';
+    if (timespan.Days == 1) duration = timespan.Days + ' day ';
+    else duration = timespan.Days + ' days ';
+    if (timespan.Hours == 1) duration = duration + timespan.Hours + ' hr ';
+    else duration = duration + timespan.Hours + ' hrs ';
+    if (timespan.Minutes == 1) duration = duration + timespan.Minutes + ' min ';
+    else duration = duration + timespan.Minutes + ' mins ';
+    if (timespan.Seconds == 1) duration = duration + timespan.Seconds + ' sec ';
+    else duration = duration + timespan.Seconds + ' secs ';
+    return duration.trim();
   }
-  return duration;
+  else return '-';
 }
 
 function formatTimeSince(value) {
@@ -160,7 +173,7 @@ function getDigitsFromValue(value, maxdigits) {
 };
 
 function formatDigitsFromBTC(value) {
-  if (value == null) return '';
+  if (value == null) return 'n/a';
   if (isNaN(value)) return 'n/a';
   if (value == 0) return (0).toFixed(12 - getDigitsFromValue(rate, 10));
   if (value != 0) return parseFloat(value * rate).toFixed(12 - getDigitsFromValue(rate, 10));
@@ -168,7 +181,7 @@ function formatDigitsFromBTC(value) {
 };
 
 function formatDigitsFromValue(value) {
-  if (value == null) return ''
+  if (value == null) return 'n/a'
   if (isNaN(value)) return 'n/a';
   if (value == 0) return (0).toFixed(8 - getDigitsFromValue(value, 8));
   if (value != 0) return parseFloat(value).toFixed(8 - getDigitsFromValue(value, 8));
@@ -178,7 +191,6 @@ function formatDigitsFromValue(value) {
 function formatDate(value) {
   if (value === '') return 'Unknown';
   if (Date.parse(value)) return (new Date(value).toLocaleString(navigator.language));
-  if (value == 'Unknown') return 'Unknown';
   if (value == null) return 'Unknown';
   return value;
 };

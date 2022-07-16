@@ -19,10 +19,6 @@
                   <fieldset style="padding-top: 0.3rem" title="Set your wallet addresses&#10;To add more currencies you need to edit pools config file manually.">
                     <div id="Wallets"></div>
                   </fieldset>
-                  <div style="padding-top: 0.7rem" title="Identifies your worker&#10;e.g. Computername&#10;(min. 2 and max. 32 characters)">
-                    <label for="WorkerName">Worker name</label>
-                    <input type="text" id="WorkerName" name="WorkerName" maxlength=33 size=38 value="Workername">
-                  </div>
                   <br>
 
                   <legend class=h6 title="You must have a registered account with Mining Pool Hub">Mining Pool Hub
@@ -99,7 +95,11 @@
 
                   <!-- General Settings -->
                   <legend class=h6><b>General Settings</b></legend>
-                  <label style="padding-top: 0.5rem" for="StartupMode" title="Defines NemosMiner startup mode">NemosMiner starts in</label>
+                  <div style="padding-top: 0.2rem" title="Identifies your worker&#10;e.g. Computername&#10;(min. 2 and max. 32 characters)">
+                    <label for="WorkerName">Worker name</label>
+                    <input type="text" id="WorkerName" name="WorkerName" maxlength=33 size=38 value="Workername">
+                  </div>
+                  <label style="padding-top: 0.2rem" for="StartupMode" title="Defines NemosMiner startup mode">NemosMiner starts in</label>
                   <select size=1 name="" required id="StartupMode">
                     <option value="Idle" title="Initiate application, but do not start mining or run any background processes&#10;&#10;Same as pressing the 'Stop Mining' button">idle</option>
                     <option value="Paused" title="Initiate application and run background processes, but do not start mining&#10;&#10;Same as pressing the 'Pause Mining' button">paused</option>
@@ -484,7 +484,6 @@
                 $('<br>').appendTo(walletscontainer);
                 $('<option/>', { value: key, text: key }).appendTo(payoutcurrencycontainer);
               })
-              document.getElementById('WorkerName').value = config.WorkerName.trim();
               // Mining Pool Hub
               document.getElementById('MiningPoolHubUserName').value = config.MiningPoolHubUserName;
               $(document.getElementById('MiningPoolHubUserName')).change(function (event) {
@@ -524,6 +523,7 @@
               if (config.UsemBTC) document.getElementById('UsemBTC').checked = config.UsemBTC;
 
               // General Runtime Settings
+              document.getElementById('WorkerName').value = config.WorkerName.trim();
               if (config.StartupMode === 'Idle' || config.StartupMode === 'Paused' || config.StartupMode === 'Running') document.getElementById('StartupMode').value = config.StartupMode;
               else document.getElementById('StartupMode').value = 'Idle';
               // StartPaused
@@ -654,7 +654,6 @@
               $.each([config.PoolName].flat(), function (key, value) {
                 if (document.getElementById(('pool-' + value).toString().toLowerCase())) document.getElementById(('pool-' + value).toString().toLowerCase()).checked = true;
               });
-              document.getElementById('WorkerName').value = config.WorkerName.trim();
               document.getElementById('MiningPoolHubUserName').disabled = !(document.getElementById('pool-miningpoolhub').checked || (document.getElementById('pool-miningpoolhubcoins').checked));
               document.getElementById('MiningPoolHubAPIKey').disabled = !(document.getElementById('pool-miningpoolhub').checked || (document.getElementById('pool-miningpoolhubcoins').checked));
               document.getElementById('NiceHashAPIKey').disabled = !(document.getElementById('pool-nicehash').checked);
@@ -837,12 +836,6 @@
                     maxlength: 42,
                     pattern: '^0[x|X][0-9A-Za-z]{40}$'
                   },
-                  WorkerName: {
-                    required: true,
-                    minlength: 2,
-                    maxlength: 32,
-                    pattern: '^[0-9A-Za-z=\-]{2,32}$'
-                  },
                   MiningPoolHubUserName: {
                     required: false,
                     minlength: 2,
@@ -890,6 +883,12 @@
                     minlength: 64,
                     maxlength: 64,
                     pattern: '^[0-9a-f]{64}$'
+                  },
+                  WorkerName: {
+                    required: true,
+                    minlength: 2,
+                    maxlength: 32,
+                    pattern: '^[0-9A-Za-z=\-]{2,32}$'
                   },
                   ExtraCurrencies: {
                     required: false,
@@ -1005,9 +1004,6 @@
                   Wallet: {
                     pattern: "<br>Bitcoin address must be exactly 34 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
                   },
-                  WorkerName: {
-                    pattern: "<br>Workername must be between 2 and 32 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
-                  },
                   MiningPoolHubUserName: {
                     pattern: "<br>MiningPoolHub user name must be between 2 and 32 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
                   },
@@ -1032,6 +1028,9 @@
                   ProHashingAPIKey: {
                     pattern: "<br>ProHashing API key must be exactly 64 characters long<br>and may only contain lower case letters (a-f) and digits"
                   },
+                  WorkerName: {
+                    pattern: "<br>Workername must be between 2 and 32 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
+                  },
                   Proxy: {
                     pattern: "<br>Enter Proxy IP V4 address and port<br>;e.g. 192.168.1.1:3128"
                   },
@@ -1050,8 +1049,6 @@
                   $.each(config.Wallets, function (key, value) {
                     config.Wallets[key] = document.getElementById('Wallet' + key).value.toString();
                   });
-                  config.WorkerName = document.getElementById('WorkerName').value.toString().trim();
-                  if ((document.getElementById('WorkerName').value) == '') config.WorkerName = document.getElementById('WorkerName').value = 'WorkerName';
                   config.MiningPoolHubUserName = document.getElementById('MiningPoolHubUserName').value.toString().trim();
                   if ((document.getElementById('MiningPoolHubUserName').value) == '') config.MiningPoolHubUserName = document.getElementById('MiningPoolHubUserName').value = 'Nemo';
                   config.MiningPoolHubAPIKey = document.getElementById('MiningPoolHubAPIKey').value = document.getElementById('MiningPoolHubAPIKey').value.toString().trim();
@@ -1072,6 +1069,8 @@
                   config.UsemBTC = document.getElementById('UsemBTC').checked;
 
                   // Runtime Settings
+                  config.WorkerName = document.getElementById('WorkerName').value.toString().trim();
+                  if ((document.getElementById('WorkerName').value) == '') config.WorkerName = document.getElementById('WorkerName').value = 'WorkerName';
                   if (document.getElementById('StartupMode').value.match('Idle|Paused|Running')) config.StartupMode = document.getElementById('StartupMode').value;
                   else config.StartupMode = 'Idle';
                   config.IdleDetection = document.getElementById('IdleDetection').checked;

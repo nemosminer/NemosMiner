@@ -7,6 +7,27 @@ Breaking changes (from 3.8.x.x code base):
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
 
+ChangeLog NemosMiner 4.0.2.3 16.07.2022
+=======================================
+
+Changes:
+- Web GUI / Configuration Editor: Re-arranged some items
+
+Enhancements:
+- Web GUI / Miners: Add hidden columns 'Currency' & 'CoinName'
+
+Fixes:
+- Legacy GUI: Clear running miners list when mining is paused/idle
+
+Miner changes:
+- RplantCpu-v5.0.29
+- Filter Non-SLL capable miners
+- JayddeeCpu-v3.19.9
+- SRBMinerMulti-v1.0.1 (dual mining [Autolykos2 / EtcHash / Ethash] & HeavyHash)
+- SRBMinerMulti-v1.0.2
+- Wildrig-v0.32.0: Fix 'ProgPoWVeriBlock' algorithm
+
+
 ChangeLog NemosMiner 4.0.2.2 10.07.2022
 =======================================
 
@@ -248,7 +269,7 @@ Core:
 Enhancements:
 - Core: Minor code optimization
 - New configuration item 'BalancesShowInAllCurrencies'
-- Web GUI / configuration Editor: Select 'Currency' from dropdown list
+- Web GUI / Configuration Editor: Select 'Currency' from dropdown list
 - Web GUI / Miners & Pools: Optimize header options
 - Web GUI / Rig Monitor: Hide monitoring settings
 
@@ -275,7 +296,7 @@ Fixes:
 - GMiner API: Ignore 0 hash rate samples
 - GMiner: Remove dual algorithm mining ETC/EH & TON with AMD cards (not supported)
 - Legacy GUI / Rig Monitoring: Pool column empty
-- Rig Monitoring: NaN hashrate (Legacy & web GUI)
+- Rig Monitoring: NaN hashrate (Legacy & Web GUI)
 
 Miner updates:
 - NBMiner-v42.0
@@ -349,7 +370,7 @@ Miner updates:
 - MiniZ-v1.8z2
 
 Web GUI:
-- configuration editor: Re-arranged some items
+- Configuration Editor: Re-arranged some items
 
 
 ChangeLog NemosMiner 4.0.0.31 14.05.2022
