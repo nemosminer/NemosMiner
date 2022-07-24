@@ -40,6 +40,8 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$AutoUpdateCheckInterval = 1, # NemosMiner will periodically check for a new program version every n days (0 to disable)
     [Parameter(Mandatory = $false)]
+    [Switch]$BackupOnAutoUpdate = $true, # NemosMiner will backup installed version before update to the new version
+    [Parameter(Mandatory = $false)]
     [Double]$BadShareRatioThreshold = 0.05, # Allowed ratio of bad shares (total / bad) as reported by the miner. If the ratio exceeds the configured threshold then the miner will get marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
     [Parameter(Mandatory = $false)]
     [Boolean]$BalancesKeepAlive = $true, # If true will force mining at a pool to protect your earnings (some pools auto-purge the wallet after longer periods of inactivity, see '\Data\PoolData.Json' BalancesKeepAlive properties)

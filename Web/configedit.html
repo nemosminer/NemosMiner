@@ -146,18 +146,19 @@
                   <br>
 
                   <!-- Auto Update Settings -->
-                  <fieldset>
-                    <legend class=h6><b>Auto Update Settings</b></legend>
-                    <div style="padding-top: 0.3rem" title="NemosMiner will periodically check for a new program version&#10;(min=0, max=30, default=1 days). Set to 0 to disable automatic updates"> Check for new version every
-                      <input type="number" id="AutoUpdateCheckInterval" name="AutoUpdateCheckInterval" min=0 max=50 step=1 value=15> days
-                    </div>
-                    <div style="padding-top: 0.5rem" title="Automatically update NemosMiner to the latest realeased program version&#10;NemosMiner will check for a new verwsion on each start&#10;and approx. every 24hrs">
-                      <input type="checkbox" class="toggle-switch" id="AutoUpdate" name="AutoUpdate"> Auto update
-                    </div>
-                    <div style="padding-top: 0.7rem" title="If enabled NemosMiner will show the changlog when an update is available">
-                      <input type="checkbox" class="toggle-switch" id="ShowChangeLog" name="ShowChangeLog"> Show change log
-                    </div>
-                    </fieldset>
+                  <legend class=h6><b>Auto Update Settings</b></legend>
+                  <div style="padding-top: 0.3rem" title="NemosMiner will periodically check for a new program version&#10;(min=0, max=30, default=1 days). Set to 0 to disable automatic updates"> Check for new version every
+                    <input type="number" id="AutoUpdateCheckInterval" name="AutoUpdateCheckInterval" min=0 max=50 step=1 value=15> days
+                  </div>
+                  <div style="padding-top: 0.5rem" title="Automatically update NemosMiner to the latest realeased program version&#10;NemosMiner will check for a new verwsion on each start&#10;and approx. every 24hrs">
+                    <input type="checkbox" class="toggle-switch" id="AutoUpdate" name="AutoUpdate"> Auto update
+                  </div>
+                  <div style="padding-top: 0.7rem" title="If enabled NemosMiner will show the changlog when an update is available">
+                    <input type="checkbox" class="toggle-switch" id="ShowChangeLog" name="ShowChangeLog"> Show change log
+                  </div>
+                  <div style="padding-top: 0.7rem" title="If enabled NemosMiner will backup installed version before update to the new version">
+                    <input type="checkbox" class="toggle-switch" id="BackupOnAutoUpdate" name="BackupOnAutoUpdate"> Backup installed version before updating
+                  </div>
                   <br>
 
                   <!-- Balance Tracker Settings -->
@@ -560,7 +561,7 @@
               if (config.AutoUpdateCheckInterval) document.getElementById('AutoUpdateCheckInterval').value = parseInt(config.AutoUpdateCheckInterval)
               else document.getElementById('AutoUpdateCheckInterval').value = 1;
               if (config.AutoUpdate) document.getElementById('AutoUpdate').checked = true;
-              if (config.ShowChangeLog) document.getElementById('ShowChangeLog').checked = true;
+              if (config.BackupOnAutoUpdate) document.getElementById('BackupOnAutoUpdate').checked = true;
 
               // Balance Tracker Settings
               if (parseInt(config.BalancesTrackerPollInterval) >= 1 && parseInt(config.BalancesTrackerPollInterval) <= 9) document.getElementById('BalancesTrackerPollInterval').value = 10;
@@ -1088,6 +1089,7 @@
                   config.AutoUpdateCheckInterval = parseInt(document.getElementById('AutoUpdateCheckInterval').value);
                   config.AutoUpdate = document.getElementById('AutoUpdate').checked;
                   config.ShowChangeLog = document.getElementById('ShowChangeLog').checked;
+                  config.BackupOnAutoUpdate = document.getElementById('BackupOnAutoUpdate').checked;
 
                   // Balance Tracker Settings
                   config.BalancesTrackerPollInterval = parseInt(document.getElementById('BalancesTrackerPollInterval').value);

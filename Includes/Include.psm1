@@ -1023,7 +1023,7 @@ Function Update-MonitoringData {
         worker  = $Config.WorkerName
         version = $Version
         status  = $Status
-        profit  = [String][Math]::Round(($data | Measure-Object Earning -Sum).Sum, 8) # Earnings is NOT profit! Needs to be changed in mining monitor server
+        profit  = If ([Double]::IsNaN($Variables.MiningProfit)) { "n/a" } Else { [String]($Variables.MiningProfit - $Variables.BasePowerCostBTC) } # Earnings is NOT profit! Needs to be changed in mining monitor server
         data    = ConvertTo-Json $Data
     }
 
@@ -2744,15 +2744,17 @@ Function Initialize-Autoupdate {
     # Stop processes
     $Variables.NewMiningStatus = "Idle"
 
-    # Backup current version folder in zip file; exclude existing zip files and download folder
-    "Backing up current version as '.\$($BackupFile)'..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-    Start-Process ".\Utils\7z" "a $($BackupFile) .\* -x!*.zip -x!downloads -x!logs -x!cache -x!$UpdateLog -xr!VertHash.dat -bb1 -bd" -RedirectStandardOutput "$($UpdateLog)_tmp" -Wait -WindowStyle Hidden
-    Add-Content $UpdateLog (Get-Content -Path "$($UpdateLog)_tmp")
-    Remove-Item -Path "$($UpdateLog)_tmp" -Force
+    If ($Config.BackupOnAutoUpdate) { 
+        # Backup current version folder in zip file; exclude existing zip files and download folder
+        "Backing up current version as '.\$($BackupFile)'..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
+        Start-Process ".\Utils\7z" "a $($BackupFile) .\* -x!*.zip -x!downloads -x!logs -x!cache -x!$UpdateLog -xr!VertHash.dat -bb1 -bd" -RedirectStandardOutput "$($UpdateLog)_tmp" -Wait -WindowStyle Hidden
+        Add-Content $UpdateLog (Get-Content -Path "$($UpdateLog)_tmp")
+        Remove-Item -Path "$($UpdateLog)_tmp" -Force
 
-    If (-not (Test-Path .\$BackupFile -PathType Leaf)) { 
-        "Backup failed. Cannot complete auto-update :-(" | Tee-Object $UpdateLog -Append | Write-Message -Level Error
-        Return
+        If (-not (Test-Path .\$BackupFile -PathType Leaf)) { 
+            "Backup failed. Cannot complete auto-update :-(" | Tee-Object $UpdateLog -Append | Write-Message -Level Error
+            Return
+        }
     }
 
     #Stop all background processes
@@ -2833,6 +2835,7 @@ Function Initialize-Autoupdate {
     }
     Remove-Variable ObsoleteMinerStats
 
+    "Cleaning up old files..." | Tee-Object -FilePath $UpdateLog -Append | Write-Message -Level Verbose
     # Remove all TON stat files
     (Get-ChildItem -Path ".\Stats" | Where-Object { $_.Name -match '^.+_SHA256ton_.+\.txt$' }).Name | ForEach-Object { 
         Remove-Item -Path "\Stats\$_" -Force
@@ -2847,17 +2850,24 @@ Function Initialize-Autoupdate {
         "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
     }
 
-    # Remove temp files
-    "Removing temporary files..." | Tee-Object -FilePath $UpdateLog -Append | Write-Message -Level Verbose
+    # Remove old miner binaries
+    Get-ChildItem -Path ".\Bin" -Directory | ForEach-Object { 
+        If (-not (Test-Path -Path ".\Miners\$($_.Name).ps1" -PathType Leaf)) { 
+            Remove-Item -Path ".\Bin\$($_.Name)" -Recurse -Force
+            "Removed '\Bin\$($_.Name)'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+        }
+    }
+
+    # Remove temporary files
     Remove-Item .\$UpdateFileName -Force -Recurse
     Remove-Item ".\$($UpdateFileName).zip" -Force
     If (Test-Path -Path ".\PreUpdateActions.ps1" -PathType Leaf) { 
         Remove-Item ".\PreUpdateActions.ps1" -Force
-        "Removed '.\PreUpdateActions.ps1'."
+        "Removed '.\PreUpdateActions.ps1'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
     }
     If (Test-Path -Path ".\PostUpdateActions.ps1" -PathType Leaf) { 
         Remove-Item ".\PostUpdateActions.ps1" -Force
-        "Removed '.\PostUpdateActions.ps1'."
+        "Removed '.\PostUpdateActions.ps1'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
     }
     # Keep only 3 file generations
     Get-ChildItem -Path "AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $BackupFile } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
