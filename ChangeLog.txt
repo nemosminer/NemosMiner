@@ -12,6 +12,7 @@ ChangeLog NemosMiner 4.0.2.4 24.07.2022
 Fixes:
 - Core: In some scenarios miners would gest stopped before 'MinIntervals' was over
 - Core / Main text window: Replace 'Unknown' with 'n/a' (to match output in Web GUI)
+- Core / Initialize-Autoupdate: Do not store multiple copies of 'VertHash.dat'
 
 Enhancements:
 - Core: Speed optimisations (20% faster miner updates)
