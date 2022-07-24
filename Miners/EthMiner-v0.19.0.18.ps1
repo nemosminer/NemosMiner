@@ -1,12 +1,11 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -in @("AMD", "NVIDIA"))) { Return }
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.Type -eq "NVIDIA" -and $_.CUDAVersion -ge "9.1") } )) { Return }
 
 $Uri = Switch ($Variables.DriverVersion.CUDA) { 
     { $_ -ge "11.6" } { "https://github.com/Minerx117/miners/releases/download/EthMiner/ethminer-0.19.0-18-cuda11.6-windows-vs2019-amd64.zip"; Break }
     { $_ -ge "10.0" } { "https://github.com/Minerx117/miners/releases/download/EthMiner/ethminer-0.19.0-18-cuda10.0-windows-amd64.zip"; Break }
-    { $_ -ge "9.2" }  { "https://github.com/Minerx117/miners/releases/download/EthMiner/ethminer-0.19.0-18-cuda9.1-windows-amd64.zip"; Break }
-    Default { Return }
+    Default           { "https://github.com/Minerx117/miners/releases/download/EthMiner/ethminer-0.19.0-18-cuda9.1-windows-amd64.zip" }
 }
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\ethminer.exe"

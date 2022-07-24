@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.2.3
-Version date:   16 July 2022
+Version:        4.0.2.4
+Version date:   24 July 2022
 #>
 
 # Window handling
@@ -186,8 +186,8 @@ Class Miner {
     [Boolean]$ReadPowerUsage = $false
     [String[]]$Reasons # Why is a miner unavailable?
     [Boolean]$Restart = $false 
-    [DateTime]$StatStart
-    [DateTime]$StatEnd
+    hidden [DateTime]$StatStart
+    hidden [DateTime]$StatEnd
     [MinerStatus]$Status = [MinerStatus]::Idle
     [String]$StatusMessage
     [TimeSpan]$TotalMiningDuration # derived from pool and stats
@@ -308,8 +308,8 @@ Class Miner {
             } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation
 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
-                For ($WaitForPID = 0; $WaitForPID -le 20; $WaitForPID++) { 
-                    If ($this.ProcessId = [Int32]((Get-CimInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -eq "$($this.Path) $($this.GetCommandLineParameters())" }).ProcessId)) { 
+                0..20 | ForEach-Object { 
+                        If ($this.ProcessId = [Int32]((Get-CimInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -eq "$($this.Path) $($this.GetCommandLineParameters())" }).ProcessId)) { 
                         $this.StatusMessage = "Warming up $($this.Info)"
                         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
                         $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
@@ -516,15 +516,16 @@ Class Miner {
         $this.Prioritize = $false
         $this.Profit = [Double]::NaN
         $this.Profit_Bias = [Double]::NaN
+        $this.Reasons = @()
 
         $this.Workers | ForEach-Object { 
             If ($Stat = Get-Stat "$($this.Name)_$($_.Pool.Algorithm)_Hashrate") { 
                 $_.Hashrate = $Stat.Hour
-                $Factor = [Double]($_.Hashrate * (1 - $_.Fee - $_.Pool.Fee))
+                $Factor = $_.Hashrate * (1 - $_.Fee - $_.Pool.Fee)
                 $_.Disabled = $Stat.Disabled
-                $_.Earning = [Double]($_.Pool.Price * $Factor)
-                $_.Earning_Bias = [Double]($_.Pool.Price_Bias * $Factor)
-                $_.Earning_Accuracy = [Double]$_.Pool.Accuracy
+                $_.Earning = $_.Pool.Price * $Factor
+                $_.Earning_Accuracy = $_.Pool.Accuracy
+                $_.Earning_Bias = $_.Pool.Price_Bias * $Factor
                 $_.TotalMiningDuration = $Stat.Duration
                 $_.Updated = $Stat.Updated
             }
@@ -1296,9 +1297,9 @@ Function Edit-File {
     If (-not ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)"))) { 
         Notepad.exe $FileName
     }
-    If ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)")) { 
-        # Check if the window is not already in foreground
-        While ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)")) { 
+    # Check if the window is not already in foreground
+    While ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)")) { 
+        Try { 
             $FGWindowPid  = [IntPtr]::Zero
             [Void][Win32]::GetWindowThreadProcessId([Win32]::GetForegroundWindow(), [ref]$FGWindowPid)
             $MainWindowHandle = (Get-Process -Id $NotepadProcess.ProcessId).MainWindowHandle
@@ -1310,6 +1311,7 @@ Function Edit-File {
             }
             Start-Sleep -MilliSeconds 100
         }
+        Catch { }
     }
 
     If ($FileWriteTime -ne (Get-Item -Path $FileName).LastWriteTime) { 
@@ -1328,7 +1330,7 @@ Function Get-SortedObject {
         [Object]$Object
     )
 
-    $Object = $Object | ConvertTo-Json -Depth 20 | ConvertFrom-Json -NoEnumerate
+    $Object = $Object | ConvertTo-Json -Depth 99 | ConvertFrom-Json -NoEnumerate
 
     # Build an ordered hashtable of the property-value pairs.
     $SortedObject = [Ordered]@{ }
@@ -1769,9 +1771,9 @@ Function Get-CpuId {
     # Vendor
     $vendor = "" # not implemented
 
-    $info = [CpuID]::Invoke(0)
-    # convert 16 bytes to 4 ints for compatibility with existing code
-    $info = [Int[]]@(
+    $Info = [CpuID]::Invoke(0)
+    # Convert 16 bytes to 4 ints for compatibility with existing code
+    $Info = [Int[]]@(
         [BitConverter]::ToInt32($info, 0 * 4)
         [BitConverter]::ToInt32($info, 1 * 4)
         [BitConverter]::ToInt32($info, 2 * 4)
@@ -1780,10 +1782,10 @@ Function Get-CpuId {
 
     $nIds = $info[0]
 
-    $info = [CpuID]::Invoke(0x80000000)
-    $nExIds = [BitConverter]::ToUInt32($info, 0 * 4) # not sure as to why 'nExIds' is unsigned; may not be necessary
-    # convert 16 bytes to 4 ints for compatibility with existing code
-    $info = [Int[]]@(
+    $Info = [CpuID]::Invoke(0x80000000)
+    $nExIds = [BitConverter]::ToUInt32($info, 0 * 4) # Not sure as to why 'nExIds' is unsigned; may not be necessary
+    # Convert 16 bytes to 4 ints for compatibility with existing code
+    $Info = [Int[]]@(
         [BitConverter]::ToInt32($info, 0 * 4)
         [BitConverter]::ToInt32($info, 1 * 4)
         [BitConverter]::ToInt32($info, 2 * 4)
@@ -1794,102 +1796,102 @@ Function Get-CpuId {
     $features = @{ }
     If ($nIds -ge 0x00000001) { 
 
-        $info = [CpuID]::Invoke(0x00000001)
+        $Info = [CpuID]::Invoke(0x00000001)
         # convert 16 bytes to 4 ints for compatibility with existing code
-        $info = [Int[]]@(
+        $Info = [Int[]]@(
             [BitConverter]::ToInt32($info, 0 * 4)
             [BitConverter]::ToInt32($info, 1 * 4)
             [BitConverter]::ToInt32($info, 2 * 4)
             [BitConverter]::ToInt32($info, 3 * 4)
         )
 
-        $features.MMX = ($info[3] -band ([Int]1 -shl 23)) -ne 0
-        $features.SSE = ($info[3] -band ([Int]1 -shl 25)) -ne 0
-        $features.SSE2 = ($info[3] -band ([Int]1 -shl 26)) -ne 0
-        $features.SSE3 = ($info[2] -band ([Int]1 -shl 00)) -ne 0
+        $Features.MMX = ($info[3] -band ([Int]1 -shl 23)) -ne 0
+        $Features.SSE = ($info[3] -band ([Int]1 -shl 25)) -ne 0
+        $Features.SSE2 = ($info[3] -band ([Int]1 -shl 26)) -ne 0
+        $Features.SSE3 = ($info[2] -band ([Int]1 -shl 00)) -ne 0
 
-        $features.SSSE3 = ($info[2] -band ([Int]1 -shl 09)) -ne 0
-        $features.SSE41 = ($info[2] -band ([Int]1 -shl 19)) -ne 0
-        $features.SSE42 = ($info[2] -band ([Int]1 -shl 20)) -ne 0
-        $features.AES = ($info[2] -band ([Int]1 -shl 25)) -ne 0
+        $Features.SSSE3 = ($info[2] -band ([Int]1 -shl 09)) -ne 0
+        $Features.SSE41 = ($info[2] -band ([Int]1 -shl 19)) -ne 0
+        $Features.SSE42 = ($info[2] -band ([Int]1 -shl 20)) -ne 0
+        $Features.AES = ($info[2] -band ([Int]1 -shl 25)) -ne 0
 
-        $features.AVX = ($info[2] -band ([Int]1 -shl 28)) -ne 0
-        $features.FMA3 = ($info[2] -band ([Int]1 -shl 12)) -ne 0
+        $Features.AVX = ($info[2] -band ([Int]1 -shl 28)) -ne 0
+        $Features.FMA3 = ($info[2] -band ([Int]1 -shl 12)) -ne 0
 
-        $features.RDRAND = ($info[2] -band ([Int]1 -shl 30)) -ne 0
+        $Features.RDRAND = ($info[2] -band ([Int]1 -shl 30)) -ne 0
     }
 
     If ($nIds -ge 0x00000007) { 
 
-        $info = [CpuID]::Invoke(0x00000007)
-        # convert 16 bytes to 4 ints for compatibility with existing code
-        $info = [Int[]]@(
+        $Info = [CpuID]::Invoke(0x00000007)
+        # Convert 16 bytes to 4 ints for compatibility with existing code
+        $Info = [Int[]]@(
             [BitConverter]::ToInt32($info, 0 * 4)
             [BitConverter]::ToInt32($info, 1 * 4)
             [BitConverter]::ToInt32($info, 2 * 4)
             [BitConverter]::ToInt32($info, 3 * 4)
         )
 
-        $features.AVX2 = ($info[1] -band ([Int]1 -shl 05)) -ne 0
+        $Features.AVX2 = ($info[1] -band ([Int]1 -shl 05)) -ne 0
 
-        $features.BMI1 = ($info[1] -band ([Int]1 -shl 03)) -ne 0
-        $features.BMI2 = ($info[1] -band ([Int]1 -shl 08)) -ne 0
-        $features.ADX = ($info[1] -band ([Int]1 -shl 19)) -ne 0
-        $features.MPX = ($info[1] -band ([Int]1 -shl 14)) -ne 0
-        $features.SHA = ($info[1] -band ([Int]1 -shl 29)) -ne 0
-        $features.RDSEED = ($info[1] -band ([Int]1 -shl 18)) -ne 0
-        $features.PREFETCHWT1 = ($info[2] -band ([Int]1 -shl 00)) -ne 0
-        $features.RDPID = ($info[2] -band ([Int]1 -shl 22)) -ne 0
+        $Features.BMI1 = ($info[1] -band ([Int]1 -shl 03)) -ne 0
+        $Features.BMI2 = ($info[1] -band ([Int]1 -shl 08)) -ne 0
+        $Features.ADX = ($info[1] -band ([Int]1 -shl 19)) -ne 0
+        $Features.MPX = ($info[1] -band ([Int]1 -shl 14)) -ne 0
+        $Features.SHA = ($info[1] -band ([Int]1 -shl 29)) -ne 0
+        $Features.RDSEED = ($info[1] -band ([Int]1 -shl 18)) -ne 0
+        $Features.PREFETCHWT1 = ($info[2] -band ([Int]1 -shl 00)) -ne 0
+        $Features.RDPID = ($info[2] -band ([Int]1 -shl 22)) -ne 0
 
-        $features.AVX512_F = ($info[1] -band ([Int]1 -shl 16)) -ne 0
-        $features.AVX512_CD = ($info[1] -band ([Int]1 -shl 28)) -ne 0
-        $features.AVX512_PF = ($info[1] -band ([Int]1 -shl 26)) -ne 0
-        $features.AVX512_ER = ($info[1] -band ([Int]1 -shl 27)) -ne 0
+        $Features.AVX512_F = ($info[1] -band ([Int]1 -shl 16)) -ne 0
+        $Features.AVX512_CD = ($info[1] -band ([Int]1 -shl 28)) -ne 0
+        $Features.AVX512_PF = ($info[1] -band ([Int]1 -shl 26)) -ne 0
+        $Features.AVX512_ER = ($info[1] -band ([Int]1 -shl 27)) -ne 0
 
-        $features.AVX512_VL = ($info[1] -band ([Int]1 -shl 31)) -ne 0
-        $features.AVX512_BW = ($info[1] -band ([Int]1 -shl 30)) -ne 0
-        $features.AVX512_DQ = ($info[1] -band ([Int]1 -shl 17)) -ne 0
+        $Features.AVX512_VL = ($info[1] -band ([Int]1 -shl 31)) -ne 0
+        $Features.AVX512_BW = ($info[1] -band ([Int]1 -shl 30)) -ne 0
+        $Features.AVX512_DQ = ($info[1] -band ([Int]1 -shl 17)) -ne 0
 
-        $features.AVX512_IFMA = ($info[1] -band ([Int]1 -shl 21)) -ne 0
-        $features.AVX512_VBMI = ($info[2] -band ([Int]1 -shl 01)) -ne 0
+        $Features.AVX512_IFMA = ($info[1] -band ([Int]1 -shl 21)) -ne 0
+        $Features.AVX512_VBMI = ($info[2] -band ([Int]1 -shl 01)) -ne 0
 
-        $features.AVX512_VPOPCNTDQ = ($info[2] -band ([Int]1 -shl 14)) -ne 0
-        $features.AVX512_4FMAPS = ($info[3] -band ([Int]1 -shl 02)) -ne 0
-        $features.AVX512_4VNNIW = ($info[3] -band ([Int]1 -shl 03)) -ne 0
+        $Features.AVX512_VPOPCNTDQ = ($info[2] -band ([Int]1 -shl 14)) -ne 0
+        $Features.AVX512_4FMAPS = ($info[3] -band ([Int]1 -shl 02)) -ne 0
+        $Features.AVX512_4VNNIW = ($info[3] -band ([Int]1 -shl 03)) -ne 0
 
-        $features.AVX512_VNNI = ($info[2] -band ([Int]1 -shl 11)) -ne 0
+        $Features.AVX512_VNNI = ($info[2] -band ([Int]1 -shl 11)) -ne 0
 
-        $features.AVX512_VBMI2 = ($info[2] -band ([Int]1 -shl 06)) -ne 0
-        $features.GFNI = ($info[2] -band ([Int]1 -shl 08)) -ne 0
-        $features.VAES = ($info[2] -band ([Int]1 -shl 09)) -ne 0
-        $features.AVX512_VPCLMUL = ($info[2] -band ([Int]1 -shl 10)) -ne 0
-        $features.AVX512_BITALG = ($info[2] -band ([Int]1 -shl 12)) -ne 0
+        $Features.AVX512_VBMI2 = ($info[2] -band ([Int]1 -shl 06)) -ne 0
+        $Features.GFNI = ($info[2] -band ([Int]1 -shl 08)) -ne 0
+        $Features.VAES = ($info[2] -band ([Int]1 -shl 09)) -ne 0
+        $Features.AVX512_VPCLMUL = ($info[2] -band ([Int]1 -shl 10)) -ne 0
+        $Features.AVX512_BITALG = ($info[2] -band ([Int]1 -shl 12)) -ne 0
     }
 
     If ($nExIds -ge 0x80000001) { 
 
-        $info = [CpuID]::Invoke(0x80000001)
-        # convert 16 bytes to 4 ints for compatibility with existing code
-        $info = [Int[]]@(
+        $Info = [CpuID]::Invoke(0x80000001)
+        # Convert 16 bytes to 4 ints for compatibility with existing code
+        $Info = [Int[]]@(
             [BitConverter]::ToInt32($info, 0 * 4)
             [BitConverter]::ToInt32($info, 1 * 4)
             [BitConverter]::ToInt32($info, 2 * 4)
             [BitConverter]::ToInt32($info, 3 * 4)
         )
 
-        $features.x64 = ($info[3] -band ([Int]1 -shl 29)) -ne 0
-        $features.ABM = ($info[2] -band ([Int]1 -shl 05)) -ne 0
-        $features.SSE4a = ($info[2] -band ([Int]1 -shl 06)) -ne 0
-        $features.FMA4 = ($info[2] -band ([Int]1 -shl 16)) -ne 0
-        $features.XOP = ($info[2] -band ([Int]1 -shl 11)) -ne 0
-        $features.PREFETCHW = ($info[2] -band ([Int]1 -shl 08)) -ne 0
+        $Features.x64 = ($info[3] -band ([Int]1 -shl 29)) -ne 0
+        $Features.ABM = ($info[2] -band ([Int]1 -shl 05)) -ne 0
+        $Features.SSE4a = ($info[2] -band ([Int]1 -shl 06)) -ne 0
+        $Features.FMA4 = ($info[2] -band ([Int]1 -shl 16)) -ne 0
+        $Features.XOP = ($info[2] -band ([Int]1 -shl 11)) -ne 0
+        $Features.PREFETCHW = ($info[2] -band ([Int]1 -shl 08)) -ne 0
     }
 
-    # wrap data into PSObject
+    # Wrap data into PSObject
     [PSCustomObject]@{ 
         Vendor   = $vendor
         Name     = $name
-        Features = $features.Keys.ForEach{ If ($features.$_) { $_ } }
+        Features = $Features.Keys.ForEach{ If ($Features.$_) { $_ } }
     }
 }
 

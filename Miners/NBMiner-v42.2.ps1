@@ -1,11 +1,8 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -in @("AMD", "NVIDIA"))) { Return }
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.Type -eq "NVIDIA" -and $_.CUDAVersion -ge "10.0") } )) { Return }
 
-$Uri = Switch ($Variables.DriverVersion.CUDA) { 
-    { $_ -ge "10.0" } { "https://github.com/Minerx117/miners/releases/download/NBMiner/NBMiner_42.2_Win.zip"; Break }
-    Default { Return }
-}
+$Uri = "https://github.com/Minerx117/miners/releases/download/NBMiner/NBMiner_42.2_Win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\nbminer.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"

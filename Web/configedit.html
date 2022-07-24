@@ -106,7 +106,7 @@
                     <option value="Running" title="Initiate application and start mining&#10;&#10;Same as pressing the 'Start Mining' button">running</option>
                   </select>
                   <label for="StartupMode" title="Defines NemosMiner startup mode">mode</label>
-                  <div title="Mining will start when system is idle, e.g. no mouse&#10;or keyboard activity is detected for n seconds&#10;&#10;(min=0, max=3600 [default=120] seconds)&#10;&#10;Mining will stop when mouse or keyboard activity is detected.">
+                  <div title="Mining will start when system is idle, e.g. no mouse&#10;or keyboard activity is detected for n seconds&#10;&#10;(min=0, max=3600, default=120 seconds)&#10;&#10;Mining will stop when mouse or keyboard activity is detected.">
                     <input type="checkbox" class="toggle-switch" id="IdleDetection" name="IdleDetection"> Idle detection: Start mining when system is idle for
                     <input type="number" id="IdleSec" name="IdleSec" min=0 max=3600 value=120 step=1 size=4> seconds
                   </div>
@@ -119,16 +119,16 @@
                   <div style="padding-top: 0.7rem" title="Computer will restart when a dead miner is detected&#10;(e.g. miner cannot get stopped gracefully)">
                     <input type="checkbox" class="toggle-switch" id="AutoReboot" name="AutoReboot"> Restart computer on dead miners
                   </div>
-                  <div style="padding-top: 0.5rem" title="Donation duration per day&#10;&#10;Please help support the great team behind NemosMiner&#10;by leaving mining donations turned on&#10;(min=0, max=60 [default 13 &#8792; 0.9%] minutes)"> Donation 
+                  <div style="padding-top: 0.5rem" title="Donation duration per day&#10;&#10;Please help support the great team behind NemosMiner&#10;by leaving mining donations turned on&#10;(min=0, max=60, default 13 &#8792; 0.9% minutes)"> Donation 
                     <input type="number" id="Donate" name="Donate" min=0 max=60 value=13> minutes per day
                   </div>
-                  <div style="padding-top: 0.3rem" title="Cycle duration&#10;This defines the approximate duration for one cycle.&#10;(min=30, max=3600 [default 90] seconds)" for="Interval">Cycle duration
+                  <div style="padding-top: 0.3rem" title="Cycle duration&#10;This defines the approximate duration for one cycle.&#10;(min=30, max=3600, default=90 seconds)" for="Interval">Cycle duration
                     <input type="number" id="Interval" name="Interval" min=30 max=3600 step=1 value=90> seconds
                   </div>
-                  <div style="padding-top: 0.3rem" title="Defines the minimum number of data samples to be collected from the miner&#10;while benchmarking before ending the cycle. Smaller numbers will&#10;cause faster benchmarking but the measured data will be less accurate&#10;(min=10, max=100 [Default: 20] samples)" for="MinDataSamples">Minimum
+                  <div style="padding-top: 0.3rem" title="Defines the minimum number of data samples to be collected from the miner&#10;while benchmarking before ending the cycle. Smaller numbers will&#10;cause faster benchmarking but the measured data will be less accurate&#10;(min=10, max=100, default=20 samples)" for="MinDataSamples">Minimum
                     <input type="number" id="MinDataSamples" name="MinDataSamples" min=10 max=100 value=20 step=1 size=4> data samples while benchmarking
                   </div>
-                  <div style="padding-top: 0.3rem" title="Minimum number of full cycles a miner must mine continously&#10;the same algorithm@pool before switching is allowed&#10;&#10;e.g. 3 would force a miner to stick mining the same algorithm@pool&#10;for at least 3 full cycles before switching to another algorithm or pool&#10;(min=1, max=10 [Default: 1] cycles)&#10;&#10;Note: This does not apply when benchmarking" for="MinInterval"> Enforce mining for at least
+                  <div style="padding-top: 0.3rem" title="Minimum number of full cycles a miner must mine continously&#10;the same algorithm@pool before switching is allowed&#10;&#10;e.g. 3 would force a miner to stick mining the same algorithm@pool&#10;for at least 3 full cycles before switching to another algorithm or pool&#10;(min=1, max=10, default=1 cycles)&#10;&#10;Note: This does not apply when benchmarking" for="MinInterval"> Enforce mining for at least
                     <input type="number" id="MinInterval" name="MinInterval" min=1 max=10 value=0 step=1 size=2> full cycles before switching
                   </div>
                   <!-- <select name="" id="SSL">
@@ -148,7 +148,7 @@
                   <!-- Auto Update Settings -->
                   <fieldset>
                     <legend class=h6><b>Auto Update Settings</b></legend>
-                    <div style="padding-top: 0.3rem" title="NemosMiner will periodically check for a new program version&#10;(min=0; max=30; [Default: 1; 0 to disable] days)"> Check for new version every
+                    <div style="padding-top: 0.3rem" title="NemosMiner will periodically check for a new program version&#10;(min=0, max=30, default=1 days). Set to 0 to disable automatic updates"> Check for new version every
                       <input type="number" id="AutoUpdateCheckInterval" name="AutoUpdateCheckInterval" min=0 max=50 step=1 value=15> days
                     </div>
                     <div style="padding-top: 0.5rem" title="Automatically update NemosMiner to the latest realeased program version&#10;NemosMiner will check for a new verwsion on each start&#10;and approx. every 24hrs">
@@ -163,7 +163,7 @@
                   <!-- Balance Tracker Settings -->
                   <fieldset>
                     <legend class=h6><b>Balance Tracker Settings</b></legend>
-                      <div style="padding-top: 0.3rem" title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;(min=10; max=60; [Default: 15; 0 to disable] minutes)&#10;&#10;Note: If set to 0 it will also disable pool balances summary in the Web GUI dashboard and API"> Poll pools for balances & earnings every
+                      <div style="padding-top: 0.3rem" title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;(min=10, max=60, default=15 minutes). Set to 0 to disable the balance tracker.&#10;&#10;Note: If set to 0 it will also disable pool balances summary in the Web GUI dashboard and API"> Poll pools for balances & earnings every
                         <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60 step=1 value=15> minutes
                       <div style="padding-top: 0.7rem" title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">
                         <input type="checkbox" class="toggle-switch" id="BalancesTrackerLog" name="BalancesTrackerLog" style="margin-left:20px"> Write balances tracker log
@@ -288,7 +288,7 @@
                     <input type="text" id="PowerPricekWh" name="PowerPricekWh" maxlength=128 size=24 value='{"00:00":0.0}'>
                     <label id="PowerPricekWhCurrency" for="PowerPricekWh">
                   </div>
-                  <div title="Power usage of idle system. Part of profit calculation.&#10;(min=0, max=999 [Default: 60] W)">
+                  <div title="Power usage of idle system. Part of profit calculation.&#10;(min=0, max=999, default=60 Watt)">
                     <label style="margin-left:20px" for="PowerUsageIdleSystemW">Power usage of idle system</label>
                     <input type="number" step=1 min=0 max=999 value=60 size=3 id="PowerUsageIdleSystemW" name="PowerUsageIdleSystemW"> W
                   </div>
@@ -304,31 +304,31 @@
 
                   <!-- Calculation Settings -->
                   <legend title="These settings are used to calculate the best miners" class=h6><b>Calculation Settings</b></legend>
-                  <div style="padding-top: 0.3rem" title="Mark a pool as unavailable if price is x times higher than&#10;the second highest price of all other pools with same algorithm&#10;(min=1, max=10 [Default: 1.5; 1 disables this check])&#10;&#10;Note: This applies only to algorithms that have at least pools"> Unreal pool price factor
+                  <div style="padding-top: 0.3rem" title="Mark a pool as unavailable if price is x times higher than&#10;the second highest price of all other pools with same algorithm&#10;(min=1, max=10, default=1.5; 1 disables this check)&#10;&#10;Note: This applies only to algorithms that have at least pools"> Unreal pool price factor
                     <input type="number" step=0.1 min=1 max=10 value=1.5 size=3 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor">
                   </div>
-                  <div style="padding-top: 0.3rem" title="Mark pool as unavailable if accuracy is below this value&#10;(min: 0%, max 100% [Default: 50%]"> Minimum accuracy
+                  <div style="padding-top: 0.3rem" title="Mark pool as unavailable if accuracy is below this value&#10;(min: 0%, max 100%, default=50%"> Minimum accuracy
                     <input type="number" step=1 min=0 max=100 value=10 size=3 id="MinAccuracy" name="MinAccuracy"> %
                   </div>
                   <div style="padding-top: 0.5rem" title="NemosMiner will ignore the pool fee for earning & profit calculation">
                     <input type="checkbox" class="toggle-switch" id="IgnorePoolFee" name="IgnorePoolFee"> Ignore pool fees
                   </div>
-                  <div style="padding-top: 0.5rem" title="Minimum workers mining the algorithm at the pool&#10;If less miners are mining the algorithm then the pool will be disabled.&#10;This is also a per pool setting configurable in 'PoolsConfig.json'&#10;(min=0, max=99; [Default: 10; 0 disables this check] workers)"> Minimum
+                  <div style="padding-top: 0.5rem" title="Minimum workers mining the algorithm at the pool&#10;If less miners are mining the algorithm then the pool will be disabled.&#10;This is also a per pool setting configurable in 'PoolsConfig.json'&#10;(min=0, max=99, default=10 workers). Set to 0 to disable this check."> Minimum
                     <input type="number" step=1 min=0 max=99 value=10 size=3 id="MinWorker" name="MinWorker"> workers at pool
                   </div>
-                  <div style="padding-top: 0.3rem" title="Default factor with which NemosMiner multiplies the prices reported by ALL pools.&#10;E.g. If you feel that the effective earnings seen at the pools are 20% lower than what NemosMiner projects&#10;then set Earnings Adjustment Factor to 0.80&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')&#10;(min=0.00, max=1.00 [Default: 1.00])" for="EarningsAdjustmentFactor"> Earnings adjustment factor
+                  <div style="padding-top: 0.3rem" title="Default factor with which NemosMiner multiplies the prices reported by ALL pools.&#10;E.g. If you feel that the effective earnings seen at the pools are 20% lower than what NemosMiner projects&#10;then set Earnings Adjustment Factor to 0.80&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')&#10;(min=0.00, max=1.00, default=1.00)" for="EarningsAdjustmentFactor"> Earnings adjustment factor
                     <input type="number" id="EarningsAdjustmentFactor" name="EarningsAdjustmentFactor" min=0 max=1 value=1 step=0.01 size=4>
                   </div>
-                  <div style="padding-top: 0.3rem" title="Mark a miner as unavailable if earning is x times higher than the&#10;next best 10% or at least 5 miners with same algorithm&#10;(min=1, max=99 [Default: 5; 1 disables this check])">Unreal miner earning factor
+                  <div style="padding-top: 0.3rem" title="Mark a miner as unavailable if earning is x times higher than the&#10;next best 10% or at least 5 miners with same algorithm&#10;(min=1, max=99, default=5; 1 disables this check)">Unreal miner earning factor
                     <input type="number" step=0.1 min=1 max=99 value=5 size=3 id="UnrealMinerEarningFactor" name="UnrealMinerEarningFactor">
                   </div>
-                  <div style="padding-top: 0.3rem" title="NemosMiner will not switch miners&#10;unless another miner has n% higher earnings / profit.&#10;&#10;Smaller numbers will cause more switching&#10;(min=0%, max=100% [Default: 5%])" for="MinerSwitchingThreshold">Miner switching threshold
+                  <div style="padding-top: 0.3rem" title="NemosMiner will not switch miners&#10;unless another miner has n% higher earnings / profit.&#10;&#10;Smaller numbers will cause more switching&#10;(min=0%, max=100%, default=5%)" for="MinerSwitchingThreshold">Miner switching threshold
                     <input type="number" id="MinerSwitchingThreshold" name="MinerSwitchingThreshold" min=0 max=100 value=5 step=0.1 size=3> %
                   </div>
                   <div style="padding-top: 0.5rem" title="NemosMiner will ignore the miner fee for earning & profit calculation">
                     <input type="checkbox" class="toggle-switch" id="IgnoreMinerFee" name="IgnoreMinerFee"> Ignore miner fees
                   </div>
-                  <div style="padding-top: 0.3rem" title="Acceptable bad shares threshold ((invalid + rejected + stale) / total) as reported by the miner.&#10;If the threshold is exceeded then the miner will get stopped.&#10;(min: 0%, max 100% [Default: 5%; 0% disables this check])"> Acceptable bad shares threshold
+                  <div style="padding-top: 0.3rem" title="Acceptable bad shares threshold ((invalid + rejected + stale) / total) as reported by the miner.&#10;If the threshold is exceeded then the miner will get stopped.&#10;(min: 0%, max 100%, default=5%). Set to 0 to disable this check."> Acceptable bad shares threshold
                     <input type="number" step=1 min=0 max=100 value=5 size=3 id="BadShareRatioThreshold" name="BadShareRatioThreshold"> %
                   </div>
                   <div style="padding-top: 0.5rem" title="NemosMiner will deduct bad shares (e.g. invalid, rejected or stale) when calculating effective hashrates&#10;This will lower stored hashrates and increase earnings accuracy">
@@ -738,11 +738,6 @@
               document.getElementById('PowerPricekWh').value = JSON.stringify(config.PowerPricekWh);
               if (config.IgnorePowerCost) document.getElementById('IgnorePowerCost').checked = true;
               if (parseInt(config.PowerUsageIdleSystemW)) document.getElementById('PowerUsageIdleSystemW').value = parseInt(config.PowerUsageIdleSystemW);
-              document.getElementById('ProfitabilityThreshold').value = config.ProfitabilityThreshold;
-              document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
-              document.getElementById('PowerPricekWhCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0] + ' per kW/h';
-              document.getElementById('PowerPricekWhTitle').title = 'Price of power in ' + document.getElementById('Currency').value.split(',')[0] + ' per kW⋅h, valid from HH:mm (24hr format)\nData must be in compressed JSON format\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom 00:00h to 12:00h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom 12:00h to 23:59h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h'
-              document.getElementById('ProfitabilityThresholdTitle').title = 'Mining will stop when profit (earnings - power cost) is less than the configured value\n(e.g. ' + document.getElementById('Currency').value.split(',')[0] + ' 1.00)\n(except for benchmarking & power usage measuring)\n\nHint: Use negative numbers to allow mining at loss'
               // CalculatePowerCost click
               $(document.getElementById('CalculatePowerCost')).click(function (event) {
                 document.getElementById('PowerPricekWh').disabled = !(document.getElementById('CalculatePowerCost').checked);
@@ -751,12 +746,14 @@
                 document.getElementById('ProfitabilityThreshold').disabled = !(document.getElementById('CalculatePowerCost').checked);
               });
               // ProfitabilityThreshold
+              document.getElementById('ProfitabilityThreshold').value = config.ProfitabilityThreshold;
               $(document.getElementById('Currency')).change(function (event) {
                 document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
                 document.getElementById('PowerPricekWhCurrency').innerHTML = '(time: ' + document.getElementById('Currency').value.split(',')[0] + ' per kW/h)';
                 document.getElementById('PowerPricekWhTitle').title = 'Price of power in ' + document.getElementById('Currency').value.split(',')[0] + ' per kW⋅h, valid from HH:mm (24hr format)\nData must be in compressed JSON format\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom 00:00h to 12:00h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom 12:00h to 23:59h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h'
-                document.getElementById('ProfitabilityThresholdTitle').title = 'If profit (earnings - power cost) is less than the configured value\n(e.g. ' + document.getElementById('Currency').value.split(',')[0] + ' 1.00) then mining will stop\n(except for benchmarking & power usage measuring)\n\nHint: Use negative numbers to allow mining at loss'
+                document.getElementById('ProfitabilityThresholdTitle').title = 'Mining will stop when profit (earnings - power cost) is less than the configured value\n(e.g. ' + document.getElementById('Currency').value.split(',')[0] + ' 1.00). Use negative numbers to allow mining at loss.\n\nNote: This does not apply when benchmarking'
               });
+              $(document.getElementById('Currency')).trigger('change');
 
               // Calculation Settings
               document.getElementById('UnrealPoolPriceFactor').value = parseFloat(config.UnrealPoolPriceFactor);

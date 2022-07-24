@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable algorithm
 
-Updated 16 July 2022
+Updated 24 July 2022
 
 
 Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
@@ -265,6 +265,7 @@ When running multiple cards its recommended to increase Virtual Memory. 64GB is 
 
 [recommended/optimal Windows Nvidia driver 512.95](https://us.download.nvidia.com/Windows/512.95/512.95-notebook-win10-win11-64bit-international-dch-whql.exe)
 Newer drivers have issues with 100% LHR unlock.
+If you use older drivers some miners will not be available.
 
 **Recommended/optimal Windows AMD driver**
 

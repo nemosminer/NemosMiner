@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.0.2.3
-Version date:   16 July 2022
+Version:        4.0.2.4
+Version date:   24 July 2022
 #>
 
 using module .\Include.psm1
@@ -29,7 +29,6 @@ using module .\API.psm1
 $ProgressPreference = "Ignore"
 
 Do { 
-
     Get-ChildItem -Path ".\Includes\MinerAPIs" -File | ForEach-Object { . $_.FullName }
     Try {
 
@@ -293,7 +292,7 @@ Do {
                     $RegKey = "HKCU:\Software\HWiNFO64\VSB"
                     If ($RegValue = Get-ItemProperty -Path $RegKey) { 
                         If ([String]$Variables.HWInfo64RegValue -eq [String]$RegValue) { 
-                            Write-Message -Level Warn "Power usage info in registry has not been updated [HWiNFO64 not running???] - disabling power usage calculations."
+                            Write-Message -Level Warn "Power usage info in registry has not been updated [HWiNFO64 not running???] - disabling power usage and profit calculations."
                             $Variables.CalculatePowerCost = $false
                         }
                         Else { 
@@ -305,7 +304,7 @@ Do {
                                     $Hashtable.Add($DeviceName, $RegValue.($_.Name -replace "Label", "Value"))
                                 }
                                 Catch { 
-                                    Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [duplicate sensor for $DeviceName] - disabling power usage calculations."
+                                    Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [duplicate sensor for $DeviceName] - disabling power usage and profit calculations."
                                     $Variables.CalculatePowerCost = $false
                                 }
                             }
@@ -319,7 +318,7 @@ Do {
                             }
 
                             If ($DeviceNamesMissingSensor = Compare-Object @($Variables.EnabledDevices.Name) @($Hashtable.Keys) -PassThru | Where-Object SideIndicator -EQ "<=") { 
-                                Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [missing sensor config for $($DeviceNamesMissingSensor -join ', ')] - disabling power usage calculations."
+                                Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [missing sensor config for $($DeviceNamesMissingSensor -join ', ')] - disabling power usage and profit calculations."
                                 $Variables.CalculatePowerCost = $false
                             }
 
@@ -331,7 +330,7 @@ Do {
                         $Variables.HWInfo64RegValue = [String]$RegValue
                     }
                     Else { 
-                        Write-Message -Level Warn "Cannot read power usage info from registry [Key '$RegKey' does not exist - HWiNFO64 not running???] - disabling power usage calculations."
+                        Write-Message -Level Warn "Cannot read power usage info from registry [Key '$RegKey' does not exist - HWiNFO64 not running???] - disabling power usage and profit calculations."
                         $Variables.CalculatePowerCost = $false
                     }
                     Remove-Variable RegKey, RegValue
@@ -357,11 +356,9 @@ Do {
 
             # Ensure we get the hashrate for running miners prior looking for best miner
             ForEach ($Miner in $Variables.MinersBest_Combo) { 
-                If ($Miner.DataReaderJob.HasMoreData) { 
-                    # Reduce data to MinDataSamples * 5
-                    $Miner.Data = @($Miner.Data | Select-Object -Last ($Miner.MinDataSamples * 5))
-                    $Miner.Data += @($Miner.DataReaderJob | Receive-Job | Select-Object -Property Date, Hashrate, Shares, PowerUsage)
-                }
+                # Reduce data to MinDataSamples * 5
+                $Miner.Data = @($Miner.Data | Select-Object -Last ($Miner.MinDataSamples * 5))
+                If ($Miner.DataReaderJob.HasMoreData) { $Miner.Data += @($Miner.DataReaderJob | Receive-Job | Select-Object -Property Date, Hashrate, Shares, PowerUsage) }
 
                 If ($Miner.Status -eq [MinerStatus]::Running) { 
                     If ($Miner.GetStatus() -eq [MinerStatus]::Running) { 
@@ -730,17 +727,12 @@ Do {
             (Get-ChildItem -Path ".\Miners" -File -Include "*.ps1" -Recurse -ErrorAction SilentlyContinue | Sort-Object | ForEach-Object { 
                 & $_.FullName
             }) | ForEach-Object { 
-                $_ | Add-Member BaseName        ($_.Name -split '-' | Select-Object -Index 0)
-                $_ | Add-Member Devices         ([Device[]]($Variables.Devices | Where-Object Name -In $_.DeviceNames))
                 $_ | Add-Member MinDataSamples  ([Int]($Config.MinDataSamples * (($_.Algorithm | ForEach-Object { $Config.MinDataSamplesAlgoMultiplier.$_ }), 1 | Measure-Object -Maximum).Maximum))
-                $_ | Add-Member Path            ($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Path)) -Force
                 $_ | Add-Member ProcessPriority $(If ($_.Type -eq "CPU") { $Config.CPUMinerProcessPriority } Else { $Config.GPUMinerProcessPriority })
-                $_ | Add-Member Version         ($_.Name -split '-' | Select-Object -Index 1)
-                $_ | Add-Member Workers         ([Worker[]]@(ForEach ($Algorithm in $_.Algorithms) { @{ Pool = $AllPools.$Algorithm; Fee = If ($Config.IgnoreMinerFee) { 0 } Else { [Double]($_.Fee | Select-Object -Index $_.Algorithms.IndexOf($Algorithm)) } } }))
-                If ($_.Fee -ne $null) { $_.PSObject.Properties.Remove("Fee") }
+                $_ | Add-Member Workers ([Worker[]]@(ForEach ($Algorithm in $_.Algorithms) { @{ Pool = $AllPools.$Algorithm; Fee = If ($Config.IgnoreMinerFee) { 0 } Else { $_.Fee | Select-Object -Index $_.Algorithms.IndexOf($Algorithm) } } }))
+                $_.PSObject.Properties.Remove("Fee")
                 $NewMiners += $_ -as $_.API
             }
-            Remove-Variable AllPools, Pools, PoolsPrimaryAlgorithm -ErrorAction Ignore
         }
 
         $Miners = $Variables.Miners # Much faster
@@ -749,36 +741,44 @@ Do {
 
         If ($NewMiners) { # Sometimes there are no miners loaded, keep existing
             $CompareMiners = Compare-Object -PassThru @($Miners | Select-Object) @($NewMiners | Select-Object) -Property Name, Algorithms -IncludeEqual
+            # Properties that need to be set only once and which are not dependent on any config variables
+            $CompareMiners | Where-Object SideIndicator -EQ "=>" | ForEach-Object { 
+                $_.BaseName = ($_.Name -split '-' | Select-Object -Index 0)
+                $_.Devices  = [Device[]]($Variables.Devices | Where-Object Name -In $_.DeviceNames)
+                $_.Path     = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Path)
+                $_.Version  = ($_.Name -split '-' | Select-Object -Index 1)
+            }
             $Miners = $CompareMiners | Where-Object SideIndicator -NE "<="
         }
 
         If ($Miners -and $Variables.PoolsBest) { 
+            $AddSeconds = $Config.Interval * ($Config.MinInterval -1)
             $Miners | Select-Object | ForEach-Object { 
                 $_.PSObject.Properties.Remove('SideIndicator')
-                $_.CommandLine = $_.GetCommandLine().Replace("$(Convert-Path '.\')\", '')
-                $_.Reasons = @()
-                $_.Restart = $false
-                $_.KeepRunning = $_.Status -eq [MinerStatus]::Running -and -not $_.Benchmark -and -not $_.MeasurePowerUsage -and $_.BeginTime.AddSeconds($Config.Interval * ($Config.MinInterval -1)) -gt $Variables.Timer -and -not $Variables.DonateRandom # Minimum numbers of full cycles not yet reached
+                $_.KeepRunning = $_.Status -eq [MinerStatus]::Running -and -not ($_.Benchmark -or $_.MeasurePowerUsage -or $Variables.DonateRandom) -and $_.BeginTime.AddSeconds($AddSeconds) -gt $Variables.Timer # Minimum numbers of full cycles not yet reached
 
-                If ($Miner = Compare-Object -PassThru @($NewMiners | Select-Object) @($_ | Select-Object) -Property Name, Algorithms -ExcludeDifferent | Select-Object -ExcludeProperty SideIndicator) { 
-                    # Update existing miners
-                    If (-not $_.KeepRunning) { 
-                        $_.Restart = $_.Arguments -ne $Miner.Arguments
+                If (-not $_.KeepRunning) { 
+                    If ($Miner = Compare-Object -PassThru @($NewMiners | Select-Object) @($_ | Select-Object) -Property Name, Algorithms -ExcludeDifferent | Select-Object -ExcludeProperty SideIndicator) { 
+                        # Update existing miners
+                        If ($_.Restart = $_.Arguments -ne $Miner.Arguments) { 
+                            $_.Arguments = $Miner.Arguments
+                            $_.DeviceNames = $Miner.DeviceNames
+                            $_.Devices = [Device[]]($Variables.Devices | Where-Object Name -In $Miner.DeviceNames)
+                            $_.Port = $Miner.Port
+                            $_.Workers = $Miner.Workers
+                        }
+                        If (-not $_.CommandLine -or $_.Restart) { $_.CommandLine = $_.GetCommandLine().Replace("$(Convert-Path '.\')\", '') }
                     }
-                    If ($_.Restart) { 
-                        $_.Arguments = $Miner.Arguments
-                        $_.Devices = $Miner.Devices
-                        $_.DeviceNames = $Miner.DeviceNames
-                        $_.Port = $Miner.Port
-                        $_.Workers = $Miner.Workers
-                    }
+                }
+                Else { 
+                    $_.Restart = $false
                 }
 
                 $_.ReadPowerUsage = [Boolean]($_.Devices.ReadPowerUsage -notcontains $false)
                 $_.Refresh($Variables.PowerCostBTCperW, $Variables.CalculatePowerCost) # Needs to be done after ReadPowerUsage evaluation
-                $_.WindowStyle = If ($_.Benchmark -eq $true -and $Config.MinerWindowStyleNormalWhenBenchmarking -eq $true) { "normal" } Else { $Config.MinerWindowStyle }
+                $_.WindowStyle = If ($Config.MinerWindowStyleNormalWhenBenchmarking -and $_.Benchmark) { "normal" } Else { $Config.MinerWindowStyle }
             }
-            Remove-Variable DataCollectInterval, Miner, NewMiners, ReadPowerUsage -ErrorAction Ignore
+            Remove-Variable AllPools, AddSeconds, DataCollectInterval, Miner, NewMiners, Pools, PoolsSecondaryAlgorithm, ReadPowerUsage -ErrorAction Ignore
 
             # Filter miners
             $Miners | Where-Object Disabled -EQ $true | ForEach-Object { $_.Reasons += "Disabled by user" }
@@ -788,7 +788,7 @@ Do {
             $Miners | Where-Object Earning -EQ 0 | ForEach-Object { $_.Reasons += "Earning -eq 0" }
             If ($Config.DisableMinersWithFee) { $Miners | Where-Object { $_.Workers.Fee } | ForEach-Object { $_.Reasons += "Config.DisableMinersWithFee" } }
             If ($Config.DisableDualAlgoMining) { $Miners | Where-Object { $_.Workers.Count -eq 2 } | ForEach-Object { $_.Reasons += "Config.DisableDualAlgoMining" } }
-            If ($Config.DisableSingleAlgoMining) { $Miners | Where-Object { $_.Workers.Count -eq 1 } | ForEach-Object { $_.Reasons += "Config.DisableSingleAlgoMining" } }
+            ElseIf ($Config.DisableSingleAlgoMining) { $Miners | Where-Object { $_.Workers.Count -eq 1 } | ForEach-Object { $_.Reasons += "Config.DisableSingleAlgoMining" } }
 
             # Detect miners with unreal earning (> x times higher than average of the next best 10% or at least 5 miners)
             If ($Config.UnrealMinerEarningFactor -gt 1) { 
@@ -1215,8 +1215,8 @@ Do {
                         If ($Miner.Benchmark -eq $true -or $Miner.MeasurePowerUsage -eq $true) { 
                             $WindowTitle += " ("
                             If ($Miner.Benchmark -eq $true -and $Miner.MeasurePowerUsage -eq $false) { $WindowTitle += "Benchmarking" }
-                            If ($Miner.Benchmark -eq $true -and $Miner.MeasurePowerUsage -eq $true) { $WindowTitle += "Benchmarking and measuring power usage" }
-                            If ($Miner.Benchmark -eq $false -and $Miner.MeasurePowerUsage -eq $true) { $WindowTitle += "Measuring power usage" }
+                            ElseIf ($Miner.Benchmark -eq $true -and $Miner.MeasurePowerUsage -eq $true) { $WindowTitle += "Benchmarking and measuring power usage" }
+                            ElseIf ($Miner.Benchmark -eq $false -and $Miner.MeasurePowerUsage -eq $true) { $WindowTitle += "Measuring power usage" }
                             $WindowTitle += ")"
                         }
                         [Void][Win32]::SetWindowText((Get-Process -Id $Miner.ProcessId).mainWindowHandle, $WindowTitle)
@@ -1295,7 +1295,7 @@ Do {
             If (-not $EndLoopMessage -and $Variables.IdleRunspace.MiningStatus -eq "Idle") { $EndLoopMessage = " (System activity detected)" }
         }
         Write-Message -Level Info "Ending cycle$($EndLoopMessage)."
-        Remove-Variable BenchmarkingOrMeasuringMiners, CompareMiners, EndLoopMessage, FailedMiners, Interval, Message, Miner, Miners, NextLoop, PoolNames, Process, RunningMiners, Sample, Samples, WatchdogTimer, Worker, WindowTitle -ErrorAction Ignore
+        Remove-Variable BenchmarkingOrMeasuringMiners, EndLoopMessage, FailedMiners, Interval, Message, Miner, Miners, NextLoop, PoolNames, Process, RunningMiners, Sample, Samples, WatchdogTimer, Worker, WindowTitle -ErrorAction Ignore
     }
     Catch { 
         ($_.Exception | Format-List -Force) >> "Logs\Error.txt"

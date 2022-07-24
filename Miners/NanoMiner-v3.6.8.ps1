@@ -1,24 +1,25 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -ne "NVIDIA" -or $_.OpenCL.ComputeCapability -gt 5.0 })) { Return }
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -ne "NVIDIA" -or $_.OpenCL.DriverVersion -ge "410.48" })) { Return }
 
-$Uri = Switch ($Variables.DriverVersion.CUDA) { 
-    { $_ -ge "11.0" } { "https://github.com/nanopool/nanominer/releases/download/v3.6.7/nanominer-windows-3.6.7-cuda11.zip"; Break }
-    Default           { "https://github.com/nanopool/nanominer/releases/download/v3.6.7/nanominer-windows-3.6.7.zip" }
+$Uri = Switch ($Variables.DriverVersion.OpenCL.NVIDIA ) { 
+    { $_ -ge "455.23" } { "https://github.com/nanopool/nanominer/releases/download/v3.6.8/nanominer-windows-3.6.8-cuda11.zip"; Break }
+    Default             { "https://github.com/nanopool/nanominer/releases/download/v3.6.8/nanominer-windows-3.6.8.zip" }
 }
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\nanominer.exe"
 $DeviceEnumerator = "Slot"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Autolykos2";    Type = "AMD"; Fee = 0.025; MinMemGB = $Pools."Autolykos2".DAGSizeGB;   MemReserveGB = 0;    MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 20); Coin = "ERG" } # NBMiner-v42.2 is fastest
-    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.01;  MinMemGB = $Pools."EtcHash".DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 45); Coin = "ETC" } # PhoenixMiner-v6.2c is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01;  MinMemGB = $Pools."Ethash".DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 45); Coin = "ETH" } # PhoenixMiner-v6.2c is fastest
-    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "AMD"; Fee = 0.01;  MinMemGB = $Pools."EthashLowMem".DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 45); Coin = "ETH" } # PhoenixMiner-v6.2c is fastest
-    [PSCustomObject]@{ Algorithm = "FiroPoW";       Type = "AMD"; Fee = 0.01;  MinMemGB = $Pools."FiroPoW".DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 45); Coin = "FIRO" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02;  MinMemGB = $Pools."KawPoW".DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(75, 30); Coin = "RVN" } # TeamRedMiner-v0.10.2 is fastest
-    [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01;  MinMemGB = $Pools."UbqHash".DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(75, 45); Coin = "UBQ" } # PhoenixMiner-v6.2c is fastest
-    [PSCustomObject]@{ Algorithm = "VertHash";      Type = "AMD"; Fee = 0.01;  MinMemGB = 3;                               MemReserveGB = 0;    MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 0);  Coin = "VTC" } # SRBMinerMulti-v1.0.2 is fastest
+    [PSCustomObject]@{ Algorithm = "Autolykos2";    Type = "AMD"; Fee = 0.025; MinMemGB = $Pools."Autolykos2".DAGSizeGB;   MemReserveGB = 0;    MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 20); ExcludeGPUArchitecture = @();                Coin = "ERG" } # NBMiner-v42.2 is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash";       Type = "AMD"; Fee = 0.01;  MinMemGB = $Pools."EtcHash".DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 45); ExcludeGPUArchitecture = @();                Coin = "ETC" } # PhoenixMiner-v6.2c is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01;  MinMemGB = $Pools."Ethash".DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 45); ExcludeGPUArchitecture = @();                Coin = "ETH" } # PhoenixMiner-v6.2c is fastest
+    [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "AMD"; Fee = 0.01;  MinMemGB = $Pools."EthashLowMem".DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 45); ExcludeGPUArchitecture = @();                Coin = "ETH" } # PhoenixMiner-v6.2c is fastest
+    [PSCustomObject]@{ Algorithm = "FiroPoW";       Type = "AMD"; Fee = 0.01;  MinMemGB = $Pools."FiroPoW".DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 45); ExcludeGPUArchitecture = @();                Coin = "FIRO" }
+    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02;  MinMemGB = $Pools."KawPoW".DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(75, 30); ExcludeGPUArchitecture = @();                Coin = "RVN" } # TeamRedMiner-v0.10.2 is fastest
+    [PSCustomObject]@{ Algorithm = "Octopus";       Type = "AMD"; Fee = 0.02;  MinMemGB = 6;                               MemReserveGB = 0;    MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(125, 0); ExcludeGPUArchitecture = @("CGN4", "Other"); Coin = "CFX" } # NBMiner-v42.2 is faster
+    [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01;  MinMemGB = $Pools."UbqHash".DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(75, 45); ExcludeGPUArchitecture = @();                Coin = "UBQ" } # PhoenixMiner-v6.2c is fastest
+    [PSCustomObject]@{ Algorithm = "VertHash";      Type = "AMD"; Fee = 0.01;  MinMemGB = 3;                               MemReserveGB = 0;    MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 0);  ExcludeGPUArchitecture = @();                Coin = "VTC" } # SRBMinerMulti-v1.0.2 is fastest
 
     # [PSCustomObject]@{ Algorithm = "RandomX";   Type = "CPU"; Fee = 0.02; MinerSet = 1; WarmupTimes = @(45, 0); Coin = "XMR" } # Not profitable at all
     [PSCustomObject]@{ Algorithm = "VerusHash"; Type = "CPU"; Fee = 0.02; MinerSet = 0; WarmupTimes = @(45, 0); Coin = "VRSC" }
@@ -44,8 +45,9 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         $Algorithms | Where-Object Type -EQ $_.Type | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
 
             $MinMemGB = $_.MinMemGB + $_.MemReserveGB
+            $ExcludeGPUArchitecture = $_.ExcludeGPUArchitecture
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or $_.MemoryGB -ge $MinMemGB }) { 
+            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or $_.MemoryGB -ge $MinMemGB } | Where-Object { $_.Architecture -notin $ExcludeGPUArchitecture }) { 
 
                 If ($AvailableMiner_Devices.Type -eq "NVIDIA" -and $AvailableMiner_Devices.Model -match "^GTX 1660 SUPER 6GB$" -and $_.Algorithm -match "^KawPoW$|^Octopus$") { Return } # 0 hashrate
 

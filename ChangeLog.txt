@@ -6,6 +6,24 @@ Breaking changes (from 3.8.x.x code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible, new files will be created instead
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+ChangeLog NemosMiner 4.0.2.4 24.07.2022
+=======================================
+
+Fixes:
+- Core: In some scenarios miners would gest stopped before 'MinIntervals' was over
+- Core / Main text window: Replace 'Unknown' with 'n/a' (to match output in Web GUI)
+
+Enhancements:
+- Core: Speed optimisations (20% faster miner updates)
+- Web GUI / Miners: Add hidden columns 'MeasurePowerUsage' & 'ReadPowerUsage'
+- Web GUI: Minor text changes
+
+Miner changes:
+- JayddeeCpu-v3.20.0
+- NanoMiner-v3.6.8
+- TeamBlackMiner-v1.66 (Keep 1.65 for CUDA versions < 11.7)
+- Wildrig-v0.32.1
+
 
 ChangeLog NemosMiner 4.0.2.3 16.07.2022
 =======================================

@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
 
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.19.9/cpuminer-opt-3.19.9-windows.zip"
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.20.0/cpuminer-opt-3.20.0-windows.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
 

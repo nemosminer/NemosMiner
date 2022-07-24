@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.0.2.3
+Version:        4.0.2.4
 Version date:   19 June 2022
 #>
 

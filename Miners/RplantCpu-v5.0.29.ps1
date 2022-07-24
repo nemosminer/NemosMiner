@@ -79,7 +79,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "YespowerRes";   MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerRes" }
     [PSCustomObject]@{ Algorithm = "YespowerSugar"; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerSugar" } # SRBMminerMulti is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "YespowerTIDE";  MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerTIDE" }
-    [PSCustomObject]@{ Algorithm = "YespowerUrx";   MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerURX" } # JayddeeCpu-v3.19.9 is faster, SRBMminerMulti is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "YespowerUrx";   MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerURX" } # JayddeeCpu-v3.20.0 is faster, SRBMminerMulti is fastest, but has 0.85% miner fee
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
