@@ -304,7 +304,6 @@ Class Miner {
                 Profit_Bias       = $this.Profit_Bias
                 Reason            = ""
                 Type              = $this.Type
-                WorkerName        = $this.WorkerName
             } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation
 
             If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
@@ -406,7 +405,6 @@ Class Miner {
             Profit_Bias       = $this.Profit_Bias
             Reason            = If ($this.Status -eq [MinerStatus]::Failed) { $this.StatusMessage } Else { "" }
             Type              = $this.Type
-            WorkerName        = $this.WorkerName
         } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation
 
         $this.StatusMessage = If ($this.Status -eq [MinerStatus]::Idle) { "Idle" } Else { "Failed $($this.Info)" }
