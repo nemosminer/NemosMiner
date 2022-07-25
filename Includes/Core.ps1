@@ -754,7 +754,6 @@ Do {
         If ($Miners -and $Variables.PoolsBest) { 
             $AddSeconds = $Config.Interval * ($Config.MinInterval -1)
             $Miners | Select-Object | ForEach-Object { 
-                $_.PSObject.Properties.Remove('SideIndicator')
                 $_.KeepRunning = $_.Status -eq [MinerStatus]::Running -and -not ($_.Benchmark -or $_.MeasurePowerUsage -or $Variables.DonateRandom) -and $_.BeginTime.AddSeconds($AddSeconds) -gt $Variables.Timer # Minimum numbers of full cycles not yet reached
 
                 If (-not $_.KeepRunning) { 
@@ -1000,9 +999,7 @@ Do {
         }
 
         # Stop running miners
-        If (-not $Variables.PoolsBest) { 
-            $Miners | ForEach-Object { $_.Best = $false }
-        }
+        If (-not $Variables.PoolsBest) { $Miners | ForEach-Object { $_.Best = $false } }
         ForEach ($Miner in @(@($Miners | Where-Object Info) + @($CompareMiners | Where-Object { $_.Info -and $_.SideIndicator -eq "<=" } <# miner object is gone #>))) { 
             If ($Miner.Status -eq [MinerStatus]::Failed) { 
                 If ($Miner.ProcessID) {  # Stop miner (may be set as failed in miner.refresh() because of 0 hashrate)
@@ -1031,6 +1028,8 @@ Do {
                 $Miner.WorkersRunning = @()
             }
         }
+
+        $Miners | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator') }
 
         # Kill stuck miners
         $Loops = 0
