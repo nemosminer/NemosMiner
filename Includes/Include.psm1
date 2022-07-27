@@ -872,11 +872,12 @@ Function Get-Rate {
 
     Try { 
         If (-not $Variables.AllCurrencies -and (Test-Json $RatesFile)) { 
-            $Variables.AllCurrencies = @((Get-Content -Path $RatesFile | ConvertFrom-Json).PSObject.Properties.Name | ForEach-Object { $_ -replace '^m' } | Sort-Object -Unique )
+            $Variables.AllCurrencies = @((Get-Content -Path $RatesFile | ConvertFrom-Json).PSObject.Properties.Name)
         }
         Else { 
-            $Variables.AllCurrencies = @((@($Config.Currency) + @($Config.Wallets.PSObject.Properties.Name) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies)) | Select-Object -Unique)
+            $Variables.AllCurrencies = @($Config.Currency) + @($Config.Wallets.PSObject.Properties.Name) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies)
         }
+        $Variables.AllCurrencies = @($Variables.AllCurrencies | ForEach-Object { $_ -replace '^mBTC$', 'BTC' } | Sort-Object -Unique)
         If (-not $Variables.Rates.BTC.($Config.Currency) -or (Compare-Object @($Variables.Rates.PSObject.Properties.Name | Select-Object) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "=>") -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-(3, $Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum))) { 
             If ($Rates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$((@("BTC") + @($Variables.AllCurrencies | Where-Object { $_ -ne "mBTC" }) | Select-Object -Unique) -join ',')&extraParams=$($Variables.Branding.BrandWebSite)" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) { 
                 $Currencies = ($Rates.BTC | Get-Member -MemberType NoteProperty).Name
