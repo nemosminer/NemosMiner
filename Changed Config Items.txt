@@ -14,6 +14,9 @@ New Config Items
 # NemosMiner will periodically check for a new program version every n days (0 to disable)
   "AutoUpdateCheckInterval": 1,
 
+# NemosMiner will backup installed version before update to the new version
+  "BackupOnAutoUpdate": true,
+
 # Acceptable bad share threshold ((bad + rejected + stale) / total) as reported by the miner. If the ratio is exceeded the miner will marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
   "BadShareRatioThreshold": 0.05,
 

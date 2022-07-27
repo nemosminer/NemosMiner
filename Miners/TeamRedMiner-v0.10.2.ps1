@@ -49,7 +49,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-        $Algorithms | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
+        $Algorithms | Select-Object | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
 
             $ExcludeGPUArchitecture = $_.ExcludeGPUArchitecture
 

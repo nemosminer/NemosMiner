@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.2.4
-Version date:   24 July 2022
+Version:        4.0.2.5
+Version date:   27 July 2022
 #>
 
 Function Initialize-API { 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.6.7"
+    $APIVersion = "0.4.7.0"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
@@ -270,7 +270,7 @@ Function Start-APIServer {
                             $Variables.ShowProfit = $Config.ShowProfit
                             $Variables.ShowProfitBias = $Config.ShowProfitBias
 
-                            Write-Message -Level Verbose "Web GUI: Configuration applied. It will become active in next cycle."
+                            Write-Message -Level Verbose "Web GUI: Configuration saved. It will become active in next cycle."
                             $Data = "Config saved to '$($Variables.ConfigFile)'. It will become active in next cycle."
                         }
                         Catch { 
@@ -715,8 +715,8 @@ Function Start-APIServer {
                                 @{ Name = "Algorithm"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join "<br/>" } }, 
                                 @{ Name = "Benchmark Hashrate"; Expression = { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { If ([Double]$_ -gt 0) { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " } Else { "-" } }) -join " & " }) -join "<br>" } }, 
                                 @{ Name = "Currency"; Expression = { $_.Data.Currency | Select-Object -Unique } }, 
-                                @{ Name = "EstimatedEarning"; Expression = { [Decimal](($_.Data.Earning | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique) } }, 
-                                @{ Name = "EstimatedProfit"; Expression = { [Decimal](($_.Data.Profit | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique) } }, 
+                                @{ Name = "EstimatedEarning"; Expression = { [Decimal](($_.Data.Earning | Measure-Object -Sum).Sum * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
+                                @{ Name = "EstimatedProfit"; Expression = { [Decimal]($_.Profit * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
                                 @{ Name = "LastSeen"; Expression = { "$($_.date)" } }, 
                                 @{ Name = "Live Hashrate"; Expression = { ($_.data | ForEach-Object { ($_.CurrentSpeed | ForEach-Object { If ([Double]$_ -gt 0) { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " } Else { "-" } }) -join " & " }) -join "<br>" } }, 
                                 @{ Name = "Miner"; Expression = { $_.data.name -join '<br/>'} }, 
