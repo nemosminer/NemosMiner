@@ -219,7 +219,7 @@
         "PriceField": "estimate_current"
       },
       "ProHashing24hr": {
-        "DivisorMultiplier": 0.001,
+        "DivisorMultiplier": 1,
         "PriceField": "estimate_last24h"
       },
       "ProHashingPlus": {
@@ -332,7 +332,7 @@
       },
       "ZPool24hr": {
         "DivisorMultiplier": 1000000000,
-        "PriceField": "estimate_current24h"
+        "PriceField": "estimate_last24h"
       },
       "ZPoolPlus": {
         "DivisorMultiplier": 1000000,
