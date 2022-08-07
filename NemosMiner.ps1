@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.0.2.5
-Version date:   27 July 2022
+Version:        4.0.2.6
+Version date:   07 August 2022
 #>
 
 [CmdletBinding()]
@@ -144,6 +144,12 @@ param(
     [Switch]$OpenFirewallPorts = $true, # If true will open firewall ports for all miners (requires admin rights!)
     [Parameter(Mandatory = $false)]
     [String]$PayoutCurrency = "BTC", # i.e. BTC, LTC, ZEC, ETH etc., Default PayoutCurrency for all pools that have no other currency configured, PayoutCurrency is also a per pool setting (to be configured in 'PoolsConfig.json')
+    [Parameter(Mandatory = $false)]
+    [Int]$PoolAPIAllowedFailureCount = 3, # Max number of pool API request attempts
+    [Parameter(Mandatory = $false)]
+    [Int]$PoolAPIRetryInterval = 3, # Time (in seconds) until pool API request retry. Note: Do not set this value too small to avoid temporary blocking by pool
+    [Parameter(Mandatory = $false)]
+    [Int]$PoolAPITimeout = 20, # Time (in seconds) until it aborts the pool request (useful if a pool's API is stuck). Note: do not set this value too small or NM will not be able to get any pool data
     [Parameter(Mandatory = $false)]
     [String]$PoolsConfigFile = ".\Config\PoolsConfig.json", # PoolsConfig file name
     [Parameter(Mandatory = $false)]
@@ -269,7 +275,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.0.2.5"
+    Version      = [System.Version]"4.0.2.6"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -351,11 +357,11 @@ If (-not $Variables.PoolVariants) {
 $Variables.DAGdata = Get-Content ".\Data\DagData.json" | ConvertFrom-Json -AsHashtable
 If ($Variables.DAGdata.Updated) { $Variables.DAGdata.Remove("Updated") }
 # Load PoolsLastUsed data
-$Variables.PoolsLastUsed = (Get-Content -Path ".\Data\PoolsLastUsed.json" | ConvertFrom-Json -AsHashtable)
+$Variables.PoolsLastUsed = Get-Content -Path ".\Data\PoolsLastUsed.json" | ConvertFrom-Json -AsHashtable
 If (-not $Variables.PoolsLastUsed.Keys) { $Variables.PoolsLastUsed = @{ } }
 
 # Load AlgorithmsLastUsed data
-$Variables.AlgorithmsLastUsed = (Get-Content -Path ".\Data\AlgorithmsLastUsed.json" | ConvertFrom-Json -AsHashtable)
+$Variables.AlgorithmsLastUsed = Get-Content -Path ".\Data\AlgorithmsLastUsed.json" | ConvertFrom-Json -AsHashtable
 If (-not $Variables.AlgorithmsLastUsed.Keys) { $Variables.AlgorithmsLastUsed = @{ } }
 
 # Load EarningsChart data to make it available early in Web GUI
@@ -450,7 +456,6 @@ If (Get-Item .\* -Stream Zone.*) {
 }
 
 Write-Message -Level Verbose "Setting variables..."
-$Variables.BrainJobs = @{ }
 $Variables.IsLocalAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
 $Variables.Miners = [Miner[]]@()
 $Variables.NewMiningStatus = If ($Config.StartupMode -match "Paused|Running") { $Config.StartupMode } Else { "Idle" }
@@ -570,88 +575,70 @@ Function Get-Chart {
         $Colors
     }
 
-    If (Test-Path -Path ".\Data\DailyEarnings.csv" -PathType Leaf) { 
+    If (Test-Path -Path ".\Data\EarningsChartData.json" -PathType Leaf) { 
 
-        $DatasourceRaw = Import-Csv ".\Data\DailyEarnings.csv"
-        $DatasourceRaw | ForEach-Object { $_.Date = [DateTime]::parseexact($_.Date, "yyyy-MM-dd", $null) }
-
-        $Datasource = $DatasourceRaw | Where-Object Date -le (Get-Date).AddDays(-1)
-        $Datasource = $Datasource | Where-Object Date -in @($Datasource.Date | Sort-Object -Unique | Select-Object -Last 14)
-        $Datasource | ForEach-Object { $_.DailyEarnings = [Double]($_.DailyEarnings) * $Variables.Rates.($_.Currency).($Config.Currency) }
-        $Datasource = $Datasource | Select-Object *, @{ Name = "DaySum"; Expression = { $Date = $_.Date; ((($Datasource | Where-Object { $_.Date -eq $Date }).DailyEarnings) | Measure-Object -Sum).Sum } }
+        $Datasource = Get-Content -Path ".\Data\EarningsChartData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 
         $ChartTitle = New-Object System.Windows.Forms.DataVisualization.Charting.Title
-        $ChartTitle.Text = "Earnings Tracker: Earnings of the past 14 active days"
+        $ChartTitle.Text = "Earnings of the past $($DataSource.Labels.Count) active days"
         $ChartTitle.Font = [System.Drawing.Font]::new("Arial", 10)
         $ChartTitle.Alignment = "TopCenter"
-        $EarningsChart1.Titles.Clear()
-        $EarningsChart1.Titles.Add($ChartTitle)
+        $EarningsChart.Titles.Clear()
+        $EarningsChart.Titles.Add($ChartTitle)
+        Remove-Variable ChartTitle
 
         $ChartArea = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
         $ChartArea.BackColor = [System.Drawing.Color]::FromArgb(255, 32, 50, 50) #"#2B3232"
         $ChartArea.BackSecondaryColor = [System.Drawing.Color]::FromArgb(255, 119, 126, 126) #"#777E7E"
         $ChartArea.BackGradientStyle = 3
-        $ChartArea.AxisX.LabelStyle.Enabled = $false
-        $ChartArea.AxisX.Enabled = 2
+        $ChartArea.AxisX.LabelStyle.Enabled = $true
+        $ChartArea.AxisX.Enabled = 0
+        $ChartArea.AxisX.Minimum = 0
+        $ChartArea.AxisX.Maximum = $Datasource.Labels.Count + 1
+        $ChartArea.AxisX.Interval = 1
+        $ChartArea.AxisY.LabelAutoFitStyle = 16
+        $ChartArea.AxisX.IsMarginVisible = $false
         $ChartArea.AxisX.MajorGrid.Enabled = $false
         $ChartArea.AxisY.MajorGrid.Enabled = $true
         $ChartArea.AxisY.MajorGrid.LineColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"#FFFFFF"
+        $ChartArea.AxisY.IsMarginVisible = $false
         $ChartArea.AxisY.LabelAutoFitStyle = $ChartArea.AxisY.labelAutoFitStyle - 4
         $ChartArea.AxisY.Interval = [Math]::Ceiling(($Datasource.DaySum | Measure-Object -Maximum).Maximum / 4)
-        $EarningsChart1.ChartAreas.Clear()
-        $EarningsChart1.ChartAreas.Add($ChartArea)
+        $ChartArea.AxisY.Title = $Config.Currency
 
-        $EarningsChart1.Series.Clear()
-        [Void]$EarningsChart1.Series.Add("TotalEarning")
-        $EarningsChart1.Series["TotalEarning"].ChartType = "Column"
-        $EarningsChart1.Series["TotalEarning"].BorderWidth = 3
-        $EarningsChart1.Series["TotalEarning"].ChartArea = "ChartArea1"
-        $EarningsChart1.Series["TotalEarning"].Color = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"FFFFFF"
-        $EarningsChart1.Series["TotalEarning"].label = "#VALY{N3}"
-        $EarningsChart1.Series["TotalEarning"].ToolTip = "#VALX: #VALY $($Config.Currency)"
-        $Datasource | Select-Object Date, DaySum -Unique | ForEach-Object { $EarningsChart1.Series["TotalEarning"].Points.addxy( $_.Date.ToShortDateString(), ("{0:N5}" -f $_.DaySum)) | Out-Null }
+        $EarningsChart.ChartAreas.Clear()
+        $EarningsChart.ChartAreas.Add($ChartArea)
+        $EarningsChart.Series.Clear()
 
-        $EarningsChart1.BringToFront()
-
-        $Datasource = $DatasourceRaw | Where-Object Date -eq (Get-Date).Date | Where-Object DailyEarnings -gt 0 | Sort-Object DailyEarnings -Descending
-        $Datasource | ForEach-Object { $_.DailyEarnings = [Double]$_.DailyEarnings * $Variables.Rates.($_.Currency).($Config.Currency) }
-
-        $ChartTitle = New-Object System.Windows.Forms.DataVisualization.Charting.Title
-        $ChartTitle.Text = "Todays earnings per pool"
-        $ChartTitle.Font = [System.Drawing.Font]::new("Arial", 10)
-        $ChartTitle.Alignment = "TopCenter"
-        $EarningsChart2.Titles.Clear()
-        $EarningsChart2.Titles.Add($ChartTitle)
-
-        $ChartArea = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
-        $ChartArea.BackColor = [System.Drawing.Color]::FromArgb(255, 32, 50, 50) #"#2B3232"
-        $ChartArea.BackSecondaryColor = [System.Drawing.Color]::FromArgb(255, 119, 126, 126) #"#777E7E"
-        $ChartArea.BackGradientStyle = 3
-        $ChartArea.AxisX.LabelStyle.Enabled = $false
-        $ChartArea.AxisX.Enabled = 2
-        $ChartArea.AxisX.MajorGrid.Enabled = $false
-        $ChartArea.AxisY.MajorGrid.Enabled = $true
-        $ChartArea.AxisY.MajorGrid.LineColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"#FFFFFF"
-        $ChartArea.AxisY.LabelAutoFitStyle = $ChartArea.AxisY.labelAutoFitStyle - 4
-        $ChartArea.AxisY.Interval = [Math]::Ceiling(($Datasource.DailyEarnings | Measure-Object -Sum).Sum / 4)
-        $EarningsChart2.ChartAreas.Clear()
-        $EarningsChart2.ChartAreas.Add($ChartArea)
-
-        $EarningsChart2.Series.Clear()
         $Colors = @(255, 255, 255, 255) #"FFFFFF"
-        ForEach ($Pool in $Datasource.Pool) { 
-            $Colors = (Get-NextColor -Colors $Colors -Factors -0, -20, -20, -20)
+        $EarningsChart.BringToFront()
 
-            [Void]$EarningsChart2.Series.Add($Pool)
-            $EarningsChart2.Series[$Pool].ChartType = "StackedColumn"
-            $EarningsChart2.Series[$Pool].BorderWidth = 1
-            $EarningsChart2.Series[$Pool].BorderColor = [System.Drawing.Color]::FromArgb(255, 119, 126 ,126) #"#FFFFFF"
-            $EarningsChart2.Series[$Pool].ChartArea = "ChartArea1"
-            $EarningsChart2.Series[$Pool].Color = [System.Drawing.Color]::FromArgb($Colors[0], $Colors[1], $Colors[2], $Colors[3])
-            $EarningsChart2.Series[$Pool].ToolTip = "#SERIESNAME: #VALY $($Config.Currency)"
-            $Datasource | Where-Object Pool -eq $Pool | ForEach-Object { $EarningsChart2.Series[$Pool].Points.addxy($_.Pool, ("{0:N3}" -f $_.DailyEarnings)) | Out-Null }
+        ForEach ($Pool in $DataSource.Earnings.PSObject.Properties.Name) { 
+
+            $Colors = (Get-NextColor -Colors $Colors -Factors -0, -20, -20, -20)
+            $I = 0
+
+            [Void]$EarningsChart.Series.Add($Pool)
+            $EarningsChart.Series[$Pool].ChartArea = "ChartArea"
+            $EarningsChart.Series[$Pool].ChartType = "StackedColumn"
+            $EarningsChart.Series[$Pool].BorderWidth = 3
+            $EarningsChart.Series[$Pool].Legend = $Pool
+            $EarningsChart.Series[$Pool].Color = [System.Drawing.Color]::FromArgb($Colors[0], $Colors[1], $Colors[2], $Colors[3])
+            $EarningsChart.Series[$Pool].ToolTip = "$($Pool): #VALY $($Config.Currency)"
+
+            $Datasource.Earnings.$Pool | Where-Object { $_ } | ForEach-Object { 
+                $EarningsChart.Series[$Pool].Points.addxy($I, "{0:N$($Variables.Digits)}" -f ($_ * $Variables.Rates.BTC.($Config.Currency))) | Out-Null
+            }
         }
-        $EarningsChart2.BringToFront()
+
+        $I = 0
+        $ChartArea.AxisX.CustomLabels.Clear()
+        $DataSource.Labels | ForEach-Object { 
+            $ChartArea.AxisX.CustomLabels.Add($I + 0.4, $I + 1.6, " $_ ")
+            $I++
+        }
+
+        Remove-Variable ChartArea, Colors, Datasource, DatasourceRaw, Pool
     }
 }
 
@@ -875,7 +862,7 @@ Function Global:TimerUITick {
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                     }
                     Stop-Mining
-                    Stop-BrainJob
+                    Stop-Brain
                     Stop-IdleDetection
                     Stop-BalancesTracker
                     Update-MonitoringData
@@ -901,7 +888,7 @@ Function Global:TimerUITick {
                     Stop-IdleDetection
                     Initialize-Application
                     Start-BalancesTracker
-                    Start-Brainjob @(If ($Variables.NiceHashWalletIsInternal) { $Config.PoolName -replace "NiceHash", "NiceHash Internal" } Else { $Config.PoolName -replace "NiceHash", "NiceHash External" })
+                    Start-Brain @(Get-PoolBaseName (If ($Variables.NiceHashWalletIsInternal) { $Config.PoolName -replace "NiceHash", "NiceHash Internal" } Else { $Config.PoolName -replace "NiceHash", "NiceHash External" }))
                     Update-MonitoringData
 
                     $LabelMiningStatus.Text = "Paused | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
@@ -1115,7 +1102,7 @@ Function Global:TimerUITick {
         }
 
         If ($Variables.Timer) { 
-            $StatusMessage = "Last refresh: $($Variables.Timer.ToLocalTime().ToString('G'))   |   Next refresh: $($Variables.EndLoopTime.ToLocalTime().ToString('G'))   |   Hot Keys: $(If ($Variables.CalculatePowerCost) { "[abceimnprstuvwy]" } Else { "[abeimnpsvwy]" })   |   Press 'h' for help"
+            $StatusMessage = "Last refresh: $($Variables.Timer.ToLocalTime().ToString('G'))   |   Next refresh: $($Variables.EndCycleTime.ToLocalTime().ToString('G'))   |   Hot Keys: $(If ($Variables.CalculatePowerCost) { "[abceimnprstuvwy]" } Else { "[abeimnpsvwy]" })   |   Press 'h' for help"
             Write-Host ("-" * $StatusMessage.Length)
             Write-Host -ForegroundColor Yellow $StatusMessage
             Remove-Variable StatusMessage
@@ -1274,6 +1261,7 @@ Function MainForm_Load {
                 $MainForm.Number = 0
                 $TimerUI.Remove_Tick({ TimerUITick })
                 $TimerUI.Dispose()
+                [System.GC]::Collect()
                 $TimerUI = New-Object System.Windows.Forms.Timer
                 $TimerUI.Add_Tick({ TimerUITick })
             }
@@ -1457,13 +1445,9 @@ $RunPageControls += $RunningMinersDGV
 # Earnings Page Controls
 $EarningsPageControls = @()
 
-$EarningsChart1 = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
-$EarningsChart1.BackColor = [System.Drawing.Color]::FromArgb(255, 240, 240, 240) #"#F0F0F0"
-$EarningsPageControls += $EarningsChart1
-
-$EarningsChart2 = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
-$EarningsChart2.BackColor = [System.Drawing.Color]::FromArgb(255, 240, 240, 240) #"#F0F0F0"
-$EarningsPageControls += $EarningsChart2
+$EarningsChart = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
+$EarningsChart.BackColor = [System.Drawing.Color]::FromArgb(255, 240, 240, 240) #"#F0F0F0"
+$EarningsPageControls += $EarningsChart
 
 $LabelEarnings = New-Object System.Windows.Forms.Label
 $LabelEarnings.AutoSize = $false
@@ -1713,9 +1697,7 @@ Function MainForm_Resize {
     $ConfigMonitoring.Location = [System.Drawing.Point]::new(2, ($RunningMinersDGV.Bottom - 18))
 
     If ($MainForm.Width -gt 722) { 
-        $EarningsChart1.Width = ($TabControl.Width - 14) * 0.75
-        $EarningsChart2.Width = ($TabControl.Width - $EarningsChart1.Width - 50)
-        $EarningsChart2.Left = $EarningsChart1.Width + 20
+        $EarningsChart.Width = ($TabControl.Width - 10)
     }
 
     $EarningsDGV.Height = ($EarningsDGV.Rows.Height | Measure-Object -Sum).Sum + $EarningsDGV.ColumnHeadersHeight
@@ -1726,9 +1708,9 @@ Function MainForm_Resize {
     Else { 
         $EarningsDGV.ScrollBars = "None"
     }
-    $EarningsChart1.Height = $EarningsChart2.Height = (($TabControl.Height - $LabelEarnings.Height - $EarningsDGV.Height - 41), 0 | Measure-Object -Maximum).Maximum
-    $LabelEarnings.Location = [System.Drawing.Point]::new(2, ($EarningsChart1.Height + 7))
-    $EarningsDGV.Location = [System.Drawing.Point]::new(2, ($EarningsChart1.Height + $LabelEarnings.Height + 10))
+    $EarningsChart.Height = (($TabControl.Height - $LabelEarnings.Height - $EarningsDGV.Height - 41), 0 | Measure-Object -Maximum).Maximum
+    $LabelEarnings.Location = [System.Drawing.Point]::new(2, ($EarningsChart.Height + 7))
+    $EarningsDGV.Location = [System.Drawing.Point]::new(2, ($EarningsChart.Height + $LabelEarnings.Height + 10))
 
     $SwitchingDGV.Height = $BenchmarksDGV.Height = $TabControl.Height - 53
 }
@@ -1770,7 +1752,7 @@ $MainForm.Add_FormClosing(
 
         Stop-Mining
         Stop-IdleDetection
-        Stop-BrainJob
+        Stop-Brain
         Stop-BalancesTracker
 
         # Save window settings

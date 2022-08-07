@@ -6,6 +6,36 @@ Breaking changes (from 3.8.x.x code base):
 - Balances & Earnings files from versions older than 3.9.9.18 are no longer compatible, new files will be created instead
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
+Known issues:
+- Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
+
+
+ChangeLog NemosMiner 4.0.2.6 07.08.2022
+=======================================
+
+Enhancements:
+- Core: Add properties 'Benchmark' & 'MinerName' to 'AlgorithmsLastUsed.json' file
+- Core: Do not use transfer files for brain pool data (pool config property 'UseTransferFile')
+- Core: Optimize memory management (garbage collection)
+- Core: Run brain jobs only once per interval to reduce pool API load
+- Core / Legacy GUI: Write date/time & level information to messages
+- Web GUI / Configuration Editor: Added 'Log Level Details (File)' & 'Log Level Details (Screen)'
+- Web GUI / Configuration Editor: Change 'Apply configuration' to 'Save configuration'
+- Web GUI / Configuration Editor: Do not allow saving configuration when no mining device is enabled
+- Web GUI / Configuration Editor: Re-arranged some items
+
+Fixes:
+- Core: / Error 'Remove-Path: Cannot find path...' when updating
+- Web GUI / Configuration Editor: 'Get default algorithms' broken
+- Web GUI / Balance Data: Vertical scollbar scrolled the whole page
+
+Miner changes:
+- GMiner-v3.05
+- JayddeeCpu-v3.20.2
+- lolMiner-v1.53
+- SRBMinerMulti-v1.0.4
+- Wildrig-v0.32.2
+
 
 ChangeLog NemosMiner 4.0.2.5 27.07.2022
 =======================================

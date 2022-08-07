@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.0.2.5
-Version date:   27 July 2022
+Version:        4.0.2.6
+Version date:   07 August 2022
 #>
 
 Function Initialize-API { 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.7.0"
+    $APIVersion = "0.4.7.1"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
@@ -94,11 +94,9 @@ Function Start-APIServer {
         Catch { }
     }
 
-    $Variables.APIRunspace = $APIRunspace
-    $Variables.APIRunspace | Add-Member -Force @{ APIPort = $Port }
-
-    $Variables.APIRunspace.SessionStateProxy.SetVariable("APIVersion", $APIVersion)
-    $Variables.APIRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+    $APIRunspace | Add-Member -Force @{ APIPort = $Port }
+    $APIRunspace.SessionStateProxy.SetVariable("APIVersion", $APIVersion)
+    $APIRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
 
     $PowerShell = [PowerShell]::Create()
     $PowerShell.Runspace = $APIRunspace
@@ -284,7 +282,9 @@ Function Start-APIServer {
                         Break
                     }
                     "/functions/file/showcontent" {
-                        $Data = (Get-Content -Path $Parameters.FileName -Raw)  -replace "(?<!\x0d)\x0a", "<br>"
+                        $Data = (Get-Content -Path $Parameters.FileName -Raw)
+                        # $Data = (Get-Content -Path $Parameters.FileName -Raw) -replace "(?<!\x0d)\x0a", "<br>"
+                        $ContentType = "text/html"
                         Break
                     }
                     "/functions/log/get" { 
@@ -471,7 +471,7 @@ Function Start-APIServer {
                                     Unreal profit data
                                     If (-not $_.Reasons) { $_.Available = $true }
 
-                                    If ($_.Status -eq "Running") { $Variables.EndLoopTime = (Get-Date).ToUniversalTime() } # End loop immediately
+                                    If ($_.Status -eq "Running") { $Variables.EndCycleTime = (Get-Date).ToUniversalTime() } # End loop immediately
                                 }
                                 Write-Message -Level Verbose "Web GUI: Re-benchmark triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })."
                                 $Data += "`n$(If ($Miners.Count -eq 1) { "The miner" } Else { "$($Miners.Count) miners" }) will re-benchmark."
@@ -495,7 +495,7 @@ Function Start-APIServer {
                                     Remove-Stat -Name "$($Stat_Name)_PowerUsage"
                                     $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
 
-                                    If ($_.Status -eq "Running") { $Variables.EndLoopTime = (Get-Date).ToUniversalTime() } # End loop immediately
+                                    If ($_.Status -eq "Running") { $Variables.EndCycleTime = (Get-Date).ToUniversalTime() } # End loop immediately
                                 }
                                 Write-Message -Level Verbose "Web GUI: Re-measure power usage triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })." -Verbose
                                 $Data += "`n$(If ($Miners.Count -eq 1) { "The miner" } Else { "$($Miners.Count) miners" }) will re-measure power usage."
@@ -837,6 +837,14 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 @($Variables.NewPools | Select-Object | Sort-Object Algorithm, Name, Region)
                         Break
                     }
+                    "/pools/minersprimaryalgorithm" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.MinerPools[0] | Select-Object)
+                        Break
+                    }
+                    "/pools/minerssecondaryalgorithm" { 
+                        $Data = ConvertTo-Json -Depth 10 @($Variables.MinerPools[1] | Select-Object)
+                        Break
+                    }
                     "/pools/lastearnings" { 
                         $Data = ConvertTo-Json -Depth 10 $Variables.PoolsLastEarnings
                         Break
@@ -976,6 +984,7 @@ Function Start-APIServer {
     ) # End of $APIServer
     $AsyncObject = $PowerShell.BeginInvoke()
 
+    $Variables.APIRunspace = $APIRunspace
     $Variables.APIRunspace | Add-Member -Force @{ 
         PowerShell = $PowerShell
         AsyncObject = $AsyncObject

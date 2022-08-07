@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Blockmasters.ps1
-Version:        4.0.2.5
-Version date:   27 July 2022
+Version:        4.0.2.6
+Version date:   07 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -45,7 +45,12 @@ $TransferFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Dire
 If ($DivisorMultiplier -and $PriceField -and $Wallet) { 
 
     Try { 
-        $Request = Get-Content $TransferFile -ErrorAction Stop | ConvertFrom-Json
+        If ($Variables.BrainData.$Name) { 
+            $Request = $Variables.BrainData.$Name
+        }
+        Else { 
+            $Request = Get-Content $TransferFile -ErrorAction Stop | ConvertFrom-Json
+        }
     }
     Catch { Return }
 

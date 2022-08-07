@@ -4,7 +4,7 @@
           </div>
           <div id="configfilenames" class="alert alert-info" role="alert">&ensp;</div>
           <form id="configuration">
-            <input name="submit" type="submit" id="save-button" value="Apply configuration" class="btn btn-success" alt="Submit" title="Apply configuration&#10;It will become active in next cycle.">
+            <input name="submit" type="submit" id="save-button" value="Save configuration" class="btn btn-success" alt="Submit" title="Save configuration&#10;It will become active in next cycle.">
             <input name="reset" type="reset" id="reset-button" value="Reset" class="btn btn-warning" alt="Reset" title="Reset configuration data to previous values">
             <button type="button" class="btn btn-primary" id="btn-editconfig" name="btn-editconfig" title="Edit Config file&#10;It will become active in next cycle.">Edit Config file</button>
             <button type="button" class="btn btn-primary" id="btn-editpoolsconfig" name="btn-editpoolsconfig" title="Edit PoolsConfig file&#10;It will become active in next cycle.">Edit PoolsConfig file</button>
@@ -144,43 +144,9 @@
                     <input type="checkbox" class="toggle-switch" id="OpenFirewallPorts" name="OpenFirewallPorts"> Open firewall ports (admin rights required)
                   </div>
                   <br>
-
-                  <!-- Auto Update Settings -->
-                  <legend class=h6><b>Auto Update Settings</b></legend>
-                  <div style="padding-top: 0.3rem" title="NemosMiner will periodically check for a new program version&#10;(min=0, max=30, default=1 days). Set to 0 to disable automatic updates"> Check for new version every
-                    <input type="number" id="AutoUpdateCheckInterval" name="AutoUpdateCheckInterval" min=0 max=50 step=1 value=15> days
-                  </div>
-                  <div style="padding-top: 0.5rem" title="Automatically update NemosMiner to the latest realeased program version&#10;NemosMiner will check for a new verwsion on each start&#10;and approx. every 24hrs">
-                    <input type="checkbox" class="toggle-switch" id="AutoUpdate" name="AutoUpdate"> Auto update
-                  </div>
-                  <div style="padding-top: 0.7rem" title="If enabled NemosMiner will show the changlog when an update is available">
-                    <input type="checkbox" class="toggle-switch" id="ShowChangeLog" name="ShowChangeLog"> Show change log
-                  </div>
-                  <div style="padding-top: 0.7rem" title="If enabled NemosMiner will backup installed version before updating to a new version">
-                    <input type="checkbox" class="toggle-switch" id="BackupOnAutoUpdate" name="BackupOnAutoUpdate"> Backup installed version before updating
-                  </div>
-                  <br>
-
-                  <!-- Balance Tracker Settings -->
-                  <fieldset>
-                    <legend class=h6><b>Balance Tracker Settings</b></legend>
-                      <div style="padding-top: 0.3rem" title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;(min=10, max=60, default=15 minutes). Set to 0 to disable the balance tracker.&#10;&#10;Note: If set to 0 it will also disable pool balances summary in the Web GUI dashboard and API"> Poll pools for balances & earnings every
-                        <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60 step=1 value=15> minutes
-                      <div style="padding-top: 0.7rem" title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">
-                        <input type="checkbox" class="toggle-switch" id="BalancesTrackerLog" name="BalancesTrackerLog" style="margin-left:20px"> Write balances tracker log
-                      </div>
-                      <div style="padding-top: 0.7rem" title="Most pools clear pending balances after a longer period of inactivity.&#10;To avoid forfeiting pool balances NemosMiner will enforce mining&#10;at the pool the day before it would clear the balance.&#10;(one cycle only, even if it is not the most profitable pool).&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
-                        <input type="checkbox" class="toggle-switch" id="BalancesKeepAlive" name="BalancesKeepAlive" style="margin-left:20px"> Keep pool balances alive
-                      </div>
-                    </div>
-                    <div style="padding-top: 0.7rem" title="Pool balances will be shown in all currencies (main & extra currencies) in web dashboard&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
-                      <input type="checkbox" class="toggle-switch" id="BalancesShowInAllCurrencies" name="BalancesShowInAllCurrencies" style="margin-left:20px"> Show pool balances in all currencies
-                    </div>
-                  </div>
-                </fieldset>
                 </td>
                 <td>
-                  <div style="line-height:100%" class="col-md-12">
+                  <div style="line-height: 100%" class="col-md-12">
                     <!-- Select Mining Devices -->
                     <fieldset title="Enable / disable mining devices&#10;&#10;Unsupported devices are greyed out and cannot be enabled.">
                       <legend class=h6><b>Select Mining Devices</b></legend>
@@ -191,14 +157,14 @@
                     <!-- Select Pools -->
                     <fieldset title="You cannot select multiple variants of the same pool">
                       <legend class=h6><b>Select Pools</b></legend>
-                      <div style="padding-top: 0.2rem;line-height:125%" id="Pools"></div>
+                      <div style="padding-top: 0.1rem" id="Pools"></div>
                     </fieldset>
                     <br>
 
                     <!-- Select the Region closest to your Location -->
                     <fieldset title="Note: Region is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
                       <legend class=h6><b>Select the Region closest to your Location</b></legend>
-                      <div style="padding-top: 0.2rem;line-height:125%" id="Regions"></div>
+                      <div style="padding-top: 0.1rem; line-height: 125%" id="Regions"></div>
                     </fieldset>
                     <div style="padding-top: 0.2rem" title="Pools establish fastest network route based on your location&#10;Currently only ZergPool supports this feature.&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
                       <input type="checkbox" class="toggle-switch" id="UseAnycast" name="UseAnycast"> Use anycast for best network performance and ping times
@@ -208,7 +174,7 @@
                 </td>
                 <td>
                   <!-- Miner and Algorithm Selection -->
-                  <legend title="" class=h6><b>Miner and Algorithm Selection</b></legend>
+                  <legend class=h6><b>Miner and Algorithm Selection</b></legend>
                   <div style="padding-top: 0.3rem" title="NemosMiner will run separate miner instances per GPU device model.&#10;Recommended for rigs with mixed GPU device models of the same vendor installed, e.g. GTX 1060 & GTX 1070&#10;This will increase profitability&#10;&#10;Note: AMD & NVIDIA cards will always run as separate instances.">
                     <input type="checkbox" class="toggle-switch" id="MinerInstancePerDeviceModel" name="MinerInstancePerDeviceModel"> Run separate miner instance per GPU device model
                   </div>
@@ -220,19 +186,19 @@
                     </select>
                   </div>
                   <div style="padding-top: 0.3rem" title="List of miners to be excluded&#10;Values must be sparated by commas&#10;&#10;To exclude all version of a miner specify the short miner name, e.g. 'PhoenixMiner' (without '-v...')&#10;To exclude a specific miner version use the full miner name (incl. version information)&#10;"> Exclude miners
-                    <input type="text" id="ExcludeMinerName" name="ExcludeMinerName" size=50>
+                    <input type="text" id="ExcludeMinerName" name="ExcludeMinerName" size=47>
                   </div>
                   <div  style="padding-top: 0.2rem" title="'+[Algorithm]' to enable algorithm&#10;'-[Algorithm]' to disable algorithm&#10;Values must be sparated by commas&#10;Leave empty to use ALL available algorithms (not recommended as it may cause more switching)&#10;&#10;If '+' is used, then only the explicitly enabled algorithms are used&#10;If '-' is used, then all algorithms are used except the disabled ones&#10;You can either use '+' or '-'; you cannot combine both&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')"> Algorithms
-                    <input type="text" id="Algorithm" name="Algorithm" size=50>
+                    <input type="text" id="Algorithm" name="Algorithm" size=30>
                     <button type="button" class="btn btn-light btn-sm" id="DefaultAlgorithm" name="DefaultAlgorithm" title="Load the default algorithm list&#10;for the selected pools">Load default algorithms</button>
                   </div>
-                  <div style="padding-top: 0.7rem" title="NemosMiner will disable all miners which sometimes mine to a miner developer wallet (a.k.a. comission or donation)">
+                  <div style="padding-top: 0.6rem" title="NemosMiner will disable all miners which sometimes mine to a miner developer wallet (a.k.a. comission or donation)">
                     <input type="checkbox" class="toggle-switch" id="DisableMinersWithFee" name="DisableMinersWithFee"> Disable miners with dev fees
                   </div>
-                  <div style="padding-top: 0.7rem" title="NemosMiner will disable all dual algorithm miners&#10;(Note: This will enable single algorithm mining)">
+                  <div style="padding-top: 0.6rem" title="NemosMiner will disable all dual algorithm miners&#10;(Note: This will enable single algorithm mining)">
                     <input type="checkbox" class="toggle-switch" id="DisableDualAlgoMining" name="DisableDualAlgoMining"> Disable dual algorithm miners
                   </div>
-                  <div style="padding-top: 0.7rem" title="NemosMiner will disable all single algorithm miners&#10;(Note: This will enable dual algorithm mining)">
+                  <div style="padding-top: 0.6rem" title="NemosMiner will disable all single algorithm miners&#10;(Note: This will enable dual algorithm mining)">
                     <input type="checkbox" class="toggle-switch" id="DisableSingleAlgoMining" name="DisableSingleAlgoMining"> Disable single algorithm miners
                   </div>
                   <br>
@@ -254,27 +220,27 @@
                   <div style="padding-top: 0.3rem" title="Select the process priority for CPU miners&#10;Higher priorities may lead to fluctuating hashrates with GPU miners">
                     <label for="CPUMinerProcessPriority">Run CPU miners with</label>
                     <select name="" id="CPUMinerProcessPriority">
-                      <option value=1>above normal</option>
-                      <option value=0>normal</option>
-                      <option value=-1>below normal</option>
-                      <option value=-2>idle</option>
+                      <option value = 1>above normal</option>
+                      <option value = 0>normal</option>
+                      <option value = -1>below normal</option>
+                      <option value = -2>idle</option>
                     </select>
                     <label for="CPUMinerProcessPriority">process priority</label>
                   </div>
                   <div title="Select the process priority for GPU miners&#10;Higher priorities may lead to fluctuating hashrates with CPU miners">
                     <label for="GPUMinerProcessPriority">Run GPU miners with</label>
                     <select name="" id="GPUMinerProcessPriority">
-                      <option value=1>above normal</option>
-                      <option value=0>normal</option>
-                      <option value=-1>below normal</option>
-                      <option value=-2>idle</option>
+                      <option value = 1>above normal</option>
+                      <option value = 0>normal</option>
+                      <option value = -1>below normal</option>
+                      <option value = -2>idle</option>
                     </select>
                     <label for="GPUMinerProcessPriority">process priority</label>
                   </div>
                   <div style="padding-top: 0.2rem" title="Enable miner specific tweaks, e.g. sharper memory timings or mild overclock&#10;&#10;Note: This may cause stability issues, use with caution!">
                     <input type="checkbox" class="toggle-switch" id="UseMinerTweaks" name="UseMinerTweaks"> Enable miner tweaks (admin rights required)
                   </div>
-                  <div style="padding-top: 0.7rem" title="NemosMiner will disable developer fee mining&#10;(Note: not all miners support disabling their built in fees, others will reduce the hashrate.&#10;For miners that do not allow disabling the miner fees the effective fee will still be shown in the miner list.)">
+                  <div style="padding-top: 0.6rem" title="NemosMiner will disable developer fee mining&#10;(Note: not all miners support disabling their built in fees, others will reduce the hashrate.&#10;For miners that do not allow disabling the miner fees the effective fee will still be shown in the miner list.)">
                     <input type="checkbox" class="toggle-switch" id="DisableMinerFee" name="DisableMinerFee"> Disable miner fees
                   </div>
                   <br>
@@ -337,59 +303,109 @@
                   </div>
                   <br>
 
+                  <!-- Balance Tracker Settings -->
+                  <fieldset>
+                    <legend class=h6><b>Balance Tracker Settings</b></legend>
+                    <div style="padding-top: 0.3rem" title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;(min=10, max=60, default=15 minutes). Set to 0 to disable the balance tracker.&#10;&#10;Note: If set to 0 it will also disable pool balances summary in the Web GUI dashboard and API"> Poll pools for balances & earnings every
+                      <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60 step=1 value=15> minutes
+                    <div style="padding-top: 0.6rem" title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">
+                      <input type="checkbox" class="toggle-switch" id="BalancesTrackerLog" name="BalancesTrackerLog" style="margin-left:20px"> Write balances tracker log
+                    </div>
+                    <div style="padding-top: 0.6rem" title="Most pools clear pending balances after a longer period of inactivity.&#10;To avoid forfeiting pool balances NemosMiner will enforce mining&#10;at the pool the day before it would clear the balance.&#10;(one cycle only, even if it is not the most profitable pool).&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
+                      <input type="checkbox" class="toggle-switch" id="BalancesKeepAlive" name="BalancesKeepAlive" style="margin-left:20px"> Keep pool balances alive
+                    </div>
+                    <div style="padding-top: 0.6rem" title="Pool balances will be shown in all currencies (main & extra currencies) in web dashboard&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
+                      <input type="checkbox" class="toggle-switch" id="BalancesShowInAllCurrencies" name="BalancesShowInAllCurrencies" style="margin-left:20px"> Show pool balances in all currencies
+                    </div>
+                  </fieldset>
+                </td>
+                <td style="vertical-align: top; line-height: 125%">
                   <!-- Main Text Window Display Settings -->
-                  <legend class=h6 title="These Settings will not affect the information available in the in Web GUI"><b>Main Text Window Display Settings</b></legend>
-                  <div title="'light' will not show information about previously run & failed miners and watchdog timers&#10;except while benchmarking or measuring power usage&#10;Can be toggled by pressing 's' in the text window while waiting for the next cycle"> UI Style
-                    <select name="UIStyle" id="UIStyle">
-                      <option value='full' title="Information about miners run in the past, failed miners & watchdog timers will be shown">full</option>
-                      <option value='light' title="Information about miners run in the past, failed miners & watchdog timers will not be shown">light</option>
-                    </select>
-                  </div>
-                  <div style="padding-top: 0.8rem" title="Show the 'PowerCost' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'c' in the text window while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowPowerCost" name="ShowPowerCost"> Show power cost column
-                  </div>
-                  <div style="padding-top: 0.5rem" title="Show the 'PowerUsage' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'w' in the text window while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowPowerUsage" name="ShowPowerUsage"> Show power usage column
-                  </div>
-                  <div style="padding-top: 0.5rem" title="Show the 'Profit' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 't' in the text window while waiting for the next cycle&#10;">
-                    <input type="checkbox" class="toggle-switch" id="ShowProfit" name="ShowProfit"> Show profit column
-                  </div>
-                  <div style="padding-top: 0.5rem" title="Show the 'Profit Bias' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'r' in the text window while waiting for the next cycle&#10;">
-                    <input type="checkbox" class="toggle-switch" id="ShowProfitBias" name="ShowProfitBias"> Show profit bias column
-                  </div>
-                  <div style="padding-top: 0.5rem" title="Show the 'Earning' column in the text window&#10;&#10;Can be toggled by pressing 'e' in the text window while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowEarning" name="ShowEarning"> Show earning column
-                  </div>
-                  <div style="padding-top: 0.5rem" title="Show the 'Earning Bias' column in the text window&#10;&#10;Can be toggled by pressing 'i' in the text window while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowEarningBias" name="ShowEarningBias"> Show earning bias column
-                  </div>
-                  <div style="padding-top: 0.5rem" title="Show the 'Accuracy' column in the text window&#10;&#10;Can be toggled by pressing 'a' in the text window while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowAccuracy" name="ShowAccuracy"> Show accuracy column
-                  </div>
-                  <div style="padding-top: 0.5rem" title="Show the 'CoinName' column in the text window&#10;&#10;Can be toggled by pressing 'n' in the text window while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowCoinName" name="ShowCoinName"> Show coin name column 
-                  </div>
-                  <div style="padding-top: 0.5rem" title="Show the 'Currency' column in the text window&#10;&#10;Can be toggled by pressing 'y' in the text window while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowCurrency" name="ShowCurrency"> Show currency column
-                  </div>
-                  <div style="padding-top: 0.5rem" title="Show the 'User' column in the text window&#10;&#10;Can be toggled by pressing 'u' in the text window while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowUser" name="ShowUser"> Show user column
+                  <div class="col-md-12">
+                    <legend class=h6 title="These Settings will not affect the information available in the in Web GUI"><b>Main Text Window Display Settings</b></legend>
+                    <div title="'light' will not show information about previously run & failed miners and watchdog timers&#10;except while benchmarking or measuring power usage&#10;Can be toggled by pressing 's' in the text window while waiting for the next cycle"> UI Style
+                      <select name="UIStyle" id="UIStyle">
+                        <option value='full' title="Information about miners run in the past, failed miners & watchdog timers will be shown">full</option>
+                        <option value='light' title="Information about miners run in the past, failed miners & watchdog timers will not be shown">light</option>
+                      </select>
+                    </div>
+                    <div style="padding-top: 0.8rem" title="Show the 'PowerCost' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'c' in the text window while waiting for the next cycle">
+                      <input type="checkbox" class="toggle-switch" id="ShowPowerCost" name="ShowPowerCost"> Show power cost column
+                    </div>
+                    <div style="padding-top: 0.5rem" title="Show the 'PowerUsage' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'w' in the text window while waiting for the next cycle">
+                      <input type="checkbox" class="toggle-switch" id="ShowPowerUsage" name="ShowPowerUsage"> Show power usage column
+                    </div>
+                    <div style="padding-top: 0.5rem" title="Show the 'Profit' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 't' in the text window while waiting for the next cycle&#10;">
+                      <input type="checkbox" class="toggle-switch" id="ShowProfit" name="ShowProfit"> Show profit column
+                    </div>
+                    <div style="padding-top: 0.5rem" title="Show the 'Profit Bias' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'r' in the text window while waiting for the next cycle&#10;">
+                      <input type="checkbox" class="toggle-switch" id="ShowProfitBias" name="ShowProfitBias"> Show profit bias column
+                    </div>
+                    <div style="padding-top: 0.5rem" title="Show the 'Earning' column in the text window&#10;&#10;Can be toggled by pressing 'e' in the text window while waiting for the next cycle">
+                      <input type="checkbox" class="toggle-switch" id="ShowEarning" name="ShowEarning"> Show earning column
+                    </div>
+                    <div style="padding-top: 0.5rem" title="Show the 'Earning Bias' column in the text window&#10;&#10;Can be toggled by pressing 'i' in the text window while waiting for the next cycle">
+                      <input type="checkbox" class="toggle-switch" id="ShowEarningBias" name="ShowEarningBias"> Show earning bias column
+                    </div>
+                    <div style="padding-top: 0.5rem" title="Show the 'Accuracy' column in the text window&#10;&#10;Can be toggled by pressing 'a' in the text window while waiting for the next cycle">
+                      <input type="checkbox" class="toggle-switch" id="ShowAccuracy" name="ShowAccuracy"> Show accuracy column
+                    </div>
+                    <div style="padding-top: 0.5rem" title="Show the 'CoinName' column in the text window&#10;&#10;Can be toggled by pressing 'n' in the text window while waiting for the next cycle">
+                      <input type="checkbox" class="toggle-switch" id="ShowCoinName" name="ShowCoinName"> Show coin name column 
+                    </div>
+                    <div style="padding-top: 0.5rem" title="Show the 'Currency' column in the text window&#10;&#10;Can be toggled by pressing 'y' in the text window while waiting for the next cycle">
+                      <input type="checkbox" class="toggle-switch" id="ShowCurrency" name="ShowCurrency"> Show currency column
+                    </div>
+                    <div style="padding-top: 0.5rem" title="Show the 'User' column in the text window&#10;&#10;Can be toggled by pressing 'u' in the text window while waiting for the next cycle">
+                      <input type="checkbox" class="toggle-switch" id="ShowUser" name="ShowUser"> Show user column
+                    </div>
+                    <br>
+
+                    <div title="When unticked only the best 5 miners per device are shown&#10;except while not benchmarking or measuring power usage&#10;&#10;Can be toggled by pressing 'v' in the text window while waiting for the next cycle">
+                      <input type="checkbox" class="toggle-switch" id="ShowAllMiners" name="ShowAllMiners"> Show all miners
+                    </div>
+                    <div style="padding-top: 0.5rem" title="Show the Pool Balances in the text windows&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)&#10;&#10;Can be toggled by pressing 'b' in the text windows while waiting for the next cycle">
+                      <input type="checkbox" class="toggle-switch" id="ShowPoolBalances" name="ShowPoolBalances" > Show pool balances
+                    </div>
+                    <br>
+
+                    <!-- Web GUI Display Settings -->
+                    <legend class=h6 title="These Settings will not affect the information available in the in the main text window"><b>Web GUI Display Settings</b></legend>
+                    <div style="padding-top: 0.4rem" title="Miners and Rigs will be shown with colored background depending on status">
+                      <input type="checkbox" class="toggle-switch" id="WebGUIUseColor" name="WebGUIUseColor"> Use colors for miner & rig status
+                    </div>
+                    <br>
+
+                    <!-- Log To File Settings -->
+                    <fieldset title="Defines the detail level of information written to the log file&#10;&#10;It is recommended to keep at least 'Info' enabled.">
+                      <legend class=h6><b>Log Level Details (File)</b></legend>
+                      <div style="padding-top: 0.3rem" id="LogToFile"></div>
+                    </fieldset>
+                    <br>
+
+                    <!-- Log To Screen Settings -->
+                    <fieldset title="Defines the detail level of information written to the screen&#10;&#10;It is recommended to keep at least 'Info' enabled.">
+                      <legend class=h6><b>Log Level Details (Screen)</b></legend>
+                      <div style="padding-top: 0.3rem" id="LogToScreen"></div>
+                    </fieldset>
+                    <br>
+
+                    <!-- Auto Update Settings -->
+                    <legend class=h6><b>Auto Update Settings</b></legend>
+                    <div style="padding-top: 0.3rem" title="NemosMiner will periodically check for a new program version&#10;(min=0, max=30, default=1 days). Set to 0 to disable automatic updates"> Check for new version every
+                      <input type="number" id="AutoUpdateCheckInterval" name="AutoUpdateCheckInterval" min=0 max=50 step=1 value=15> days
+                    </div>
+                    <div style="padding-top: 0.5rem" title="Automatically update NemosMiner to the latest realeased program version&#10;NemosMiner will check for a new verwsion on each start&#10;and approx. every 24hrs">
+                      <input type="checkbox" class="toggle-switch" id="AutoUpdate" name="AutoUpdate"> Auto update
+                    </div>
+                    <div style="padding-top: 0.6rem" title="If enabled NemosMiner will show the changlog when an update is available">
+                      <input type="checkbox" class="toggle-switch" id="ShowChangeLog" name="ShowChangeLog"> Show change log
+                    </div>
+                    <div style="padding-top: 0.6rem" title="If enabled NemosMiner will backup installed version before updating to a new version">
+                      <input type="checkbox" class="toggle-switch" id="BackupOnAutoUpdate" name="BackupOnAutoUpdate"> Backup installed version before updating
+                    </div>
                   </div>
                   <br>
-
-                  <div title="When unticked only the best 5 miners per device are shown&#10;except while not benchmarking or measuring power usage&#10;&#10;Can be toggled by pressing 'v' in the text window while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowAllMiners" name="ShowAllMiners"> Show all miners
-                  </div>
-                  <div style="padding-top: 0.5rem" title="Show the Pool Balances in the text windows&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)&#10;&#10;Can be toggled by pressing 'b' in the text windows while waiting for the next cycle">
-                    <input type="checkbox" class="toggle-switch" id="ShowPoolBalances" name="ShowPoolBalances" > Show pool balances
-                  </div>
-                  <br>
-
-                  <!-- Web GUI Display Settings -->
-                  <legend class=h6 title="These Settings will not affect the information available in the in the main text window"><b>Web GUI Display Settings</b></legend>
-                  <div style="padding-top: 0.4rem" title="Miners and Rigs will be shown with colored background depending on status">
-                    <input type="checkbox" class="toggle-switch" id="WebGUIUseColor" name="WebGUIUseColor"> Use colors for miner & rig status
-                  </div>
                 </td>
               </tr>
             </table>
@@ -405,6 +421,8 @@
             const poolscontainer = document.getElementById('Pools');
             const regionscontainer = document.getElementById('Regions');
             const devicescontainer = document.getElementById('Devices');
+            const logtofilecontainer = document.getElementById('LogToFile');
+            const logtoscreencontainer = document.getElementById('LogToScreen');
 
             var configfile = '';
             var regions = [];
@@ -557,34 +575,6 @@
               document.getElementById('Proxy').value = config.Proxy.trim();
               if (config.OpenFirewallPorts) document.getElementById('OpenFirewallPorts').checked = true;
 
-              // Auto Update Settings
-              if (config.AutoUpdateCheckInterval) document.getElementById('AutoUpdateCheckInterval').value = parseInt(config.AutoUpdateCheckInterval)
-              else document.getElementById('AutoUpdateCheckInterval').value = 1;
-              if (config.AutoUpdate) document.getElementById('AutoUpdate').checked = true;
-              if (config.BackupOnAutoUpdate) document.getElementById('BackupOnAutoUpdate').checked = true;
-
-              // Balance Tracker Settings
-              if (parseInt(config.BalancesTrackerPollInterval) >= 1 && parseInt(config.BalancesTrackerPollInterval) <= 9) document.getElementById('BalancesTrackerPollInterval').value = 10;
-              else document.getElementById('BalancesTrackerPollInterval').value = parseInt(config.BalancesTrackerPollInterval);
-              // Poll Pools for Balances & Earnings
-              $(document.getElementById('BalancesTrackerPollInterval')).change(function (event) {
-                if (document.getElementById('BalancesTrackerPollInterval').value == 9) document.getElementById('BalancesTrackerPollInterval').value = 0;
-                if (document.getElementById('BalancesTrackerPollInterval').value == 1) document.getElementById('BalancesTrackerPollInterval').value = 10;
-                if (document.getElementById('BalancesTrackerPollInterval').value > 1 && document.getElementById('BalancesTrackerPollInterval').value < 9) document.getElementById('BalancesTrackerPollInterval').value = 0;
-                document.getElementById('BalancesTrackerLog').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
-                document.getElementById('BalancesKeepAlive').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
-                document.getElementById('ShowPoolBalances').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
-                document.getElementById('BalancesShowInAllCurrencies').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
-              });
-              if (parseInt(config.BalancesTrackerPollInterval) == 0) {
-                document.getElementById('BalancesTrackerLog').disabled = true;
-                document.getElementById('BalancesTrackerLog').disabled = true;
-                document.getElementById('BalancesKeepAlive').disabled = true;
-                document.getElementById('BalancesShowInAllCurrencies').disabled = true;
-              }
-              if (config.BalancesTrackerLog) document.getElementById('BalancesTrackerLog').checked = true;
-              if (config.BalancesKeepAlive) document.getElementById('BalancesKeepAlive').checked = true;
-
               // Select Mining Devices
               $.ajax({
                 async: false,
@@ -613,9 +603,12 @@
                 url: '/poolvariants',
                 success: function (result) {
                   poolvariants = result;
+                  var basePoolName = '';
                   $.each(result, function (key, value) {
+                    if (basePoolName != '' && basePoolName != value.toLowerCase().replace('24hr', '').replace('coins', '').replace('plus', '')) $('<br>').appendTo(poolscontainer);
+                    basePoolName = value.toLowerCase().replace('24hr', '').replace('coins', '').replace('plus', '');
                     $('<input/>', { type: 'checkbox', class: 'toggle-switch', id: ('pool-' + value).toLowerCase(), value: value, style: 'margin-top:0.3rem' }).appendTo(poolscontainer);
-                    $('<label/>', { for: ('pool-' + value).toLowerCase(), text: (value), style: 'margin-left:5px' }).appendTo(poolscontainer);
+                    $('<label/>', { for: ('pool-' + value).toLowerCase(), text: (value), style: 'margin-left: 5px; line-height: 75%' }).appendTo(poolscontainer);
                     $('<br>').appendTo(poolscontainer);
                   })
                 }
@@ -768,6 +761,28 @@
               if (config.SubtractBadShares) document.getElementById('SubtractBadShares').checked = true;
               if (config.IgnoreMinerFee) document.getElementById('IgnoreMinerFee').checked = true;
 
+              // Balance Tracker Settings
+              if (parseInt(config.BalancesTrackerPollInterval) >= 1 && parseInt(config.BalancesTrackerPollInterval) <= 9) document.getElementById('BalancesTrackerPollInterval').value = 10;
+              else document.getElementById('BalancesTrackerPollInterval').value = parseInt(config.BalancesTrackerPollInterval);
+              // Poll Pools for Balances & Earnings
+              $(document.getElementById('BalancesTrackerPollInterval')).change(function (event) {
+                if (document.getElementById('BalancesTrackerPollInterval').value == 9) document.getElementById('BalancesTrackerPollInterval').value = 0;
+                if (document.getElementById('BalancesTrackerPollInterval').value == 1) document.getElementById('BalancesTrackerPollInterval').value = 10;
+                if (document.getElementById('BalancesTrackerPollInterval').value > 1 && document.getElementById('BalancesTrackerPollInterval').value < 9) document.getElementById('BalancesTrackerPollInterval').value = 0;
+                document.getElementById('BalancesTrackerLog').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
+                document.getElementById('BalancesKeepAlive').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
+                document.getElementById('ShowPoolBalances').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
+                document.getElementById('BalancesShowInAllCurrencies').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
+              });
+              if (parseInt(config.BalancesTrackerPollInterval) == 0) {
+                document.getElementById('BalancesTrackerLog').disabled = true;
+                document.getElementById('BalancesTrackerLog').disabled = true;
+                document.getElementById('BalancesKeepAlive').disabled = true;
+                document.getElementById('BalancesShowInAllCurrencies').disabled = true;
+              }
+              if (config.BalancesTrackerLog) document.getElementById('BalancesTrackerLog').checked = true;
+              if (config.BalancesKeepAlive) document.getElementById('BalancesKeepAlive').checked = true;
+
               // Main Text Window Display Settings
               if (config.UIStyle.trim().toLowerCase() == 'full') document.getElementById('UIStyle').value = 'full';
               else document.getElementById('UIStyle').value = 'light';
@@ -802,6 +817,31 @@
               // Web GUI Display Settings
               if (config.WebGUIUseColor) document.getElementById('WebGUIUseColor').checked = true;
 
+              // Log To File Settings
+              values = ["Info", "Warn", "Error", "Verbose", "Debug"];
+              $.each(values, function (key, value) {
+                $('<input/>', { type: 'checkbox', class: 'toggle-switch', id: ('logtofile-' + value), value: value }).appendTo(logtofilecontainer);
+                $('<label/>', { for: ('logtofile-' + value), text: (value), style: 'margin-left:5px' }).appendTo(logtofilecontainer);
+                $('<br>').appendTo(logtofilecontainer);
+                document.getElementById(('logtofile-' + value)).checked = config.LogToFile.includes(value);
+              })
+
+              // Log To Screen Settings
+              values = ["Info", "Warn", "Error", "Verbose", "Debug"];
+              $.each(values, function (key, value) {
+                $('<input/>', { type: 'checkbox', class: 'toggle-switch', id: ('logtoscreen-' + value), value: value }).appendTo(logtoscreencontainer);
+                $('<label/>', { for: ('logtoscreen-' + value), text: (value), style: 'margin-left:5px' }).appendTo(logtoscreencontainer);
+                $('<br>').appendTo(logtoscreencontainer);
+                document.getElementById(('logtoscreen-' + value)).checked = config.LogToScreen.includes(value);
+              })
+
+              // Auto Update Settings
+              if (config.AutoUpdateCheckInterval) document.getElementById('AutoUpdateCheckInterval').value = parseInt(config.AutoUpdateCheckInterval)
+              else document.getElementById('AutoUpdateCheckInterval').value = 1;
+              if (config.AutoUpdate) document.getElementById('AutoUpdate').checked = true;
+              if (config.BackupOnAutoUpdate) document.getElementById('BackupOnAutoUpdate').checked = true;
+
+              // Error when reading configuration
               if (config && configfile && poolvariants && regions && devices) {
                 document.getElementById('save-button').disabled = false;
               } else {
@@ -927,18 +967,6 @@
                     required: false,
                     pattern: '^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
                   },
-                  AutoUpdateCheckInterval: {
-                    digits: true,
-                    range: [0, 30],
-                    required: true,
-                    step: 1
-                  },
-                  BalancesTrackerPollInterval: {
-                    digits: true,
-                    range: [0, 60],
-                    required: true,
-                    step: 1
-                  },
                   ExcludeMinerName: {
                     required: false,
                     minlength: 4,
@@ -994,6 +1022,18 @@
                   },
                   BadShareRatioThreshold: {
                     range: [0, 100],
+                    required: true,
+                    step: 1
+                  },
+                  BalancesTrackerPollInterval: {
+                    digits: true,
+                    range: [0, 60],
+                    required: true,
+                    step: 1
+                  },
+                  AutoUpdateCheckInterval: {
+                    digits: true,
+                    range: [0, 30],
                     required: true,
                     step: 1
                   }
@@ -1085,21 +1125,11 @@
                   config.Proxy = document.getElementById('Proxy').value;
                   config.OpenFirewallPorts = document.getElementById('OpenFirewallPorts').checked;
 
-                  // Auto Update Settings
-                  config.AutoUpdateCheckInterval = parseInt(document.getElementById('AutoUpdateCheckInterval').value);
-                  config.AutoUpdate = document.getElementById('AutoUpdate').checked;
-                  config.ShowChangeLog = document.getElementById('ShowChangeLog').checked;
-                  config.BackupOnAutoUpdate = document.getElementById('BackupOnAutoUpdate').checked;
-
-                  // Balance Tracker Settings
-                  config.BalancesTrackerPollInterval = parseInt(document.getElementById('BalancesTrackerPollInterval').value);
-                  config.BalancesTrackerLog = document.getElementById('BalancesTrackerLog').checked;
-                  config.BalancesKeepAlive = document.getElementById('BalancesKeepAlive').checked;
-                  config.BalancesShowInAllCurrencies = document.getElementById('BalancesShowInAllCurrencies').checked;
-                  
                   // Select mining devices
                   config.ExcludeDeviceName = [];
+                  var enabledDevicesCount = 0
                   $.each(devices, function (key, value) {
+                    if (value.State != 2) enabledDevicesCount ++;
                     if (document.getElementById(('device-' + value.Name.toLowerCase())).checked == false && value.State != 2) config.ExcludeDeviceName.push(value.Name);
                   });
 
@@ -1163,6 +1193,12 @@
                   config.BadShareRatioThreshold = parseFloat(document.getElementById('BadShareRatioThreshold').value) / 100;
                   config.SubtractBadShares = document.getElementById('SubtractBadShares').checked;
 
+                  // Balance Tracker Settings
+                  config.BalancesTrackerPollInterval = parseInt(document.getElementById('BalancesTrackerPollInterval').value);
+                  config.BalancesTrackerLog = document.getElementById('BalancesTrackerLog').checked;
+                  config.BalancesKeepAlive = document.getElementById('BalancesKeepAlive').checked;
+                  config.BalancesShowInAllCurrencies = document.getElementById('BalancesShowInAllCurrencies').checked;
+
                   // Main Text Window Display Settings
                   config.UIStyle = document.getElementById('UIStyle').value;
                   config.ShowPowerCost = document.getElementById('ShowPowerCost').checked;
@@ -1181,19 +1217,45 @@
                   // Web GUI Display Settings
                   config.WebGUIUseColor = document.getElementById('WebGUIUseColor').checked;
 
-                  if (config.PoolName.length >= 1) {
-                    // Write current config
+                  // Log To File Settings
+                  values = ["Info", "Warn", "Error", "Verbose", "Debug"];
+                  config.LogToFile = [];
+                  $.each(values, function (key, value) {
+                    if (document.getElementById(('logtofile-' + value)).checked) config.LogToFile.push(value);
+                  });
+
+                  // Log To Screen Settings
+                  values = ["Info", "Warn", "Error", "Verbose", "Debug"];
+                  config.LogToScreen = [];
+                  $.each(values, function (key, value) {
+                    if (document.getElementById(('logtoscreen-' + value)).checked) config.LogToScreen.push(value);
+                  });
+
+                  // Auto Update Settings
+                  config.AutoUpdateCheckInterval = parseInt(document.getElementById('AutoUpdateCheckInterval').value);
+                  config.AutoUpdate = document.getElementById('AutoUpdate').checked;
+                  config.ShowChangeLog = document.getElementById('ShowChangeLog').checked;
+                  config.BackupOnAutoUpdate = document.getElementById('BackupOnAutoUpdate').checked;
+
+                  // Write current config
+                  if (config.PoolName.length >= 1 && config.ExcludeDeviceName.length < enabledDevicesCount ) {
                     var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
                     $('.modal-body').load($command, function () {
-                      $('.modal-title').text('Apply configuration');
+                      $('.modal-title').text('Save configuration');
                       $('#myModal').modal({ show: true });
                       document.body.style.cursor = 'default';
                       $('#myModal').on('hidden.bs.modal', function () { location.reload(true) })
                     });
+                  } else if (config.ExcludeDeviceName.length >= enabledDevicesCount) {
+                    // No mining device selected
+                    $('.modal-title').html('Error: Invalid configuration');
+                    $('.modal-body').html('Cannot save configuration - you must select at least one mining device.');
+                    document.body.style.cursor = 'default';
+                    $('#myModal').modal({ show: true });
                   } else {
                     // No pool selected
                     $('.modal-title').html('Error: Invalid configuration');
-                    $('.modal-body').html('Cannot apply configuration - you must select at least one pool.');
+                    $('.modal-body').html('Cannot save configuration - you must select at least one pool.');
                     document.body.style.cursor = 'default';
                     $('#myModal').modal({ show: true });
                   }

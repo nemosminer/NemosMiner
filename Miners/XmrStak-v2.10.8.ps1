@@ -54,7 +54,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXtl";      MinMemGB = 2; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(75, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
+If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).Host }) { 
 
     $Currency = @{ 
         "CryptonightBittube2" = "cryptonight_bittube2"
@@ -93,7 +93,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 $ConfigFileName = [System.Web.HttpUtility]::UrlEncode("$((@("Config") + @($_.Type) + @(($AvailableMiner_Devices.Model | Sort-Object -Unique | Sort-Object Name | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($AvailableMiner_Devices | Sort-Object Name | Where-Object Model -eq $Model).Name -join ';'))" } | Select-Object) -join '-') + @($MinerAPIPort) | Select-Object) -join '-').txt")
                 $MinerThreadsConfigFileName = [System.Web.HttpUtility]::UrlEncode("$((@("ThreadsConfig") + @($_.Type) + @($_.Algorithm) + @(($AvailableMiner_Devices.Model | Sort-Object -Unique | Sort-Object Name | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($AvailableMiner_Devices | Sort-Object Name | Where-Object Model -eq $Model).Name -join ';'))" } | Select-Object) -join '-') | Select-Object) -join '-').txt")
                 $PlatformThreadsConfigFileName = [System.Web.HttpUtility]::UrlEncode("$((@("HwConfig") + @($_.Type) + @($_.Algorithm) + @(($AvailableMiner_Devices.Model | Sort-Object -Unique | Sort-Object Name | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($AvailableMiner_Devices | Sort-Object Name | Where-Object Model -eq $Model).Name -join ';'))" } | Select-Object) -join '-') | Select-Object) -join '-').txt")
-                $PoolFileName = [System.Web.HttpUtility]::UrlEncode("$((@("PoolConf") + @($(Get-PoolBaseName $Pools.($_.Algorithm).Name)) + @($_.Algorithm) + @($Pools.($_.Algorithm).User) + @($Pools.($_.Algorithm).Pass) | Select-Object) -join '-').txt")
+                $PoolFileName = [System.Web.HttpUtility]::UrlEncode("$((@("PoolConf") + @($(Get-PoolBaseName $MinerPools[0].($_.Algorithm).Name)) + @($_.Algorithm) + @($MinerPools[0].($_.Algorithm).User) + @($MinerPools[0].($_.Algorithm).Pass) | Select-Object) -join '-').txt")
 
                 $Arguments = [PSCustomObject]@{ 
                     PoolFile = [PSCustomObject]@{ 
@@ -101,17 +101,17 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                         Content  = [PSCustomObject]@{ 
                             pool_list = @(
                                 [PSCustomObject]@{ 
-                                    pool_address    = "$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port)"
-                                    wallet_address  = $Pools.($_.Algorithm).User
-                                    pool_password   = $Pools.($_.Algorithm).Pass
-                                    use_nicehash    = $($Pools.($_.Algorithm).BaseName -eq "NiceHash")
-                                    use_tls         = $Pools.($_.Algorithm).SSL
+                                    pool_address    = "$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).Port)"
+                                    wallet_address  = $MinerPools[0].($_.Algorithm).User
+                                    pool_password   = $MinerPools[0].($_.Algorithm).Pass
+                                    use_nicehash    = $($MinerPools[0].($_.Algorithm).BaseName -eq "NiceHash")
+                                    use_tls         = $MinerPools[0].($_.Algorithm).SSL
                                     tls_fingerprint = ""
                                     pool_weight     = 1
-                                    rig_id          = "$($Pools.($_.Algorithm).WorkerName)"
+                                    rig_id          = "$($MinerPools[0].($_.Algorithm).WorkerName)"
                                 }
                             )
-                            currency = $(If ($Coins -icontains $Pools.($_.Algorithm).CoinName) { $Pools.($_.Algorithm).CoinName } Else { $Currency.($_.Algorithm) })
+                            currency = $(If ($Coins -icontains $MinerPools[0].($_.Algorithm).CoinName) { $MinerPools[0].($_.Algorithm).CoinName } Else { $Currency.($_.Algorithm) })
                         }
                     }
                     ConfigFile = [PSCustomObject]@{ 

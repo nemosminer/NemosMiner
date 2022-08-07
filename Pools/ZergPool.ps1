@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.0.2.5
-Version date:   27 July 2022
+Version:        4.0.2.6
+Version date:   07 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -50,7 +50,12 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
     $PayoutThresholdParameter = ",pl=$([Double]$PayoutThreshold)"
 
     Try { 
-        $Request = Get-Content $TransferFile -ErrorAction Stop | ConvertFrom-Json
+        If ($Variables.BrainData.$Name) { 
+            $Request = $Variables.BrainData.$Name
+        }
+        Else { 
+            $Request = Get-Content $TransferFile -ErrorAction Stop | ConvertFrom-Json
+        }
     }
     Catch { Return }
 

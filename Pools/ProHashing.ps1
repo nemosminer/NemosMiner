@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.0.2.5
-Version date:   27 July 2022
+Version:        4.0.2.6
+Version date:   07 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -41,8 +41,14 @@ $DivisorMultiplier = $Variables.PoolData.$Name.Variant.$PoolVariant.DivisorMulti
 $TransferFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Data\BrainData_" + (Get-Item $MyInvocation.MyCommand.Path).BaseName + ".json"
 
 If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) { 
+
     Try { 
-        $Request = Get-Content $TransferFile -ErrorAction Stop | ConvertFrom-Json
+        If ($Variables.BrainData.$Name) { 
+            $Request = $Variables.BrainData.$Name
+        }
+        Else { 
+            $Request = Get-Content $TransferFile -ErrorAction Stop | ConvertFrom-Json
+        }
     }
     Catch { Return }
 
@@ -63,7 +69,6 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
         If ($Request.$_.CoinName -and $Currency) { Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
-
 
         $Regions = If ($Algorithm_Norm -in @("Chia", "Etchash", "Ethash", "EthashLowMem")) { "US" } Else { $PoolConfig.Region }
 

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NLPool.ps1
-Version:        4.0.2.5
-Version date:   27 July 2022
+Version:        4.0.2.6
+Version date:   07 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -45,7 +45,12 @@ $TransferFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Dire
 If ($DivisorMultiplier -and $PriceField -and $Wallet) { 
 
     Try { 
-        $Request = Get-Content $TransferFile -ErrorAction Stop | ConvertFrom-Json
+        If ($Variables.BrainData.$Name) { 
+            $Request = $Variables.BrainData.$Name
+        }
+        Else { 
+            $Request = Get-Content $TransferFile -ErrorAction Stop | ConvertFrom-Json
+        }
     }
     Catch { Return }
 
@@ -68,7 +73,6 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
         If ($Request.$_.CoinName -and $Currency) { Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
-
 
         ForEach ($Region in $PoolConfig.Region) { 
             $Region_Norm = Get-Region $Region

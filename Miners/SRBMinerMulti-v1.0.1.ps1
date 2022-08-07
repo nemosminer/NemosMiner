@@ -9,13 +9,13 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 
 # Algorithm parameter values are case sensitive!
 $Algorithms = [PSCustomObject[]]@( 
-   [PSCustomObject]@{ Algorithm = @("Autolykos2", "HeavyHash");   Type = "AMD"; Fee = @(0.0065, 0.01); MinMemGB = $Pools."Autolykos2".DAGSizeGB;   MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(45, 30); ExcludePool = @(); Arguments = " --algorithm autolykos2 --algorithm heavyhash --gpu-dual-max-loss 5 --gpu-auto-tune 2" }
-   [PSCustomObject]@{ Algorithm = @("EtcHash", "HeavyHash");      Type = "AMD"; Fee = @(0.0065, 0.01); MinMemGB = $Pools."EtcHash".DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(90, 75); ExcludePool = @(); Arguments = " --algorithm etchash --algorithm heavyhash --gpu-dual-max-loss 5 --gpu-auto-tune 2" }
-   [PSCustomObject]@{ Algorithm = @("Ethash", "Heavyhash");       Type = "AMD"; Fee = @(0.0065, 0.01); MinMemGB = $Pools."Ethash".DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(90, 75); ExcludePool = @(); Arguments = " --algorithm ethash --algorithm heavyhash --gpu-dual-max-loss 5 --gpu-auto-tune 2" }
-   [PSCustomObject]@{ Algorithm = @("EthashLowMem", "HeavyHash"); Type = "AMD"; Fee = @(0.0065, 0.01); MinMemGB = $Pools."EthashLowMem".DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(90, 75); ExcludePool = @(); Arguments = " --algorithm ethash --algorithm heavyhash --gpu-dual-max-loss 5 --gpu-auto-tune 2" }
+   [PSCustomObject]@{ Algorithm = @("Autolykos2", "HeavyHash");   Type = "AMD"; Fee = @(0.0065, 0.01); MinMemGB = $MinerPools[0]."Autolykos2".DAGSizeGB;   MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(45, 30); ExcludePool = @(); Arguments = " --algorithm autolykos2 --algorithm heavyhash --gpu-dual-max-loss 5 --gpu-auto-tune 2" }
+   [PSCustomObject]@{ Algorithm = @("EtcHash", "HeavyHash");      Type = "AMD"; Fee = @(0.0065, 0.01); MinMemGB = $MinerPools[0]."EtcHash".DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(90, 75); ExcludePool = @(); Arguments = " --algorithm etchash --algorithm heavyhash --gpu-dual-max-loss 5 --gpu-auto-tune 2" }
+   [PSCustomObject]@{ Algorithm = @("Ethash", "Heavyhash");       Type = "AMD"; Fee = @(0.0065, 0.01); MinMemGB = $MinerPools[0]."Ethash".DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(90, 75); ExcludePool = @(); Arguments = " --algorithm ethash --algorithm heavyhash --gpu-dual-max-loss 5 --gpu-auto-tune 2" }
+   [PSCustomObject]@{ Algorithm = @("EthashLowMem", "HeavyHash"); Type = "AMD"; Fee = @(0.0065, 0.01); MinMemGB = $MinerPools[0]."EthashLowMem".DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(90, 75); ExcludePool = @(); Arguments = " --algorithm ethash --algorithm heavyhash --gpu-dual-max-loss 5 --gpu-auto-tune 2" }
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm[0]).Host -and (-not $_.Algorithm[1] -or $PoolsSecondaryAlgorithm.($_.Algorithm[1]).Host) }) { 
+If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm[0]).Host -and (-not $_.Algorithm[1] -or $MinerPools[1].($_.Algorithm[1]).Host) }) { 
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
@@ -23,7 +23,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-        $Algorithms | Where-Object Type -EQ $_.Type | Where-Object { $Pools.($_.Algorithm).BaseName -notin $_.ExcludePool } | Select-Object | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
+        $Algorithms | Where-Object Type -EQ $_.Type | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePool } | Select-Object | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
 
             $MinMemGB = $_.MinMemGB + $_.MemReserveGB
 
@@ -34,20 +34,20 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # Get arguments for available miner devices
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algorithm") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $_.Arguments += " --pool $($Pools.($_.Algorithm[0]).Host):$($Pools.($_.Algorithm[0]).Port) --wallet $($Pools.($_.Algorithm[0]).User)"
-                If ($Pools.($_.Algorithm[0]).WorkerName) { " --worker $($Pools.($_.Algorithm[0]).WorkerName)" }
-                $_.Arguments += " --password $($Pools.($_.Algorithm[0]).Pass)$(If ($Pools.($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
-                If ($Pools.($_.Algorithm[0]).SSL) { $_.Arguments += " --ssl true" }
-                If ($Pools.($_.Algorithm[0]).DAGsizeGB -ne $null -and $Pools.($_.Algorithm[0]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { $_.Arguments += " --nicehash true" }
-                If ($Pools.($_.Algorithm[0]).DAGsizeGB -ne $null -and $Pools.($_.Algorithm[0]).BaseName -eq "ProHashing") { $_.Arguments += " --esm 1" }
+                $_.Arguments += " --pool $($MinerPools[0].($_.Algorithm[0]).Host):$($MinerPools[0].($_.Algorithm[0]).Port) --wallet $($MinerPools[0].($_.Algorithm[0]).User)"
+                If ($MinerPools[0].($_.Algorithm[0]).WorkerName) { " --worker $($MinerPools[0].($_.Algorithm[0]).WorkerName)" }
+                $_.Arguments += " --password $($MinerPools[0].($_.Algorithm[0]).Pass)$(If ($MinerPools[0].($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
+                If ($MinerPools[0].($_.Algorithm[0]).SSL) { $_.Arguments += " --ssl true" }
+                If ($MinerPools[0].($_.Algorithm[0]).DAGsizeGB -ne $null -and $MinerPools[0].($_.Algorithm[0]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { $_.Arguments += " --nicehash true" }
+                If ($MinerPools[0].($_.Algorithm[0]).DAGsizeGB -ne $null -and $MinerPools[0].($_.Algorithm[0]).BaseName -eq "ProHashing") { $_.Arguments += " --esm 1" }
 
                 If ($_.Algorithm[1]) { 
-                    $_.Arguments += " --pool $($Pools.($_.Algorithm[1]).Host):$($Pools.($_.Algorithm[1]).Port) --wallet $($Pools.($_.Algorithm[1]).User)"
-                    If ($Pools.($_.Algorithm[1]).WorkerName) { " --worker $($Pools.($_.Algorithm[1]).WorkerName)" }
-                    $_.Arguments += " --password $($Pools.($_.Algorithm[1]).Pass)"
-                    If ($Pools.($_.Algorithm[1]).SSL) { $_.Arguments += " --ssl true" }
-                    If ($Pools.($_.Algorithm[1]).DAGsizeGB -ne $null -and $Pools.($_.Algorithm[1]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { $_.Arguments += " --nicehash true" }
-                    If ($Pools.($_.Algorithm[1]).DAGsizeGB -ne $null -and $Pools.($_.Algorithm[1]).BaseName -eq "ProHashing") { $_.Arguments += " --esm 1" }
+                    $_.Arguments += " --pool $($MinerPools[0].($_.Algorithm[1]).Host):$($MinerPools[0].($_.Algorithm[1]).Port) --wallet $($MinerPools[0].($_.Algorithm[1]).User)"
+                    If ($MinerPools[0].($_.Algorithm[1]).WorkerName) { " --worker $($MinerPools[0].($_.Algorithm[1]).WorkerName)" }
+                    $_.Arguments += " --password $($MinerPools[0].($_.Algorithm[1]).Pass)"
+                    If ($MinerPools[0].($_.Algorithm[1]).SSL) { $_.Arguments += " --ssl true" }
+                    If ($MinerPools[0].($_.Algorithm[1]).DAGsizeGB -ne $null -and $MinerPools[0].($_.Algorithm[1]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { $_.Arguments += " --nicehash true" }
+                    If ($MinerPools[0].($_.Algorithm[1]).DAGsizeGB -ne $null -and $MinerPools[0].($_.Algorithm[1]).BaseName -eq "ProHashing") { $_.Arguments += " --esm 1" }
                 }
 
                 If (($AvailableMiner_Devices.Type | Select-Object -Unique) -eq "CPU") { 

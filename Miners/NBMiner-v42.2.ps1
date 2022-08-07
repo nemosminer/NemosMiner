@@ -8,23 +8,23 @@ $Path = ".\Bin\$($Name)\nbminer.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Autolykos2";   Type = "AMD"; Fee = 0.01; MinMemGB = $Pools."Autolykos2".DAGSizeGB;   MemReserveGB = 0;    AdditionalWin10MemGB = 0; MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo ergo --platform 2" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "AMD"; Fee = 0.01; MinMemGB = $Pools."EtcHash".DAGSizeGB;      MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinerSet = 1; WarmupTimes = @(45, 35); Arguments = " --algo etchash --platform 2 -enable-dag-cache" } # PhoenixMiner-v6.2c is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "AMD"; Fee = 0.01; MinMemGB = $Pools."Ethash".DAGSizeGB;       MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinerSet = 1; WarmupTimes = @(60, 45); Arguments = " --algo ethash --platform 2" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "AMD"; Fee = 0.01; MinMemGB = $Pools."EthashLowMem".DAGSizeGB; MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinerSet = 1; WarmupTimes = @(60, 35); Arguments = " --algo ethash --platform 2 --enable-dag-cache" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "AMD"; Fee = 0.02; MinMemGB = $Pools."KawPoW".DAGSizeGB;       MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinerSet = 1; WarmupTimes = @(45, 15); Arguments = " --algo kawpow --platform 2" } # XmRig-v6.17.0 is almost as fast but has no fee
+    [PSCustomObject]@{ Algorithm = "Autolykos2";   Type = "AMD"; Fee = 0.01; MinMemGB = $MinerPools[0]."Autolykos2".DAGSizeGB;   MemReserveGB = 0;    AdditionalWin10MemGB = 0; MinerSet = 1; WarmupTimes = @(30, 15); Arguments = " --algo ergo --platform 2" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "AMD"; Fee = 0.01; MinMemGB = $MinerPools[0]."EtcHash".DAGSizeGB;      MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinerSet = 1; WarmupTimes = @(45, 35); Arguments = " --algo etchash --platform 2 -enable-dag-cache" } # PhoenixMiner-v6.2c is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "AMD"; Fee = 0.01; MinMemGB = $MinerPools[0]."Ethash".DAGSizeGB;       MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinerSet = 1; WarmupTimes = @(60, 45); Arguments = " --algo ethash --platform 2" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "AMD"; Fee = 0.01; MinMemGB = $MinerPools[0]."EthashLowMem".DAGSizeGB; MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinerSet = 1; WarmupTimes = @(60, 35); Arguments = " --algo ethash --platform 2 --enable-dag-cache" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "AMD"; Fee = 0.02; MinMemGB = $MinerPools[0]."KawPoW".DAGSizeGB;       MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinerSet = 1; WarmupTimes = @(45, 15); Arguments = " --algo kawpow --platform 2" } # XmRig-v6.17.0 is almost as fast but has no fee
  
-    [PSCustomObject]@{ Algorithm = "Autolykos2";   Type = "NVIDIA"; Fee = 0.02; MinMemGB = $Pools."Autolykos2".DAGSizeGB;   MemReserveGB = 0;    AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -mt 1 --algo ergo --platform 1" }
-    [PSCustomObject]@{ Algorithm = "BeamV3";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3;                               MemReserveGB = 0;    AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -mt 1 --algo beamv3 --platform 1" }
-    [PSCustomObject]@{ Algorithm = "Cuckoo29";     Type = "NVIDIA"; Fee = 0.02; MinMemGB = 5;                               MemReserveGB = 0;    AdditionalWin10MemGB = 1; MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(30, 0);  Arguments = " -mt 1 --algo cuckoo_ae --platform 1" } # GMiner-v3.03 is fastest
-    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "NVIDIA"; Fee = 0.01; MinMemGB = $Pools."EtcHash".DAGSizeGB;      MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " -mt 1 --algo etchash --platform 1 --enable-dag-cache" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; Fee = 0.01; MinMemGB = $Pools."Ethash".DAGSizeGB;       MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(60, 0);  Arguments = " -mt 1 --algo ethash --platform 1 --enable-dag-cache" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = $Pools."EthashLowMem".DAGSizeGB; MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(60, 15); Arguments = " -mt 1 --algo ethash --platform 1 --enable-dag-cache" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = $Pools."KawPoW".DAGSizeGB;       MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " -mt 1 --algo kawpow --platform 1" } # XmRig-v6.17.0 is almost as fast but has no fee
-    [PSCustomObject]@{ Algorithm = "Octopus";      Type = "NVIDIA"; Fee = 0.03; MinMemGB = 6;                               MemReserveGB = 0.41; AdditionalWin10MemGB = 1; MinComputeCapability = 6.1; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " -mt 1 --algo octopus --platform 1" } # Trex-v0.26.4 is fastest
+    [PSCustomObject]@{ Algorithm = "Autolykos2";   Type = "NVIDIA"; Fee = 0.02; MinMemGB = $MinerPools[0]."Autolykos2".DAGSizeGB;   MemReserveGB = 0;    AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -mt 1 --algo ergo --platform 1" }
+    [PSCustomObject]@{ Algorithm = "BeamV3";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3;                                       MemReserveGB = 0;    AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " -mt 1 --algo beamv3 --platform 1" }
+    [PSCustomObject]@{ Algorithm = "Cuckoo29";     Type = "NVIDIA"; Fee = 0.02; MinMemGB = 5;                                       MemReserveGB = 0;    AdditionalWin10MemGB = 1; MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(30, 0);  Arguments = " -mt 1 --algo cuckoo_ae --platform 1" } # GMiner-v3.05 is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "NVIDIA"; Fee = 0.01; MinMemGB = $MinerPools[0]."EtcHash".DAGSizeGB;      MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " -mt 1 --algo etchash --platform 1 --enable-dag-cache" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; Fee = 0.01; MinMemGB = $MinerPools[0]."Ethash".DAGSizeGB;       MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(60, 0);  Arguments = " -mt 1 --algo ethash --platform 1 --enable-dag-cache" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; Fee = 0.01; MinMemGB = $MinerPools[0]."EthashLowMem".DAGSizeGB; MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(60, 15); Arguments = " -mt 1 --algo ethash --platform 1 --enable-dag-cache" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = $MinerPools[0]."KawPoW".DAGSizeGB;       MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " -mt 1 --algo kawpow --platform 1" } # XmRig-v6.17.0 is almost as fast but has no fee
+    [PSCustomObject]@{ Algorithm = "Octopus";      Type = "NVIDIA"; Fee = 0.03; MinMemGB = 6;                                       MemReserveGB = 0.41; AdditionalWin10MemGB = 1; MinComputeCapability = 6.1; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " -mt 1 --algo octopus --platform 1" } # Trex-v0.26.4 is fastest
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $Pools.($_.Algorithm).Host }) { 
+If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).Host }) { 
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
@@ -49,7 +49,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                 If ($_.Algorithm -match "^Cuck.*|^EtcHash$|^Ethash.*|^KawPoW$") { 
-                    If ($Pools.($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash")) { 
+                    If ($MinerPools[0].($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash")) { 
                         $_.Arguments += " --url nicehash"
                     }
                     Else { 
@@ -59,9 +59,9 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 Else { 
                     $_.Arguments += " --url stratum"
                 }
-                $_.Arguments += If ($Pools.($_.Algorithm).SSL) { "+ssl://" } Else  { "+tcp://" }
-                $_.Arguments += "$($Pools.($_.Algorithm).Host):$($Pools.($_.Algorithm).Port) --user $($Pools.($_.Algorithm).User)$(If ($Pools.($_.Algorithm).WorkerName) { ".$($Pools.($_.Algorithm).WorkerName)" })"
-                $_.Arguments += " --password $($Pools.($_.Algorithm).Pass)$(If ($Pools.($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
+                $_.Arguments += If ($MinerPools[0].($_.Algorithm).SSL) { "+ssl://" } Else  { "+tcp://" }
+                $_.Arguments += "$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).Port) --user $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" })"
+                $_.Arguments += " --password $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
 
                 # Optionally disable dev fee mining
                 If ($Config.DisableMinerFee) { 

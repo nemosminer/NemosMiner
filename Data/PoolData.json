@@ -2,15 +2,16 @@
   "BlockMasters": {
     "BalancesKeepAlive": 120, // Old accounts are purged every 120 Days
     "BrainConfig": {
-      "AllowedAPIFailureCount": 3,
-      "APIRetryInterval": 3,
-      "Interval": 60,
-      "PerAPIFailPercentPenalty": 10,
+      "PoolAPIAllowedFailureCount": 3,
+      "PoolAPIPerFailPercentPenalty": 10,
+      "PoolAPIRetryInterval": 3,
+      "PoolAPITimeout": 20,
       "PoolCurrenciesUri": "http://blockmasters.co/api/currencies",
       "PoolStatusUri": "http://blockmasters.co/api/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
-      "UseFullTrust": false
+      "UseFullTrust": false,
+      "UseTransferFile": false
     },
     "GuaranteedPayoutCurrencies": [
       "BTC",
@@ -150,15 +151,16 @@
   "NLPool": {
     "BalancesKeepAlive": 30, // Accounts with no mining activity for 1 month are purged
     "BrainConfig": {
-      "AllowedAPIFailureCount": 3,
-      "APIRetryInterval": 3,
-      "Interval": 60,
-      "PerAPIFailPercentPenalty": 10,
+      "PoolAPIAllowedFailureCount": 3,
+      "PoolAPIPerFailPercentPenalty": 10,
+      "PoolAPIRetryInterval": 3,
+      "PoolAPITimeout": 20,
       "PoolCurrenciesUri": "https://www.nlpool.nl/api/currencies",
       "PoolStatusUri": "https://www.nlpool.nl/api/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
-      "UseFullTrust": false
+      "UseFullTrust": false,
+      "UseTransferFile": false
     },
     "GuaranteedPayoutCurrencies": [
       "BTC",
@@ -190,15 +192,16 @@
   "ProHashing": {
     "BalancesKeepAlive": 90, // The customer has not mined with the pool for 90 days (https://prohashing.com/help/prohashing-legal-information#terms)
     "BrainConfig": {
-      "AllowedAPIFailureCount": 3,
-      "APIRetryInterval": 3,
-      "Interval": 60,
-      "PerAPIFailPercentPenalty": 10,
+      "PoolAPIAllowedFailureCount": 3,
+      "PoolAPIPerFailPercentPenalty": 10,
+      "PoolAPIRetryInterval": 3,
+      "PoolAPITimeout": 20,
       "PoolCurrenciesUri": "https://prohashing.com/api/v1/currencies",
       "PoolStatusUri": "https://prohashing.com/api/v1/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
-      "UseFullTrust": false
+      "UseFullTrust": false,
+      "UseTransferFile": false
     },
     "GuaranteedPayoutCurrencies": [
       "BTC",
@@ -231,15 +234,16 @@
   "ZergPool": {
     "BalancesKeepAlive": 90, // Accounts with no mining activity for 3 months are purged 
     "BrainConfig": {
-      "AllowedAPIFailureCount": 3,
-      "APIRetryInterval": 3,
-      "Interval": 60,
-      "PerAPIFailPercentPenalty": 10,
+      "PoolAPIAllowedFailureCount": 3,
+      "PoolAPIPerFailPercentPenalty": 10,
+      "PoolAPIRetryInterval": 3,
+      "PoolAPITimeout": 30,
       "PoolCurrenciesUri": "https://api.zergpool.com:8443/api/currencies",
       "PoolStatusUri": "https://api.zergpool.com:8443/api/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
-      "UseFullTrust": false
+      "UseFullTrust": false,
+      "UseTransferFile": false
     },
     "GuaranteedPayoutCurrencies": [
       "BCH",
@@ -296,15 +300,16 @@
   "ZPool": {
     "BalancesKeepAlive": 90, // Inactive accounts are purged after 90 days
     "BrainConfig": {
-      "AllowedAPIFailureCount": 3,
-      "APIRetryInterval": 3,
-      "Interval": 60,
-      "PerAPIFailPercentPenalty": 10,
+      "PoolAPIAllowedFailureCount": 3,
+      "PoolAPIPerFailPercentPenalty": 10,
+      "PoolAPIRetryInterval": 3,
+      "PoolAPITimeout": 30,
       "PoolCurrenciesUri": "https://www.zpool.ca/api/currencies",
       "PoolStatusUri": "https://www.zpool.ca/api/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
-      "UseFullTrust": false
+      "UseFullTrust": false,
+      "UseTransferFile": false
     },
     "GuaranteedPayoutCurrencies": [
       "BTC",

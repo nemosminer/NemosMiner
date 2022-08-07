@@ -1,7 +1,6 @@
 <#
 Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
 
-
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -19,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.2.5
-Version date:   27 July 2022
+Version:        4.0.2.6
+Version date:   07 August 2022
 #>
 
 # Window handling
@@ -236,6 +235,7 @@ Class Miner {
                     $Miner.GetMinerData()
                     While ((Get-Date) -lt $NextLoop) { Start-Sleep -Milliseconds 50 }
                 }
+                Remove-Variable Miner, NextLoop
             }
             Catch { 
                 Return $Error[0]
@@ -573,22 +573,21 @@ Class Miner {
                 $this.MeasurePowerUsage = $true
             }
         }
+        Remove-Variable Factor, Stat -ErrorAction Ignore
     }
 }
 Function Start-IdleDetection { 
 
     # Function tracks how long the system has been idle and controls the paused state
-    $IdleRunspace = [runspacefactory]::CreateRunspace()
-    $IdleRunspace.Open()
-    $IdleRunspace.SessionStateProxy.SetVariable('Config', $Config)
-    $IdleRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-    $IdleRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
-
-    $Variables.IdleRunspace = $IdleRunspace
+    $Variables.IdleRunspace = [runspacefactory]::CreateRunspace()
+    $Variables.IdleRunspace.Open()
+    $Variables.IdleRunspace.SessionStateProxy.SetVariable('Config', $Config)
+    $Variables.IdleRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
+    $Variables.IdleRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
     $Variables.IdleRunspace | Add-Member MiningStatus "Running" -Force
 
     $PowerShell = [PowerShell]::Create()
-    $PowerShell.Runspace = $IdleRunspace
+    $PowerShell.Runspace = $Variables.IdleRunspace
     $PowerShell.AddScript(
         { 
             # Set the starting directory
@@ -697,17 +696,15 @@ Function Start-Mining {
         $Variables.Pools = $null
         $Variables.Miners = $null
 
-        $CoreRunspace = [RunspaceFactory]::CreateRunspace()
-        $CoreRunspace.Open()
-        $CoreRunspace.SessionStateProxy.SetVariable('Config', $Config)
-        $CoreRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-        $CoreRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
-        $CoreRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
-
-        $Variables.CoreRunspace = $CoreRunspace
+        $Variables.CoreRunspace = [RunspaceFactory]::CreateRunspace()
+        $Variables.CoreRunspace.Open()
+        $Variables.CoreRunspace.SessionStateProxy.SetVariable('Config', $Config)
+        $Variables.CoreRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
+        $Variables.CoreRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
+        $Variables.CoreRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
 
         $PowerShell = [PowerShell]::Create()
-        $PowerShell.Runspace = $CoreRunspace
+        $PowerShell.Runspace = $Variables.CoreRunspace
         $PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
         $PowerShell.BeginInvoke()
 
@@ -740,6 +737,84 @@ Function Stop-Mining {
 
         $Variables.Summary = "Mining processes stopped."
         Write-Host $Variables.Summary
+    }
+}
+
+Function Start-Brain { 
+
+    Param(
+        [Parameter(Mandatory = $false)]
+        [String[]]$Brains
+    )
+
+    If (-not $Variables.BrainRunspacePool) { 
+
+        # https://stackoverflow.com/questions/38102068/sessionstateproxy-variable-with-runspace-pools
+        $InitialSessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
+
+        # Create the sessionstate variable entries
+        @("Config", "Variables") | ForEach-Object { 
+            $InitialSessionState.Variables.Add((New-Object System.Management.Automation.Runspaces.SessionStateVariableEntry -ArgumentList $_, (Get-Variable $_ -ValueOnly), $Null))
+        }
+
+        $Variables.BrainRunspacePool = [RunspaceFactory]::CreateRunspacePool(1, (Get-Item -Path ".\Brains\*.ps1").Count, $InitialSessionState, $Host)
+        $Variables.BrainRunspacePool.Open()
+        $Variables.Brains = @{ }
+        $Variables.BrainData = [PSCustomObject]@{ }
+        Remove-Variable InitialSessionState
+    }
+
+    # Starts Brains if necessary
+    $BrainsStarted = @()
+    $Brains | Select-Object | ForEach-Object { 
+        If ($Config.PoolsConfig.$_.BrainConfig -and -not $Variables.Brains.$_) { 
+            $BrainScript = ".\Brains\$($_).ps1"
+            If (Test-Path -Path $BrainScript -PathType Leaf) {  
+                $PowerShell = [powershell]::Create()
+                $PowerShell.RunspacePool = $Variables.BrainRunspacePool
+                $PowerShell.AddScript($BrainScript)
+                $Variables.Brains.$_ = @{ Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell }
+                $BrainsStarted += $_
+            }
+        }
+    }
+
+    If ($BrainsStarted.Count -gt 0) { Write-Message -Level Info "Pool Brain Job$(If ($BrainsStarted.Count -gt 1) { "s" }) for '$(($BrainsStarted | Sort-Object) -join ", ")' started." }
+
+    Remove-Variable BrainsStarted, PowerShell
+}
+
+Function Stop-Brain { 
+
+    Param(
+        [Parameter(Mandatory = $false)]
+        [String[]]$Brains = $Variables.Brains.Keys
+    )
+
+    If ($Brains) { 
+        $BrainsStopped = @()
+
+        $Brains | ForEach-Object { 
+            # Stop Brains
+            $Variables.Brains.$_.PowerShell.Dispose()
+            $Variables.Brains.Remove($_)
+            $BrainsStopped += $_
+        }
+
+        [System.GC]::Collect()
+
+        If ($BrainsStopped.Count -gt 0) { Write-Message -Level Info  "Pool Brain Job$(If ($BrainsStopped.Count -gt 1) { "s" }) for '$(($BrainsStopped | Sort-Object) -join ", ")' stopped." }
+
+        Remove-Variable BrainsStopped
+    }
+
+    If ($Variables.BrainRunspacePool -and -not $Variables.Brains) { 
+        $Variables.BrainRunspacePool.Close()
+        $Variables.BrainRunspacePool.Dispose()
+        $Variables.Remove("Brains")
+        $Variables.Remove("BrainData")
+
+        [System.GC]::Collect()
     }
 }
 
@@ -793,27 +868,27 @@ Function Start-BalancesTracker {
     If (-not $Variables.BalancesTrackerRunspace) { 
 
         Try { 
-            $Variables.Summary = "Starting Balances Tracker..."
+            $Variables.Summary = "Starting Balances Tracker background process..."
             Write-Message -Level Info $Variables.Summary
 
-            $BalancesTrackerRunspace = [runspacefactory]::CreateRunspace()
-            $BalancesTrackerRunspace.Open()
-            $BalancesTrackerRunspace.SessionStateProxy.SetVariable('Config', $Config)
-            $BalancesTrackerRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-            $BalancesTrackerRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+            $Variables.BalancesTrackerRunspace = [runspacefactory]::CreateRunspace()
+            $Variables.BalancesTrackerRunspace.Open()
+            $Variables.BalancesTrackerRunspace.SessionStateProxy.SetVariable('Config', $Config)
+            $Variables.BalancesTrackerRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
+            $Variables.BalancesTrackerRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+
             $PowerShell = [PowerShell]::Create()
-            $PowerShell.Runspace = $BalancesTrackerRunspace
+            $PowerShell.Runspace = $Variables.BalancesTrackerRunspace
             $PowerShell.AddScript("$($Variables.MainPath)\Includes\BalancesTracker.ps1")
             $PowerShell.BeginInvoke()
 
-            $Variables.BalancesTrackerRunspace = $BalancesTrackerRunspace
             $Variables.BalancesTrackerRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
-
-            Write-Host "Balances Tracker is running."
         }
         Catch { 
             Write-Message -Level Error "Failed to start Balances Tracker [$Error[0]]."
         }
+
+        Remove-Variable PowerShell
     }
 }
 
@@ -825,8 +900,8 @@ Function Stop-BalancesTracker {
         If ($Variables.BalancesTrackerRunspace.PowerShell) { $Variables.BalancesTrackerRunspace.PowerShell.Dispose() }
 
         $Variables.Remove("BalancesTrackerRunspace")
-        $Variables.Summary += "\nBalances Tracker stopped."
-        Write-Message -Level Info "Balances Tracker stopped."
+        $Variables.Summary += "<br>Balances Tracker background process stopped."
+        Write-Message -Level Info "Balances Tracker background process stopped."
     }
 }
 
@@ -848,9 +923,7 @@ Function Initialize-Application {
 
 Function Get-DefaultAlgorithm { 
 
-    If (Test-Json ".\Data\PoolsConfig-Recommended.json") { 
-        If ($PoolsAlgos = Get-Content ".\Data\PoolsConfig-Recommended.json" | ConvertFrom-Json) {Return ($PoolsAlgos.PSObject.Properties | Where-Object Name -in @(Get-PoolBaseName $Config.PoolName) | ForEach-Object {$_.Value.Algorithm }) | Sort-Object -Unique }
-    }
+    If ($PoolsAlgos = Get-Content ".\Data\PoolsConfig-Recommended.json" -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue) { Return ($PoolsAlgos.PSObject.Properties.Name | Where-Object { $_ -in @(Get-PoolBaseName $Config.PoolName) } | ForEach-Object {$PoolsAlgos.$_.Algorithm }) | Sort-Object -Unique }
     Return
 }
 
@@ -867,17 +940,19 @@ Function Get-CommandLineParameters {
 Function Get-Rate { 
     # Read exchange rates from min-api.cryptocompare.com, use stored data as fallback
 
-    $RatesFile = "Data\Rates.json"
+    $RatesFileName = "Data\Rates.json"
+    $RatesCache = Get-Content -Path $RatesFileName -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue
+
     $Variables.BalancesCurrencies = @($Variables.Balances.Keys | ForEach-Object { $Variables.Balances.$_.Currency } | Sort-Object -Unique)
 
     Try { 
-        If (-not $Variables.AllCurrencies -and (Test-Json $RatesFile)) { 
-            $Variables.AllCurrencies = @((Get-Content -Path $RatesFile | ConvertFrom-Json).PSObject.Properties.Name)
+        If (-not $Variables.AllCurrencies -and $RatesCache.PSObject.Properties.Name) { 
+            $Variables.AllCurrencies = @($RatesCache.PSObject.Properties.Name)
         }
         Else { 
-            $Variables.AllCurrencies = @($Config.Currency) + @($Config.Wallets.PSObject.Properties.Name) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies)
+            $Variables.AllCurrencies = @(@($Config.Currency) + @($Config.Wallets.PSObject.Properties.Name) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies) | Sort-Object -Unique)
         }
-        $Variables.AllCurrencies = @($Variables.AllCurrencies | ForEach-Object { $_ -replace '^mBTC$', 'BTC' } | Sort-Object -Unique)
+        $Variables.AllCurrencies = @($Variables.AllCurrencies | Where-Object { $_ -replace "mBTC", "BTC" } | Sort-Object -Unique)
         If (-not $Variables.Rates.BTC.($Config.Currency) -or (Compare-Object @($Variables.Rates.PSObject.Properties.Name | Select-Object) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "=>") -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-(3, $Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum))) { 
             If ($Rates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$((@("BTC") + @($Variables.AllCurrencies | Where-Object { $_ -ne "mBTC" }) | Select-Object -Unique) -join ',')&extraParams=$($Variables.Branding.BrandWebSite)" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) { 
                 $Currencies = ($Rates.BTC | Get-Member -MemberType NoteProperty).Name
@@ -888,6 +963,10 @@ Function Get-Rate {
                         $Rates.$Currency | Add-Member $_ ([Double]$Rates.BTC.$_ / $Rates.BTC.$Currency) -Force
                     }
                 }
+                Write-Message -Level Info "Loaded currency exchange rates from 'min-api.cryptocompare.com'.$(If ($MissingCurrencies = Compare-Object $Currencies $Variables.AllCurrencies -PassThru) { " Warning: Could not get rates for '$($MissingCurrencies -join ', ')'." })"
+                $Rates | ConvertTo-Json -Depth 5 | Out-File -FilePath $RatesFileName -Encoding utf8NoBOM -Force -ErrorAction SilentlyContinue
+                $Variables.Rates = $Rates
+                $Variables.RatesUpdated = (Get-Date).ToUniversalTime()
                 # Add mBTC
                 $Currencies | ForEach-Object { 
                     $Currency = $_
@@ -904,16 +983,11 @@ Function Get-Rate {
                         $Rates.$Currency | Add-Member $mCurrency ([Double]$Rates.$Currency.$_ * 1000)
                     }
                 }
-                Write-Message -Level Info "Loaded currency exchange rates from 'min-api.cryptocompare.com'.$(If ($MissingCurrencies = Compare-Object $Currencies $Variables.AllCurrencies -PassThru) { " Warning: Could not get rates for '$($MissingCurrencies -join ', ')'." })"
-                $Rates | ConvertTo-Json -Depth 5 | Out-File -FilePath $RatesFile -Encoding utf8NoBOM -Force -ErrorAction SilentlyContinue
-                $Variables.Rates = $Rates
-                $Variables.RatesUpdated = (Get-Date).ToUniversalTime()
             }
             Else { 
-                If (Test-Json $RatesFile) { 
-                    $Variables.Rates = (Get-Content -Path $RatesFile -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop)
-                    $Variables.RatesUpdated = "FromFile: $((Get-Item -Path $RatesFile).CreationTime.ToUniversalTime())"
-                    Write-Message -Level Warn "Could not load exchange rates from CryptoCompare. Using stored data from $((Get-Item -Path $RatesFile).CreationTime)."
+                If ($RatesCache.PSObject.Properties.Name) { 
+                    $Variables.Rates = $RatesCache
+                    Write-Message -Level Warn "Could not load exchange rates from CryptoCompare. Using stored data from $((Get-Item -Path $RatesFileName).CreationTime)."
                 }
                 Else { 
                     Write-Message -Level Warn "Could not load exchange rates from CryptoCompare."
@@ -922,15 +996,17 @@ Function Get-Rate {
         }
     }
     Catch { 
-        If (Test-Json $RatesFile) { 
-            $Variables.Rates = (Get-Content -Path $RatesFile -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop)
-            $Variables.RatesUpdated = "FromFile: $((Get-Item -Path $RatesFile).CreationTime.ToUniversalTime())"
-            Write-Message -Level Warn "Could not load exchange rates from CryptoCompare. Using cached data from $((Get-Item -Path $RatesFile).CreationTime)."
+        If ($RatesCache.PSObject.Properties.Name) { 
+            $Variables.Rates = $RatesCache
+            $Variables.RatesUpdated = "FromFile: $((Get-Item -Path $RatesFileName).CreationTime.ToUniversalTime())"
+            Write-Message -Level Warn "Could not load exchange rates from CryptoCompare. Using cached data from $((Get-Item -Path $RatesFileName).CreationTime)."
         }
         Else { 
             Write-Message -Level Warn "Could not load exchange rates from CryptoCompare."
         }
     }
+
+    Remove-Variable Currency, mCurrency, RatesCache, RatesFileName
 }
 
 Function Write-Message { 
@@ -944,19 +1020,21 @@ Function Write-Message {
         [String]$Level = "Info"
     )
 
-    # Update status text box in GUI
-    If ($Variables.LabelStatus) { 
-        $Variables.LabelStatus.Lines += $Message
-
-        # Keep only 100 lines, more lines impact performance
-        $Variables.LabelStatus.Lines = @($Variables.LabelStatus.Lines | Select-Object -Last 100)
-
-        $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
-        $Variables.LabelStatus.ScrollToCaret()
-        $Variables.LabelStatus.Refresh()
-    }
+    $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
     If ($Config.LogToScreen -and $Level -in $Config.LogToScreen) { 
+        # Update status text box in GUI
+        If ($Variables.LabelStatus) { 
+            $Variables.LabelStatus.Lines += "$Date $($Level.ToUpper()): $Message"
+
+            # Keep only 100 lines, more lines impact performance
+            $Variables.LabelStatus.Lines = @($Variables.LabelStatus.Lines | Select-Object -Last 100)
+
+            $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
+            $Variables.LabelStatus.ScrollToCaret()
+            $Variables.LabelStatus.Refresh()
+        }
+
         # Write to console
         Switch ($Level) { 
             "Error"   { Write-Host $Message -ForegroundColor "Red" }
@@ -975,7 +1053,6 @@ Function Write-Message {
         # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
         If ($Mutex.WaitOne(1000)) { 
 
-            $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
             "$Date $($Level.ToUpper()): $Message" | Out-File -FilePath $Variables.LogFile -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
             [void]$Mutex.ReleaseMutex()
@@ -983,6 +1060,8 @@ Function Write-Message {
         Else { 
             Write-Error -Message "Log file is locked, unable to write message to $($Variables.LogFile)."
         }
+
+        Remove-Variable Date, Mutex
     }
 }
 
@@ -1039,6 +1118,8 @@ Function Update-MonitoringData {
     Catch { 
         Write-Message -Level Warn "Monitoring: Unable to send status to '$($Config.MonitoringServer)' [ID $($Config.MonitoringUser)]."
     }
+
+    Remove-Variable Body, Data, Response, Status, Version
 }
 
 Function Read-MonitoringData { 
@@ -1066,6 +1147,8 @@ Function Read-MonitoringData {
             Write-Message -Level Warn "Monitoring: Unable to retrieve worker data from '$($Config.MonitoringServer)' [ID $($Config.MonitoringUser)]."
         }
     }
+
+    Remove-Variable Workers
 }
 
 Function Merge-Hashtable { 
@@ -1128,6 +1211,8 @@ Function Get-DonationPoolConfig {
             }
         }
     }
+
+    Remove-Variable PoolConfig
 }
 
 Function Read-Config { 
@@ -1137,7 +1222,7 @@ Function Read-Config {
         [String]$ConfigFile
     )
 
-    Function Create-DefaultConfig { 
+    Function Get-DefaultConfig { 
         $Config.ConfigFileVersion = $Variables.Branding.Version.ToString()
         $Variables.FreshConfig = $true
 
@@ -1171,7 +1256,7 @@ Function Read-Config {
             $Message = "Configuration file '$ConfigFile' is corrupt and was renamed to '$CorruptConfigFile'."
             Write-Message -Level Warn $Message
             $Variables.FreshConfigText = "$Message`n`nUse the configuration editor to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!"
-            $Config = Create-DefaultConfig
+            $Config = Get-DefaultConfig
         }
         Else { 
             # Fix upper / lower case (Web GUI is case sensitive)
@@ -1188,10 +1273,10 @@ Function Read-Config {
     Else { 
         Write-Message -Level Warn "No valid configuration file '$ConfigFile' found."
         $Variables.FreshConfigText = "This is the first time you have started $($Variables.Branding.ProductLabel).`n`nUse the configuration editor to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!"
-        $Config = Create-DefaultConfig
+        $Config = Get-DefaultConfig
     }
 
-    $DefaultPoolData = $Variables.PoolData
+    $Variables.PoolData = Get-Content -Path ".\Data\PoolData.json" | ConvertFrom-Json -AsHashtable | Get-SortedObject
 
     # Build custom pools configuration, create case insensitive hashtable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
     If ($Variables.PoolsConfigFile -and (Test-Path -Path $Variables.PoolsConfigFile -PathType Leaf)) { 
@@ -1210,7 +1295,7 @@ Function Read-Config {
     $PoolsConfig = [Ordered]@{ }
     (Get-ChildItem .\Pools\*.ps1 -File).BaseName | Sort-Object -Unique | ForEach-Object { 
         $PoolName = $_
-        If ($PoolConfig = $DefaultPoolData.$PoolName) { 
+        If ($PoolConfig = $Variables.PoolData.$PoolName) { 
             # Merge default pool data with custom pool config
             If ($CustomPoolConfig = $CustomPoolsConfig.$PoolName) { $PoolConfig = Merge-Hashtable -HT1 $PoolConfig -HT2 $CustomPoolConfig -Unique $true }
 
@@ -1255,6 +1340,8 @@ Function Read-Config {
         $PoolsConfig.$PoolName = $PoolConfig
     }
     $Config.PoolsConfig = $PoolsConfig
+
+    Remove-Variable Config_Tmp, CustomPoolsConfig, PoolConfig, PoolName, Temp -ErrorAction Ignore
 }
 
 Function Write-Config { 
@@ -1320,6 +1407,8 @@ Function Edit-File {
     Else { 
         Return "No changes to '$(($FileName))' made."
     }
+
+    Remove-Variable FileWriteTime, NotepadProcess -ErrorAction Ignore
 }
 
 Function Get-SortedObject { 
@@ -1340,7 +1429,7 @@ Function Get-SortedObject {
                 # Upper / lower case conversion (Web GUI is case sensitive)
                 $Property = $_.Name
                 $Property = $Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $Property }
-                If (-not $PropertyName) { $Property = $_.Name }
+                If (-not $Property) { $Property = $_.Name }
 
                 If ($Object.$Property -is [Hashtable] -or $Object.$Property -is [PSCustomObject]) { $SortedObject[$Property] = Get-SortedObject $Object.$Property }
                 ElseIf ($Object.$Property -is [Array]) { $SortedObject[$Property] = $Object.$Property -as $Object.$Property.GetType().Name }
@@ -1362,6 +1451,7 @@ Function Get-SortedObject {
         }
     }
 
+    Remove-Variable Key, Object, Property -ErrorAction Ignore
     $SortedObject
 }
 
@@ -1512,6 +1602,8 @@ Function Set-Stat {
         Disabled              = [Boolean]$Stat.Disabled
     } | ConvertTo-Json | Out-File -FilePath $Path -Force -Encoding utf8NoBOM
 
+    Remove-Variable ChangeDetection, Disabled, Duration, FaultDetection, FaultFactor, Name, Path, SmallesValue, Timer, ToleranceMax, ToleranceMin, Value -ErrorAction Ignore
+
     $Stat
 }
 
@@ -1578,6 +1670,8 @@ Function Get-Stat {
 
         $Global:Stats.$Stat_Name
     }
+
+    Remove-Variable Stat, StatFiles, Stat_Name -ErrorAction Ignore
 }
 
 Function Remove-Stat { 
@@ -1591,6 +1685,8 @@ Function Remove-Stat {
         Remove-Item -Path "Stats\$_.txt" -Force -Confirm:$false -ErrorAction SilentlyContinue
         If ($Global:Stats.$_) { $Global:Stats.Remove($_) }
     }
+
+    Remove-Variable Name -ErrorAction Ignore
 }
 
 Function Get-ArgumentsPerDevice { 
@@ -1720,6 +1816,8 @@ Function Get-ChildItemContent {
     Else { 
         Return (& $ScriptBlock -Path $Path -Parameters $Parameters)
     }
+
+    Remove-Variable Content, Expression, Parameters, Priority, ScriptBlock, Threaded, Name -ErrorAction Ignore
 }
 
 Function Invoke-TcpRequest { 
@@ -1756,6 +1854,8 @@ Function Invoke-TcpRequest {
     }
 
     $Response
+
+    Remove-Variable Client, Port, Reader, Response, Server, Stream, Writer -ErrorAction Ignore
 }
 
 Function Get-CpuId { 
@@ -1905,9 +2005,9 @@ Function Get-NvidiaArchitecture {
     )
 
     $ComputeCapability = $ComputeCapability -replace "[^\d\.]"
-    If     ($ComputeCapability -in @("8.0","8.6") -or $Model -match "^RTX30\d{2}" -or $Model -match "^RTXA\d{4}"  -or $Model -match "^AM") {"Ampere"}
-    ElseIf ($ComputeCapability -in @("7.5")       -or $Model -match "^RTX20\d{2}" -or $Model -match "^GTX16\d{2}" -or $Model -match "^TU") {"Turing"}
-    ElseIf ($ComputeCapability -in @("6.0","6.1") -or $Model -match "^GTX10\d{2}" -or $Model -match "^GTXTitanX"  -or $Model -match "^GP" -or $Model -match "^P" -or $Model -match "^GT1030") {"Pascal"}
+    If     ($ComputeCapability -in @("8.0", "8.6") -or $Model -match "^RTX30\d{2}" -or $Model -match "^RTXA\d{4}"  -or $Model -match "^AM") {"Ampere"}
+    ElseIf ($ComputeCapability -in @("7.5")        -or $Model -match "^RTX20\d{2}" -or $Model -match "^GTX16\d{2}" -or $Model -match "^TU") {"Turing"}
+    ElseIf ($ComputeCapability -in @("6.0", "6.1") -or $Model -match "^GTX10\d{2}" -or $Model -match "^GTXTitanX"  -or $Model -match "^GP" -or $Model -match "^P" -or $Model -match "^GT1030") {"Pascal"}
     Else   {"Other"}
 }
 
@@ -2561,6 +2661,8 @@ Function Get-Region {
     If ($List) { $Global:Regions.$Region }
     ElseIf ($Global:Regions.$Region) { $($Global:Regions.$Region | Select-Object -First 1) }
     Else { $Region }
+
+    Remove-Variable List, Region -ErrorAction Ignore
 }
 
 Function Add-CoinName { 
@@ -2606,6 +2708,8 @@ Function Add-CoinName {
  
             [void]$Mutex.ReleaseMutex()
         }
+
+        Remove-Variable Mutex
     }
 }
 
@@ -3226,5 +3330,23 @@ Function Out-DataTable {
 
     End { 
         Write-Output @(,($DataTable))
+    }
+}
+
+Function Get-Median { 
+    Param(
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
+        [Double[]]
+        $Number
+    )
+
+    $NumberSeries += @()
+    $NumberSeries += $Number
+    $SortedNumbers = @($NumberSeries | Sort-Object)
+    If ($NumberSeries.Count % 2) { 
+        $SortedNumbers[($SortedNumbers.Count / 2) - 1]
+    }
+    Else { 
+        ($SortedNumbers[($SortedNumbers.Count / 2)] + $SortedNumbers[($SortedNumbers.Count / 2) - 1]) / 2
     }
 }
