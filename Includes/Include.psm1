@@ -1139,8 +1139,6 @@ Function Read-MonitoringData {
             $Variables.Workers = $Workers
             $Variables.WorkersLastUpdated = (Get-Date)
 
-            Remove-Variable Workers
-
             Write-Message -Level Verbose "Retrieved worker status from '$($Config.MonitoringServer)' [ID $($Config.MonitoringUser)]."
         }
         Catch { 
@@ -1148,7 +1146,7 @@ Function Read-MonitoringData {
         }
     }
 
-    Remove-Variable Workers
+    Remove-Variable Workers -ErrorAction Ignore
 }
 
 Function Merge-Hashtable { 
