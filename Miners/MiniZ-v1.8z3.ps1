@@ -78,7 +78,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     DeviceNames    = $AvailableMiner_Devices.Name
                     Type            = $AvailableMiner_Devices.Type
                     Path            = $Path
-                    Arguments       = ("$($_.Arguments) --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int 10 --latency --all-shares --extra --tempunits C --show-pers --fee-time=60 --telemetry $MinerAPIPort -cd $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ' ')" -replace "\s+", " ").trim()
+                    Arguments       = ("$($_.Arguments) --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int 10 --latency --all-shares --extra --tempunits C --show-pers --fee-time=60 --telemetry $MinerAPIPort -cd $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:d2}' -f $_ }) -join ' ')" -replace "\s+", " ").trim()
                     Algorithms      = @($_.Algorithm)
                     API             = "MiniZ"
                     Port            = $MinerAPIPort
