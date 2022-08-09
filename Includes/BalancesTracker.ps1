@@ -90,7 +90,7 @@ Do {
         # Read exchange rates
         Get-Rate
 
-        $BalanceObjects | Where-Object { $_.DateTime -gt $Now } | ForEach-Object { 
+        $BalanceObjects | ForEach-Object { 
             $PoolBalanceObject = $_
 
             $PoolBalanceObjects = @($AllBalanceObjects | Where-Object Pool -EQ $PoolBalanceObject.Pool | Where-Object Currency -EQ $PoolBalanceObject.Currency | Where-Object Wallet -EQ $PoolBalanceObject.Wallet | Sort-Object DateTime)
@@ -312,7 +312,7 @@ Do {
                 }
             }
         }
-        Remove-Variable AvgHourlyGrowth, AvgDailyGrowth, AvgWeeklyGrowth BalanceObjects, EarningsObject, Delta, Growth1, Growth6, Growth24, Growth168, Growth720, GrowthToday, HiddenPending, Payout, PayoutThreshold, PayoutThresholdCurrency, PoolBalanceObject, PoolTodayEarning -ErrorAction Ignore
+        Remove-Variable AvgHourlyGrowth, AvgDailyGrowth, AvgWeeklyGrowth, BalanceObjects, EarningsObject, Delta, Growth1, Growth6, Growth24, Growth168, Growth720, GrowthToday, HiddenPending, Payout, PayoutThreshold, PayoutThresholdCurrency, PoolBalanceObject, PoolTodayEarning -ErrorAction Ignore
 
         # Always keep pools sorted, even when new pools were added
         $Variables.Balances = [Ordered]@{ }
