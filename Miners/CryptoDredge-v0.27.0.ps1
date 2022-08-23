@@ -12,7 +12,7 @@ $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Argon2d4096";       Fee = 0.01; MinMemGB = 2;                                       MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algo argon2d4096 --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Argon2dDyn";        Fee = 0.01; MinMemGB = 2;                                       MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algo argon2d-dyn --intensity 6" }
+    [PSCustomObject]@{ Algorithm = "Argon2d500";        Fee = 0.01; MinMemGB = 2;                                       MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algo argon2d-dyn --intensity 6" }
     [PSCustomObject]@{ Algorithm = "Argon2dNim";        Fee = 0.01; MinMemGB = 2;                                       MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo argon2d-nim --intensity 6" }
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";      Fee = 0.01; MinMemGB = 1;                                       MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo chukwa --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Argon2ChukwaV2";    Fee = 0.01; MinMemGB = 1;                                       MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo chukwa2 --intensity 8" }

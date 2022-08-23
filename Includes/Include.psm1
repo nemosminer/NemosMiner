@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.0.2.6
-Version date:   07 August 2022
+Version:        4.1.0.0
+Version date:   23 August 2022
 #>
 
 # Window handling
@@ -102,6 +102,7 @@ Class Pool {
     [String]$CoinName
     [String]$Currency
     [Nullable[Double]]$DAGsizeGB = $null
+    [Boolean]$Disabled = $false
     [Double]$EarningsAdjustmentFactor = 1
     [Nullable[Int]]$Epoch = $null
     [Double]$Fee
@@ -110,10 +111,12 @@ Class Pool {
     [String]$Name
     [String]$Pass
     [UInt16]$Port
+    [UInt16[]]$Ports
     [Double]$Price
     [Double]$Price_Bias
     [String[]]$Reasons = @()
     [String]$Region
+    [String[]]$Regions
     [Boolean]$SSL
     [Double]$StablePrice
     [DateTime]$Updated = (Get-Date).ToUniversalTime()
@@ -747,7 +750,7 @@ Function Start-Brain {
         [String[]]$Brains
     )
 
-    If (-not $Variables.BrainRunspacePool) { 
+    If ($Brains -and -not $Variables.BrainRunspacePool) { 
 
         # https://stackoverflow.com/questions/38102068/sessionstateproxy-variable-with-runspace-pools
         $InitialSessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
@@ -766,7 +769,7 @@ Function Start-Brain {
 
     # Starts Brains if necessary
     $BrainsStarted = @()
-    $Brains | Select-Object | ForEach-Object { 
+    $Brains | Select-Object | Sort-Object | ForEach-Object { 
         If ($Config.PoolsConfig.$_.BrainConfig -and -not $Variables.Brains.$_) { 
             $BrainScript = ".\Brains\$($_).ps1"
             If (Test-Path -Path $BrainScript -PathType Leaf) {  
@@ -779,9 +782,9 @@ Function Start-Brain {
         }
     }
 
-    If ($BrainsStarted.Count -gt 0) { Write-Message -Level Info "Pool Brain Job$(If ($BrainsStarted.Count -gt 1) { "s" }) for '$(($BrainsStarted | Sort-Object) -join ", ")' started." }
+    If ($BrainsStarted.Count -gt 0) { Write-Message -Level Info "Pool Brain Job$(If ($BrainsStarted.Count -gt 1) { "s" }) for '$($BrainsStarted -join ", ")' started." }
 
-    Remove-Variable BrainsStarted, PowerShell
+    Remove-Variable BrainsStarted, PowerShell -ErrorAction Ignore
 }
 
 Function Stop-Brain { 
@@ -792,6 +795,7 @@ Function Stop-Brain {
     )
 
     If ($Brains) { 
+
         $BrainsStopped = @()
 
         $Brains | ForEach-Object { 
@@ -815,51 +819,6 @@ Function Stop-Brain {
         $Variables.Remove("BrainData")
 
         [System.GC]::Collect()
-    }
-}
-
-Function Start-BrainJob { 
-
-    Param(
-        [Parameter(Mandatory = $false)]
-        [String[]]$Jobs
-    )
-
-    # Starts Brains if necessary
-    $JobNames = @()
-
-    $Jobs | Select-Object | ForEach-Object { 
-        $BrainName = Get-PoolBaseName $_
-        If ($Config.PoolsConfig.$BrainName.BrainConfig -and -not $Variables.BrainJobs.$_) { 
-            $BrainScript = ".\Brains\$($BrainName).ps1"
-            If (Test-Path -Path $BrainScript -PathType Leaf) { 
-                $Variables.BrainJobs.$_ = Start-ThreadJob -Name "BrainJob_$($_)" -ThrottleLimit 99 -FilePath $BrainScript -ArgumentList $BrainName, $_, $Config.PoolsConfig.$BrainName.BrainConfig
-                $JobNames += $_
-            }
-        }
-    }
-
-    If ($JobNames.Count -gt 0) { Write-Message -Level Info "Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" }) for '$(($JobNames | Sort-Object) -join ", ")' running." }
-}
-
-Function Stop-BrainJob { 
-
-    Param(
-        [Parameter(Mandatory = $false)]
-        [String[]]$Jobs = $Variables.BrainJobs.Keys
-    )
-
-    If ($Jobs) { 
-        $JobNames = @()
-
-        # Stop Brains if necessary
-        $Jobs | Select-Object | ForEach-Object { 
-            $Variables.BrainJobs.$_ | Stop-Job -PassThru -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
-            $Variables.BrainJobs.Remove($_)
-            $JobNames += $_
-        }
-
-        If ($JobNames.Count -gt 0) { Write-Message -Level Info  "Pool Brain Job$(If ($JobNames.Count -gt 1) { "s" }) for '$(($JobNames | Sort-Object) -join ", ")' stopped." }
     }
 }
 
@@ -967,22 +926,6 @@ Function Get-Rate {
                 $Rates | ConvertTo-Json -Depth 5 | Out-File -FilePath $RatesFileName -Encoding utf8NoBOM -Force -ErrorAction SilentlyContinue
                 $Variables.Rates = $Rates
                 $Variables.RatesUpdated = (Get-Date).ToUniversalTime()
-                # Add mBTC
-                $Currencies | ForEach-Object { 
-                    $Currency = $_
-                    $mCurrency = "m$($Currency)"
-                    $Rates | Add-Member $mCurrency ($Rates.$Currency | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json)
-                    ($Rates.$mCurrency | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
-                        $Rates.$mCurrency | Add-Member $_ ([Double]$Rates.$Currency.$_ / 1000) -Force
-                    }
-                }
-                ($Rates | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
-                    $Currency = $_
-                    ($Rates | Get-Member -MemberType NoteProperty).Name | Where-Object { $_ -in $Currencies } | ForEach-Object { 
-                        $mCurrency = "m$($_)"
-                        $Rates.$Currency | Add-Member $mCurrency ([Double]$Rates.$Currency.$_ * 1000)
-                    }
-                }
             }
             Else { 
                 If ($RatesCache.PSObject.Properties.Name) { 
@@ -1006,7 +949,27 @@ Function Get-Rate {
         }
     }
 
-    Remove-Variable Currency, mCurrency, RatesCache, RatesFileName
+    If ($Config.UsemBTC) { 
+        # Add mBTC
+        $Currencies = ($Variables.Rates.BTC | Get-Member -MemberType NoteProperty).Name
+        $Currencies | ForEach-Object { 
+            $Currency = $_
+            $mCurrency = "m$($Currency)"
+            $Variables.Rates | Add-Member $mCurrency ($Variables.Rates.$Currency | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json)
+            ($Variables.Rates.$mCurrency | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
+                $Variables.Rates.$mCurrency | Add-Member $_ ([Double]$Variables.Rates.$Currency.$_ / 1000) -Force
+            }
+        }
+        ($Variables.Rates | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
+            $Currency = $_
+            ($Rates | Get-Member -MemberType NoteProperty).Name | Where-Object { $_ -in $Currencies } | ForEach-Object { 
+                $mCurrency = "m$($_)"
+                $Variables.Rates.$Currency | Add-Member $mCurrency ([Double]$Variables.Rates.$Currency.$_ * 1000)
+            }
+        }
+    }
+
+    Remove-Variable Currency, mCurrency, Rates, RatesCache, RatesFileName
 }
 
 Function Write-Message { 
@@ -1188,8 +1151,8 @@ Function Get-DonationPoolConfig {
         $PoolConfig.Region = $Config.PoolsConfig.$_.Region
         $PoolConfig.WorkerName = "$($Variables.Branding.ProductLabel)-$($Variables.Branding.Version.ToString())-donate$($Config.Donate)"
         Switch -regex ($_) { 
-            "^MiningPoolHub$|^ProHashing$" { 
-                If ($Variables.DonateRandom."$($_)UserName") { # not all devs have a known ProHashing account
+            "^MiningDutch$|^MiningPoolHub$|^ProHashing$" { 
+                If ($Variables.DonateRandom."$($_)UserName") { # not all devs have a known MiningDutch or ProHashing account
                     $PoolConfig.UserName = $Variables.DonateRandom."$($_)UserName"
                     $PoolConfig.Variant = $Config.PoolsConfig.$_.Variant
                     $Variables.DonatePoolsConfig.$_ = $PoolConfig
@@ -1301,6 +1264,8 @@ Function Read-Config {
             If (-not $PoolConfig.WorkerName) { $PoolConfig.WorkerName = $Config.WorkerName }
             If (-not $PoolConfig.BalancesKeepAlive) { $PoolConfig.BalancesKeepAlive = $PoolData.$PoolName.BalancesKeepAlive }
 
+            $PoolConfig.Region = $PoolConfig.Region | Where-Object { (Get-Region $_) -notin @($PoolConfig.ExcludeRegion) }
+
             Switch ($PoolName) { 
                 "HiveON" { 
                     If (-not $PoolConfig.Wallets) { 
@@ -1309,6 +1274,11 @@ Function Read-Config {
                             $PoolConfig.Wallets | Add-Member $_ ($Config.Wallets.$_)
                         }
                     }
+                }
+                "MiningDutch" { 
+                    If ((-not $PoolConfig.PayoutCurrency) -or $PoolConfig.PayoutCurrency -eq "[Default]") { $PoolConfig.PayoutCurrency = $Config.PayoutCurrency }
+                    If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Config.MiningDutchUserName }
+                    If (-not $PoolConfig.Wallets) { $PoolConfig.Wallets = @{ "$($PoolConfig.PayoutCurrency)" = $($Config.Wallets.($PoolConfig.PayoutCurrency)) } }
                 }
                 "MiningPoolHub" { 
                     If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Config.MiningPoolHubUserName }
@@ -1332,7 +1302,7 @@ Function Read-Config {
                     $PoolConfig.Remove("PayoutCurrency")
                 }
             }
-            If ($PoolConfig.EarningsAdjustmentFactor -le 0 -or $PoolConfig.EarningsAdjustmentFactor -gt 1) { $PoolConfig.EarningsAdjustmentFactor = 1 }
+            If ($PoolConfig.EarningsAdjustmentFactor -le 0 -or $PoolConfig.EarningsAdjustmentFactor -gt 10) { $PoolConfig.EarningsAdjustmentFactor = 1 }
             If ($PoolConfig.Algorithm) { $PoolConfig.Algorithm = @($PoolConfig.Algorithm -replace " " -split ",") }
         }
         $PoolsConfig.$PoolName = $PoolConfig
@@ -1368,7 +1338,6 @@ Function Write-Config {
     "$Header$($ConfigTmp | ConvertTo-Json -Depth 10)" | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM
 }
 Function Edit-File { 
-
     # Opens file in notepad. Notepad will remain in foreground until notepad is closed.
 
     Param(
@@ -1377,6 +1346,11 @@ Function Edit-File {
     )
 
     $FileWriteTime = (Get-Item -Path $FileName).LastWriteTime
+    If (-not $FileWriteTime) { 
+        If ($FileName -eq $Variables.PoolsConfigFile -and (Test-Path -Path ".\Data\PoolsConfig-Template.json" -PathType Leaf)) { 
+            Copy-Item ".\Data\PoolsConfig-Template.json" $FileName
+        }
+    }
 
     If (-not ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)"))) { 
         Notepad.exe $FileName
@@ -1453,6 +1427,70 @@ Function Get-SortedObject {
     $SortedObject
 }
 
+Function Enable-Stat { 
+    Param(
+        [Parameter(Mandatory = $true)]
+        [String]$Name
+    )
+
+    If ($Stat = Get-Stat -Name $Name) { 
+
+        $Path = "Stats\$Name.txt"
+
+        $Stat.Disabled = $false
+        @{ 
+            Live                  = [Double]$Stat.Live
+            Minute                = [Double]$Stat.Minute
+            Minute_Fluctuation    = [Double]$Stat.Minute_Fluctuation
+            Minute_5              = [Double]$Stat.Minute_5
+            Minute_5_Fluctuation  = [Double]$Stat.Minute_5_Fluctuation
+            Minute_10             = [Double]$Stat.Minute_10
+            Minute_10_Fluctuation = [Double]$Stat.Minute_10_Fluctuation
+            Hour                  = [Double]$Stat.Hour
+            Hour_Fluctuation      = [Double]$Stat.Hour_Fluctuation
+            Day                   = [Double]$Stat.Day
+            Day_Fluctuation       = [Double]$Stat.Day_Fluctuation
+            Week                  = [Double]$Stat.Week
+            Week_Fluctuation      = [Double]$Stat.Week_Fluctuation
+            Duration              = [String]$Stat.Duration
+            Updated               = [DateTime]$Stat.Updated
+            Disabled              = [Boolean]$Stat.Disabled
+        } | ConvertTo-Json | Out-File -FilePath $Path -Force -Encoding utf8NoBOM
+    }
+}
+
+Function Disable-Stat { 
+    Param(
+        [Parameter(Mandatory = $true)]
+        [String]$Name
+    )
+
+    If ($Stat = Get-Stat -Name $Name) { 
+
+        $Path = "Stats\$Name.txt"
+
+        $Stat.Disabled = $true
+        @{ 
+            Live                  = [Double]$Stat.Live
+            Minute                = [Double]$Stat.Minute
+            Minute_Fluctuation    = [Double]$Stat.Minute_Fluctuation
+            Minute_5              = [Double]$Stat.Minute_5
+            Minute_5_Fluctuation  = [Double]$Stat.Minute_5_Fluctuation
+            Minute_10             = [Double]$Stat.Minute_10
+            Minute_10_Fluctuation = [Double]$Stat.Minute_10_Fluctuation
+            Hour                  = [Double]$Stat.Hour
+            Hour_Fluctuation      = [Double]$Stat.Hour_Fluctuation
+            Day                   = [Double]$Stat.Day
+            Day_Fluctuation       = [Double]$Stat.Day_Fluctuation
+            Week                  = [Double]$Stat.Week
+            Week_Fluctuation      = [Double]$Stat.Week_Fluctuation
+            Duration              = [String]$Stat.Duration
+            Updated               = [DateTime]$Stat.Updated
+            Disabled              = [Boolean]$Stat.Disabled
+        } | ConvertTo-Json | Out-File -FilePath $Path -Force -Encoding utf8NoBOM
+    }
+}
+
 Function Set-Stat { 
 
     Param(
@@ -1476,15 +1514,12 @@ Function Set-Stat {
 
     $Path = "Stats\$Name.txt"
     $SmallestValue = 1E-20
-    $Disabled = $Value -eq -1
     $Stat = Get-Stat -Name $Name
 
     If ($Stat -is [Hashtable] -and $Stat.IsSynchronized -and -not [Double]::IsNaN($Stat.Minute_Fluctuation)) { 
         If (-not $Stat.Timer) { $Stat.Timer = $Stat.Updated.AddMinutes(-1) }
         If (-not $Duration) { $Duration = $Updated - $Stat.Timer }
         If ($Duration -le 0) { Return $Stat }
-
-        If ($Disabled) { $Value = [Decimal]$Stat.Live }
 
         If ($ChangeDetection -and [Decimal]$Value -eq [Decimal]$Stat.Live) { $Updated = $Stat.Updated }
 
@@ -1510,7 +1545,7 @@ Function Set-Stat {
             Return
         }
         Else { 
-            If (-not $Disabled -and ($Value -eq 0 -or $Stat.ToleranceExceeded -ge $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1)) { 
+            If (-not $Stat.Disabled -and ($Value -eq 0 -or $Stat.ToleranceExceeded -ge $ToleranceExceeded -or $Stat.Week_Fluctuation -ge 1)) { 
                 If ($Value -gt 0 -and $Stat.ToleranceExceeded -ge $ToleranceExceeded) { 
                     If ($Name -match ".+_Hashrate$") { 
                         Write-Message -Level Warn "Hashrate '$($Name -replace '_Hashrate$')' was forcefully updated. $(($Value | ConvertTo-Hash) -replace '\s+', ' ') was outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' '))$(If ($Stat.Week_Fluctuation -lt 1) { " for $($Stats.($Stat.Name).ToleranceExceeded) times in a row." })"
@@ -1531,7 +1566,6 @@ Function Set-Stat {
                 $Span_Day = [Math]::Min($Duration.TotalDays / [Math]::Min($Stat.Duration.TotalDays, 1), 1)
                 $Span_Week = [Math]::Min(($Duration.TotalDays / 7) / [Math]::Min(($Stat.Duration.TotalDays / 7), 1), 1)
 
-                $Stat.Name = $Name
                 $Stat.Live = $Value
                 $Stat.Minute_Fluctuation = ((1 - $Span_Minute) * $Stat.Minute_Fluctuation) + ($Span_Minute * ([Math]::Abs($Value - $Stat.Minute) / [Math]::Max([Math]::Abs($Stat.Minute), $SmallestValue)))
                 $Stat.Minute = ((1 - $Span_Minute) * $Stat.Minute) + ($Span_Minute * $Value)
@@ -1547,7 +1581,6 @@ Function Set-Stat {
                 $Stat.Week = ((1 - $Span_Week) * $Stat.Week) + ($Span_Week * $Value)
                 $Stat.Duration = $Stat.Duration + $Duration
                 $Stat.Updated = $Updated
-                $Stat.Disabled = $Disabled
                 $Stat.Timer = $Timer
                 $Stat.ToleranceExceeded = [UInt16]0
             }
@@ -1574,7 +1607,7 @@ Function Set-Stat {
                 Week_Fluctuation      = [Double]0
                 Duration              = [TimeSpan]$Duration
                 Updated               = [DateTime]$Updated
-                Disabled              = [Boolean]$Disabled
+                Disabled              = [Boolean]$false
                 ToleranceExceeded     = [UInt16]0
                 Timer                 = [DateTime]$Timer
             }
@@ -2377,25 +2410,23 @@ Filter ConvertTo-Hash {
     "{0:n$($Digits)} $($Units[$Base1000])H" -f $UnitValue
 }
 
-Function Get-DigitsFromValue { 
+Function Get-DecimalsFromValue { 
 
-    # The bigger the number, the more decimal digits
-
-    # Output will have as many digits as the integer value is to the power of 10
-    # e.g. Rate is between 100 and 999, then Digits is 3
+    # Used to limit absolute length of number
+    # The larger the value, the less decimal digits are returned
+    # Maximal $DecimalsMax decimals are returned
 
     Param(
         [Parameter(Mandatory = $true)]
         [Double]$Value, 
         [Parameter(Mandatory = $true)]
-        [Int]$MaxDigits
+        [Int]$DecimalsMax
     )
 
-    $Digits = [math]::Floor($Value).ToString().Length
-    If ($Digits -lt 0) { $Digits = 0 }
-    If ($Digits -gt $MaxDigits) { $Digits = $MaxDigits }
+    $Decimals = 1 + $DecimalsMax - [math]::Floor([math]::Abs($Value)).ToString().Length
+    If ($Decimals -gt $DecimalsMax) { $Decimals = 0 }
 
-    $Digits
+    $Decimals
 }
 
 Function Get-Combination { 
@@ -2860,7 +2891,7 @@ Function Initialize-Autoupdate {
 
     #Stop all background processes
     Stop-Mining
-    Stop-BrainJob
+    Stop-Brain
     Stop-IdleDetection
     Stop-BalancesTracker
 
@@ -2875,6 +2906,9 @@ Function Initialize-Autoupdate {
     If (Test-Path -Path ".\Logs\EarningsChartData.json" -PathType Leaf) { Move-Item ".\Logs\EarningsChartData.json" ".\Data" -Force }
     If (Test-Path -Path ".\Logs\DailyEarnings*.csv" -PathType Leaf) { Move-Item ".\Logs\DailyEarnings*.csv" ".\Data" -Force }
     If (Test-Path -Path ".\Logs\PoolsLastUsed.json" -PathType Leaf) { Move-Item ".\Logs\PoolsLastUsed.json" ".\Data" -Force }
+
+    # Move data files from '\Data' to '\Cache'
+    If (Test-Path -Path ".\Data\DriverVersion.json" -PathType Leaf) { Move-Item ".\Data\DriverVersion.json" ".\Cache" -Force }
 
     # Pre update specific actions if any
     # Use PreUpdateActions.ps1 in new release to place code
@@ -3085,6 +3119,7 @@ Function Update-ConfigFile {
             }
             "WaitForMinerData" { $Config.Remove($_) }
             "WarmupTime" { $Config.Remove($_) }
+            "WebUseColorForMinerStatus" { $Config.WebGUIUseColor = $Config.$_; $Config.Remove($_) }
             Default { If ($_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("PoolsConfig"))) { $Config.Remove($_) } } # Remove unsupported config item
         }
     }
@@ -3146,6 +3181,12 @@ Function Update-ConfigFile {
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "TonPool" }
     # Remove TonWhales config
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "TonWhales" }
+    # Remove 'Debug' from LogToFile & LogToScreen
+
+    If ($Variables.Branding.Version -lt [System.Version]"4.1.0.0") { 
+        $Config.LogToFile = @($Config.LogToFile | Where-Object { $_ -ne "Debug" })
+        $Config.LogToScreen = @($Config.LogToScreen | Where-Object { $_ -ne "Debug" })
+    }
 
     $Config | Add-Member ConfigFileVersion ($Variables.Branding.Version.ToString()) -Force
     Write-Config -ConfigFile $ConfigFile

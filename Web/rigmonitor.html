@@ -61,8 +61,8 @@
                   <th data-field="LastSeen" data-sortable="true" data-formatter="formatTimeSince">Last seen</th>
                   <th data-field="Version" data-sortable="true" data-filter-control="select">Version</th>
                   <th data-field="Currency" data-sortable="true" data-filter-control="select">Currency</th>
-                  <th data-field="EstimatedEarning" data-align="right" data-sortable="true" data-formatter="formatDigitsFromValue">Estimated<br>Earning/day</th>
-                  <th data-field="EstimatedProfit" data-align="right" data-sortable="true" data-formatter="formatDigitsFromValue">Estimated<br>Profit/day</th>
+                  <th data-field="EstimatedEarning" data-align="right" data-sortable="true" data-formatter="formatDecimals">Estimated<br>Earning/day</th>
+                  <th data-field="EstimatedProfit" data-align="right" data-sortable="true" data-formatter="formatDecimals">Estimated<br>Profit/day</th>
                   <th data-field="Miner" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Miner(s)</th>
                   <th data-field="Pool" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Pool(s)</th>
                   <th data-field="Algorithm" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Algorithm(s)</th>
@@ -87,7 +87,7 @@
 
             $table.bootstrapTable({
               onPostBody: function () {
-                if (config.WebGUIUseColor == true) {
+                if (config.UseColorForMinerStatus == true) {
                   $('#workers td:nth-child(2)').each(function () {
                     switch(this.innerHTML) {
                       case this.innerHTML.match(/^Offline/)?.input:

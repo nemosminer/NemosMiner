@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash Internal.ps1
-Version:        4.0.2.6
-Version date:   07 August 2022
+Version:        4.1.0.0
+Version date:   23 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -28,37 +28,39 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PayoutCurrency = $Config.PoolsConfig.NiceHash.Variant.$Name.PayoutCurrency
 $Wallet = $Config.PoolsConfig.NiceHash.Variant.$Name.Wallets.$PayoutCurrency
 $RetryCount = 3
-$RetryDelay = 15
+$RetryDelay = 3
 
 $Request = "https://api2.nicehash.com/main/api/v2/mining/external/$($Wallet)/rigs2"
 
 While (-not $APIResponse -and $RetryCount -gt 0 -and $Wallet) { 
 
-    $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+    Try { 
+        $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec 5 -ErrorAction Ignore
 
-    If ($Config.LogBalanceAPIResponse -eq $true) { 
-        "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-        $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-        $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-    }
+        If ($Config.LogBalanceAPIResponse -eq $true) { 
+            "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+            $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+        }
 
-    $Sum = [Double]($APIResponse.unpaidAmount) + [Double]($APIResponse.externalBalance)
+        $Sum = [Double]($APIResponse.unpaidAmount) + [Double]($APIResponse.externalBalance)
 
-    If ($Sum -gt 0) { 
-        [PSCustomObject]@{ 
-            DateTime   = (Get-Date).ToUniversalTime()
-            Pool       = $Name
-            Currency   = $PayoutCurrency
-            Wallet     = $($Wallet)
-            Pending    = [Double]($APIResponse.unpaidAmount)
-            Balance    = [Double]($APIResponse.externalBalance)
-            Unpaid     = $Sum
-            #Total      = $Sum
-            Url        = "https://www.nicehash.com/my/miner/$Wallet"
-            NextPayout = $APIResponse.NextPayoutTimeStamp
+        If ($Sum -gt 0) { 
+            Return [PSCustomObject]@{ 
+                DateTime   = (Get-Date).ToUniversalTime()
+                Pool       = $Name
+                Currency   = $PayoutCurrency
+                Wallet     = $($Wallet)
+                Pending    = [Double]($APIResponse.unpaidAmount)
+                Balance    = [Double]($APIResponse.externalBalance)
+                Unpaid     = $Sum
+                #Total      = $Sum
+                Url        = "https://www.nicehash.com/my/miner/$Wallet"
+                NextPayout = $APIResponse.NextPayoutTimeStamp
+            }
         }
     }
-    Else { 
+    Catch { 
         Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
     }
 

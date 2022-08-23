@@ -18,77 +18,79 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.0.2.6
-Version date:   07 August 2022
+Version:        4.1.0.0
+Version date:   23 August 2022
 #>
 
 using module ..\Includes\Include.psm1
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $RetryCount = 3
-$RetryDelay = 15
+$RetryDelay = 3
 
 $Request = "http://miningpoolhub.com/index.php?page=api&action=getuserallbalances&api_key=$($Config.MiningPoolHubAPIKey)"
 
 While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.MiningPoolHubAPIKey) { 
 
-    $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+    Try { 
+        $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec 5 -ErrorAction Ignore
 
-    If ($Config.LogBalanceAPIResponse -eq $true) { 
-        "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-        $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-        $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
-    }
+        If ($Config.LogBalanceAPIResponse -eq $true) { 
+            "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+            $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+            $APIResponse | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
+        }
 
-    If ($APIResponse.getuserallbalances) { 
-        $APIResponse.getuserallbalances.data | Where-Object coin | Where-Object confirmed -gt 0 | ForEach-Object { 
-            $Currency = ""
-            $RetryCount2 = 3
-            $GetPoolInfo = $null
+        If ($APIResponse.getuserallbalances) { 
+            $APIResponse.getuserallbalances.data | Where-Object coin | Where-Object confirmed -gt 0 | ForEach-Object { 
+                $Currency = ""
+                $RetryCount2 = 3
+                $GetPoolInfo = $null
 
-            While (-not ($GetPoolInfo) -and $RetryCount2 -gt 0) { 
-                $RetryCount2--
-                Try { 
-                    $GetPoolInfo = ((Invoke-RestMethod "http://$($_.coin).miningpoolhub.com/index.php?page=api&action=getpoolinfo&api_key=$($Config.MiningPoolHubAPIKey)" -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop).getpoolinfo).data
+                While (-not ($GetPoolInfo) -and $RetryCount2 -gt 0) { 
+                    $RetryCount2--
+                    Try { 
+                        $GetPoolInfo = ((Invoke-RestMethod "http://$($_.coin).miningpoolhub.com/index.php?page=api&action=getpoolinfo&api_key=$($Config.MiningPoolHubAPIKey)" -UseBasicParsing -TimeoutSec 5 -ErrorAction Ignore).getpoolinfo).data
 
-                    If ($Config.LogBalanceAPIResponse -eq $true) { 
-                        $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+                        If ($Config.LogBalanceAPIResponse -eq $true) { 
+                            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+                        }
+                        $Currency = $GetPoolInfo.currency
                     }
-                    $Currency = $GetPoolInfo.currency
+                    Catch { 
+                        Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
+                    }
                 }
-                Catch { 
-                    Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
+
+                If (-not $Currency) { 
+                    Write-Message -Level Warn "Cannot determine balance for currency ($(If ($_.coin) { $_.coin }  Else { "unknown" } )) - cannot convert some balances to BTC or other currencies."
                 }
-            }
+                Else { 
+                    # Prefer custom payout threshold
+                    $PayoutThreshold = $Config.PoolsConfig.$Name.PayoutThreshold.$Currency
 
-            If (-not $Currency) { 
-                Write-Message -Level Warn "Cannot determine balance for currency ($(If ($_.coin) { $_.coin }  Else { "unknown" } )) - cannot convert some balances to BTC or other currencies."
-            }
-            Else { 
-                # Prefer custom payout threshold
-                $PayoutThreshold = $Config.PoolsConfig.$Name.PayoutThreshold.$Currency
+                    If ((-not $PayoutThreshold) -and $Currency -eq "BTC" -and $Config.PoolsConfig.$Name.PayoutThreshold.mBTC) { $PayoutThreshold = $Config.PoolsConfig.$Name.PayoutThreshold.mBTC / 1000 }
+                    If (-not $PayoutThreshold) { $PayoutThreshold = $GetPoolInfo.min_ap_threshold }
 
-                If ((-not $PayoutThreshold) -and $Currency -eq "BTC" -and $Config.PoolsConfig.$Name.PayoutThreshold.mBTC) { $PayoutThreshold = $Config.PoolsConfig.$Name.PayoutThreshold.mBTC / 1000 }
-                If (-not $PayoutThreshold) { $PayoutThreshold = $GetPoolInfo.min_ap_threshold }
-
-                If ($_.confirmed -gt 0) { 
-                    [PSCustomObject]@{ 
-                        DateTime        = (Get-Date).ToUniversalTime()
-                        Pool            = "$Name"
-                        Currency        = $Currency
-                        Wallet          = $Config.MiningPoolHubUserName
-                        Pending         = [Double]$_.unconfirmed
-                        Balance         = [Double]$_.confirmed
-                        Unpaid          = [Double]($_.confirmed + $_.unconfirmed)
-                        # Total           = [Double]($_.confirmed + $_.unconfirmed + $_.ae_confirmed + $_.ae_unconfirmed + $_.exchange)
-                        PayoutThreshold = [Double]$PayoutThreshold
-                        Url             = "https://$($_.coin).miningpoolhub.com/index.php?page=account&action=pooledit"
+                    If ($_.confirmed -gt 0) { 
+                        [PSCustomObject]@{ 
+                            DateTime        = (Get-Date).ToUniversalTime()
+                            Pool            = "$Name"
+                            Currency        = $Currency
+                            Wallet          = $Config.MiningPoolHubUserName
+                            Pending         = [Double]$_.unconfirmed
+                            Balance         = [Double]$_.confirmed
+                            Unpaid          = [Double]($_.confirmed + $_.unconfirmed)
+                            # Total           = [Double]($_.confirmed + $_.unconfirmed + $_.ae_confirmed + $_.ae_unconfirmed + $_.exchange)
+                            PayoutThreshold = [Double]$PayoutThreshold
+                            Url             = "https://$($_.coin).miningpoolhub.com/index.php?page=account&action=pooledit"
+                        }
                     }
                 }
             }
         }
     }
-    Else { 
+    Catch { 
         Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
     }
 

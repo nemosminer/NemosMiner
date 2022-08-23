@@ -63,13 +63,101 @@
       "ru",
       "eu",
       "na",
-      "naw",
-      "aspac",
-      "usw",
-      "use"
+      "aspac"
     ],
     "Variant": {
       "HiveON": {
+      }
+    }
+  },
+  "MiningDutch": {
+    "BalancesKeepAlive": 180, // https://www.mining-dutch.nl/index.php?page=wallets
+    "BrainConfig": {
+      "PoolAPIAllowedFailureCount": 3,
+      "PoolAPIPerFailPercentPenalty": 10,
+      "PoolAPIRetryInterval": 3,
+      "PoolAPITimeout": 20,
+      "PoolCurrenciesUri": "",
+      "PoolStatusUri": "https://www.mining-dutch.nl/api/status",
+      "SampleHalfPower": 0,
+      "SampleSizeMinutes": 45,
+      "UseFullTrust": false,
+      "UseTransferFile": false
+    },
+    "PayoutCurrencies": {
+      "AEON": "Aeon",
+      "ARRR": "Pirate",
+      "BCH": "BitcoinCashNode",
+      "BELL": "Bellcoin",
+      "BLAST": "Blast",
+      "BOLI": "Bolivarcoin",
+      "BSV": "BitcoinSV",
+      "BTC": "Bitcoin",
+      "CHI": "Xaya",
+      "DASH": "DASH",
+      "DGB": "Digibyte",
+      "DIN": "Dinero",
+      "DINGO": "Dingocoin",
+      "DMS": "Documentchain",
+      "DOGE": "Dogecoin",
+      "DVT": "DeVault",
+      "EMC": "Emercoin",
+      "EMC2": "Einsteinium",
+      "FCH": "FreeCash",
+      "FTC": "Feathercoin",
+      "FTO": "Futurocoin",
+      "GCN": "Gcoin",
+      "GRS": "Groestlcoin",
+      "GUN": "Guncoin",
+      "IBH": "Ibithub",
+      "IQ": "IQcash",
+      "KMD": "Komodo",
+      "KREDS": "Kreds",
+      "KZC": "Kzcash",
+      "LBC": "LbryCredits",
+      "LCC": "LitecoinCash",
+      "LTC": "Litecoin",
+      "MEK": "Meraki",
+      "MONA": "Monacoin",
+      "NMC": "Namecoin",
+      "NYC": "Newyorkcoin",
+      "NYX": "Nyxcoin",
+      "ONION": "DeepOnion",
+      "PPC": "Peercoin",
+      "PYRK": "Pyrk",
+      "RVN": "Ravencoin",
+      "SMART": "Smartcash",
+      "SMLY": "Smileycoin",
+      "SYS": "Syscoin",
+      "TRC": "Terracoin",
+      "UFO": "Ufocoin",
+      "VIA": "Viacoin",
+      "VTC": "Vertcoin",
+      "XEC": "ECash",
+      "XMY": "Myriadcoin",
+      "XSH": "Shield_blake2s",
+      "XVG": "Verge",
+      "YEC": "Ycash",
+      "ZEC": "Zcash",
+      "ZEN": "Horizen"
+    },
+    "Region": [
+      "asia",
+      "eu",
+      "americas"
+    ],
+    "Variant": {
+      "MiningDutch": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_current"
+      },
+      "MiningDutch24hr": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_last24h"
+      },
+      "MiningDutchPlus": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "Plus_Price"
       }
     }
   },

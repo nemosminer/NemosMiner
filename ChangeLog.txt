@@ -10,6 +10,37 @@ Known issues:
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
 
+ChangeLog NemosMiner 4.1.0.0 23.08.2022
+=======================================
+
+Changes:
+- Changed config item 'WebGUIUseColor' to 'UseColorForMinerStatus'
+
+Enhancements:
+- Balances tracker: Always list all balances (even when pool is down)
+- Balances tracker / Earnings graph: Only use pools with earnings
+- Core / Legacy GUI: Improve earnings graph (add balances for every day, also in tool tips)
+- Core / Pools: Use only regional pools (no need to keep pools from other regions, prices are the same anyhow)
+- Core: Respawn new process on error in main loop (sometimes PWSH seems to 'forget' custom class definitions)
+- New configuration item 'DecimalsMax'
+- Web GUI / API: Always [URI]::EscapeDataString full parameter string
+- Web GUI / Pools: Hide 'region' column
+
+Fixes:
+- Core / Includes.psm1: Cosmetic error message "Remove-Variable: Cannot find a variable with the name 'Workers'" in 'Read-MonitoringData'
+- Core / Includes.psm1: Get-Rates did not add mBTC values when using cached values
+
+Miner changes:
+- lolMiner-v1.54
+- Kudaraidee-v1.2 (Thank you RainbowMiner!)
+- MiniZ-v1.8z3.ps1: Fix device enumeration if more than 10 GPUs (https://github.com/Minerx117/NemosMiner/issues/88)
+- SRBMinerMulti-v1.0.6
+- Trex-v0.26.5
+
+Pool changes:
+- Added 'MiningDuch' pool
+
+
 ChangeLog NemosMiner 4.0.2.6 07.08.2022
 =======================================
 
@@ -839,7 +870,7 @@ Changelog NemosMiner 4.0.0.14 (RC14) 09.01.2022
 
 Core:
 - Minor code improvements, cleanup variables
-- Core/Includes.psm1: Remove obsolete parameter 'ManualConfig'
+- Core / Includes.psm1: Remove obsolete parameter 'ManualConfig'
 - OpenCL: Fix compatibility
 
 Miner Updates:

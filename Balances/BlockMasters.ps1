@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BlockMasters.ps1
-Version:        4.0.2.6
-Version date:   07 August 2022
+Version:        4.1.0.0
+Version date:   23 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -28,35 +28,37 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PayoutCurrency = $Config.PoolsConfig.$Name.Wallets.Keys | Select-Object -First 1
 $Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
 $RetryCount = 3
-$RetryDelay = 15
+$RetryDelay = 3
 
 $Request = "http://blockmasters.co/api/wallet?address=$Wallet"
 
 While (-not $APIResponse -and $RetryCount -gt 0 -and $Wallet) { 
 
-    $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+    Try  {
+        $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec 5 -ErrorAction Ignore
 
-    If ($Config.LogBalanceAPIResponse -eq $true) { 
-        "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-        $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-        $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-    }
+        If ($Config.LogBalanceAPIResponse -eq $true) { 
+            "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+            $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+        }
 
-    If ($APIResponse.currency) { 
-        [PSCustomObject]@{ 
-            DateTime = (Get-Date).ToUniversalTime()
-            Pool     = $Name
-            Currency = $APIResponse.currency
-            Wallet   = $Wallet
-            Pending  = [Double]($APIResponse.unsold) # Pending?
-            Balance  = [Double]($APIResponse.balance)
-            Unpaid   = [Double]($APIResponse.unpaid) # Balance + Unsold?
-            # Paid     = [Double]($APIResponse.paid24h) # Total paid?
-            # Total    = [Double]($APIResponse.total) # total unpaid + total paid
-            Url      = "http://blockmasters.co/?address=$Wallet"
+        If ($APIResponse.currency) { 
+            Return [PSCustomObject]@{ 
+                DateTime = (Get-Date).ToUniversalTime()
+                Pool     = $Name
+                Currency = $APIResponse.currency
+                Wallet   = $Wallet
+                Pending  = [Double]($APIResponse.unsold) # Pending?
+                Balance  = [Double]($APIResponse.balance)
+                Unpaid   = [Double]($APIResponse.unpaid) # Balance + Unsold?
+                # Paid     = [Double]($APIResponse.paid24h) # Total paid?
+                # Total    = [Double]($APIResponse.total) # total unpaid + total paid
+                Url      = "http://blockmasters.co/?address=$Wallet"
+            }
         }
     }
-    Else { 
+    Catch { 
         Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
     }
 

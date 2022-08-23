@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { (($_.Type -eq "AMD" -and $_.Architecture -ne "Other") -or $_.OpenCL.ClVersion -ge "OpenCL C 2.0") -or $_.Type -eq "CPU" })) { Return }
 
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/1.0.4/SRBMiner-Multi-1-0-4-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/1.0.6/SRBMiner-Multi-1-0-6-win64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -11,11 +11,11 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $Algorithms = [PSCustomObject[]]@( 
      [PSCustomObject]@{ Algorithm = @("0x10");                      Type = "AMD"; Fee = @(0.085);        MinMemGB = 2;                                       MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 45); ExcludePool = @()       ; Arguments = " --algorithm 0x10" }
      [PSCustomObject]@{ Algorithm = @("Argon2d16000");              Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                       MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15); ExcludePool = @()       ; Arguments = " --algorithm argon2d_16000" }
-     [PSCustomObject]@{ Algorithm = @("Argon2dDyn");                Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                       MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 45); ExcludePool = @()       ; Arguments = " --algorithm argon2d_dynamic" }
+     [PSCustomObject]@{ Algorithm = @("Argon2d500");                Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                       MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 45); ExcludePool = @()       ; Arguments = " --algorithm argon2d_dynamic" }
      [PSCustomObject]@{ Algorithm = @("Argon2Chukwa");              Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                       MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 45); ExcludePool = @()       ; Arguments = " --algorithm argon2id_chukwa" }
      [PSCustomObject]@{ Algorithm = @("Argon2Chukwa2");             Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                       MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 45); ExcludePool = @()       ; Arguments = " --algorithm argon2id_chukwa2" }
 #    [PSCustomObject]@{ Algorithm = @("Autolykos2");                Type = "AMD"; Fee = @(0.015);        MinMemGB = $MinerPools[0]."Autolykos2".DAGSizeGB;   MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(45, 30); ExcludePool = @()       ; Arguments = " --algorithm autolykos2" } # Hashrate far too high
-   [PSCustomObject]@{ Algorithm = @("Autolykos2", "HeavyHash");   Type = "AMD"; Fee = @(0.0065, 0.01); MinMemGB = $MinerPools[0]."Autolykos2".DAGSizeGB;   MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(45, 30); ExcludePool = @()       ; Arguments = " --algorithm autolykos2 --algorithm heavyhash " }
+#    [PSCustomObject]@{ Algorithm = @("Autolykos2", "HeavyHash");   Type = "AMD"; Fee = @(0.0065, 0.01); MinMemGB = $MinerPools[0]."Autolykos2".DAGSizeGB;   MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(45, 30); ExcludePool = @()       ; Arguments = " --algorithm autolykos2 --algorithm heavyhash " }
      [PSCustomObject]@{ Algorithm = @("Blake2b");                   Type = "AMD"; Fee = @(0);            MinMemGB = 1;                                       MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 30); ExcludePool = @("Zpool"); Arguments = " --algorithm blake2b" } # Algorithm broken
      [PSCustomObject]@{ Algorithm = @("Blake2s");                   Type = "AMD"; Fee = @(0);            MinMemGB = 1;                                       MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 15); ExcludePool = @()       ; Arguments = " --algorithm blake2s" }
      [PSCustomObject]@{ Algorithm = @("Blake3");                    Type = "AMD"; Fee = @(0.0085);       MinMemGB = 2;                                       MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 30); ExcludePool = @()       ; Arguments = " --algorithm blake3_alephium" }
@@ -57,7 +57,7 @@ $Algorithms = [PSCustomObject[]]@(
 
     [PSCustomObject]@{ Algorithm = @("0x10");                 Type = "CPU"; Fee = 0.085;  MinerSet = 0; WarmupTimes = @(30, 15);  ExcludePool = @()       ; Arguments = " --algorithm 0x10" }
     [PSCustomObject]@{ Algorithm = @("Argon2d16000");         Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(60, 15);  ExcludePool = @()       ; Arguments = " --algorithm argon2d_16000" }
-    [PSCustomObject]@{ Algorithm = @("Argon2dDyn");           Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(60, 15);  ExcludePool = @()       ; Arguments = " --algorithm argon2d_dynamic" }
+    [PSCustomObject]@{ Algorithm = @("Argon2d500");           Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(60, 15);  ExcludePool = @()       ; Arguments = " --algorithm argon2d_dynamic" }
     [PSCustomObject]@{ Algorithm = @("Argon2Chukwa");         Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 15);  ExcludePool = @()       ; Arguments = " --algorithm argon2id_chukwa" }
     [PSCustomObject]@{ Algorithm = @("Argon2Chukwa2");        Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 15);  ExcludePool = @()       ; Arguments = " --algorithm argon2id_chukwa2" }
 #   [PSCustomObject]@{ Algorithm = @("Autolykos2");           Type = "CPU"; Fee = 0.015;  MinerSet = 0; WarmupTimes = @(120, 15); ExcludePool = @()       ; Arguments = " --algorithm autolykos2 --gpu-autolykos2-preload 3" } # Not profitable with CPU
@@ -96,6 +96,8 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("ProgPoWVeil");          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);   ExcludePool = @()       ; Arguments = " --algorithm progpow_veil" }
     [PSCustomObject]@{ Algorithm = @("ProgPoWVeriblock");     Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);   ExcludePool = @()       ; Arguments = " --algorithm progpow_veriblock" }
     [PSCustomObject]@{ Algorithm = @("ProgPoWZano");          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);   ExcludePool = @()       ; Arguments = " --algorithm progpow_zano" }
+    [PSCustomObject]@{ Algorithm = @("Pufferfish2BMB");       Type = "CPU"; Fee = 0.01;   MinerSet = 0; WarmupTimes = @(30, 0);   ExcludePool = @()       ; Arguments = " --algorithm pufferfish2bmb" }
+    
     [PSCustomObject]@{ Algorithm = @("RandomxArq");           Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);   ExcludePool = @()       ; Arguments = " --algorithm randomarq --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = @("RandomxEpic");          Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);   ExcludePool = @()       ; Arguments = " --algorithm randomepic" }
     [PSCustomObject]@{ Algorithm = @("RandomGrft");           Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(30, 0);   ExcludePool = @()       ; Arguments = " --algorithm randomgrft --randomx-use-1gb-pages" }

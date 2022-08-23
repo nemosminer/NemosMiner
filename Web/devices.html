@@ -236,7 +236,7 @@
 
             $('#enableddevices').bootstrapTable({
               onPostBody: function() {
-                if (config.WebGUIUseColor == true) {
+                if (config.UseColorForMinerStatus == true) {
                   $('#enableddevices td:nth-child(2)').each(function () {
                     switch(this.innerText) {
                       case this.innerText.match(/^Mining/)?.input:
@@ -273,7 +273,7 @@
             $(document).ready(function () {
               $(function () {
                 $('#btn-disable-device').click(function () {
-                  var command = 'functions/config/device/disable?ExcludeDeviceName=' + encodeURIComponent($('#enableddevices').bootstrapTable('getSelections').map(item => item.Name));
+                  var command = 'functions/config/device/disable?' + encodeURIComponent('Name=' + $('#enableddevices').bootstrapTable('getSelections').map(item => item.Name));
                   $('.modal-body').load(command, function() {
                     $('.modal-title').text($('#btn-disable-device').text());
                     $('#myModal').modal({show:true});
@@ -285,7 +285,7 @@
 
               $(function () {
                 $('#btn-enable-device').click(function () {
-                  var command = 'functions/config/device/enable?DeviceName=' + encodeURIComponent($('#disableddevices').bootstrapTable('getSelections').map(item => item.Name));
+                  var command = 'functions/config/device/enable?' + encodeURIComponent('Name=' + $('#disableddevices').bootstrapTable('getSelections').map(item => item.Name));
                   $('.modal-body').load(command, function() {
                     $('.modal-title').text($('#btn-enable-device').text());
                     $('#myModal').modal({show:true});

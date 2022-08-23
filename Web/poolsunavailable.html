@@ -44,13 +44,13 @@
                 <th data-field="Accuracy" data-align="right" data-sortable="true" data-formatter="formatPercent" data-width=2>Accuracy</th>
                 <th data-field="Name" data-sortable="true" data-filter-control="select">Pool Name</th>
                 <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">Pool Base Name</th>
-                <th data-field="Region" data-sortable="true" data-filter-control="select">Region</th>
+                <th data-field="Region" data-sortable="true" data-filter-control="select" data-visible="false">Region</th>
                 <th data-field="User" data-sortable="true" data-filter-control="select" data-visible="false">Username or Wallet</th>
                 <th data-field="WorkerName" data-sortable="true" data-filter-control="select" data-visible="false">WorkerName</th>
                 <th data-field="Pass" data-sortable="true" data-filter-control="select" data-visible="false">Password</th>
                 <th data-field="Host" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Host</th>
                 <th data-field="Port" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-width=1>Port&nbsp;</th>
-                <th data-field="EarningsAdjustmentFactor" data-align="right" data-sortable="true" data-formatter="formatDigits3" data-width=1>Earnings<br>Adjustment<br>Factor</th>
+                <th data-field="EarningsAdjustmentFactor" data-align="right" data-sortable="true" data-formatter="format3DecimalDigits" data-width=1>Earnings<br>Adjustment<br>Factor</th>
                 <th data-field="SSL" data-sortable="true" data-filter-control="select" data-width=4 data-visible="false">SSL</th>
                 <th data-field="Fee" data-align="right" data-sortable="true" data-formatter="formatPercent" data-width=1>Fee&nbsp;&nbsp;</th>
                 <th data-field="Workers" data-align="right" data-sortable="true" data-visible="false">Workers</th>
@@ -58,6 +58,7 @@
                 <th data-field="Epoch" data-align="right" data-sortable="true" data-visible="false">Epoch</th>
                 <th data-field="BlockHeight" data-align="right" data-sortable="true" data-visible="false">Block Height</th>
                 <th data-field="Updated" data-sortable="true" data-formatter="formatTimeSince" data-width=250>Last Updated</th>
+                <th data-field="Disabled" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Disabled</th>
               </tr>
             </thead>
           </table>
@@ -68,10 +69,12 @@
 
             $table.bootstrapTable({
               onAll: function() {
-                document.getElementById('btn-reset-data').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-                document.getElementById('btn-remove-watchdog').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-                document.getElementById('btn-enable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-                document.getElementById('btn-disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                try {
+                  document.getElementById('btn-reset-data').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                  document.getElementById('btn-remove-watchdog').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                  document.getElementById('btn-enable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                  document.getElementById('btn-disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                } catch {}
               },
 
               autoRefreshInterval: parseInt(config.Interval), // refresh once per interval
@@ -82,13 +85,13 @@
               $('#btn-reset-data').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm, Currency: $element.Currency, Region: $element.Region})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm, Currency: $element.Currency})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/remove?Pools=' + encodeURIComponent($data);
+                    $command = '/functions/stat/remove?' + encodeURIComponent('Pools=' + $data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-reset-data').text());
                       $('body').css('cursor', 'default');
@@ -108,7 +111,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/watchdogtimers/remove?Pools=' + encodeURIComponent($data);
+                    $command = '/functions/watchdogtimers/remove?' + encodeURIComponent('Pools=' + $data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-remove-watchdog').text());
                       $('body').css('cursor', 'default');
@@ -122,13 +125,13 @@
               $('#btn-enable').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm, Currency: $element.Currency})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/pool/enable?Pools=' + encodeURIComponent($data);
+                    $command = '/functions/stat/enable?' + encodeURIComponent('Pools=' + $data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-enable').text());
                       $('body').css('cursor', 'default');
@@ -142,13 +145,13 @@
               $('#btn-disable').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm})));
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm, Currency: $element.Currency})));
                   if ($data.length >= $querysize) {
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/pool/disable?Pools=' + encodeURIComponent($data);
+                    $command = '/functions/stat/disable?' + encodeURIComponent('Pools=' + $data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-disable').text());
                       $('body').css('cursor', 'default');

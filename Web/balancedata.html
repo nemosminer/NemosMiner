@@ -33,14 +33,14 @@
                 <th class="align-top" data-field="Pool" data-sortable="true" data-filter-control="select">Pool</th>
                 <th class="align-top" data-field="Wallet" data-sortable="true" data-visible="true" data-filter-control="select">Username or Wallet</th>
                 <th class="align-top" data-field="Currency" data-sortable="true" data-filter-control="select">Currency</th>
-                <th class="align-top" data-field="Pending" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Pending</th>
-                <th class="align-top" data-field="Balance" data-align="right" data-sortable="true" data-formatter="formatDigits10">Balance</th>
-                <th class="align-top" data-field="Unpaid" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Unpaid</th>
-                <th class="align-top" data-field="Earnings" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Earnings</th>
-                <th class="align-top" data-field="Delta" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Delta</th>
-                <th class="align-top" data-field="Payout" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Payout</th>
-                <th class="align-top" data-field="Paid" data-align="right" data-sortable="true" data-visible="true" data-formatter="formatDigits10">Paid</th>
-                <th class="align-top" data-field="HiddenPending" data-align="right" data-sortable="true" data-visible="false" data-formatter="formatDigits10">Hidden Pending</th>
+                <th class="align-top" data-field="Pending" data-align="right" data-sortable="true" data-visible="true" data-formatter="format10DecimalDigits">Pending</th>
+                <th class="align-top" data-field="Balance" data-align="right" data-sortable="true" data-formatter="format10DecimalDigits">Balance</th>
+                <th class="align-top" data-field="Unpaid" data-align="right" data-sortable="true" data-visible="true" data-formatter="format10DecimalDigits">Unpaid</th>
+                <th class="align-top" data-field="Earnings" data-align="right" data-sortable="true" data-visible="true" data-formatter="format10DecimalDigits">Earnings</th>
+                <th class="align-top" data-field="Delta" data-align="right" data-sortable="true" data-visible="true" data-formatter="format10DecimalDigits">Delta</th>
+                <th class="align-top" data-field="Payout" data-align="right" data-sortable="true" data-visible="true" data-formatter="format10DecimalDigits">Payout</th>
+                <th class="align-top" data-field="Paid" data-align="right" data-sortable="true" data-visible="true" data-formatter="format10DecimalDigits">Paid</th>
+                <th class="align-top" data-field="HiddenPending" data-align="right" data-sortable="true" data-visible="false" data-formatter="format10DecimalDigits">Hidden Pending</th>
               </tr>
             </thead>
           </table>
@@ -51,10 +51,13 @@
 
             $table.bootstrapTable({
               onAll: function() { 
-                document.getElementById('btn-remove-entry').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                try {
+                  document.getElementById('btn-remove-entry').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                }
+                catch {}
               },
               autoRefreshInterval: parseInt(config.BalancesTrackerPollInterval * 60), // refresh once per balances tracker interval
-              height: $(window).height() - $('#balanceobjects').offset().top - 10
+              height: $(window).height() - $('#balanceobjects').offset().top - 20
             });
 
             $(document).ready(function () {
@@ -66,7 +69,7 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
                   else {
-                    $command = '/functions/balancedata/remove?Data=' + encodeURIComponent($data);
+                    $command = '/functions/balancedata/remove?' + encodeURIComponent('Data=' + $data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-remove-entry').text());
                       $('#myModal').modal({show:true});

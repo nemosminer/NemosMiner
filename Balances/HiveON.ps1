@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveON.ps1
-Version:        4.0.2.6
-Version date:   07 August 2022
+Version:        4.1.0.0
+Version date:   23 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -32,35 +32,37 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
     $Currency = $_.ToUpper()
     $Wallet = ($Config.PoolsConfig.$Name.Wallets.$_ -replace "^0x").ToLower()
     $RetryCount = 3
-    $RetryDelay = 15
+    $RetryDelay = 3
 
     $Request = "https://hiveon.net/api/v1/stats/miner/$Wallet/$Currency/billing-acc"
 
     While (-not $APIResponse -and $RetryCount -gt 0 -and $Wallet) { 
 
-        $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+        Try { 
+            $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec 5 -ErrorAction Ignore
 
-        If ($Config.LogBalanceAPIResponse -eq $true) { 
-            "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-            $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-        }
+            If ($Config.LogBalanceAPIResponse -eq $true) { 
+                "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+                $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+                $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+            }
 
-        If ($APIResponse.earningStats) { 
-            [PSCustomObject]@{ 
-                DateTime = (Get-Date).ToUniversalTime()
-                Pool     = $Name
-                Currency = $_
-                Wallet   = $($Config.PoolsConfig.$Name.Wallets.$_)
-                Pending  = [Double]0
-                Balance  = [Double]($APIResponse.totalUnpaid)
-                Unpaid   = [Double]($APIResponse.totalUnpaid)
-                # Paid     = [Double]$APIResponse.stats.totalPaid
-                # Total    = [Double]$APIResponse.stats.balance + [Decimal]$APIResponse.stats.penddingBalance
-                Url      = "https://hiveon.net/$($Currency.ToLower())?miner=$Wallet"
+            If ($APIResponse.earningStats) { 
+                [PSCustomObject]@{ 
+                    DateTime = (Get-Date).ToUniversalTime()
+                    Pool     = $Name
+                    Currency = $_
+                    Wallet   = $($Config.PoolsConfig.$Name.Wallets.$_)
+                    Pending  = [Double]0
+                    Balance  = [Double]($APIResponse.totalUnpaid)
+                    Unpaid   = [Double]($APIResponse.totalUnpaid)
+                    # Paid     = [Double]$APIResponse.stats.totalPaid
+                    # Total    = [Double]$APIResponse.stats.balance + [Decimal]$APIResponse.stats.penddingBalance
+                    Url      = "https://hiveon.net/$($Currency.ToLower())?miner=$Wallet"
+                }
             }
         }
-        Else { 
+        Catch { 
             Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
         }
 

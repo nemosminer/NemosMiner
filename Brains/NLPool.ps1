@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NLPool.ps1
-Version:        4.0.2.6
-Version date:   07 August 2022
+Version:        4.1.0.0
+Version date:   23 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -43,12 +43,12 @@ $ProgressPreference = "SilentlyContinue"
 
 While ($BrainConfig) { 
 
-    Write-Message -Level Debug "Start Brain $Brainname"
+    Write-Message -Level Debug "Start Brain '$Brainname'."
 
     $Duration = Measure-Command { 
         $CurDate = (Get-Date).ToUniversalTime()
-        $PoolVariant = $Variables.PoolName | Where-Object { $_ -match "$($BrainName)*" } 
-
+        $PoolVariant = $Config.PoolName | Where-Object { $_ -match "$($BrainName)*" } 
+        
         Do {
             Try { 
                 If (-not $AlgoData) { $AlgoData = Invoke-RestMethod -Uri $BrainConfig.PoolstatusUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout }
@@ -91,7 +91,7 @@ While ($BrainConfig) {
                 Last24DriftSign    = If (($AlgoData.$Algo.estimate_current - $BasePrice) -ge 0) { "Up" } Else { "Down" }
                 Last24DriftPercent = If ($BasePrice -gt 0) { ($AlgoData.$Algo.estimate_current - $BasePrice) / $BasePrice } Else { 0 }
                 FirstDate          = $AlgoObject[0].Date
-                TimeSpan           = If ($null -ne $AlgoObject.Date) { (New-TimeSpan -Start ($AlgoObject[0]).Date -End $CurDate).TotalMinutes }
+                TimeSpan           = If ($null -ne $AlgoObject.Date) { (New-TimeSpan -Start $AlgoObject[0].Date -End $CurDate).TotalMinutes }
             }
         }
 
@@ -132,11 +132,10 @@ While ($BrainConfig) {
             }
         }
 
+        $Variables.BrainData | Add-Member $BrainName $AlgoData -Force
+
         If ($BrainConfig.UseTransferFile) { 
             ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Out-File -FilePath $TransferFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-        }
-        Else { 
-            $Variables.BrainData | Add-Member $BrainName $AlgoData -Force
         }
 
         # Limit to only sample size + 10 minutes min history
@@ -145,7 +144,7 @@ While ($BrainConfig) {
         Remove-Variable AlgoData, BasePrice, CurAlgoObject, CurrenciesData, Currencies, Currency, SampleSizeHalfts, SampleSizets, GroupAvgSampleSize, GroupAvgSampleSizeHalf, GroupMedSampleSize, GroupMedSampleSizeHalf, GroupMedSampleSizeNoPercent, Name, Penalty, PenaltySampleSizeHalf, PenaltySampleSizeNoPercent, Price -ErrorAction Ignore
     }
 
-    Write-Message -Level Debug "End Brain $Brainname ($($Duration.TotalSeconds) sec.)"
+    Write-Message -Level Debug "End Brain '$Brainname' ($($Duration.TotalSeconds) sec.)."
 
     Do { 
         Start-Sleep -Seconds 3

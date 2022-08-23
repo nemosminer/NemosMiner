@@ -1,0 +1,27 @@
+// PoolsConfig template
+// For each pool the listed parameters can be set.
+
+{
+  // PoolName must be without pool variant extension, e.g. "ZergPool"
+  "PoolName": { 
+    // Algorithm: '+[Algorithm]' to enable algorithm; '-[Algorithm]' to disable algorithm.
+    // If '+' is used, then only the explicitly enabled algorithms are used; if '-' is used, then all algorithms are used except the disabled ones
+    "Algorithm": [
+      "-Equihash1445",
+      "-Neoscrypt"
+    ],
+    // Exclude region: One or more of 'Asia', 'Europe', 'HongKong', 'Japan', 'Russia', 'USA East', 'USA West'
+    "ExcludeRegion": [ 
+	"Asia",
+      "Europe"
+    ],
+    // EarningsAdjustmentFactor: Default factor with which NemosMiner multiplies the prices reported by the pool. Value between 0.01 & 10.00
+    "EarningsAdjustmentFactor": 0.9,
+    // PayoutThreshold: One key/value pair per currency
+    "PayoutThreshold": { 
+      "mBTC": 0.00025
+    },
+    // Minimum workers mining the algorithm at the pool; if less miners are mining the algorithm then the pool will be disabled
+    "MinWorker": 25
+  }
+}

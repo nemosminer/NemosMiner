@@ -45,11 +45,11 @@
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
                 <th data-field="tStatus" data-sortable="true" data-filter-control="select">Status</th>
                 <th data-field="Reasons" data-sortable="true" data-filter-control="select">Reasons</th>
-                <th data-field="Earning_Bias" data-align="right" data-sortable="true" data-formatter="formatDigitsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning Bias</th>
-                <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatDigitsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning</th>
-                <th data-field="PowerCost" data-align="right" data-sortable="true" data-formatter="formatDigitsFromBTC" data-title-tooltip="per 24hrs (estimated)">Power Cost</th>
-                <th data-field="Profit_Bias" data-align="right" data-sortable="true" data-formatter="formatDigitsFromBTC" data-title-tooltip="per 24hrs (estimated)">Profit Bias</th>
-                <th data-field="Profit" data-align="right" data-sortable="true" data-formatter="formatDigitsFromBTC" data-title-tooltip="per 24hrs (estimated)">Profit</th>
+                <th data-field="Earning_Bias" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning Bias</th>
+                <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning</th>
+                <th data-field="PowerCost" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Power Cost</th>
+                <th data-field="Profit_Bias" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Profit Bias</th>
+                <th data-field="Profit" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Profit</th>
                 <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt" class="text-nowrap" data-title-tooltip="per 24hrs (estimated)">Power<br>Usage</th>
                 <th data-field="tTotalMiningDuration" data-sortable="true" data-visible="false">Total Mining Duration</th>
                 <th data-field="tEarningAccuracy" data-align="right" data-sortable="true">Accuracy</th>
@@ -116,7 +116,7 @@
               },
 
               onPostBody: function() {
-                if (config.WebGUIUseColor == true) {
+                if (config.UseColorForMinerStatus == true) {
                   const enumstatus = ['Running', 'Idle', 'Failed', 'Disabled'];
                   $('#miners td:nth-child(2').each(function () {
                     $(this).parent('tr').addClass('miner-' + enumstatus[this.innerText].toLowerCase());
@@ -125,11 +125,13 @@
               },
 
               onAll: function() {
-                document.getElementById('btn-re-benchmark').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-                document.getElementById('btn-re-measure').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-                document.getElementById('btn-remove-watchdog').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-                document.getElementById('btn-failed').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-                document.getElementById('btn-disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                try {
+                  document.getElementById('btn-re-benchmark').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                  document.getElementById('btn-re-measure').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                  document.getElementById('btn-remove-watchdog').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                  document.getElementById('btn-failed').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                  document.getElementById('btn-disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                } catch {}
               },
 
               autoRefreshInterval: parseInt(config.Interval), // refresh once per interval
@@ -146,7 +148,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/watchdogtimers/remove?Miners=' + encodeURIComponent($data);
+                    $command = '/functions/watchdogtimers/remove?' + encodeURIComponent('Miners=' + $data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-remove-watchdog').text());
                       $('body').css('cursor', 'default');
@@ -166,7 +168,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=Hashrate';
+                    $command = '/functions/stat/remove?' + encodeURIComponent('Miners=' + $data + '&Type=Hashrate');
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-re-benchmark').text());
                       $('body').css('cursor', 'default');
@@ -186,7 +188,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=PowerUsage';
+                    $command = '/functions/stat/remove?' + encodeURIComponent('Miners=' + $data + '&Type=PowerUsage');
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-re-measure').text());
                       $('body').css('cursor', 'default');
@@ -206,7 +208,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=Hashrate&Value=0';
+                    $command = '/functions/stat/set?' + encodeURIComponent('Miners=' + $data + '&Type=Hashrate&Value=0');
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-failed').text());
                       $('body').css('cursor', 'default');
@@ -226,7 +228,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=Hashrate&Value=-1';
+                    $command = '/functions/stat/set' + encodeURIComponent('Miners=' + $data + '&Type=Hashrate&Value=-1');
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-disable').text());
                       $('body').css('cursor', 'default');

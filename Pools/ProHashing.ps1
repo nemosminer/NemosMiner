@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.0.2.6
-Version date:   07 August 2022
+Version:        4.1.0.0
+Version date:   23 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -72,27 +72,30 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
 
         $Regions = If ($Algorithm_Norm -in @("Chia", "Etchash", "Ethash", "EthashLowMem")) { "US" } Else { $PoolConfig.Region }
 
-        ForEach ($Region in $Regions) { 
-            $Region_Norm = Get-Region $Region
+        ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
+            If ($Region = $PoolConfig.Region | Where-Object { (Get-Region $_) -eq $Region_Norm }) { 
 
-            [PSCustomObject]@{ 
-                Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
-                Algorithm                = [String]$Algorithm_Norm
-                BaseName                 = [String]$Name
-                Currency                 = [String]$Currency
-                EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                Fee                      = [Decimal]$Fee
-                Host                     = "$(If ($Region -eq "EU") { "eu." })$PoolHost"
-                Name                     = [String]$PoolVariant
-                Pass                     = [String]$Pass
-                Port                     = [UInt16]$PoolPort
-                Price                    = [Double]$Stat.Live
-                Region                   = [String]$Region_Norm
-                SSL                      = $false
-                StablePrice              = [Double]$Stat.Week
-                Updated                  = [DateTime]$Stat.Updated
-                User                     = [String]$PoolConfig.UserName
-                WorkerName               = ""
+                [PSCustomObject]@{ 
+                    Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
+                    Algorithm                = [String]$Algorithm_Norm
+                    BaseName                 = [String]$Name
+                    Currency                 = [String]$Currency
+                    Disabled                 = [Boolean]$Stat.Disabled
+                    EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+                    Fee                      = [Decimal]$Fee
+                    Host                     = "$(If ($Region -eq "EU") { "eu." })$PoolHost"
+                    Name                     = [String]$PoolVariant
+                    Pass                     = [String]$Pass
+                    Port                     = [UInt16]$PoolPort
+                    Price                    = [Double]$Stat.Live
+                    Region                   = [String]$Region_Norm
+                    SSL                      = $false
+                    StablePrice              = [Double]$Stat.Week
+                    Updated                  = [DateTime]$Stat.Updated
+                    User                     = [String]$PoolConfig.UserName
+                    WorkerName               = ""
+                }
+                Break
             }
         }
     }

@@ -1,4 +1,5 @@
 {
+  "americas": ["USA West", "USA East", "Europe", "Russia", "HongKong", "Japan", "Asia"],
   "as":       ["Asia", "HongKong", "Japan", "Russia", "Europe", "USA East", "USA West"],
   "Asia":     ["Asia", "HongKong", "Japan", "Russia", "Europe", "USA East", "USA West"],
   "aspac":    ["Asia", "HongKong", "Japan", "Russia", "Europe", "USA East", "USA West"],

@@ -81,7 +81,7 @@ function formatMiners(data) {
 
     // Format Mining Duration (DateTime)
     if (item.BeginTime == "0001-01-01T00:00:00") item.tMiningDuration = "n/a";
-    else item.tMiningDuration = formatTimeSince(item.BeginTime).replace('-', 'just started');
+    else item.tMiningDuration = formatTimeSince(item.BeginTime).replace(' ago' ,'').replace('-', 'just started');
 
     // Format status
     const enumstatus = ['Running', 'Idle', 'Failed', 'Disabled'];
@@ -113,7 +113,7 @@ function formatTimeSpan(timespan) {
 function formatTimeSince(value) {
   var value = (new Date).getTime() - (new Date(value)).getTime();
   if (value == 0) return '-';
-  return formatTime(value / 1000).trim();
+  return formatTime(value / 1000).trim() + ' ago';
 }
 
 function formatTime(seconds) {
@@ -141,6 +141,10 @@ function formatTime(seconds) {
   return formattedtime.trim()
 }
 
+function formatDuration(value) {
+  return formatTime(parseInt(value.split(':')[0] * 60 * 60) + parseInt(value.split(':')[1]  * 60) + parseInt(value.split(':')[2]))
+}
+
 function formatHashrateValue(value) {
   if (value == undefined) return '';
   if (value === 0) return '0 H/s';
@@ -149,8 +153,8 @@ function formatHashrateValue(value) {
     var i = Math.floor(Math.log(value) / Math.log(1000));
     unitvalue = value / Math.pow(1000, i);
     if (i <= 0) i = 1;
-    if (unitvalue < 10) return unitvalue.toFixed(3) + ' ' + sizes[i];
-    return unitvalue.toFixed(2) + ' ' + sizes[i];
+    if (unitvalue < 10) return unitvalue.toLocaleString(navigator.language, { maximumFractionDigits: 3, minimumFractionDigits: 3 }) + ' ' + sizes[i];;
+    return unitvalue.toLocaleString(navigator.language, { maximumFractionDigits: 2, minimumFractionDigits: 2 }) + ' ' + sizes[i];
   }
   return 'n/a';
 };
@@ -160,55 +164,41 @@ function formatHashrate(value) {
   return values.map(formatHashrate).toString();
 };
 
-function getDigitsFromValue(value, maxdigits) {
-  // The bigger the number, the more decimal digits
-
-  // Output will have as many digits as the integer value is to the power of 10
-  // e.g. Rate is between 100 and 999, then Digits is 3
-
-  digits = parseInt(value).toString().length
-  if (digits < 0) digits = 0;
-  if (digits > maxdigits) digits = maxdigits;
-  return digits;
+function getDecimalsFromValue(value) {
+  var decimals;
+  decimals = 1 + config.DecimalsMax - parseInt(value).toString().length
+  if (decimals > config.DecimalsMax) decimals = 0;
+  return decimals;
 };
 
-function formatDigitsFromBTC(value) {
+function formatDecimals(value) {
   if (value == null) return 'n/a';
   if (isNaN(value)) return 'n/a';
-  if (value == 0) return (0).toFixed(12 - getDigitsFromValue(rate, 10));
-  if (value != 0) return parseFloat(value * rate).toFixed(12 - getDigitsFromValue(rate, 10));
-  return 'n/a';
+  return value.toLocaleString(navigator.language, { maximumFractionDigits: getDecimalsFromValue(value) , minimumFractionDigits: getDecimalsFromValue(value) });
 };
 
-function formatDigitsFromValue(value) {
-  if (value == null) return 'n/a'
-  if (isNaN(value)) return 'n/a';
-  if (value == 0) return (0).toFixed(8 - getDigitsFromValue(value, 8));
-  if (value != 0) return parseFloat(value).toFixed(8 - getDigitsFromValue(value, 8));
-  return 'n/a';
+function formatDecimalsFromBTC(value) {
+  return formatDecimals(value * rate);
+};
+
+function formatPrices(value) {
+  return (value * Math.pow(1024, 3)).toLocaleString(navigator.language, { minimumFractionDigits: (getDecimalsFromValue(value * Math.pow(1024, 3)) + 4)});
 };
 
 function formatDate(value) {
   if (value === '') return 'Unknown';
-  if (Date.parse(value)) return (new Date(value).toLocaleString(navigator.language));
   if (value == null) return 'Unknown';
+  if (Date.parse(value)) return (new Date(value).toLocaleString(navigator.language));
   return value;
 };
 
 function formatWatt(value) {
-  if (value == 0) return (0).toFixed(2) + ' W';
-  if (value > 0) return parseFloat(value).toFixed(2) + ' W';
+  if (parseFloat(value)) return parseFloat(value).toFixed(2) + ' W';
   return 'n/a';
 };
 
 function formatPercent(value) {
-  if (value === 0) return '0.00 %';
   if (parseFloat(value)) return parseFloat(value * 100).toFixed(2) + ' %';
-  return '';
-};
-
-function formatPrices(value) {
-  if (value > 0) return (value * 1000000000).toFixed(10);
   return '';
 };
 
@@ -218,114 +208,113 @@ function formatArrayAsString(value) {
   return value.sort().join('; <br>');
 };
 
-function formatDigits0(value) {
-  if (value > 0) return (value).toFixed(0);
+function format0DecimalDigits(value) {
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 0, maximumFractionDigits: 0});
   return '';
 };
 
-function formatDigits1(value) {
-  if (value > 0) return (value).toFixed(1);
+function forma2tDecimalDigits(value) {
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 1, maximumFractionDigits: 1});
   return '';
 };
 
-function formatDigits2(value) {
-  if (value > 0) return (value).toFixed(2);
+function format2DecimalDigits(value) {
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 2, maximumFractionDigits: 2});
   return '';
 };
 
-function formatDigits3(value) {
-  if (value > 0) return (value).toFixed(3);
+function format3DecimalDigits(value) {
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 3, maximumFractionDigits: 3});
   return '';
 };
 
-function formatDigits4(value) {
-  if (value > 0) return (value).toFixed(4);
+function format4DecimalDigits(value) {
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 4, maximumFractionDigits: 4});;
   return '';
 };
 
-function formatDigits5(value) {
-  if (value > 0) return (value).toFixed(5);
+function format5DecimalDigits(value) {
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 5, maximumFractionDigits: 5});;
   return '';
 };
 
-function formatDigits6(value) {
-  if (value > 0) return (value).toFixed(6);
+function format6DecimalDigits(value) {
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 6, maximumFractionDigits: 6});;
   return '';
 };
 
-function formatDigits7(value) {
-  if (value > 0) return (value).toFixed(7);
+function format7DecimalDigits(value) {
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 7, maximumFractionDigits: 7});;
   return '';
 };
 
-function formatDigits8(value) {
-  if (value > 0) return (value).toFixed(8);
+function format8DecimalDigits(value) {
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 8, maximumFractionDigits: 8});;
   return '';
 };
 
-function formatDigits9(value) {
-  if (value > 0) return (value).toFixed(9);
+function format9DecimalsDigits(value) {
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 9, maximumFractionDigits: 9});;
   return '';
 };
 
-function formatDigits10(value) {
-  if (value > 0) return (value).toFixed(10);
+function format10DecimalDigits(value) {
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 10, maximumFractionDigits: 10});;
   return '';
 };
-
 
 function formatGBDigits0(value) {
-  if (value > 0) return (value).toFixed(0) + ' GB';
+  if (value > 0) return format0DecimalDigits(value) + ' GB';
   return '';
 };
 
 function formatGBDigits1(value) {
-  if (value > 0) return (value).toFixed(1) + ' GB';
+  if (value > 0) return format1DecimalDigits(value) + ' GB';
   return '';
 };
 
 function formatGBDigits2(value) {
-  if (value > 0) return (value).toFixed(2) + ' GB';
+  if (value > 0) return format2DecimalDigits(value) + ' GB';
   return '';
 };
 
 function formatGBDigits3(value) {
-  if (value > 0) return (value).toFixed(3) + ' GB';
+  if (value > 0) return format3DecimalDigits(value) + ' GB';
   return '';
 };
 
 function formatGBDigits4(value) {
-  if (value > 0) return (value).toFixed(4) + ' GB';
+  if (value > 0) return format4DecimalDigits(value) + ' GB';
   return '';
 };
 
 function formatGBDigits5(value) {
-  if (value > 0) return (value).toFixed(5) + ' GB';
+  if (value > 0) return format5DecimalDigits(value) + ' GB';
   return '';
 };
 
 function formatGBDigits6(value) {
-  if (value > 0) return (value).toFixed(6) + ' GB';
+  if (value > 0) return format6DecimalDigits(value) + ' GB';
   return '';
 };
 
 function formatGBDigits7(value) {
-  if (value > 0) return (value).toFixed(7) + ' GB';
+  if (value > 0) return format7DecimalDigits(value) + ' GB';
   return '';
 };
 
 function formatGBDigits8(value) {
-  if (value > 0) return (value).toFixed(8) + ' GB';
+  if (value > 0) return format8DecimalDigits(value) + ' GB';
   return '';
 };
 
 function formatGBDigits9(value) {
-  if (value > 0) return (value).toFixed(9) + ' GB';
+  if (value > 0) return format9DecimalDigits(value) + ' GB';
   return '';
 };
 
 function formatGBDigits10(value) {
-  if (value > 0) return (value).toFixed(10) + ' GB';
+  if (value > 0) return format10DecimalDigits(value) + ' GB';
   return '';
 };
 

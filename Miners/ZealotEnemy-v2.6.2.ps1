@@ -25,7 +25,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Phi2";       MinMemGB = 2;                                 MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo phi2 --statsavg 5" }
     [PSCustomObject]@{ Algorithm = "Polytimos";  MinMemGB = 2;                                 MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo poly --statsavg 5" }
 #   [PSCustomObject]@{ Algorithm = "SkunkHash";  MinMemGB = 2;                                 MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo skunk --statsavg 1" } # No hashrate in time
-    [PSCustomObject]@{ Algorithm = "Sonoa";      MinMemGB = 2;                                 MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo sonoa --statsavg 1" }
+#   [PSCustomObject]@{ Algorithm = "Sonoa";      MinMemGB = 2;                                 MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo sonoa --statsavg 1" } # No hashrate in time
     [PSCustomObject]@{ Algorithm = "Timetravel"; MinMemGB = 2;                                 MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo timetravel --statsavg 5" }
     [PSCustomObject]@{ Algorithm = "Tribus";     MinMemGB = 3;                                 MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15); Arguments = " --algo tribus --statsavg 1" }
     [PSCustomObject]@{ Algorithm = "X16r";       MinMemGB = 3;                                 MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo x16r --statsavg 1" }

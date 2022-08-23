@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           ZPool.ps1
+File:           BlockMasters.ps1
 Version:        4.1.0.0
 Version date:   23 August 2022
 #>
@@ -36,6 +36,9 @@ $APICallFails = 0
 $CurrenciesData = @()
 $TransferFile = "$($PWD)\Data\BrainData_$($BrainName).json"
 
+$Headers = @{ "Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8";"Cache-Control"="no-cache" }
+$Useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"
+
 $ProgressPreference = "SilentlyContinue"
 
 # Fix TLS Version erroring
@@ -51,36 +54,36 @@ While ($BrainConfig) {
 
         Do {
             Try { 
-                If (-not $AlgoData) { $AlgoData = Invoke-RestMethod -Uri $BrainConfig.PoolstatusUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout }
-                If (-not $CurrenciesData) { $CurrenciesData = Invoke-RestMethod -Uri $BrainConfig.PoolCurrenciesUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout }
+
+                If (-not $AlgoData) { $AlgoData = Invoke-RestMethod -Uri $BrainConfig.PoolstatusUri -Headers $Headers -UserAgent $UserAgent -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout }
+                If ($BrainConfig.PoolCurrenciesUri -and -not $CurrenciesData) { $CurrenciesData = Invoke-RestMethod -Uri $BrainConfig.PoolCurrenciesUri -Headers $Headers -UserAgent $UserAgent -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout }
                 $APICallFails = 0
             }
             Catch { 
                 $APICallFails++
                 Start-Sleep -Seconds ($APICallFails * $BrainConfig.PoolAPIRetryInterval)
             }
-        } While (-not ($AlgoData -and $CurrenciesData))
+        } While (-not $AlgoData -or ($BrainConfig.PoolCurrenciesUri -and -not $CurrenciesData))
+
+        If ($BrainConfig.PoolCurrenciesUri)  { ($CurrenciesData | Get-Member -MemberType NoteProperty).Name | ForEach-Object { $CurrenciesData.$_ | Add-Member -Force @{Symbol = If ($CurrenciesData.$_.Symbol) { $CurrenciesData.$_.Symbol -replace "-.+" } Else { $_ -replace "-.+"} } } }
 
         ForEach ($Algo in (($AlgoData | Get-Member -MemberType NoteProperty).Name)) { 
-            $Currencies = @(($CurrenciesData | Get-Member -MemberType NoteProperty).Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo })
-            $Currency = If ($Currencies.Count -eq 1) { $Currencies[0] -replace "-.+" } Else { "" }
+            If ($BrainConfig.PoolCurrenciesUri) { $Currencies = @(($CurrenciesData | Get-Member -MemberType NoteProperty).Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo } | ForEach-Object { $CurrenciesData.$_ }) }
+            $Currency = If ($Currencies.Symbol) { ($Currencies | Sort-Object Estimate)[-1].Symbol } Else { "" }
             $AlgoData.$Algo | Add-Member @{ Currency = $Currency.Trim() }
-            If ($CurrenciesData.$Currency.Name) { $AlgoData.$Algo | Add-Member @{ CoinName = $CurrenciesData.$Currency.Name } }
 
             $AlgoData.$Algo.estimate_last24h = [Double]$AlgoData.$Algo.estimate_last24h
-            $AlgoData.$Algo.rental_current = [Double]$AlgoData.$Algo.rental_current
-            If ($AlgoData.$Algo.actual_last24h) { $AlgoData.$Algo.actual_last24h = [Double]($AlgoData.$Algo.actual_last24h / 1000) }
+            If ($AlgoData.$Algo.actual_last24h) { $AlgoData.$Algo.actual_last24h = [Double]$AlgoData.$Algo.actual_last24h }
             $BasePrice = If ($AlgoData.$Algo.actual_last24h) { [Double]$AlgoData.$Algo.actual_last24h } Else { [Double]$AlgoData.$Algo.estimate_last24h }
             $AlgoData.$Algo.estimate_current = [math]::max(0, [Double]($AlgoData.$Algo.estimate_current * ( 1 - ($BrainConfig.PoolAPIPerFailPercentPenalty * [math]::max(0, $APICallFails - $BrainConfig.PoolAPIAllowedFailureCount) / 100))))
             $AlgoObject += [PSCustomObject]@{ 
                 Date               = $CurDate
                 Name               = $AlgoData.$Algo.name
                 Port               = $AlgoData.$Algo.port
-                Currencies         = $AlgoData.$Algo.coins
+                coins              = $AlgoData.$Algo.coins
                 Fees               = $AlgoData.$Algo.fees
                 Hashrate           = $AlgoData.$Algo.hashrate
                 Workers            = $AlgoData.$Algo.workers
-                BlockHeight        = $AlgoData.$Algo.height
                 estimate_current   = $AlgoData.$Algo.estimate_current -as [Double]
                 estimate_last24h   = $AlgoData.$Algo.estimate_last24h
                 actual_last24h     = $BasePrice
@@ -89,7 +92,7 @@ While ($BrainConfig) {
                 Last24DriftSign    = If (($AlgoData.$Algo.estimate_current - $BasePrice) -ge 0) { "Up" } Else { "Down" }
                 Last24DriftPercent = If ($BasePrice -gt 0) { ($AlgoData.$Algo.estimate_current - $BasePrice) / $BasePrice } Else { 0 }
                 FirstDate          = $AlgoObject[0].Date
-                TimeSpan           = If ($null -ne $AlgoObject.Date) { (New-TimeSpan -Start $AlgoObject[0].Date -End $CurDate).TotalMinutes }
+                TimeSpan           = If ($null -ne $AlgoObject.Date) { (New-TimeSpan -Start ($AlgoObject[0]).Date -End $CurDate).TotalMinutes }
             }
         }
 
@@ -122,7 +125,7 @@ While ($BrainConfig) {
         }
 
         ($AlgoData | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
-            If ([Double]($AlgoData.$_.hashrate_last24h) -gt 0) { 
+            If ([Double]($AlgoData.$_.actual_last24h) -gt 0) { 
                 $AlgoData.$_ | Add-Member Updated $CurDate -Force
             }
             Else { 

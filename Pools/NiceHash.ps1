@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.0.2.6
+Version:        4.1.0.0
 Version date:   19 June 2022
 #>
 
@@ -85,6 +85,7 @@ If ($Wallet) {
             Algorithm                = [String]$Algorithm_Norm
             BaseName                 = [String]$Name
             Currency                 = [String]$Currency
+            Disabled                 = [Boolean]$Stat.Disabled
             EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
             Fee                      = [Decimal]$Fee
             Host                     = "$Algorithm.$HostSuffix".ToLower()

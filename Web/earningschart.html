@@ -133,7 +133,7 @@
                           var label = context.dataset.label || '';
                           if (label) label = ' ' + label + ': ';
                           if (context.parsed.y > 0) {
-                            label += context.parsed.y.toFixed(4) + ' ' + currency;
+                            label += context.parsed.y.toFixed(config.DecimalsMax) + ' ' + currency;
                             return label;
                           }
                         },
@@ -141,7 +141,7 @@
                           // Loop through all datasets to get the actual total of the index
                           var total = 0;
                           for (var i = 0; i < data.length; i++) total += data[i].raw;
-                          return 'Total: ' + total.toFixed(4) + ' ' + currency;
+                          return 'Total: ' + total.toFixed(config.DecimalsMax) + ' ' + currency;
                         }
                       },
                       itemSort: function(a, b) {

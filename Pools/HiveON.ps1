@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveOn.ps1
-Version:        4.0.2.6
-Version date:   07 August 2022
+Version:        4.1.0.0
+Version date:   23 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -51,35 +51,44 @@ If ($PoolConfig.Wallets) {
         $Algorithm_Norm = Get-Algorithm $Currency
         $Divisor = [Double]$_.profitPerPower
         $Workers = $Request.stats.($_.name).workers
-        $_.Servers | ForEach-Object { $_.Region = $_.Region -replace 'all', 'n/a' }
 
         # Add coin name
         If ($_.title -and $Currency) { Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $_.title }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
 
-        ForEach ($Server in ($_.Servers | Where-Object { $_.Region -in $PoolConfig.Region -or  $_.Region -eq "n/a" } )) { 
-            $Region_Norm = Get-Region $Server.Region
+        ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
+            If ($_.servers.region -eq "all") { 
+                $Region_Norm = "n/a"
+                $Server = $_.servers
+            }
+            Else {
+                $Server = $_.servers | Where-Object { (Get-Region $_.region) -eq $Region_Norm }
+            }
 
-            [PSCustomObject]@{ 
-                Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
-                Algorithm                = [String]$Algorithm_Norm
-                BaseName                 = [String]$Name
-                Currency                 = [String]$Currency
-                EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                Fee                      = [Decimal]0
-                Host                     = [String]$Server.host
-                Name                     = [String]$PoolVariant
-                Pass                     = "x"
-                Port                     = [UInt16]$Server.ports[0]
-                Price                    = [Double]$Stat.Live
-                Region                   = [String]$Region_Norm
-                SSL                      = $false
-                StablePrice              = [Double]$Stat.Week
-                Updated                  = [DateTime]$Stat.Updated
-                User                     = "$($PoolConfig.Wallets.$Currency).$($PoolConfig.WorkerName)"
-                Workers                  = [Int]$Workers
-                WorkerName               = ""
+            If ($Server) { 
+                [PSCustomObject]@{ 
+                    Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
+                    Algorithm                = [String]$Algorithm_Norm
+                    BaseName                 = [String]$Name
+                    Currency                 = [String]$Currency
+                    Disabled                 = [Boolean]$Stat.Disabled
+                    EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+                    Fee                      = 0
+                    Host                     = [String]$Server.host
+                    Name                     = [String]$PoolVariant
+                    Pass                     = "x"
+                    Port                     = [UInt16]$Server.ports[0]
+                    Price                    = [Double]$Stat.Live
+                    Region                   = [String]$Region_Norm
+                    SSL                      = $false
+                    StablePrice              = [Double]$Stat.Week
+                    Updated                  = [DateTime]$Stat.Updated
+                    User                     = "$($PoolConfig.Wallets.$Currency).$($PoolConfig.WorkerName)"
+                    Workers                  = [Int]$Workers
+                    WorkerName               = ""
+                }
+                Break
             }
         }
     }

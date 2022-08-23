@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.0.2.6
-Version date:   07 August 2022
+Version:        4.1.0.0
+Version date:   23 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -28,37 +28,39 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PayoutCurrency = $Config.PoolsConfig.$Name.Wallets.Keys | Select-Object -First 1
 $Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
 $RetryCount = 3
-$RetryDelay = 15
+$RetryDelay = 3
 
 $Request = "https://www.zergpool.com:8443/api/wallet?address=$Wallet"
 
 While (-not $APIResponse -and $RetryCount -gt 0 -and $Wallet) { 
 
+    Try { 
 
-    $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop
+        $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec 5 -ErrorAction Ignore
 
-    If ($Config.LogBalanceAPIResponse -eq $true) { 
-        "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-        $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-        $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-    }
+        If ($Config.LogBalanceAPIResponse -eq $true) { 
+            "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+            $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+        }
 
-    If ($APIResponse.currency) { 
-        [PSCustomObject]@{ 
-            DateTime        = (Get-Date).ToUniversalTime()
-            Pool            = $Name
-            Currency        = $APIResponse.Currency
-            Wallet          = $Wallet
-            Pending         = [Double]$APIResponse.Unsold
-            Balance         = [Double]$APIResponse.Balance
-            Unpaid          = [Double]$APIResponse.Unpaid
-            # Paid            = [Double]$APIResponse.PaidTotal
-            # Total           = [Double]$APIResponse.Unpaid + [Double]$APIResponse.PaidTotal
-            PayoutThreshold = [Double]($(If ($Config.PoolsConfig.$Name.PayoutThreshold.$PayoutCurrency -gt $APIResponse.MinPay) { $Config.PoolsConfig.$Name.PayoutThreshold.$PayoutCurrency } Else { $APIResponse.MinPay } ))
-            Url             = "https://zergpool.com/?address=$Wallet"
+        If ($APIResponse.currency) { 
+            Return [PSCustomObject]@{ 
+                DateTime        = (Get-Date).ToUniversalTime()
+                Pool            = $Name
+                Currency        = $APIResponse.Currency
+                Wallet          = $Wallet
+                Pending         = [Double]$APIResponse.Unsold
+                Balance         = [Double]$APIResponse.Balance
+                Unpaid          = [Double]$APIResponse.Unpaid
+                # Paid            = [Double]$APIResponse.PaidTotal
+                # Total           = [Double]$APIResponse.Unpaid + [Double]$APIResponse.PaidTotal
+                PayoutThreshold = [Double]($(If ($Config.PoolsConfig.$Name.PayoutThreshold.$PayoutCurrency -gt $APIResponse.MinPay) { $Config.PoolsConfig.$Name.PayoutThreshold.$PayoutCurrency } Else { $APIResponse.MinPay } ))
+                Url             = "https://zergpool.com/?address=$Wallet"
+            }
         }
     }
-    Else { 
+    Catch { 
         Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
     }
 

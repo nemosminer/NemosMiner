@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           NLPool.ps1
+File:           MiningDutch.ps1
 Version:        4.1.0.0
 Version date:   23 August 2022
 #>
@@ -56,21 +56,22 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
 
     If (-not $Request) { Return }
 
-    $HostSuffix = "mine.nlpool.nl"
+    $Hostsuffix = "mining-dutch.nl"
 
-    $Request.PSObject.Properties.Name | Where-Object { [Double]$Request.$_.$PriceField -gt 0 } | ForEach-Object { 
+    $PoolConfig.Region_Norm = ($PoolConfig.Region | ForEach-Object { Get-Region $_ })
+
+    $Request.PSObject.Properties.Name | Where-Object { $Request.$_.$PriceField -gt 0 } | ForEach-Object { 
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $Currency = "$($Request.$_.currency)".Trim()
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
         $Fee = $Request.$_.Fees / 100
-        $PoolHost = $HostSuffix
         $PoolPort = $Request.$_.port
         $Updated = $Request.$_.Updated
         $Workers = $Request.$_.workers
 
         # Add coin name
-        If ($Request.$_.CoinName -and $Currency) { Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName }
+        If ($Request.$_.CoinName -and $Currency) { Add-CoinName -Currency $Currency -CoinName $Request.$_.CoinName }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
@@ -85,7 +86,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
                     Disabled                 = [Boolean]$Stat.Disabled
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                     Fee                      = [Decimal]$Fee
-                    Host                     = [String]$PoolHost
+                    Host                     = "$($Region).$($Algorithm).$($HostSuffix)" -replace "^eu\."
                     Name                     = [String]$PoolVariant
                     Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
                     Port                     = [UInt16]$PoolPort
@@ -94,7 +95,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
                     SSL                      = $false
                     StablePrice              = [Double]$Stat.Week
                     Updated                  = [DateTime]$Updated
-                    User                     = [String]$Wallet
+                    User                     = "$($PoolConfig.UserName).$($PoolConfig.WorkerName)"
                     Workers                  = [Int]$Workers
                     WorkerName               = ""
                 }

@@ -40,6 +40,9 @@ New Config Items
 # Process priority for CPU miners
   "CPUMinerProcessPriority": -2,
 
+# Display numbers with maximal n decimal digits (larger numbers are shown with less decimal digits)
+  "DecimalsMax": 6,
+
 # If true NemosMiner will not use any single algo miners
   "DisableSingleAlgoMining": false,
 
@@ -251,6 +254,9 @@ New Config Items
 # If true pools (currently ZergPool only) will use anycast for best network performance and ping times
   "UseAnycast": $false,
 
+# If true Miners in web and legacy GUI will be shown with colored background depending on status
+  "UseColorForMinerStatus": true,
+
 # If true NemosMiner will apply miner specific tweaks, e.g mild overclock. This may improve profitability at the expense of system stability (Admin rights are required)
   "UseMinerTweaks:" false,
 
@@ -298,6 +304,7 @@ Removed Config Items
   "TypeNVIDIA": true,  obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "UserName": "", (Replaced with NiceHashUserName & ProHashingUsername)
   "Wallet": [BTC Address]; replaced with "Wallets.BTC"
+  "WebGUIUseColor"": Replaced with "UseColorForMinerStatus". Setting works in web and legacy GUI
 
 Renamed config items (same functionality)
 =========================================

@@ -19,7 +19,7 @@
               $('#btn-editconfig').click(function () {
                 document.getElementById('btn-editconfig').disabled = true;
                 document.getElementById('btn-editpoolsconfig').disabled = true;
-                $('.modal-body').load('/functions/file/edit?FileName=' + configfile, function () {
+                $('.modal-body').load('/functions/file/edit?' + encodeURIComponent('FileName=' + configfile), function () {
                   if (this.outerText) {
                     $('.modal-title').text('Edit Config file');
                     $('#myModal').modal({ 
@@ -38,7 +38,7 @@
               $('#btn-editpoolsconfig').click(function () {
                 document.getElementById('btn-editconfig').disabled = true;
                 document.getElementById('btn-editpoolsconfig').disabled = true;
-                $('.modal-body').load('/functions/file/edit?FileName=' + poolsconfigfile, function () {
+                $('.modal-body').load('/functions/file/edit?' + encodeURIComponent('FileName=' + poolsconfigfile), function () {
                   if (this.outerText) {
                     $('.modal-title').text('Edit PoolsConfig file');
                     $('#myModal').modal({ 

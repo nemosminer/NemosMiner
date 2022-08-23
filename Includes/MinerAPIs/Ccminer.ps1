@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           CCminer.ps1
-Version:        4.0.2.6
-Version date:   07 August 2022
+Version:        4.1.0.0
+Version date:   23 August 2022
 #>
 
 class Ccminer : Miner { 
@@ -41,7 +41,8 @@ class Ccminer : Miner {
 
         $HashRate = [PSCustomObject]@{ }
         $HashRate_Name = [String]$this.Algorithms[0]
-        $HashRate_Value = [Double]$Data.KHS * 1000
+        $HashRate_Value = [Double]$Data.HS
+        If (-not $HashRate_Value) { $HashRate_Value = [Double]$Data.KHS * 1000 }
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
         $Shares = [PSCustomObject]@{ }

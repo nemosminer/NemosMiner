@@ -8,7 +8,7 @@ $Path = ".\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Argon2dDyn"; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo argon2d" }
+    [PSCustomObject]@{ Algorithm = "Argon2d500"; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo argon2d" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).Host } | Where-Object { -not $MinerPools[0].($_.Algorithm).SSL }) { 

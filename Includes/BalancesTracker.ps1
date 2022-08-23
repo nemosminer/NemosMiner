@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.0.2.6
-Version date:   07 August 2022
+Version:        4.1.0.0
+Version date:   23 August 2022
 #>
 
 Do {
@@ -85,7 +85,10 @@ Do {
         $BalanceObjects = @(@($BalanceObjects + $AllBalanceObjects) | Where-Object Pool -notin @($Config.BalancesTrackerIgnorePool) | Where-Object { $_.Unpaid -gt 0 -or $_.DateTime -gt $Now.AddDays(-7) } | Where-Object { $_.Wallet } | Group-Object Pool, Currency, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
 
         # Fix for pool reporting incorrect currency, e.g ZergPool ZER instead of BTC
-        $BalanceObjects = @($BalanceObjects | Where-Object { $_.Pool -match "^MiningPoolHub(|Coins)$|^ProHashing(|24h)$" }) + @($BalanceObjects | Where-Object { $_.Pool -notmatch "^MiningPoolHub(|Coins)$|^ProHashing(|24h)$" } | Group-Object Pool, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
+        $BalanceObjects = @($BalanceObjects | Where-Object { $_.Pool -match "^MiningDutch.*|^MiningPoolHub.*|$|^ProHashing.*$" }) + @($BalanceObjects | Where-Object { $_.Pool -notmatch "^MiningDutch.*|^MiningPoolHub.*|$|^ProHashing.*$" } | Group-Object Pool, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
+
+        # Do not keep balances with 0
+        $BalanceObjects = $BalanceObjects | Where-Object { $_.Balance -gt 0 }
 
         # Read exchange rates
         Get-Rate
@@ -323,13 +326,13 @@ Do {
         $Variables.PoolsLastEarnings = $Variables.PoolsLastEarnings | Get-SortedObject
         $Variables.PoolsLastEarnings | ConvertTo-Json | Out-File -FilePath ".\Data\PoolsLastEarnings.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
 
-        # Build chart data (used in Web GUI) for last 30 days
+        # Build chart data (used in GUI) for last 30 days
         $PoolChartData = [PSCustomObject]@{ }
         $ChartData = $Earnings | Where-Object Pool -in $PoolsToTrack | Sort-Object Date | Group-Object -Property Date | Select-Object -Last 30 # days
         Remove-Variable PoolsToTrack
 
         # One dataset per pool
-        $ChartData.Group.Pool | Sort-Object -Unique | ForEach-Object { 
+        ($ChartData.Group | Where-Object { $_.DailyEarnings -gt 0 }).Pool | Sort-Object -Unique | ForEach-Object { 
             $PoolChartData | Add-Member @{ $_ = [Double[]]@() }
         }
 
@@ -358,7 +361,7 @@ Do {
             $AllBalanceObjects = @(
                 $AllBalanceObjects | Where-Object DateTime -GE $Now.AddDays(-31) | Group-Object Pool, Currency | ForEach-Object { 
                     $Record = $null
-                    $_.Group | Sort-Object DateTime | ForEach-Object {
+                    $_.Group | Sort-Object DateTime | ForEach-Object { 
                         If ($_.DateTime -ge $Now.AddDays(-1)) { $_ } # Keep all records for 1 day
                         ElseIf ($_.DateTime -ge $Now.AddDays(-7) -and $_.Delta -gt 0) { $_ } # Keep all records of the last 7 days with delta
                         ElseIf ($_.DateTime.Date -ne $Record.DateTime.Date) { $Record = $_; $_ } # Keep the newest one per day
