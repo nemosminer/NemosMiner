@@ -196,6 +196,7 @@ Easy configuration, easy start:
       Supported pools:
          - BlockMasters
          - HiveON
+         - MiningDutch
          - MiningPoolHub
          - NiceHash (internal & external wallet)
          - NLPool
@@ -212,14 +213,9 @@ Easy configuration, easy start:
       Each instance must be placed in its own directory
       Miner has to be started prior the launch of the next instance
 
-   CustomMiners (Advanced)
+   Miner switching log
 
-      Users can place any miner.ps1 from miners/optionalminers or custom user created miner.ps1 files in CustomMiners folder 
-      Note: Miners in CustomMiners folder are always enabled (to disable a custom miner it must be removed from the CustomMiners folder)
-
-   Algorithm switching log
-
-      Simple algo switching log as csv (switching.csv file found in Logs folder).
+      Simple miner switching log as csv (\SwitchingLog.csv file found in Logs folder).
       You can easily track switching rate.
 
    Console Display Options
