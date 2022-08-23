@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable algorithm
 
-Updated 07 August 2022
+Updated 21 August 2022
 
 
 Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
@@ -51,6 +51,8 @@ Easy configuration, easy start:
       5. Start
 
       Note: 2. you only need to change Username if you are using Miningpoolhub or ProHashing
+
+![alt text](https://github.com/Minerx117/miners/releases/download/Pictures/NemosMiner_FirstStart.png "NemosMiner Web GUI")
 
    Algorithm selection / removal
 
