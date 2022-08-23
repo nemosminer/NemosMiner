@@ -123,7 +123,7 @@ Easy configuration, easy start:
       NemosMiner relies on config files. No need to edit bat files. Simply run NemosMiner.bat
       Set the config in the Web GUI (http://localhost:3999/configedit.html), apply & start mining
 
-![alt text](https://github.com/Minerx117/miners/releases/download/Pictures/NemosMiner_FirstStart.png "NemosMiner Web GUI Dashboard")
+![alt text](https://github.com/Minerx117/miners/releases/download/Pictures/NemosMiner_Dashboard.png "NemosMiner Web GUI Dashboard")
 
 
    Pause mining
