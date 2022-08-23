@@ -173,12 +173,12 @@ Easy configuration, easy start:
 
       Note that the GUI only updates default values (valid for ALL pools unless there is pool specific configuration setting defined in 'Config\PoolConfig.json'). Any other changes need to be done manually.
 
-   PricePenaltyFactor
+   EarningsAdjustmentFactor
 
-      When using advanced per pool configuration, it is possible to add a penalty factor for a specific pool. This simply adds a multiplicator on estimations presented by the pool.
+      When using advanced per pool configuration, it is possible to add an earnings adjustment factor for a specific pool. This simply adds a multiplicator on estimations presented by the pool.
 
       Example scenario:
-         - You feel like a pool is exaggerating its estimations by 10% - Set PricePenaltyFactor to 0.9
+         - You feel like a pool is exaggerating its estimations by 10% - Set EarningsAdjustmentFactor to 0.9
 
    Pool Variants
 
@@ -192,7 +192,7 @@ Easy configuration, easy start:
 
    Balances Tracking
 
-      Displays BTC/h and BTC/d and an estimation of when the pool payment threshold will be reached.
+      Displays available balances and an estimation of when the pool payment threshold will be reached.
       Supported pools:
          - BlockMasters
          - HiveON
