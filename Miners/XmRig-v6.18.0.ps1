@@ -16,7 +16,7 @@ $Uri = Switch ($Variables.DriverVersion.CUDA) {
     { $_ -ge "9.2" }  { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.0-xmrig/xmrig-6.18.0-msvc-cuda9_2-win64.7z"; Break }
     { $_ -ge "9.1" }  { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.0-xmrig/xmrig-6.18.0-msvc-cuda9_1-win64.7z"; Break }
     { $_ -ge "9.0" }  { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.0-xmrig/xmrig-6.18.0-msvc-cuda9_0-win64.7z"; Break }
-    { Default }       { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.0-xmrig/xmrig-6.18.0-msvc-cuda8_0-win64.7z"; Break }
+    Default           { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.0-xmrig/xmrig-6.18.0-msvc-cuda8_0-win64.7z"; Break }
 }
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\xmrig.exe"
