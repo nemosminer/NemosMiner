@@ -130,8 +130,8 @@ Easy configuration, easy start:
 
       Ability to pause miners while keeping other jobs running (pause button)
       This will stop mining activity
-      BrainPlus will still run in the background avoiding the learning phase on resume
-      EarningTracker will still run in the background to keep the pool balances up to date
+      Brains will still run in the background avoiding the learning phase on resume
+      BalancesTracker will still run in the background to keep the pool balances up to date
 
    PreRun
 
@@ -143,30 +143,30 @@ Easy configuration, easy start:
       2. <Algorithm>.bat
          Simply create a file named <AlgorithmName>.bat in prerun folder, e.g. 'Ethash.bat'
       3. default.bat
-         If neither of the two above exist, NemosMiner will try to launch prerun\default.bat
+         If neither of the two above exist, NemosMiner will try to launch 'prerun\default.bat'
       Use overclock with caution
 
-   Per pool config (Advanced)
+   Per pool config (Advanced, see 'Data\PoolsConfig-Template.json')
 
       **This is for advanced users. Do not use if you do not know what you are doing.**
 
-      The file Config\PoolsConfig.json contains configuration details for the pools.
+      The file 'Config\PoolsConfig.json' contains configuration details for the pools.
       A separate section can be added for each pool base name. If a pool is listed in this file,
       the specific settings will be taken into account. If not, the built in default values will be used.
-      See \Data\PoolData.json for the basic structure of the file Config\PoolsConfig.json
+      See 'Data\PoolData.json' for the basic structure of the file 'Config\PoolsConfig.json'
 
-      You can set specific options per pool. For example, you can mine NiceHash on the internal wallet and other pools on a valid wallet. This configuration is provided as an example in Config\PoolsConfig-NHInternal.json
+      You can set specific options per pool. For example, you can mine NiceHash on the internal wallet and other pools on a valid wallet. See 'PoolsConfig-Template.json' for some pool specific configuration options.
 
       Available options:
          - Wallets[Currency] = Your wallet address for [Currency]; some pools, e.g. HiveOn require wallets in each supported currency
          - UserName = your MPH or ProHashing user name
          - WorkerName = your worker name
          - PricePenaltyFactor = See explanation below
-         - Algorithm = List of included or excluded algorithms per pool (see example files)
-         - PayoutThreshold[Currency] = pool will allow pyout if this amount is reached
+         - Algorithm = List of included or excluded algorithms per pool
+         - PayoutThreshold[Currency] = pool will allow payout if this amount is reached
 
       Usage:
-         - Edit Config\PoolsConfig.json
+         - Edit 'Config\PoolsConfig.json'
          - Add an entry for the pool you want to customize
             - The name must be the pool base name (omit *24hrs or *Coins), e.g ZergPool (even if you have configured ZergPoolCoins in the pool list)
             - (**careful with json formating ;)**
