@@ -20,6 +20,12 @@ New Config Items
 # Acceptable bad share threshold ((bad + rejected + stale) / total) as reported by the miner. If the ratio is exceeded the miner will marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
   "BadShareRatioThreshold": 0.05,
 
+# Show 1hr / 24hr & 7day pool earning averages in web dashboard
+  "BalancesShowAverages": true,
+
+# Show 1hr / 6hrs / 24hr / 7 day & 30day pool earning sums in web dashboard
+  "BalancesShowSums": true,
+
 # If true pool balances will be shown in all currencies (main & extra currencies) in web dashboard
   "BalancesShowInAllCurrencies": false,
 

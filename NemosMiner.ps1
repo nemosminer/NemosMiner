@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.1.0.0
-Version date:   23 August 2022
+Version:        4.1.0.1
+Version date:   25 August 2022
 #>
 
 [CmdletBinding()]
@@ -45,6 +45,10 @@ param(
     [Double]$BadShareRatioThreshold = 0.05, # Allowed ratio of bad shares (total / bad) as reported by the miner. If the ratio exceeds the configured threshold then the miner will get marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
     [Parameter(Mandatory = $false)]
     [Boolean]$BalancesKeepAlive = $true, # If true will force mining at a pool to protect your earnings (some pools auto-purge the wallet after longer periods of inactivity, see '\Data\PoolData.Json' BalancesKeepAlive properties)
+    [Parameter(Mandatory = $false)]
+    [Boolean]$BalancesShowSums = $true, #Show 1hr / 6hrs / 24hr / 7 day & 30day pool earning sums in web dashboard
+    [Parameter(Mandatory = $false)]
+    [Boolean]$BalancesShowAverages = $true, # Show 1hr / 24hr & 7day pool earning averages in web dashboard
     [Parameter(Mandatory = $false)]
     [Boolean]$BalancesShowInAllCurrencies = $true, # If true pool balances will be shown in all currencies (main & extra currencies) in web dashboard
     [Parameter(Mandatory = $false)]
@@ -283,7 +287,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.1.0.0"
+    Version      = [System.Version]"4.1.0.1"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 

@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.1.0.0
-Version date:   23 August 2022
+Version:        4.1.0.1
+Version date:   25 August 2022
 #>
 
 Do {
@@ -31,7 +31,7 @@ Do {
 
     (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
-    $AllBalanceObjects = @()
+    $Variables.BalanceData = @()
     $Earnings = @()
 
     # Get pools last earnings
@@ -42,12 +42,11 @@ Do {
 
     # Read existing earning data, use data from last file
     ForEach ($Filename in (Get-ChildItem ".\Data\BalancesTrackerData*.json" | Sort-Object -Descending)) { 
-        $AllBalanceObjects = (Get-Content $Filename | ConvertFrom-Json)
-        If ($AllBalanceObjects.Count -gt ($PoolData.Count / 2)) { Break }
+        $Variables.BalanceData = (Get-Content $Filename | ConvertFrom-Json)
+        If ($Variables.BalanceData.Count -gt ($PoolData.Count / 2)) { Break }
     }
-    If ($AllBalanceObjects -isnot [Array]) { $AllBalanceObjects = @() }
-    $AllBalanceObjects | ForEach-Object { $_.DateTime = [DateTime]$_.DateTime }
-    $Variables.BalanceData = $AllBalanceObjects
+    If ($Variables.BalanceData -isnot [Array]) { $Variables.BalanceData = @() }
+    $Variables.BalanceData | ForEach-Object { $_.DateTime = [DateTime]$_.DateTime }
 
     # Read existing earning data, use data from last file
     ForEach($Filename in (Get-ChildItem ".\Data\DailyEarnings*.csv" | Sort-Object -Descending)) { 
@@ -82,7 +81,7 @@ Do {
         $PoolsToTrack | ForEach-Object { $BalanceObjects += @(& ".\Balances\$($_).ps1") }
 
         # Keep most recent balance objects, keep empty balances for 7 days
-        $BalanceObjects = @(@($BalanceObjects + $AllBalanceObjects) | Where-Object Pool -notin @($Config.BalancesTrackerIgnorePool) | Where-Object { $_.Unpaid -gt 0 -or $_.DateTime -gt $Now.AddDays(-7) } | Where-Object { $_.Wallet } | Group-Object Pool, Currency, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
+        $BalanceObjects = @(@($BalanceObjects + $Variables.BalanceData) | Where-Object Pool -notin @($Config.BalancesTrackerIgnorePool) | Where-Object { $_.Unpaid -gt 0 -or $_.DateTime -gt $Now.AddDays(-7) } | Where-Object { $_.Wallet } | Group-Object Pool, Currency, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
 
         # Fix for pool reporting incorrect currency, e.g ZergPool ZER instead of BTC
         $BalanceObjects = @($BalanceObjects | Where-Object { $_.Pool -match "^MiningDutch.*|^MiningPoolHub.*|$|^ProHashing.*$" }) + @($BalanceObjects | Where-Object { $_.Pool -notmatch "^MiningDutch.*|^MiningPoolHub.*|$|^ProHashing.*$" } | Group-Object Pool, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
@@ -96,7 +95,7 @@ Do {
         $BalanceObjects | ForEach-Object { 
             $PoolBalanceObject = $_
 
-            $PoolBalanceObjects = @($AllBalanceObjects | Where-Object Pool -EQ $PoolBalanceObject.Pool | Where-Object Currency -EQ $PoolBalanceObject.Currency | Where-Object Wallet -EQ $PoolBalanceObject.Wallet | Sort-Object DateTime)
+            $PoolBalanceObjects = @($Variables.BalanceData | Where-Object Pool -EQ $PoolBalanceObject.Pool | Where-Object Currency -EQ $PoolBalanceObject.Currency | Where-Object Wallet -EQ $PoolBalanceObject.Wallet | Sort-Object DateTime)
 
             # Get threshold currency and value
             $PayoutThresholdCurrency = $PoolBalanceObject.Currency
@@ -131,7 +130,7 @@ Do {
                 $PoolBalanceObject | Add-Member Delta ([Double]0)
 
                 $PoolBalanceObjects += $PoolBalanceObject
-                $AllBalanceObjects += $PoolBalanceObject
+                $Variables.BalanceData += $PoolBalanceObject
 
                 $AvgHourlyGrowth = $AvgDailyGrowth = $AvgWeeklyGrowth = 0
             }
@@ -250,7 +249,7 @@ Do {
                 }
 
                 $PoolBalanceObjects += $PoolBalanceObject
-                $AllBalanceObjects += $PoolBalanceObject
+                $Variables.BalanceData += $PoolBalanceObject
             }
 
             $Balances."$($PoolBalanceObject.Pool) ($($PoolBalanceObject.Currency):$($PoolBalanceObject.Wallet))" = $EarningsObject = [PSCustomObject]@{ 
@@ -357,9 +356,9 @@ Do {
         $Variables.EarningsChartData | ConvertTo-Json | Out-File -FilePath ".\Data\EarningsChartData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
 
         # At least 31 days are needed for Growth720
-        If ($AllBalanceObjects.Count -gt 1) { 
-            $AllBalanceObjects = @(
-                $AllBalanceObjects | Where-Object DateTime -GE $Now.AddDays(-31) | Group-Object Pool, Currency | ForEach-Object { 
+        If ($Variables.BalanceData.Count -gt 1) { 
+            $Variables.BalanceData = @(
+                $Variables.BalanceData | Where-Object DateTime -GE $Now.AddDays(-31) | Group-Object Pool, Currency | ForEach-Object { 
                     $Record = $null
                     $_.Group | Sort-Object DateTime | ForEach-Object { 
                         If ($_.DateTime -ge $Now.AddDays(-1)) { $_ } # Keep all records for 1 day
@@ -377,8 +376,8 @@ Do {
             Write-Message -Level Warn "Balances Tracker failed to save earnings data to '.\Data\DailyEarnings.csv' (should have $($Earnings.count) entries)."
         }
 
-        If ($AllBalanceObjects.Count -ge 1) { $AllBalanceObjects | ConvertTo-Json | Out-File -FilePath ".\Data\BalancesTrackerData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
-        $Variables.BalanceData = $AllBalanceObjects
+        If ($Variables.BalanceData.Count -ge 1) { $Variables.BalanceData | ConvertTo-Json | Out-File -FilePath ".\Data\BalancesTrackerData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
+        $Variables.BalanceData = $Variables.BalanceData
 
         # Sleep until next update (at least 1 minute, maximum 60 minutes)
         While ((Get-Date).ToUniversalTime() -le $Now.AddMinutes((60, (1, [Int]$Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum | Measure-Object -Minimum).Minimum)) { Start-Sleep -Seconds 5 }

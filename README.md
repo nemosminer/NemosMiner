@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable algorithm
 
-Updated 23 August 2022
+Updated 25 August 2022
 
 
 Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
@@ -13,7 +13,7 @@ https://github.com/Minerx117/NemosMiner/blob/master/LICENSE
 
 Updated/Maintained by Nemo/Minerx117 & UselessGuru
 
-with a lot of help from MrPlusGH, grantemsley & UselessGuru. Without them NemosMiner would not be possible.
+with a lot of help from MrPlusGH & grantemsley. Without them NemosMiner would not be possible.
 
 NemosMiner code is partly based on
 
@@ -32,12 +32,13 @@ NemosMiner will automatically convert an existing configuration file.
 
 **Main features:**
    - GUI and easy configuration
-   - Auto Benchmarks each algo to get optimal speeds
+   - Auto Benchmarks each algorithm to get optimal speeds
    - Fully automated
    - Auto Downloads Miners
    - Auto Updates
    - Monitoring
    - Earnings graph
+   - Calculate power cost (optional software installation required)
 
 *****
 
@@ -48,9 +49,9 @@ Easy configuration, easy start:
       2. Set your Wallet address(es) and Username(s)
       3. Select your pool(s)
       4. Save Config
-      5. Start
+      5. Start mining
 
-      Note: 2. you only need to change Username if you are using Miningpoolhub or ProHashing
+      Note: 2. you only need to change the username if you are using MiningDutch, MiningPoolhub or ProHashing
 
 ![alt text](https://github.com/Minerx117/miners/releases/download/Pictures/NemosMiner_FirstStart.png "NemosMiner Web GUI")
 
@@ -252,7 +253,7 @@ Easy configuration, easy start:
 
 PowerShell Version 7.x is required:
 
-[Download Installer for version 7.2.5](https://github.com/PowerShell/PowerShell/releases/download/v7.2.5/PowerShell-7.2.5-win-x64.msi)
+[Download Installer for version 7.2.6](https://github.com/PowerShell/PowerShell/releases/download/v7.2.6/PowerShell-7.2.6-win-x64.msi)
 
 **Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file**
 

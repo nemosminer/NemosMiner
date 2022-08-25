@@ -86,7 +86,7 @@
                 <div class="card-header text-center">
                   {{#if total}}
                     <br>
-                    <h4>{{{name}}}</h4>
+                    <h4 {{#if outdated}}title="Some pool balances are outdated.&#10;Totals may not include recent earnings."{{/if}}>{{{name}}}</h4>
                     <table class="center" style="width: 100%">
                       <br>
                       <tr>
@@ -137,31 +137,35 @@
                     <div title="Data last collected from pool">
                       {{{updated}}}<br>
                     </div>
-                    <div title="{{formatCurrency growth1 rate}} {{maincurrency}} last 1 hour">
-                      <br>{{formatCurrency growth1}} {{currency}} last 1 hour
-                    </div>
-                    <div title="{{formatCurrency growth6 rate}} {{maincurrency}} last 6 hrs">
-                      {{formatCurrency growth6}} {{currency}} last 6 hrs
-                    </div>
-                    <div title="{{formatCurrency growth24 rate}} {{maincurrency}} last 24 hrs">
-                      {{formatCurrency growth24}} {{currency}} last 24 hrs
-                    </div>
-                    <div title="{{formatCurrency growth168 rate}} {{maincurrency}} last 7 days">
-                      {{formatCurrency growth168}} {{currency}} last 7 days
-                    </div>
-                    <div title="{{formatCurrency growth720 rate}} {{maincurrency}} last 30 days">
-                      {{formatCurrency growth720}} {{currency}} last 30 days
-                    </div>
-                    <br/>
-                    <div title="avg. {{formatCurrency avghourlygrowth rate}} {{maincurrency}} in 1h">
-                      avg. {{formatCurrency avghourlygrowth}} {{currency}} in 1h
-                    </div>
-                    <div title="avg. {{formatCurrency avgdailygrowth rate}} {{maincurrency}} in 24 hrs">
-                      avg. {{formatCurrency avgdailygrowth}} {{currency}} in 24 hrs
-                    </div>
-                    <div title="avg. {{formatCurrency avgweeklygrowth rate}} {{maincurrency}} in 7 days">
-                      avg. {{formatCurrency avgweeklygrowth}} {{currency}} in 7 days
-                    </div>
+                    {{#if showsums}}
+                      <div title="{{formatCurrency growth1 rate}} {{maincurrency}} last 1 hour">
+                        <br>{{formatCurrency growth1}} {{currency}} last 1 hour
+                      </div>
+                      <div title="{{formatCurrency growth6 rate}} {{maincurrency}} last 6 hrs">
+                        {{formatCurrency growth6}} {{currency}} last 6 hrs
+                      </div>
+                      <div title="{{formatCurrency growth24 rate}} {{maincurrency}} last 24 hrs">
+                        {{formatCurrency growth24}} {{currency}} last 24 hrs
+                      </div>
+                      <div title="{{formatCurrency growth168 rate}} {{maincurrency}} last 7 days">
+                        {{formatCurrency growth168}} {{currency}} last 7 days
+                      </div>
+                      <div title="{{formatCurrency growth720 rate}} {{maincurrency}} last 30 days">
+                        {{formatCurrency growth720}} {{currency}} last 30 days
+                      </div>
+                    {{/if}}
+                    {{#if showaverages}}
+                      <br/>
+                      <div title="avg. {{formatCurrency avghourlygrowth rate}} {{maincurrency}} in 1h">
+                        avg. {{formatCurrency avghourlygrowth}} {{currency}} in 1h
+                      </div>
+                      <div title="avg. {{formatCurrency avgdailygrowth rate}} {{maincurrency}} in 24 hrs">
+                        avg. {{formatCurrency avgdailygrowth}} {{currency}} in 24 hrs
+                      </div>
+                      <div title="avg. {{formatCurrency avgweeklygrowth rate}} {{maincurrency}} in 7 days">
+                        avg. {{formatCurrency avgweeklygrowth}} {{currency}} in 7 days
+                      </div>
+                    {{/if}}
                   {{/if}}
                 </div>
                 {{#if total}}
@@ -172,16 +176,23 @@
                       <b>{{@key}}: {{formatCurrency this}}</b>
                       <br>
                       {{/each}}
-                      <p class="payout">
-                      <div title="{{percentage}}% of {{formatCurrency payoutthreshold rate}} {{maincurrency}}">
-                        Payout threshold<br/><b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{currency}}</b>
-                      </div>
-                      <br/>
-                      <div title="Projection is based on the current daily average earnings">
-                        Projected paydate<br/><b>{{paydate}}</b>
-                      </div>
-                    </p>
                   </div>
+                  <div class="payout text-center">
+                    {{#if payoutthreshold}}
+                    <div title="{{percentage}}% of {{formatCurrency payoutthreshold rate}} {{maincurrency}}">
+                      Payout threshold<br/><b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{currency}}</b>
+                    </div>
+                    {{else}}
+                    <div title="{{percentage}}% of {{formatCurrency payoutthreshold rate}} {{maincurrency}}">
+                      Payout threshold<br/><b>Unknown</b>
+                    </div>
+                    {{/if}}
+                    <br/>
+                    <div title="Projection is based on the current daily average earnings">
+                      Projected paydate<br/><b>{{paydate}}</b>
+                    </div>
+                  </div>
+                </p>
                 {{/if}}
               </div>
             </script>
@@ -287,6 +298,7 @@
                 growth720: {},
                 allbalances: {},
                 total: true,
+                outdated: false,
                 maincurrency: config.Currency
               };
               var rates = {};
@@ -343,7 +355,6 @@
                             if (!(footer.test(item.Pool))) {
 
                               if (rates[item.Currency]) currencyrate = rates[item.Currency][config.Currency] / factor;
-                              else currencyrate = 'n/a (Exchange rate unknown)';
 
                               var data = {
                                 name: item.Pool + ' (' + item.Currency + ')',
@@ -363,11 +374,13 @@
                                 rate: currencyrate,
                                 currency: currency,
                                 percentage: (item.Balance / item.PayoutThreshold * 100).toFixed(2),
-                                paydate: formatDate(item.ProjectedPayDate)
+                                paydate: formatDate(item.ProjectedPayDate),
+                                showaverages: config.BalancesShowAverages,
+                                showsums: config.BalancesShowSums,
                               };
 
-                              // Add warning symbol if data was not updated in last poll, add one minute to ensure completion of balance poll, ignore ProHashing
-                              if ((item.Pool != 'ProHashing' && new Date() - new Date(item.LastUpdated)) / 1000 > parseInt(config.BalancesTrackerPollInterval + 1) * 60) {
+                              // Add warning symbol if data was not updated in last poll, add one minute to ensure completion of balance poll
+                              if ((new Date() - new Date(item.LastUpdated)) / 1000 > parseInt(config.BalancesTrackerPollInterval + 1) * 60) {
                                 outdatedicon = ' &#9888;&#65039;';
                                 data.updated += outdatedicon;
                               }
@@ -378,10 +391,9 @@
                                   if (rates[currency]) data['balances'][currency] = item.Balance * rates[item.Currency][currency];
                                 });
                               } else { 
-                                data['balances']['Exchange rate unknown'] = "";
+                                if (config.BalancesShowInAllCurrencies) data['balances']['Exchange rates unknown'] = "";
                                 data['balances'][item.Currency] = item.Balance;
                               }
-
 
                               // build totals
                               $.each(currencies, function(cindex, currency) {
@@ -399,7 +411,10 @@
                             }
                           });
 
-                          totals['name'] = totals['name'] + outdatedicon;
+                          if (outdatedicon) {
+                            totals['name'] = totals['name'] + outdatedicon;
+                            totals.outdated = true;
+                          }
 
                           if (!(config.BalancesShowInAllCurrencies)) currencies = [config.Currency];
 

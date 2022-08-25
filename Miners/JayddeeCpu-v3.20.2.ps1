@@ -45,7 +45,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $PrerequisitePath = ""
         $PrerequisiteURI = ""
-        If ( -not (Test-Path -Path ".\Bin\$($Name)\VertHash.dat" -ErrorAction SilentlyContinue)) { 
+        If ($_.Algorithm -eq "VertHash" -and -not (Test-Path -Path ".\Bin\$($Name)\VertHash.dat" -ErrorAction SilentlyContinue)) { 
             If ((Get-Item -Path $Variables.VerthashDatPath).length -eq 1283457024) { 
                 If (Test-Path -Path .\Bin\$($Name) -PathType Container) { 
                     New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath | Out-Null

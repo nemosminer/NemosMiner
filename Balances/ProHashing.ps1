@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.1.0.0
-Version date:   23 August 2022
+Version:        4.1.0.1
+Version date:   25 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -44,19 +44,25 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.ProHashingAPIKey) {
         }
 
         If ($APIResponse.status -eq "success") { 
-            ($APIResponse.data.balances | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
-                [PSCustomObject]@{ 
-                    DateTime = (Get-Date).ToUniversalTime()
-                    Pool     = $Name
-                    Currency = $APIResponse.data.balances.$_.abbreviation
-                    Wallet   = $Config.ProHashingUserName
-                    Pending  = 0
-                    Balance  = [Double]($APIResponse.data.balances.$_.balance)
-                    Unpaid   = [Double]($APIResponse.data.balances.$_.Unpaid)
-                    Paid     = [Double]($APIResponse.data.balances.$_.paid24h)
-                    # Total    = [Double]($APIResponse.data.balances.$_.total) # total unpaid + total paid, reset after payout
-                    Url      = $Url
+            If (($APIResponse.data.balances | Get-Member -MemberType NoteProperty).Name) { 
+                ($APIResponse.data.balances | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
+                    [PSCustomObject]@{ 
+                        DateTime = (Get-Date).ToUniversalTime()
+                        Pool     = $Name
+                        Currency = $APIResponse.data.balances.$_.abbreviation
+                        Wallet   = $Config.ProHashingUserName
+                        Pending  = 0
+                        Balance  = [Double]($APIResponse.data.balances.$_.balance)
+                        Unpaid   = [Double]($APIResponse.data.balances.$_.Unpaid)
+                        Paid     = [Double]($APIResponse.data.balances.$_.paid24h)
+                        # Total    = [Double]($APIResponse.data.balances.$_.total) # total unpaid + total paid, reset after payout
+                        Url      = $Url
+                    }
                 }
+            }
+            ELse { 
+                # Remove non present (paid) balances
+                $Variables.BalanceData = $Variables.BalanceData | Where-Object Pool -ne $Name
             }
         }
     }

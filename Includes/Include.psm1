@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.1.0.0
-Version date:   23 August 2022
+Version:        4.1.0.1
+Version date:   25 August 2022
 #>
 
 # Window handling
@@ -2895,6 +2895,14 @@ Function Initialize-Autoupdate {
     Stop-IdleDetection
     Stop-BalancesTracker
 
+    # Remove 'Debug' from LogToFile & LogToScreen
+    If ($Variables.Branding.Version -lt [System.Version]"4.1.0.1") { 
+        $Config.LogToFile = @($Config.LogToFile | Where-Object { $_ -ne "Debug" })
+        $Config.LogToScreen = @($Config.LogToScreen | Where-Object { $_ -ne "Debug" })
+    }
+    Write-Config -ConfigFile $ConfigFile
+
+
     If ($Variables.Branding.Version -le [System.Version]"3.9.9.17" -and $UpdateVersion -ge [System.Version]"3.9.9.17") { 
         # Remove balances & earnings files that are no longer compatible
         If (Test-Path -Path ".\Logs\BalancesTrackerData*.*") { Get-ChildItem -Path ".\Logs\BalancesTrackerData*.*" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue} }
@@ -3119,7 +3127,7 @@ Function Update-ConfigFile {
             }
             "WaitForMinerData" { $Config.Remove($_) }
             "WarmupTime" { $Config.Remove($_) }
-            "WebUseColorForMinerStatus" { $Config.WebGUIUseColor = $Config.$_; $Config.Remove($_) }
+            "UseColorForMinerStatus" { $Config.WebGUIUseColor = $Config.$_; $Config.Remove($_) }
             Default { If ($_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("PoolsConfig"))) { $Config.Remove($_) } } # Remove unsupported config item
         }
     }
@@ -3181,12 +3189,6 @@ Function Update-ConfigFile {
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "TonPool" }
     # Remove TonWhales config
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "TonWhales" }
-    # Remove 'Debug' from LogToFile & LogToScreen
-
-    If ($Variables.Branding.Version -lt [System.Version]"4.1.0.0") { 
-        $Config.LogToFile = @($Config.LogToFile | Where-Object { $_ -ne "Debug" })
-        $Config.LogToScreen = @($Config.LogToScreen | Where-Object { $_ -ne "Debug" })
-    }
 
     $Config | Add-Member ConfigFileVersion ($Variables.Branding.Version.ToString()) -Force
     Write-Config -ConfigFile $ConfigFile
@@ -3232,6 +3234,7 @@ Function Get-DAGdata {
         )
 
         Switch ($Currency) { 
+            # https://github.com/RainbowMiner/RainbowMiner/issues/2102
             "ERG" { 
                 $Size = [Math]::Pow(2, 26)
                 $Blockheight = [Math]::Min($Blockheight, 4198400)
@@ -3304,79 +3307,44 @@ Function Get-DAGdata {
 
 Function Out-DataTable { 
 
-    <#
-    .SYNOPSIS
-    Creates a DataTable for an object
-    .DESCRIPTION
-    Creates a DataTable based on an objects properties.
-    .INPUTS
-    Object
-        Any object can be piped to Out-DataTable
-    .OUTPUTS
-       System.Data.DataTable
-    .EXAMPLE
-    $DataTable = Get-psdrive| Out-DataTable
-    This example creates a DataTable from the properties of Get-psdrive and assigns output to $DataTable variable
-    .NOTES
-    Adapted from script by Marc van Orsouw see link
-    Version History
-    v1.0 - Chad Miller - Initial Release
-    v1.1 - Chad Miller - Fixed Issue with Properties
-    v1.2 - Chad Miller - Added setting column datatype by property as suggested by emp0
-    v1.3 - Chad Miller - Corrected issue with setting datatype on empty properties
-    v1.4 - Chad Miller - Corrected issue with DBNull
-    v1.5 - Chad Miller - Updated example
-    v1.6 - Chad Miller - Added column datatype logic with default to string
-    v1.7 - Chad Miller - Fixed issue with IsArray
-    .LINK
-    http://thepowershellguy.com/blogs/posh/archive/2007/01/21/powershell-gui-scripblock-monitor-script.aspx
-    #>
+    # based on http://thepowershellguy.com/blogs/posh/archive/2007/01/21/powershell-gui-scripblock-monitor-script.aspx
 
     [CmdletBinding()]
     Param(
-        [Parameter(
-            Position = 0, 
-            Mandatory = $true, 
-            ValueFromPipeline = $true
-        )]
+        [Parameter(Position = 0, Mandatory = $true, ValueFromPipeline = $true )]
         [PSObject[]]$InputObject
     )
 
-    Begin { 
-        $DataTable = New-Object Data.datatable
-        $First = $true
-    }
-    Process { 
-        ForEach ($Object in $InputObject) { 
-            $DataRow = $DataTable.NewRow()
-            ForEach ($Property in $Object.PSObject.Properties) { 
-                If ($First) { 
-                    $Col = New-Object Data.DataColumn
-                    $Col.ColumnName = $Property.Name.ToString()
-                    If ($Property.Value) { 
-                        If ($Property.Value -isnot [System.DBNull]) { 
-                            $Col.DataType = [System.Type]::GetType($Property.TypeNameOfValue).Name
-                        }
+    $DataTable = New-Object Data.datatable
+    $First = $true
+
+    ForEach ($Object in $InputObject) { 
+        $DataRow = $DataTable.NewRow()
+        ForEach ($Property in $Object.PSObject.Properties) { 
+            If ($First) { 
+                $Col = New-Object Data.DataColumn
+                $Col.ColumnName = $Property.Name.ToString()
+                If ($Property.Value) { 
+                    If ($Property.Value -isnot [System.DBNull]) { 
+                        $Col.DataType = [System.Type]::GetType($Property.TypeNameOfValue).Name
                     }
-                    $DataTable.Columns.Add($Col)
                 }
-                $DataRow.Item($Property.Name) = If ($Property.GetType().IsArray) { $Property.Value | ConvertTo-Xml -As String -NoTypeInformation -Depth 1 } Else { $Property.Value }
+                $DataTable.Columns.Add($Col)
             }
-            $DataTable.Rows.Add($DataRow)
-            $First = $false
+            $DataRow.Item($Property.Name) = If ($Property.GetType().IsArray) { $Property.Value | ConvertTo-Xml -As String -NoTypeInformation -Depth 1 } Else { $Property.Value }
         }
+        $DataTable.Rows.Add($DataRow)
+        $First = $false
     }
 
-    End { 
-        Write-Output @(,($DataTable))
-    }
+    Write-Output @(,($DataTable))
 }
 
 Function Get-Median { 
+
     Param(
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, Position = 0)]
-        [Double[]]
-        $Number
+        [Double[]]$Number
     )
 
     $NumberSeries += @()

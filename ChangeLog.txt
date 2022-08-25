@@ -10,6 +10,19 @@ Known issues:
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
 
+ChangeLog NemosMiner 4.1.0.1 25.08.2022
+=======================================
+
+Enhancements:
+- BalancesTracker / ProHashing: Do not keep fully paid balances
+- Web GUI / Balances: Added config items 'BalancesShowAverages' & 'BalancesShowSums'
+
+Fixes:
+- Core: Miners remained unavailable even after prerequisites are met 
+- JayddeeCpu-v3.20.2: Missing VertHash.dat made all algorithms unavailable
+- XmRig-v6.18.0: Causing core crash and endless loop
+
+
 ChangeLog NemosMiner 4.1.0.0 23.08.2022
 =======================================
 
