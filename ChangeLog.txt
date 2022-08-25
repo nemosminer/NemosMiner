@@ -20,6 +20,7 @@ Enhancements:
 Fixes:
 - Core: Miners remained unavailable even after prerequisites are met 
 - JayddeeCpu-v3.20.2: Missing VertHash.dat made all algorithms unavailable
+- NanoMiner-v3.6.8: Causing core crash and endless loop
 - XmRig-v6.18.0: Causing core crash and endless loop
 
 

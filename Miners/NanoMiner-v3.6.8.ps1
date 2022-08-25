@@ -65,7 +65,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 $Arguments += " -devices $(($AvailableMiner_Devices | Sort-Object Name -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')"
 
                 # Apply tuning parameters
-                If ($Variables.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
+                If ($Variables.UseMinerTweaks -eq $true) { $Arguments += $_.Tuning }
 
                 $PrerequisitePath = ""
                 $PrerequisiteURI = ""
@@ -84,18 +84,18 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 }
 
                 [PSCustomObject]@{ 
-                    Name        = $Miner_Name
-                    DeviceNames = $AvailableMiner_Devices.Name
-                    Type        = $AvailableMiner_Devices.Type
-                    Path        = $Path
-                    Arguments   = ($Arguments -replace "\s+", " ").trim()
-                    Algorithms  = @($_.Algorithm)
-                    API         = "NanoMiner"
-                    Port        = $MinerAPIPort
-                    URI         = $Uri
-                    Fee         = $_.Fee
-                    MinerUri    = "http://localhost:$($MinerAPIPort)/#/"
-                    WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
+                    Name             = $Miner_Name
+                    DeviceNames      = $AvailableMiner_Devices.Name
+                    Type             = $AvailableMiner_Devices.Type
+                    Path             = $Path
+                    Arguments        = ($Arguments -replace "\s+", " ").trim()
+                    Algorithms       = @($_.Algorithm)
+                    API              = "NanoMiner"
+                    Port             = $MinerAPIPort
+                    URI              = $Uri
+                    Fee              = $_.Fee
+                    MinerUri         = "http://localhost:$($MinerAPIPort)/#/"
+                    WarmupTimes      = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
                     PrerequisitePath = $PrerequisitePath
                     PrerequisiteURI  = $PrerequisiteURI
                 }
