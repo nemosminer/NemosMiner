@@ -48,9 +48,10 @@
                 <th data-field="WorkerName" data-sortable="true" data-filter-control="select" data-visible="false">WorkerName</th>
                 <th data-field="Pass" data-sortable="true" data-filter-control="select" data-visible="false">Password</th>
                 <th data-field="Host" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Host</th>
-                <th data-field="Port" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-width=1>Port&nbsp;</th>
+                <th data-field="Port" data-align="right" data-sortable="true" data-formatter="formatPorts" data-filter-control="input" data-filter-strict-search="false" data-width=1>Port&nbsp;</th>
+                <th data-field="PortSSL" data-align="right" data-sortable="true" data-formatter="formatPorts" data-filter-control="input" data-filter-strict-search="false" data-width=1>SSL Port&nbsp;</th>
+                <th data-field="AvailablePorts" data-align="right" data-sortable="true" data-formatter="formatPorts" data-filter-control="input" data-filter-strict-search="false" data-width=1 data-visible="false"> Available Ports&nbsp;</th>
                 <th data-field="EarningsAdjustmentFactor" data-align="right" data-sortable="true" data-formatter="format3DecimalDigits" data-width=1>Earnings<br>Adjustment<br>Factor</th>
-                <th data-field="SSL" data-sortable="true" data-filter-control="select" data-width=4 data-visible="false">SSL</th>
                 <th data-field="Fee" data-align="right" data-sortable="true" data-formatter="formatPercent" data-width=1>Fee&nbsp;&nbsp;</th>
                 <th data-field="Workers" data-align="right" data-sortable="true" data-visible="false">Workers</th>
                 <th data-field="DAGsizeGB" data-align="right" data-sortable="true" data-visible="false" data-formatter="formatGBDigits3" data-visible="false">DAG Size</th>
@@ -76,7 +77,7 @@
 
               autoRefreshInterval: parseInt(config.Interval), // refresh once per interval
               height: $(window).height() - $table.offset().top + 30
-            })
+            });
 
             $(document).ready(function () {
               $('#btn-reset-data').click(function () {
@@ -88,7 +89,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/remove?' + encodeURIComponent('Pools=' + $data);
+                    $command = '/functions/stat/remove?Pools=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-reset-data').text());
                       $('body').css('cursor', 'default');
@@ -108,7 +109,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/enable?' + encodeURIComponent('Pools=' + $data);
+                    $command = '/functions/stat/enable?Pools=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-enable').text());
                       $('body').css('cursor', 'default');
@@ -128,7 +129,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/pool/disable?' + encodeURIComponent('Pools=' + $data);
+                    $command = '/functions/stat/disable?Pools=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-disable').text());
                       $('body').css('cursor', 'default');

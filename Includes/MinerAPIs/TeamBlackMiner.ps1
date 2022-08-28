@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           lolMiner.ps1
-Version:        4.1.0.1
-Version date:   25 August 2022
+Version:        4.1.1.0
+Version date:   28 August 2022
 #>
 
 class TeamBlackMiner : Miner { 

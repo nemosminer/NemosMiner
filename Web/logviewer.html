@@ -12,7 +12,7 @@
               $.ajax({
                 async: false,
                 dataType: 'text',
-                url: '/functions/log/get?' + encodeURIComponent('lines=100'), 
+                url: '/functions/log/get?lines=100', 
                 success: function(result) {
                   document.getElementById('logtext').innerHTML = result;
                 }

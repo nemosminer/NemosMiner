@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.1.0.1
-Version date:   25 August 2022
+Version:        4.1.1.0
+Version date:   28 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -63,7 +63,6 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
         $Fee = $Request.$_."$($PoolConfig.MiningMode)_fee"
         $Pass = @("a=$($Algorithm.ToLower())", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)") -join ','
-        $PoolPort = $Request.$_.port
 
         # Add coin name
         If ($Request.$_.CoinName -and $Currency) { Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName }
@@ -86,10 +85,10 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
                     Host                     = "$(If ($Region -eq "EU") { "eu." })$PoolHost"
                     Name                     = [String]$PoolVariant
                     Pass                     = [String]$Pass
-                    Port                     = [UInt16]$PoolPort
+                    Port                     = [UInt16]$Request.$_.port
+                    PortSSL                  = $null
                     Price                    = [Double]$Stat.Live
                     Region                   = [String]$Region_Norm
-                    SSL                      = $false
                     StablePrice              = [Double]$Stat.Week
                     Updated                  = [DateTime]$Stat.Updated
                     User                     = [String]$PoolConfig.UserName

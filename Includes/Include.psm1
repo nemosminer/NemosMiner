@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.1.0.1
-Version date:   25 August 2022
+Version:        4.1.1.0
+Version date:   28 August 2022
 #>
 
 # Window handling
@@ -96,6 +96,7 @@ Class Pool {
     [Double]$Accuracy
     [String]$Algorithm
     [Boolean]$Available = $true
+    $AvailablePorts = @()
     [String]$BaseName
     [Boolean]$Best = $false
     [Nullable[Int64]]$BlockHeight = $null
@@ -111,13 +112,12 @@ Class Pool {
     [String]$Name
     [String]$Pass
     [UInt16]$Port
-    [UInt16[]]$Ports
+    [UInt16]$PortSSL
     [Double]$Price
     [Double]$Price_Bias
     [String[]]$Reasons = @()
     [String]$Region
     [String[]]$Regions
-    [Boolean]$SSL
     [Double]$StablePrice
     [DateTime]$Updated = (Get-Date).ToUniversalTime()
     [String]$User
@@ -2765,6 +2765,28 @@ Function Get-CoinName {
     Return $null
 }
 
+Function Get-EquihashCoinPers {
+
+    Param(
+        [Parameter(Mandatory = $false)]
+        [String]$Command = "",
+        [Parameter(Mandatory = $false)]
+        [String]$Currency = "",
+        [Parameter(Mandatory = $false)]
+        [String]$DefaultCommand = ""
+    )
+
+    If (-not (Test-Path -Path Variable:Global:EquihashCoinPers -ErrorAction SilentlyContinue)) { 
+        $Global:EquihashCoinPers = Get-Content -Path ".\Data\EquihashCoinPers.json" | ConvertFrom-Json
+    }
+
+    If ($Global:EquihashCoinPers.$Currency) { 
+        Return "$($Command)$($Global:EquihashCoinPers.$Currency)"
+    }
+
+    Return $DefaultCommand
+}
+
 Function Get-CurrencyAlgorithm { 
 
     Param(
@@ -2896,7 +2918,7 @@ Function Initialize-Autoupdate {
     Stop-BalancesTracker
 
     # Remove 'Debug' from LogToFile & LogToScreen
-    If ($Variables.Branding.Version -lt [System.Version]"4.1.0.1") { 
+    If ($Variables.Branding.Version -lt [System.Version]"4.1.1.0") { 
         $Config.LogToFile = @($Config.LogToFile | Where-Object { $_ -ne "Debug" })
         $Config.LogToScreen = @($Config.LogToScreen | Where-Object { $_ -ne "Debug" })
     }

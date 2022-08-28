@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.1.0.1
-Version date:   25 August 2022
+Version:        4.1.1.0
+Version date:   28 August 2022
 #>
 
 [CmdletBinding()]
@@ -287,7 +287,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.1.0.1"
+    Version      = [System.Version]"4.1.1.0"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -326,6 +326,13 @@ If (-not $Variables.Algorithms) {
 $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
 If (-not $Global:CoinNames) { 
     Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CoinNames.json' is not a valid JSON file. Please restore it from your original download."
+    Start-Sleep -Seconds 10
+    Exit
+}
+# Load EquihashCoinPers data
+$Global:EquihashCoinPers = Get-Content -Path ".\Data\EquihashCoinPers.json" | ConvertFrom-Json
+If (-not $Global:EquihashCoinPers) { 
+    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\EquihashCoinPers.json' is not a valid JSON file. Please restore it from your original download."
     Start-Sleep -Seconds 10
     Exit
 }

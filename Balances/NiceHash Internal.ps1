@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash Internal.ps1
-Version:        4.1.0.1
-Version date:   25 August 2022
+Version:        4.1.1.0
+Version date:   28 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -59,7 +59,7 @@ Function Get-NiceHashRequest {
         "X-Auth"            = "$($Key):$(($Sign -replace '\-').ToLower())"
         "Cache-Control"     = "no-cache"
     }
-    Return Invoke-RestMethod "https://api2.nicehash.com$($EndPoint)?extendedResponse=true" -TimeoutSec 5 -ErrorAction Stop -Method $Method -Headers $Headers
+    Return Invoke-RestMethod "https://api2.nicehash.com$($EndPoint)?extendedResponse=true" -TimeoutSec $Config.PoolAPITimeout -ErrorAction Stop -Method $Method -Headers $Headers
 }
 
 $RetryCount = 3

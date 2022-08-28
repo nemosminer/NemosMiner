@@ -9,13 +9,27 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Known issues:
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.1.1.0 27.08.2022
+=======================================
+
+Enhancements:
+- Core / Miners: Use Equihash personalisation strings where available (new function Includes.psm1/Get-EquihashCoinPers)
+- Core, Miners & Pools: Support for SSL pool connections; New configuration item 'SSL': One of three values: 'Prefer' (use where available), 'Never' or 'Always' (pools that do not allow SSL are ignored)
+
+Fixes:
+- Gminer-*: Failed benchmarking Equihash
+- No data from NiceHash pool (regression from 4.1.0.0)
+
+Miner changes:
+- NanoMiner-v3.7.0
+
 
 ChangeLog NemosMiner 4.1.0.1 25.08.2022
 =======================================
 
 Enhancements:
 - BalancesTracker / ProHashing: Do not keep fully paid balances
-- Web GUI / Balances: Added config items 'BalancesShowAverages' & 'BalancesShowSums'
+- Web GUI / Balances: Added configuration items 'BalancesShowAverages' & 'BalancesShowSums'
 
 Fixes:
 - Core: Miners remained unavailable even after prerequisites are met 

@@ -96,7 +96,7 @@
   "equihash": "Equihash2009",
   "equihash210": "Equihash2109",
   "equihash96": "Equihash965",
-  "equihashbtg": "EquihashBTG",
+  "equihashbtg": "Equihash1445",
   "equihashgpu": "Equihash1927",
   "equihashzcl": "Equihash1927",
   "ergo": "Autolykos2",
@@ -245,5 +245,5 @@
   "zelantus": "KawPoW",
   "zelhash": "Equihash1254",
   "zcash": "Equihash",
-  "zhash": "EquihashBTG"
+  "zhash": "Equihash1445"
 }

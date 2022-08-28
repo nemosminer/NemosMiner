@@ -144,12 +144,12 @@
                   <div style="padding-top: 0.3rem" title="Minimum number of full cycles a miner must mine continously&#10;the same algorithm@pool before switching is allowed&#10;&#10;e.g. 3 would force a miner to stick mining the same algorithm@pool&#10;for at least 3 full cycles before switching to another algorithm or pool&#10;(min=1, max=10, default=1 cycles)&#10;&#10;Note: This does not apply when benchmarking" for="MinInterval"> Enforce mining for at least
                     <input type="number" id="MinInterval" name="MinInterval" min=1 max=10 value=0 step=1 size=2> full cycles before switching
                   </div>
-                  <!-- <select name="" id="SSL">
+                  <select name="" id="SSL">
                     <option value="Never" title="Never use SSL for pool connections">Never use</option>
                     <option value="Prefer" title="Prefer SSL pool connections">Prefer</option>
-                    <option value="Enforce" title="Enforce SSL for pool connections&#10;Pools that do not allow SSL are ignored">Enforce</option>
+                    <option value="Always" title="Always use SSL for pool connections&#10;Pools that do not support SSL connections are ignored&#10;&#10;Note: This setting might reduce earnings because not all pools & miners support SSL connections">Always use</option>
                   </select>
-                  <label for="SSL"> SSL for Pool Connections</label> -->
+                  <label for="SSL"> SSL for pool connections</label>
                   <div style="padding-top: 0.3rem" title="Enter Proxy IP address and port&#10;e.g. 192.168.1.1:3128"> Proxy address:port
                     <input type="text" id="Proxy" name="Proxy" maxlength=22 size=30>
                   </div>
@@ -601,8 +601,8 @@
               document.getElementById('Interval').value = parseInt(config.Interval);
               document.getElementById('MinDataSamples').value = parseInt(config.MinDataSamples);
               document.getElementById('MinInterval').value = parseInt(config.MinInterval);
-              // if (config.SSL === 'Never' || config.SSL === 'Prefer' || config.SSL === 'Enforce') document.getElementById('SSL').value = config.SSL;
-              // else document.getElementById('SSL').value = 'Prefer';
+              if (config.SSL === 'Never' || config.SSL === 'Prefer' || config.SSL === 'Always') document.getElementById('SSL').value = config.SSL;
+              else document.getElementById('SSL').value = 'Prefer';
               document.getElementById('Proxy').value = config.Proxy.trim();
               if (config.OpenFirewallPorts) document.getElementById('OpenFirewallPorts').checked = true;
               document.getElementById('DecimalsMax').value = parseInt(config.DecimalsMax);
@@ -1186,8 +1186,8 @@
                   config.Interval = parseInt(document.getElementById('Interval').value);
                   config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
                   config.MinInterval = parseInt(document.getElementById('MinInterval').value);
-                  // if (document.getElementById('SSL').value.match('Never|Prefer|Enforce')) config.SSL = document.getElementById('SSL').value;
-                  // else config.SSL = 'Prefer';
+                  if (document.getElementById('SSL').value.match('Never|Prefer|Always')) config.SSL = document.getElementById('SSL').value;
+                  else config.SSL = 'Prefer';
                   config.Proxy = document.getElementById('Proxy').value;
                   config.OpenFirewallPorts = document.getElementById('OpenFirewallPorts').checked;
                   config.DecimalsMax = parseInt(document.getElementById('DecimalsMax').value);

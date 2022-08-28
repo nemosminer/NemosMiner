@@ -139,26 +139,6 @@
             });
 
             $(document).ready(function () {
-              $('#btn-remove-watchdog').click(function () {
-                var $data = $table.bootstrapTable('getSelections');
-                if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
-                  if ($data.length >= $querysize) {
-                    alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
-                  }
-                  else {
-                    $('body').css('cursor', 'progress');
-                    $command = '/functions/watchdogtimers/remove?' + encodeURIComponent('Miners=' + $data);
-                    $('.modal-body').load($command, function() {
-                      $('.modal-title').text($('#btn-remove-watchdog').text());
-                      $('body').css('cursor', 'default');
-                      $('#myModal').modal({show:true});
-                    });
-                    $table.bootstrapTable('refresh');
-                  }
-                }
-              });
-
               $('#btn-re-benchmark').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
@@ -168,7 +148,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/remove?' + encodeURIComponent('Miners=' + $data + '&Type=Hashrate');
+                    $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=Hashrate';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-re-benchmark').text());
                       $('body').css('cursor', 'default');
@@ -188,9 +168,29 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/remove?' + encodeURIComponent('Miners=' + $data + '&Type=PowerUsage');
+                    $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=PowerUsage';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-re-measure').text());
+                      $('body').css('cursor', 'default');
+                      $('#myModal').modal({show:true});
+                    });
+                    $table.bootstrapTable('refresh');
+                  }
+                }
+              });
+
+              $('#btn-remove-watchdog').click(function () {
+                var $data = $table.bootstrapTable('getSelections');
+                if ($data.length >= 1) {
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
+                  if ($data.length >= $querysize) {
+                    alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
+                  }
+                  else {
+                    $('body').css('cursor', 'progress');
+                    $command = '/functions/watchdogtimers/remove?Miners=' + encodeURIComponent($data);
+                    $('.modal-body').load($command, function() {
+                      $('.modal-title').text($('#btn-remove-watchdog').text());
                       $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });
@@ -208,7 +208,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/set?' + encodeURIComponent('Miners=' + $data + '&Type=Hashrate&Value=0');
+                    $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=Hashrate&Value=0';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-failed').text());
                       $('body').css('cursor', 'default');
@@ -228,7 +228,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/set' + encodeURIComponent('Miners=' + $data + '&Type=Hashrate&Value=-1');
+                    $command = '/functions/stat/disable?Miners=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-disable').text());
                       $('body').css('cursor', 'default');

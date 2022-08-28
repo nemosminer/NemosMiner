@@ -98,7 +98,7 @@
             $('#miners tr th:eq(13)').html('Profit<br>(' + config.Currency + ')');
 
             $table.bootstrapTable({
-              onLoadSuccess: function() { 
+              onLoadSuccess: function() {
                 if (config.CalculatePowerCost == true) {
                   $table.bootstrapTable('showColumn', 'Profit_Bias');
                   $table.bootstrapTable('showColumn', 'Profit');
@@ -144,7 +144,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/remove?' + encodeURIComponent('Miners=' + $data + '&Type=Hashrate');
+                    $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=HashRate';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-re-benchmark').text());
                       $('body').css('cursor', 'default');
@@ -164,7 +164,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/remove?' + encodeURIComponent('Miners=' + $data + '&Type=PowerUsage');
+                    $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=PowerUsage';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-re-measure').text());
                       $('body').css('cursor', 'default');
@@ -184,7 +184,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/set?' + encodeURIComponent('Miners=' + $data + '&Type=Hashrate&Value=0');
+                    $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=HashRate&Value=0';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-failed').text());
                       $('body').css('cursor', 'default');
@@ -204,7 +204,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/set?' + encodeURIComponent('Miners=' + $data + '&Type=Hashrate&Value=-1');
+                    $command = '/functions/stat/disable?Miners=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-disable').text());
                       $('body').css('cursor', 'default');

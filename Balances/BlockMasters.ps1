@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BlockMasters.ps1
-Version:        4.1.0.1
-Version date:   25 August 2022
+Version:        4.1.1.0
+Version date:   28 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -35,7 +35,7 @@ $Request = "http://blockmasters.co/api/wallet?address=$Wallet"
 While (-not $APIResponse -and $RetryCount -gt 0 -and $Wallet) { 
 
     Try  {
-        $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec 5 -ErrorAction Ignore
+        $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec $Config.PoolAPITimeout -ErrorAction Ignore
 
         If ($Config.LogBalanceAPIResponse -eq $true) { 
             "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue

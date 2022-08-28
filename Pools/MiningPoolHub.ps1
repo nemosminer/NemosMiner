@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.1.0.1
-Version date:   25 August 2022
+Version:        4.1.1.0
+Version date:   28 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -90,9 +90,9 @@ If ($PoolConfig.UserName) {
                         Name                     = [String]$PoolVariant
                         Pass                     = "x"
                         Port                     = [UInt16]$Port
+                        PortSSL                  = $null
                         Price                    = [Double]$Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * [Math]::Min($Stat.Day_Fluctuation, 1)
                         Region                   = [String]$Region_Norm
-                        SSL                      = $false
                         StablePrice              = [Double]$Stat.Week
                         User                     = "$($PoolConfig.UserName).$($PoolConfig.WorkerName)"
                         WorkerName               = ""
@@ -146,9 +146,9 @@ If ($PoolConfig.UserName) {
                         Name                     = [String]$PoolVariant
                         Pass                     = "x"
                         Port                     = [UInt16]$Port
+                        PortSSL                  = $null
                         Price                    = [Double]($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1)))
                         Region                   = [String]$Region_Norm
-                        SSL                      = $false
                         StablePrice              = [Double]$Stat.Week
                         User                     = "$($PoolConfig.UserName).$($PoolConfig.WorkerName)"
                         WorkerName               = ""

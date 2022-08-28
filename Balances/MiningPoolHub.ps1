@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.1.0.1
-Version date:   25 August 2022
+Version:        4.1.1.0
+Version date:   28 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -33,7 +33,7 @@ $Request = "http://miningpoolhub.com/index.php?page=api&action=getuserallbalance
 While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.MiningPoolHubAPIKey) { 
 
     Try { 
-        $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec 5 -ErrorAction Ignore
+        $APIResponse = Invoke-RestMethod $Request -UseBasicParsing -TimeoutSec $Config.PoolAPITimeout -ErrorAction Ignore
 
         If ($Config.LogBalanceAPIResponse -eq $true) { 
             "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
@@ -50,7 +50,7 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.MiningPoolHubAPIKey
                 While (-not ($GetPoolInfo) -and $RetryCount2 -gt 0) { 
                     $RetryCount2--
                     Try { 
-                        $GetPoolInfo = ((Invoke-RestMethod "http://$($_.coin).miningpoolhub.com/index.php?page=api&action=getpoolinfo&api_key=$($Config.MiningPoolHubAPIKey)" -UseBasicParsing -TimeoutSec 5 -ErrorAction Ignore).getpoolinfo).data
+                        $GetPoolInfo = ((Invoke-RestMethod "http://$($_.coin).miningpoolhub.com/index.php?page=api&action=getpoolinfo&api_key=$($Config.MiningPoolHubAPIKey)" -UseBasicParsing -TimeoutSec $Config.PoolAPITimeout -ErrorAction Ignore).getpoolinfo).data
 
                         If ($Config.LogBalanceAPIResponse -eq $true) { 
                             $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue

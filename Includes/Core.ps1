@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.1.0.1
-Version date:   25 August 2022
+Version:        4.1.1.0
+Version date:   28 August 2022
 #>
 
 using module .\Include.psm1
@@ -527,7 +527,7 @@ Do {
                     $DeconfiguredPools = $Pools | Where-Object Name -notin $PoolNames
                     $Pools = @($Pools | Where-Object Name -in $PoolNames)
 
-                    If ($ComparePools = @(Compare-Object -PassThru @($Variables.NewPools | Select-Object) @($Pools | Select-Object) -Property Name, Algorithm, Host, Port, SSL, WorkerName -IncludeEqual)) { 
+                    If ($ComparePools = @(Compare-Object -PassThru @($Variables.NewPools | Select-Object) @($Pools | Select-Object) -Property Name, Algorithm, Host, Port, PortSSL, WorkerName -IncludeEqual)) { 
                         # Find new pools
                         $Variables.AddedPools = @($ComparePools | Where-Object SideIndicator -eq "<=" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ })
                         $Variables.UpdatedPools = @($ComparePools | Where-Object SideIndicator -eq "==" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ })
@@ -543,16 +543,20 @@ Do {
                             $_.Best = $false
                             $_.Reasons = $null
 
-                            If ($Pool = $Variables.UpdatedPools | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Host -EQ $_.Host | Where-Object Port -EQ $_.Port | Where-Object SSL -EQ $_.SSL | Where-Object WorkerName -EQ $_.WorkerName | Select-Object -First 1) { 
+                            If ($Pool = $Variables.UpdatedPools | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Select-Object -First 1) { 
                                 $_.Accuracy                 = $Pool.Accuracy
                                 $_.CoinName                 = $Pool.CoinName
                                 $_.Currency                 = $Pool.Currency
                                 $_.Disabled                 = $Pool.Disabled
                                 $_.EarningsAdjustmentFactor = $Pool.EarningsAdjustmentFactor
                                 $_.Fee                      = $Pool.Fee
+                                $_.Host                     = $Pool.Host
                                 $_.Pass                     = $Pool.Pass
+                                $_.Port                     = $Pool.Port
+                                $_.PortSSL                  = $Pool.PortSSL
                                 $_.Price                    = $Pool.Price
                                 $_.Price_Bias               = $Pool.Price_Bias
+                                $_.Region                   = $Pool.Region
                                 $_.StablePrice              = $Pool.StablePrice
                                 $_.Updated                  = $Pool.Updated
                                 $_.User                     = $Pool.User
@@ -575,6 +579,9 @@ Do {
                                 $_.Epoch       = $Variables.DAGdata.Currency."*".Epoch
                                 $_.DAGSizeGB   = $Variables.DAGdata.Currency."*".DAGsize / 1GB
                             }
+
+                            # Ports[0] = non-SSL, Port[1] = SSL
+                            $_.AvailablePorts = @($(If ($Config.SSL -ne "Always" -and $_.Port) { [UInt16]$_.Port } Else { $null }), $(If ($Config.SSL -ne "Never" -and $_.PortSSL) { [UInt16]$_.PortSSL } Else { $null }))
                         }
                         Remove-Variable Factor, Pool
 
@@ -617,6 +624,9 @@ Do {
                         # MinWorkers
                         $Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $PoolsConfig.$($_.BaseName).MinWorker } | ForEach-Object { $_.Reasons += "Not enough workers at pool (MinWorker ``$($PoolsConfig.$($_.BaseName).MinWorker)`` in $($_.BaseName) pool config)" }
                         $Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $Config.MinWorker } | ForEach-Object { $_.Reasons += "Not enough workers at pool (MinWorker ``$($Config.MinWorker)`` in generic config)" }
+                        # SSL
+                        If ($Config.SSL -eq "Never") { $Pools | Where-Object { $_.AvailablePorts[1] } | ForEach-Object { $_.Reasons += "Non-SSL port not available (Config.SSL = 'Never')" } }
+                        If ($Config.SSL -eq "Always") { $Pools | Where-Object { -not $_.AvailablePorts[1] } | ForEach-Object { $_.Reasons += "SSL port not available (Config.SSL = 'Always')" } }
                         # Update pools last used, required for BalancesKeepAlive
                         If ($Variables.PoolsLastUsed) { $Variables.PoolsLastUsed | Get-SortedObject | ConvertTo-Json | Out-File -FilePath ".\Data\PoolsLastUsed.json" -Force -Encoding utf8NoBOM}
                         If ($Variables.AlgorithmsLastUsed) { $Variables.AlgorithmsLastUsed | Get-SortedObject | ConvertTo-Json | Out-File -FilePath ".\Data\AlgorithmsLastUsed.json" -Force -Encoding utf8NoBOM}

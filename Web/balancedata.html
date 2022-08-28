@@ -69,7 +69,7 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
                   else {
-                    $command = '/functions/balancedata/remove?' + encodeURIComponent('Data=' + $data);
+                    $command = '/functions/balancedata/remove?Data=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-remove-entry').text());
                       $('#myModal').modal({show:true});

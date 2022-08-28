@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveOn.ps1
-Version:        4.1.0.1
-Version date:   25 August 2022
+Version:        4.1.1.0
+Version date:   28 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -50,7 +50,6 @@ If ($PoolConfig.Wallets) {
         $Currency = "$($_.name)".Trim()
         $Algorithm_Norm = Get-Algorithm $Currency
         $Divisor = [Double]$_.profitPerPower
-        $Workers = $Request.stats.($_.name).workers
 
         # Add coin name
         If ($_.title -and $Currency) { Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $_.title }
@@ -79,13 +78,13 @@ If ($PoolConfig.Wallets) {
                     Name                     = [String]$PoolVariant
                     Pass                     = "x"
                     Port                     = [UInt16]$Server.ports[0]
+                    PortSSL                  = [UInt16]$Server.ssl_ports[0]
                     Price                    = [Double]$Stat.Live
                     Region                   = [String]$Region_Norm
-                    SSL                      = $false
                     StablePrice              = [Double]$Stat.Week
                     Updated                  = [DateTime]$Stat.Updated
                     User                     = "$($PoolConfig.Wallets.$Currency).$($PoolConfig.WorkerName)"
-                    Workers                  = [Int]$Workers
+                    Workers                  = [Int]$Request.stats.($_.name).workers
                     WorkerName               = ""
                 }
                 Break

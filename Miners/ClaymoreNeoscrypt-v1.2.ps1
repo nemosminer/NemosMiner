@@ -11,7 +11,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Neoscrypt"; MinMemGB = 2; ExcludeGPUArchitecture = @("RDNA"); MinerSet = 0; WarmupTimes = @(45, 0); Arguments = "" }
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).Host }) { 
+If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).AvailablePorts }) { 
 
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 
@@ -30,7 +30,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     # Get arguments for available miner devices
                     # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                    $Fee = If ($MinerPools[0].$_.Algorithm.SSL) { @(2.5) } Else { @(2) }
+                    $Fee = If ($MinerPools[0].$_.Algorithm.AvailablePorts[1]) { @(2.5) } Else { @(2) }
 
                     # Disable dev fee mining
                     If ($Config.DisableMinerFee) { 
@@ -43,7 +43,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                         DeviceNames = $AvailableMiner_Devices.Name
                         Type        = $AvailableMiner_Devices.Type
                         Path        = $Path
-                        Arguments   = ("$($_.Arguments) -pool $(If ($MinerPools[0].($_.Algorithm).SSL) { "stratum+ssl" } Else { "stratum+tcp" })://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).Port) -wal $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).Pass) { " --pass $($MinerPools[0].($_.Algorithm).Pass)" }) -mport -$MinerAPIPort -di $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments   = ("$($_.Arguments) -pool $(If ($MinerPools[0].($_.Algorithm).AvailablePorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($MinerPools[0].($_.Algorithm).Host):$(($MinerPools[0].($_.Algorithm).AvailablePorts | Select-Object -Last 1)) -wal $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).Pass) { " --pass $($MinerPools[0].($_.Algorithm).Pass)" }) -mport -$MinerAPIPort -di $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                         Algorithms  = @($_.Algorithm)
                         API         = "EthMiner"
                         Port        = $MinerAPIPort

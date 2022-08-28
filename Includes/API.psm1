@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.1.0.1
-Version date:   25 August 2022
+Version:        4.1.1.0
+Version date:   28 August 2022
 #>
 
 Function Initialize-API { 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.8.0"
+    $APIVersion = "0.4.8.2"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
@@ -141,8 +141,11 @@ Function Start-APIServer {
                 # Parse any parameters in the URL - $Request.Url.Query looks like "+ ?a=b&c=d&message=Hello%20world"
                 # Decode any url escaped characters in the key and value
                 $Parameters = @{ }
-                [URI]::UnescapeDataString($Request.Url.Query) -replace "\?", "" -split '&' | Foreach-Object { 
+                $Request.Url.Query -replace "\?", "" -split '&' | Foreach-Object { 
                     $Key, $Value = $_ -split '='
+                    # Decode any url escaped characters in the key and value
+                    $Key = [URI]::UnescapeDataString($Key)
+                    $Value = [URI]::UnescapeDataString($Value)
                     If ($Key -and $Value) { $Parameters.$Key = $Value }
                 }
 
@@ -385,7 +388,7 @@ Function Start-APIServer {
                                     $_.Reasons = $_.Reasons | Sort-Object -Unique
                                     $_.Available = $false
                                 }
-                                $Message = "$($Pools.Count) $(If ($Pools.Count -eq 1) { "Miner" } Else { "Miners" }) disbled."
+                                $Message = "$($Miners.Count) $(If ($Miners.Count -eq 1) { "Miner" } Else { "Miners" }) disbled."
                                 Write-Message -Level Verbose "Web GUI: $Message"
                                 $Data += "`n$Message"
                             }
@@ -430,7 +433,7 @@ Function Start-APIServer {
                                     $_.Reasons = @($_.Reasons | Where-Object { $_ -ne "Disabled by user" } | Sort-Object -Unique)
                                     If (-not $_.Reasons) { $_.Available = $true }
                                 }
-                                $Message = "$($Pools.Count) $(If ($Pools.Count -eq 1) { "Miner" } Else { "Miners" }) enabled."
+                                $Message = "$($Miners.Count) $(If ($Miners.Count -eq 1) { "Miner" } Else { "Miners" }) enabled."
                                 Write-Message -Level Verbose "Web GUI: $Message"
                                 $Data += "`n$Message"
                             }
@@ -470,7 +473,6 @@ Function Start-APIServer {
                                     $_.Disabled = $false
                                     $_.Benchmark = $true
                                     $_.Restart = $true
-                                    $_.Workers | ForEach-Object { $_.Speed = [Double]::NaN }
                                     $Data += "$($_.Name) ($($_.Algorithms -join " & "))`n"
                                     ForEach ($Worker in $_.Workers) { 
                                         Remove-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
@@ -586,9 +588,8 @@ Function Start-APIServer {
                         Break
                     }
                     "/functions/watchdogtimers/remove" { 
-                        $Data = @()
                         ForEach ($WatchdogTimer in ($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
-                            If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $WatchdogTimer.Name | Where-Object { $_.Algorithm -eq $WatchdogTimer.Algorithm -or $WatchdogTimer.Reasons -eq "Miner suspended by watchdog (all algorithms)" })) {
+                            If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $WatchdogTimer.Name | Where-Object { $_.Algorithm -eq $WatchdogTimer.Algorithms })) {
                                 # Remove Watchdog timers
                                 $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
                                 $Data += "$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}`n"
@@ -601,7 +602,7 @@ Function Start-APIServer {
                             }
                         }
                         ForEach ($WatchdogTimer in ($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
-                            If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object PoolName -EQ $WatchdogTimer.Name | Where-Object { $_.Algorithm -EQ $WatchdogTimer.Algorithm -or $WatchdogTimer.Reasons -eq "Pool suspended by watchdog" })) {
+                            If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object PoolName -EQ $WatchdogTimer.Name | Where-Object { $_.Algorithm -EQ $WatchdogTimer.Algorithm })) {
                                 # Remove Watchdog timers
                                 $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
                                 $Data += "$($WatchdogTimer.Name) {$($WatchdogTimer.Algorithm -join '; ')}`n"

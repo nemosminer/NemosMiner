@@ -202,6 +202,16 @@ function formatPercent(value) {
   return '';
 };
 
+function formatPorts(value) {
+  // return value;
+  if (!Array.isArray(value)) {
+    value = [value];
+  }
+  if (value[0] < 1) value[0] = "-";
+  if (value[1] < 1) value[1] = "-";
+  return value.join(' / ');
+};
+
 function formatArrayAsString(value) {
   if (value === '') return ''
   if (value == null) return '';

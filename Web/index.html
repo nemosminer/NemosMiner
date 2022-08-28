@@ -447,7 +447,7 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
                   else {
-                    $command = '/functions/stat/remove?' + encodeURIComponent('Miners=' + $data + '&Type=Hashrate');
+                    $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=Hashrate';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-re-benchmark').text());
                       $('#myModal').modal({show:true});
@@ -465,7 +465,7 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
                   }
                   else {
-                    $command = '/functions/stat/remove?' + encodeURIComponent('Miners=' + $data + '&Type=PowerUsage');
+                    $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=PowerUsage';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-re-measure').text());
                       $('#myModal').modal({show:true});
@@ -483,7 +483,7 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')')
                   }
                   else {
-                    $command = '/functions/stat/set?' + encodeURIComponent('Miners=' + $data + '&Type=Hashrate&Value=0');
+                    $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=Hashrate&Value=0';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-failed').text());
                       $('#myModal').modal({show:true});
@@ -501,7 +501,7 @@
                     alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')')
                   }
                   else {
-                    $command = '/functions/stat/disable?' + encodeURIComponent('Miners=' + $data);
+                    $command = '/functions/stat/disable?Miners=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-disable').text());
                       $('#myModal').modal({show:true});

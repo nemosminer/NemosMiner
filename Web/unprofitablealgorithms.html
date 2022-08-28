@@ -16,7 +16,7 @@
                 $.ajax({
                   async: false,
                   dataType: 'text',
-                  url: '/functions/file/showcontent?' + encodeURIComponent('FileName=.\\Data\\UnprofitableAlgorithms.json'), 
+                  url: '/functions/file/showcontent?FileName=' + encodeURIComponent('.\\Data\\UnprofitableAlgorithms.json'), 
                   success: function(result) {
                     $('#unprofitablealgorithms').text(result);
                   }
@@ -26,7 +26,7 @@
               //Edit unprofitable algorithms file
               $('#btn-editunprofitablealgorithms').click(function () {
                 document.getElementById('btn-editunprofitablealgorithms').disabled = true;
-                $('.modal-body').load('/functions/file/edit?' + encodeURIComponent('FileName=.\\Data\\UnprofitableAlgorithms.json'), function () {
+                $('.modal-body').load('/functions/file/edit?FileName=' + encodeURIComponent('.\\Data\\UnprofitableAlgorithms.json'), function () {
                   if (this.outerText) {
                     $('.modal-title').text('Edit Unprofitable Algorithms file');
                     $('#myModal').modal({ 

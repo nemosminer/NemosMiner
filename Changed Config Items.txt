@@ -236,6 +236,9 @@ New Config Items
 # Show pool user name column in miner overview
   "ShowUser": $true,
 
+# SSL pool connections: One of three values: 'Prefer' (use where available), 'Never' or 'Always' (pools that do not allow SSL are ignored)
+  "SSL": "Prefer",
+
 # Path to optional external log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
   "SnakeTailExe": ".\Utils\SnakeTail.exe",
 

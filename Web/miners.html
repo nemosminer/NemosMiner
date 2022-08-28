@@ -6,6 +6,7 @@
           <div id="toolbar">
             <button id="btn-re-benchmark" class="btn btn-primary" disabled title="The marked miners will re-benchmark&#10;Use this if the recorded hashrate is unreal or to re-enable disabled miners">Re-benchmark</button>
             <button id="btn-re-measure" class="btn btn-primary" disabled title="The marked miners will re-measure power usage&#10;Use this if the recorded power usage is unreal">Re-measure Power Usage</button>
+            <button id="btn-remove-watchdog" class="btn btn-success" disabled title="Remove the watchdog timers for the marked miners">Remove Watchdog</button>
             <button id="btn-failed" class="btn btn-danger" disabled title="The marked miners will be marked as failed&#10;Use this if the miners fail benchmarking or produce unpredictable results">Mark as failed</button>
             <button id="btn-disable" class="btn btn-warning" disabled title="The marked miners will be marked as disabled&#10;To re-enable trigger re-benchmarking">Disable</button>
           </div>
@@ -58,22 +59,22 @@
                 <th data-field="tPrimaryPool" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Primary Pool</th>
                 <th data-field="tPrimaryPoolUser" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Primary User</th>
                 <th data-field="tPrimaryHashrate" data-align="right" data-sortable="true" data-formatter="formatHashrateValue" class="text-nowrap">Primary<br>Hashrate</th>
-                <th data-field="tPrimaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-visible="false">Primary Pool Fee</th>
-                <th data-field="tPrimaryMinerFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-visible="false">Primary Algorithm Miner Fee</th>
+                <th data-field="tPrimaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Primary Pool Fee</th>
+                <th data-field="tPrimaryMinerFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Primary Algorithm Miner Fee</th>
                 <th data-field="tSecondaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Secondary Algorithm</th>
                 <th data-field="tSecondaryCurrency" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Secondary Currency</th>
                 <th data-field="tSecondaryCoinName" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Secondary CoinName</th>
                 <th data-field="tSecondaryPool" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Secondary Pool</th>
                 <th data-field="tSecondaryPoolUser" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Secondary User</th>
                 <th data-field="tSecondaryHashrate" data-align="right" data-sortable="true" data-formatter="formatHashrateValue" class="text-nowrap">Secondary<br>Hashrate</th>
-                <th data-field="tSecondaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-visible="false">Secondary Pool Fee</th>
-                <th data-field="tSecondaryMinerFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-visible="false">Secondary Algorithm Miner Fee</th>
+                <th data-field="tSecondaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Secondary Pool Fee</th>
+                <th data-field="tSecondaryMinerFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Secondary Algorithm Miner Fee</th>
                 <th data-field="API" data-sortable="true" data-filter-control="select" data-visible="false">Miner API</th>
                 <th data-field="Port" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">API Port</th>
                 <th data-field="MinDataSamples" data-sortable="true" data-filter-control="select" data-visible="false">Min. Data Samples</th>
                 <th data-field="WarmupTimes" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">WarmupTimes</th>
-                <th data-field="EnvVars" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false" >Environment Variables</th>
                 <th data-field="Updated" data-sortable="true" data-formatter="formatTimeSince" data-width=250 data-visible="false">Updated</th>
+                <th data-field="EnvVars" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Environment Variables</th>
                 <th data-field="Activated" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Activated</th>
                 <th data-field="WindowStyle" data-sortable="true" data-filter-control="select" data-visible="false">WindowStyle</th>
                 <th data-field="Available" data-sortable="true" data-filter-control="select" data-visible="false">Available</th>
@@ -128,6 +129,7 @@
                 try {
                   document.getElementById('btn-re-benchmark').disabled = !Boolean($table.bootstrapTable('getSelections').length);
                   document.getElementById('btn-re-measure').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                  document.getElementById('btn-remove-watchdog').disabled = !Boolean($table.bootstrapTable('getSelections').length);
                   document.getElementById('btn-failed').disabled = !Boolean($table.bootstrapTable('getSelections').length);
                   document.getElementById('btn-disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
                 } catch {}
@@ -147,7 +149,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/remove?' + encodeURIComponent('Miners=' + $data + '&Type=Hashrate');
+                    $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=Hashrate';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-re-benchmark').text());
                       $('body').css('cursor', 'default');
@@ -167,9 +169,29 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/remove?' + encodeURIComponent('Miners=' + $data + '&Type=PowerUsage');
+                    $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=PowerUsage';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-re-measure').text());
+                      $('body').css('cursor', 'default');
+                      $('#myModal').modal({show:true});
+                    });
+                    $table.bootstrapTable('refresh');
+                  }
+                }
+              });
+
+              $('#btn-remove-watchdog').click(function () {
+                var $data = $table.bootstrapTable('getSelections');
+                if ($data.length >= 1) {
+                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
+                  if ($data.length >= $querysize) {
+                    alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
+                  }
+                  else {
+                    $('body').css('cursor', 'progress');
+                    $command = '/functions/watchdogtimers/remove?Miners=' + encodeURIComponent($data);
+                    $('.modal-body').load($command, function() {
+                      $('.modal-title').text($('#btn-remove-watchdog').text());
                       $('body').css('cursor', 'default');
                       $('#myModal').modal({show:true});
                     });
@@ -187,7 +209,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/set?' + encodeURIComponent('Miners=' + $data + '&Type=Hashrate&Value=0');
+                    $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=Hashrate&Value=0';
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-failed').text());
                       $('body').css('cursor', 'default');
@@ -207,7 +229,7 @@
                   }
                   else {
                     $('body').css('cursor', 'progress');
-                    $command = '/functions/stat/set?' + encodeURIComponent('Miners=' + $data + '&Type=Hashrate&Value=-1');
+                    $command = '/functions/stat/disable?Miners=' + encodeURIComponent($data);
                     $('.modal-body').load($command, function() {
                       $('.modal-title').text($('#btn-disable').text());
                       $('body').css('cursor', 'default');

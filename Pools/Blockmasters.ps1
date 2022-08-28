@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Blockmasters.ps1
-Version:        4.1.0.1
-Version date:   25 August 2022
+Version:        4.1.1.0
+Version date:   28 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -64,61 +64,39 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
         $Currency = "$($Request.$_.currency)".Trim()
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
         $Fee = $Request.$_.Fees / 100
-        $PoolPort = $Request.$_.port
-        $Updated = $Request.$_.Updated
-        $Workers = $Request.$_.workers
 
         # Add coin name
         If ($Request.$_.CoinName -and $Currency) { Add-CoinName -Currency $Currency -CoinName $Request.$_.CoinName }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
-        ForEach ($Region in $PoolConfig.Region) { 
-            $Region_Norm = Get-Region $Region
 
-            [PSCustomObject]@{ 
-                Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
-                Algorithm                = [String]$Algorithm_Norm
-                BaseName                 = [String]$Name
-                Currency                 = [String]$Currency
-                Disabled                 = [Boolean]$Stat.Disabled
-                EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                Fee                      = [Decimal]$Fee
-                Host                     = "$($Region).$($HostSuffix)" -replace "^us\."
-                Name                     = [String]$PoolVariant
-                Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
-                Port                     = [UInt16]$PoolPort
-                Price                    = [Double]$Stat.Live
-                Region                   = [String]$Region_Norm
-                SSL                      = $false
-                StablePrice              = [Double]$Stat.Week
-                Updated                  = [DateTime]$Updated
-                User                     = [String]$Wallet
-                Workers                  = [Int]$Workers
-                WorkerName               = ""
+        
+        ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
+            If ($Region = $PoolConfig.Region | Where-Object { (Get-Region $_) -eq $Region_Norm }) { 
+                [PSCustomObject]@{ 
+                    Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
+                    Algorithm                = [String]$Algorithm_Norm
+                    BaseName                 = [String]$Name
+                    Currency                 = [String]$Currency
+                    Disabled                 = [Boolean]$Stat.Disabled
+                    EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+                    Fee                      = [Decimal]$Fee
+                    Host                     = "$($Region).$($HostSuffix)" -replace "^us\."
+                    Name                     = [String]$PoolVariant
+                    Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
+                    Port                     = [UInt16]$Request.$_.port
+                    PortSSL                  = $null
+                    Price                    = [Double]$Stat.Live
+                    Region                   = [String]$Region_Norm
+                    StablePrice              = [Double]$Stat.Week
+                    Updated                  = [DateTime]$Request.$_.Updated
+                    User                     = [String]$Wallet
+                    Workers                  = [Int]$Request.$_.workers
+                    WorkerName               = ""
+                }
             }
+            Break
         }
-        # [PSCustomObject]@{ 
-        #     Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
-        #     Algorithm                = [String]$Algorithm_Norm
-        #     BaseName                 = [String]$Name
-        #     Currency                 = [String]$Currency
-        #     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-        #     Fee                      = [Decimal]$Fee
-        #     # Host                     = "$($Region).$($HostSuffix)" -replace "^us\."
-        #     Hosts                    = [String[]]($PoolConfig.Region | Get-Region | ForEach-Object { ("$($_).$($HostSuffix)" -replace "^us\.") })
-        #     Name                     = [String]$PoolVariant
-        #     Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
-        #     # Port                     = [UInt16]$PoolPort
-        #     Ports                    = [UInt16[]]($PoolConfig.Region * [String]$PoolPort)
-        #     Price                    = [Double]$Stat.Live
-        #     Region                   = [String[]]($PoolConfig.Region | Get-Region)
-        #     SSL                      = $false
-        #     StablePrice              = [Double]$Stat.Week
-        #     Updated                  = [DateTime]$Updated
-        #     User                     = [String]$Wallet
-        #     Workers                  = [Int]$Workers
-        #     WorkerName               = ""
-        # }
     }
 }

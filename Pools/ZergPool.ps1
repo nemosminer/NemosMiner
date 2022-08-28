@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.1.0.1
-Version date:   25 August 2022
+Version:        4.1.1.0
+Version date:   28 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -70,9 +70,6 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
         $Currency_Norm = $Currency -replace "-.+$"
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
         $Fee = $Request.$_.Fees / 100
-        $PoolPort = $Request.$_.port
-        $Updated = $Request.$_.Updated
-        $Workers = $Request.$_.workers
 
         # Add coin name
         If ($Request.$_.CoinName -and $Currency) { Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName }
@@ -101,14 +98,14 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
                     Host                     = [String]$PoolHost
                     Name                     = [String]$PoolVariant
                     Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency$PayoutThresholdParameter"
-                    Port                     = [UInt16]$PoolPort
+                    Port                     = [UInt16]$Request.$_.port
+                    PortSSL                  = [UInt16]("1$([UInt]$Request.$_.port)")
                     Price                    = [Double]$Stat.Live
                     Region                   = [String]$Region_Norm
-                    SSL                      = $false
                     StablePrice              = [Double]$Stat.Week
-                    Updated                  = [DateTime]$Updated
+                    Updated                  = [DateTime]$Request.$_.Updated
                     User                     = [String]$Wallet
-                    Workers                  = [Int]$Workers
+                    Workers                  = [Int]$Request.$_.workers
                     WorkerName               = ""
                 }
                 Break
