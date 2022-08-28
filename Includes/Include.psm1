@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.1.1.0
+Version:        4.2.0.0
 Version date:   28 August 2022
 #>
 
@@ -2802,7 +2802,7 @@ Function Get-CurrencyAlgorithm {
        Return $Global:CurrencyAlgorithm.$Currency
     }
     If ($Currency) { 
-        $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
+        # $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
         If ($Global:CurrencyAlgorithm.$Currency) { 
             Return $Global:CurrencyAlgorithm.$Currency
         }
@@ -2918,7 +2918,7 @@ Function Initialize-Autoupdate {
     Stop-BalancesTracker
 
     # Remove 'Debug' from LogToFile & LogToScreen
-    If ($Variables.Branding.Version -lt [System.Version]"4.1.1.0") { 
+    If ($Variables.Branding.Version -lt [System.Version]"4.2.0.0") { 
         $Config.LogToFile = @($Config.LogToFile | Where-Object { $_ -ne "Debug" })
         $Config.LogToScreen = @($Config.LogToScreen | Where-Object { $_ -ne "Debug" })
     }
@@ -3322,6 +3322,7 @@ Function Get-DAGdata {
     [PSCustomObject]@{ 
         BlockHeight = [Int]$BlockHeight
         CoinName    = Get-CoinName $Currency
+        Algorithm   = Get-CurrencyAlgorithm $Currency
         DAGsize     = Get-DAGSize -Epoch $Epoch -Currency $Currency
         Epoch       = $Epoch
     }

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.1.1.0
+Version:        4.2.0.0
 Version date:   28 August 2022
 #>
 
@@ -182,6 +182,7 @@ Do {
 
                 # Do do once every 24hrs or if unable to get data from all sources
                 If (-not $Variables.DAGdata) { $Variables.DAGdata = [PSCustomObject][Ordered]@{ } }
+                If (-not $Variables.DAGdata.Algorithm) { $Variables.DAGdata | Add-Member Algorithm ([Ordered]@{ }) -Force }
                 If (-not $Variables.DAGdata.Currency) { $Variables.DAGdata | Add-Member Currency ([Ordered]@{ }) -Force }
                 If (-not $Variables.DAGdata.Updated) { $Variables.DAGdata | Add-Member Updated ([Ordered]@{ }) -Force }
 
@@ -239,16 +240,20 @@ Do {
                     }
                 }
 
-                $Url = "https://explorer.firo.org/api/status"
+                $Url = "https://whattomine.com/coins.json"
                 If ($Variables.DAGdata.Updated.$Url -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
                     Try { 
-                        # Get block data from firo.org
+                        # Get block data for from whattomine.com
                         $Response = Invoke-RestMethod -Uri $Url
 
-                        If ($Response.info.blocks -ge $Variables.DAGdata.Currency.FIRO.BlockHeight) { 
-                            $Variables.DAGdata.Currency.Remove("FIRO")
-                            $Variables.DAGdata.Currency.Add("FIRO", (Get-DAGdata -BlockHeight $Response.info.blocks -Currency "FIRO"))
-                            $Variables.DAGdata.Updated.$Url = (Get-Date).ToUniversalTime()
+                        If ($Response.coins) { 
+                            ForEach ($CoinName in @("FIRO", "SERO", "ZANO")) { 
+                                If ($Response.coins.$CoinName.last_block -ge $Variables.DAGdata.Currency.$CoinName.BlockHeight) { 
+                                    $Variables.DAGdata.Currency.Remove($CoinName)
+                                    $Variables.DAGdata.Currency.Add($CoinName, (Get-DAGdata -BlockHeight $Response.coins.$CoinName.last_block -Currency $CoinName))
+                                    $Variables.DAGdata.Updated.$Url = (Get-Date).ToUniversalTime()
+                                }
+                            }
                             Write-Message -Level Info "Loaded DAG data from '$Url'."
                         }
                         Else { 
@@ -258,6 +263,23 @@ Do {
                     Catch { 
                         Write-Message -Level Warn "Failed to load DAG data from '$Url'."
                     }
+                }
+
+                # Get maximum DAG size per algorithm
+                ForEach ($Algorithm in @($Variables.DAGdata.Currency.Keys | ForEach-Object { $Variables.DAGdata.Currency.$_.Algorithm } | Select-Object)) { 
+                    $Variables.DAGdata.Algorithm.Remove($Algorithm)
+                    $Variables.DAGdata.Algorithm.Add($Algorithm, [PSCustomObject]@{ 
+                        BlockHeight = ($Variables.DAGdata.Currency.Keys | Where-Object { (Get-CurrencyAlgorithm $_) -eq $Algorithm } | ForEach-Object { $Variables.DAGdata.Currency.$_.BlockHeight } | Measure-Object -Maximum).Maximum
+                        DAGsize     = ($Variables.DAGdata.Currency.Keys | Where-Object { (Get-CurrencyAlgorithm $_) -eq $Algorithm } | ForEach-Object { $Variables.DAGdata.Currency.$_.DAGsize } | Measure-Object -Maximum).Maximum
+                        Epoch       = ($Variables.DAGdata.Currency.Keys | Where-Object { (Get-CurrencyAlgorithm $_) -eq $Algorithm } | ForEach-Object { $Variables.DAGdata.Currency.$_.Epoch } | Measure-Object -Maximum).Maximum
+                    })
+                    $Variables.DAGdata.Algorithm.$Algorithm | Add-Member CoinName ($Variables.DAGdata.Currency.Keys | Where-Object { $Variables.DAGdata.Currency.$_.DAGsize -eq $Variables.DAGdata.Algorithm.$Algorithm.DAGsize -and $Variables.DAGdata.Currency.$_.Algorithm -eq $Algorithm })
+                }
+
+                If (-not $Variables.DAGdata.Currency."*") { 
+                    $BlockHeight = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400
+                    Write-Message -Level Warn "Cannot load ethash DAG size information from 'https://minerstat.com', using calculated block height $BlockHeight based on 6400 blocks per day since 30 July 2015."
+                    $Variables.DAGdata.Currency.Add("*", (Get-DAGdata -BlockHeight $BlockHeight -Currency "ETH"))
                 }
 
                 If (($Variables.DAGdata.Updated.Values | Sort-Object | Select-Object -Last 1) -gt $Variables.Timer -and $Variables.DAGdata.Currency.Count -gt 1) { 
@@ -272,12 +294,6 @@ Do {
 
                     $Variables.DAGdata = $Variables.DAGdata | Get-SortedObject 
                     $Variables.DAGdata | ConvertTo-Json | Out-File -FilePath ".\Data\DagData.json" -Force -Encoding utf8NoBOM
-                }
-
-                If (-not $Variables.DAGdata.Currency."*") { 
-                    $BlockHeight = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400
-                    Write-Message -Level Warn "Cannot load ethash DAG size information from 'https://minerstat.com', using calculated block height $BlockHeight based on 6400 blocks per day since 30 July 2015."
-                    $Variables.DAGdata.Currency.Add("*", (Get-DAGdata -BlockHeight $BlockHeight -Currency "ETH"))
                 }
                 Remove-Variable BlockHeight, Currency, Response, Url -ErrorAction Ignore
 
@@ -574,10 +590,10 @@ Do {
                                 $_.Epoch       = $Variables.DAGdata.Currency.($_.Currency).Epoch
                                 $_.DAGSizeGB   = $Variables.DAGdata.Currency.($_.Currency).DAGsize / 1GB 
                             }
-                            ElseIf ($_.Algorithm -in @("EtcHash", "Ethash", "KawPoW", "ProgPoW", "UbqHash")) { 
-                                $_.BlockHeight = $Variables.DAGdata.Currency."*".BlockHeight
-                                $_.Epoch       = $Variables.DAGdata.Currency."*".Epoch
-                                $_.DAGSizeGB   = $Variables.DAGdata.Currency."*".DAGsize / 1GB
+                            ElseIf ($_.Algorithm -in $Variables.DAGdata.Algorithm.Keys) { 
+                                $_.BlockHeight = $Variables.DAGdata.Algorithm.($_.Algorithm).BlockHeight
+                                $_.Epoch       = $Variables.DAGdata.Algorithm.($_.Algorithm).Epoch
+                                $_.DAGSizeGB   = $Variables.DAGdata.Algorithm.($_.Algorithm).DAGsize / 1GB
                             }
 
                             # Ports[0] = non-SSL, Port[1] = SSL
