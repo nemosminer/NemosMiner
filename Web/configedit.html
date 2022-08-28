@@ -196,9 +196,9 @@
                   </div>
                   <div style="padding-top: 0.3rem" title="Select miner set to be used by NemosMiner">Use
                     <select name="" id="MinerSet" width="10">
-                      <option title="The best miners chosen by the developers may not be the best miners for you" value=0>only best miner per algorithm and per device</option>
-                      <option title="recommended, select to ensure best profitability" value=1>optimal miners (more than one per algorithm and device)</option>
-                      <option title="This will prolongue benchmarking, but may not improve profitability" value=2>all miners (incl. those in UnprofitableAlgorithms.json)</option>
+                      <option title="The best miners chosen by the developers may not be the best miners for you&#10;(Minerset 0)" value=0>only best miner per algorithm and per device</option>
+                      <option title="recommended, select to ensure best profitability&#10;(Minerset 1)" value=1>optimal miners (more than one per algorithm and device)</option>
+                      <option title="This will prolongue benchmarking, but may not improve profitability&#10;(Minerset 2)" value=2>all miners (incl. those in UnprofitableAlgorithms.json)</option>
                     </select>
                   </div>
                   <div style="padding-top: 0.3rem" title="List of miners to be excluded&#10;Values must be sparated by commas&#10;&#10;To exclude all version of a miner specify the short miner name, e.g. 'PhoenixMiner' (without '-v...')&#10;To exclude a specific miner version use the full miner name (incl. version information)&#10;"> Exclude miners
@@ -454,7 +454,7 @@
               $('#btn-editconfig').click(function () {
                 document.getElementById('btn-editconfig').disabled = true;
                 document.getElementById('btn-editpoolsconfig').disabled = true;
-                $('.modal-body').load('/functions/file/edit?' + encodeURIComponent('FileName=' + configfile), function () {
+                $('.modal-body').load('/functions/file/edit?FileName=' + encodeURIComponent(configfile), function () {
                   if (this.outerText) {
                     $('.modal-title').text('Edit Config file');
                     $('#myModal').modal({ 
@@ -473,7 +473,7 @@
               $('#btn-editpoolsconfig').click(function () {
                 document.getElementById('btn-editconfig').disabled = true;
                 document.getElementById('btn-editpoolsconfig').disabled = true;
-                $('.modal-body').load('/functions/file/edit?' + encodeURIComponent('FileName=' + poolsconfigfile), function () {
+                $('.modal-body').load('/functions/file/edit?FileName=' + encodeURIComponent(poolsconfigfile), function () {
                   if (this.outerText) {
                     $('.modal-title').text('Edit PoolsConfig file');
                     $('#myModal').modal({ 
