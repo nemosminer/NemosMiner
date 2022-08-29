@@ -2918,12 +2918,11 @@ Function Initialize-Autoupdate {
     Stop-BalancesTracker
 
     # Remove 'Debug' from LogToFile & LogToScreen
-    If ($Variables.Branding.Version -lt [System.Version]"4.2.0.1") { 
+    If ($Variables.Branding.Version -lt [System.Version]"4.1.0.0") { 
         $Config.LogToFile = @($Config.LogToFile | Where-Object { $_ -ne "Debug" })
         $Config.LogToScreen = @($Config.LogToScreen | Where-Object { $_ -ne "Debug" })
     }
-    Write-Config -ConfigFile $ConfigFile
-
+    Write-Config -ConfigFile $Variables.ConfigFile
 
     If ($Variables.Branding.Version -le [System.Version]"3.9.9.17" -and $UpdateVersion -ge [System.Version]"3.9.9.17") { 
         # Remove balances & earnings files that are no longer compatible

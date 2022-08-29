@@ -16,6 +16,7 @@ ChangeLog NemosMiner 4.2.0.1 29.08.2022
 Fixes:
 - ClaymoreNeoscrypt-v1.2: Not working, invalid command line parameters '--pass x'
 - MiningPoolHub: Fixed 'No data from pool' message (Thank you Szentigrade)
+- Core / Autoupdate: Updates failes if old version is <= 4.1.0.0
 - NanoMiner-v3.7.0: Fixed benchmarking SSL pool connections @ NiceHash  (Thank you Szentigrade)
 - Trex-v0.26.5: Fixed benchmarking SSL pool connections  (Thank you Szentigrade)
 - Web GUI / Edit Configuration: Buttons 'Edit Config file' & 'Edit PoolsConfig file' broken (regression from 4.1.1.0)
