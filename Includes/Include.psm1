@@ -2992,37 +2992,19 @@ Function Initialize-Autoupdate {
     # Remove obsolete miner stat files; must be done after new miner files have been unpacked
     If ($ObsoleteMinerStats = Get-ObsoleteMinerStats) { 
         "Removing obsolete stat files from miners that no longer exist..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-        $ObsoleteMinerStats | ForEach-Object { 
-            Remove-Item -Path ".\Stats\$($_).txt" -Force
-            "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-        }
+        $ObsoleteMinerStats | ForEach-Object { Remove-Item -Path ".\Stats\$($_).txt" -Force; "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
     }
     Remove-Variable ObsoleteMinerStats
 
     "Cleaning up old files..." | Tee-Object -FilePath $UpdateLog -Append | Write-Message -Level Verbose
     # Remove all TON stat files
-    Get-ChildItem -Path ".\Stats" -File | Where-Object { $_.Name -match '^.+_SHA256ton_.+\.txt$' } | Select-Object | ForEach-Object { 
-        Remove-Item -Path $_.FullName -Force;
-        "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-    }
-    Get-ChildItem -Path ".\Stats" -File | Where-Object { $_.Name -match '^TonPool*_.+\.txt$' } | Select-Object | ForEach-Object { 
-        Remove-Item -Path $_.FullName -Force;
-        "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-    }
-    Get-ChildItem -Path ".\Stats" -File | Where-Object { $_.Name -match '^TonWhales*_.+\.txt$' } | Select-Object | ForEach-Object { 
-        Remove-Item -Path $_.FullName -Force;
-        "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-    }
+    Get-ChildItem -Path ".\Stats" -File | Where-Object { $_.Name -match '^.+_SHA256ton_.+\.txt$' } | Select-Object | ForEach-Object { Remove-Item -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
+    Get-ChildItem -Path ".\Stats" -File | Where-Object { $_.Name -match '^TonPool*_.+\.txt$' } | Select-Object | ForEach-Object { Remove-Item -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
+    Get-ChildItem -Path ".\Stats" -File | Where-Object { $_.Name -match '^TonWhales*_.+\.txt$' } | Select-Object | ForEach-Object { Remove-Item -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
     # Remove all AHashPool stat files
-    Get-ChildItem -Path ".\Stats" -File | Where-Object { $_.Name -match '^AHashPool*_.+\.txt$' } | Select-Object | ForEach-Object { 
-        Remove-Item -Path $_.FullName -Force;
-        "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-    }
+    Get-ChildItem -Path ".\Stats" -File | Where-Object { $_.Name -match '^AHashPool*_.+\.txt$' } | Select-Object | ForEach-Object { Remove-Item -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
     # Remove all BlockMasters stat files
-    Get-ChildItem -Path ".\Stats" -File | Where-Object { $_.Name -match '^BlockMasters*_.+\.txt$' } | Select-Object | ForEach-Object { 
-        Remove-Item -Path $_.FullName -Force;
-        "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-    }
+    Get-ChildItem -Path ".\Stats" -File | Where-Object { $_.Name -match '^BlockMasters*_.+\.txt$' } | Select-Object | ForEach-Object { Remove-Item -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
 
     # Remove old miner binaries
     Get-ChildItem -Path ".\Bin" -Directory | ForEach-Object { 
