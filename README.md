@@ -195,7 +195,6 @@ Easy configuration, easy start:
 
       Displays available balances and an estimation of when the pool payment threshold will be reached.
       Supported pools:
-         - BlockMasters
          - HiveON
          - MiningDutch
          - MiningPoolHub
