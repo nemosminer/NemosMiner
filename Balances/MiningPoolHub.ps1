@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.2.0.0
-Version date:   28 August 2022
+Version:        4.2.0.1
+Version date:   29 August 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -29,6 +29,9 @@ $RetryCount = 3
 $RetryDelay = 3
 
 $Request = "http://miningpoolhub.com/index.php?page=api&action=getuserallbalances&api_key=$($Config.MiningPoolHubAPIKey)"
+
+$Headers = @{ "Cache-Control" = "no-cache" }
+$Useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"
 
 While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.MiningPoolHubAPIKey) { 
 
@@ -50,7 +53,7 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.MiningPoolHubAPIKey
                 While (-not ($GetPoolInfo) -and $RetryCount2 -gt 0) { 
                     $RetryCount2--
                     Try { 
-                        $GetPoolInfo = ((Invoke-RestMethod "http://$($_.coin).miningpoolhub.com/index.php?page=api&action=getpoolinfo&api_key=$($Config.MiningPoolHubAPIKey)" -UseBasicParsing -TimeoutSec $Config.PoolAPITimeout -ErrorAction Ignore).getpoolinfo).data
+                        $GetPoolInfo = ((Invoke-RestMethod "http://$($_.coin).miningpoolhub.com/index.php?page=api&action=getpoolinfo&api_key=$($Config.MiningPoolHubAPIKey)" -Headers $Headers -UserAgent $UserAgent -TimeoutSec $Config.PoolAPITimeout -ErrorAction Ignore).getpoolinfo).data
 
                         If ($Config.LogBalanceAPIResponse -eq $true) { 
                             $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue

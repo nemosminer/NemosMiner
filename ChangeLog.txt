@@ -9,6 +9,25 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Known issues:
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+
+ChangeLog NemosMiner 4.2.0.1 29.08.2022
+=======================================
+
+Fixes:
+- ClaymoreNeoscrypt-v1.2: Not working, invalid command line parameters '--pass x'
+- MiningPoolHub: Fixed 'No data from pool' message (Thank you Szentigrade)
+- NanoMiner-v3.7.0: Fixed benchmarking SSL pool connections @ NiceHash  (Thank you Szentigrade)
+- Trex-v0.26.5: Fixed benchmarking SSL pool connections  (Thank you Szentigrade)
+- Web GUI / Edit Configuration: Buttons 'Edit Config file' & 'Edit PoolsConfig file' broken (regression from 4.1.1.0)
+- Web GUI / Running Configuration: Buttons 'Edit Config file' & 'Edit PoolsConfig file' broken (regression from 4.1.1.0)
+
+Miner changes:
+- ZealotEnemy-v2.6.x: Support SSL pool connections
+
+Pool changes:
+- BlockMasters: Removed pool, offline since 08/08/2022
+
+
 ChangeLog NemosMiner 4.2.0.0 27.08.2022
 =======================================
 
@@ -19,7 +38,7 @@ Fixes:
 - Core / Ethash: No miners available because of error in DAG size calculation
 
 Miner changes:
-- ProgPow-v0.16 (Removed, algorithm 'Bitcoin Interest' is no longer available at any supoprted pools)
+- ProgPow-v0.16 (Removed, algorithm 'Bitcoin Interest' is no longer available at any supported pools)
 
 
 ChangeLog NemosMiner 4.1.1.0 27.08.2022

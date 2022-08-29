@@ -144,13 +144,15 @@
                   <div style="padding-top: 0.3rem" title="Minimum number of full cycles a miner must mine continously&#10;the same algorithm@pool before switching is allowed&#10;&#10;e.g. 3 would force a miner to stick mining the same algorithm@pool&#10;for at least 3 full cycles before switching to another algorithm or pool&#10;(min=1, max=10, default=1 cycles)&#10;&#10;Note: This does not apply when benchmarking" for="MinInterval"> Enforce mining for at least
                     <input type="number" id="MinInterval" name="MinInterval" min=1 max=10 value=0 step=1 size=2> full cycles before switching
                   </div>
-                  <select name="" id="SSL">
-                    <option value="Never" title="Never use SSL for pool connections">Never use</option>
-                    <option value="Prefer" title="Prefer SSL pool connections">Prefer</option>
-                    <option value="Always" title="Always use SSL for pool connections&#10;Pools that do not support SSL connections are ignored&#10;&#10;Note: This setting might reduce earnings because not all pools & miners support SSL connections">Always use</option>
-                  </select>
-                  <label for="SSL"> SSL for pool connections</label>
-                  <div style="padding-top: 0.3rem" title="Enter Proxy IP address and port&#10;e.g. 192.168.1.1:3128"> Proxy address:port
+                  <div style="padding-top: 0.2rem" title="This setting definines how miners will connect to the pools">
+                    <select id="SSL">
+                      <option value="Never" title="Never use SSL for pool connections">Never use</option>
+                      <option value="Prefer" title="Prefer SSL pool connections">Prefer</option>
+                      <option value="Always" title="Always use SSL for pool connections&#10;Pools that do not support SSL connections are ignored&#10;&#10;Note: This setting might reduce earnings because not all pools & miners support SSL connections">Always use</option>
+                    </select>
+                    <label for="SSL"> SSL for pool connections</label>
+                  </div>
+                  <div style="padding-top: 0.2rem" title="Enter Proxy IP address and port&#10;e.g. 192.168.1.1:3128"> Proxy address:port
                     <input type="text" id="Proxy" name="Proxy" maxlength=22 size=30>
                   </div>
                   <div style="padding-top: 0.5rem" title="If enabled NemosMiner will open firewall ports for all miners&#10;Admin rights required (or you must accept the UAC prompts)">

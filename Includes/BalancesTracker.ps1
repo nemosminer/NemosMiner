@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.2.0.0
-Version date:   28 August 2022
+Version:        4.2.0.1
+Version date:   29 August 2022
 #>
 
 Do {
@@ -200,7 +200,7 @@ Do {
                     }
                 }
                 Else { 
-                    # BlockMasters, BlazePool, HiveON, NLPool, ZergPool, ZPool
+                    # BlazePool, HiveON, MiningDutch, NLPool, ZergPool, ZPool
                     $Delta = $PoolBalanceObject.Unpaid - ($PoolBalanceObjects | Select-Object -Last 1).Unpaid
                     # Current 'Unpaid' is smaller
                     If ($Delta -lt 0) { 

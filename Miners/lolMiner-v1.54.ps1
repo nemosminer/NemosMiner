@@ -1,4 +1,4 @@
-﻿using module ..\Includes\Include.psm1
+using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -in @("AMD", "NVIDIA"))) { Return }
 

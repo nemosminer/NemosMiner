@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.2.0.0
-Version date:   28 August 2022
+Version:        4.2.0.1
+Version date:   29 August 2022
 #>
 
 # Window handling
@@ -2918,7 +2918,7 @@ Function Initialize-Autoupdate {
     Stop-BalancesTracker
 
     # Remove 'Debug' from LogToFile & LogToScreen
-    If ($Variables.Branding.Version -lt [System.Version]"4.2.0.0") { 
+    If ($Variables.Branding.Version -lt [System.Version]"4.2.0.1") { 
         $Config.LogToFile = @($Config.LogToFile | Where-Object { $_ -ne "Debug" })
         $Config.LogToScreen = @($Config.LogToScreen | Where-Object { $_ -ne "Debug" })
     }
@@ -3014,6 +3014,16 @@ Function Initialize-Autoupdate {
         Remove-Item -Path "\Stats\$_" -Force
         "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
     }
+    # Remove all AHashPool stat files
+    (Get-ChildItem -Path ".\Stats" | Where-Object { $_.Name -match '^AHashPool*_.+\.txt$' }).Name | ForEach-Object { 
+        Remove-Item -Path "\Stats\$_" -Force
+        "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+    }
+    # Remove all BlockMasters stat files
+    (Get-ChildItem -Path ".\Stats" | Where-Object { $_.Name -match '^BlockMasters*_.+\.txt$' }).Name | ForEach-Object { 
+        Remove-Item -Path "\Stats\$_" -Force
+        "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+    }
 
     # Remove old miner binaries
     Get-ChildItem -Path ".\Bin" -Directory | ForEach-Object { 
@@ -3034,6 +3044,7 @@ Function Initialize-Autoupdate {
         Remove-Item ".\PostUpdateActions.ps1" -Force
         "Removed '.\PostUpdateActions.ps1'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
     }
+
     # Keep only 3 file generations
     Get-ChildItem -Path "AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $BackupFile } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
     Get-ChildItem -Path ".\Logs\AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $UpdateLog } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
@@ -3204,9 +3215,11 @@ Function Update-ConfigFile {
         Remove-Variable OldRegion
     }
 
-    # Remove AHashPool config & stat data
+    # Remove AHashPool config data
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "AhashPool*" }
     Remove-Item ".\Stats\AhashPool*.txt" -Force
+    # Remove BlockMasters config data
+    $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "BlockMasters*" }
     # Remove TonPool config
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "TonPool" }
     # Remove TonWhales config
