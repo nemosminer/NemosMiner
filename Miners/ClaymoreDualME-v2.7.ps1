@@ -39,7 +39,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 Else { 
                     $_.Arguments += If ($MinerPools[0].($_.Algorithm).AvailablePorts[1]) { " -epool ssl://" } Else { " -epool " }
                 }
-                $_.Arguments += "$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).AvailablePorts | Where-Object  { $_ -ne $null } | Select-Object -Last 1) -ewal $($MinerPools[0].($_.Algorithm).User)"
+                $_.Arguments += "$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).AvailablePorts | Select-Object -Last 1) -ewal $($MinerPools[0].($_.Algorithm).User)"
                 $_.Arguments += " -epsw $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
                 If ($MinerPools[0].($_.Algorithm).WorkerName) { $_.Arguments += " -eworker $($MinerPools[0].($_.Algorithm).WorkerName)" }
                 If ($MinerPools[0].($_.Algorithm).AvailablePorts[1]) { $_.Arguments += " -checkcert 0" }

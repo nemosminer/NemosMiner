@@ -60,7 +60,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 }
 
                 If ($_.Algorithm[1]) { 
-                    $_.Arguments += " --url2 $(If ($MinerPools[1].($_.Algorithm[1]).AvailablePorts[1]) { "stratum+ssl" } Else { If ($MinerPools[1].($_.Algorithm[1]).DAGsizeGB -ne $null -and $MinerPools[1].($_.Algorithm[1]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { "stratum2+tcp" } Else { "stratum+tcp" } })://$($MinerPools[1].($_.Algorithm[1]).Host):$($MinerPools[0].($_.Algorithm[1]).AvailablePorts | Select-Object -Last 1)"
+                    $_.Arguments += " --url2 $(If ($MinerPools[1].($_.Algorithm[1]).AvailablePorts[1]) { "stratum+ssl" } Else { If ($MinerPools[1].($_.Algorithm[1]).DAGsizeGB -ne $null -and $MinerPools[1].($_.Algorithm[1]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { "stratum2+tcp" } Else { "stratum+tcp" } })://$($MinerPools[1].($_.Algorithm[1]).Host):$($MinerPools[1].($_.Algorithm[1]).AvailablePorts | Select-Object -Last 1)"
                     $_.Arguments += " --user2 $($MinerPools[1].($_.Algorithm[1]).User)"
                     $_.Arguments += " --pass2 $($MinerPools[1].($_.Algorithm[1]).Pass)$(If ($MinerPools[1].($_.Algorithm[1]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
                     If ($MinerPools[1].($_.Algorithm[1]).WorkerName) { $_.Arguments += " --worker2 $($MinerPools[1].($_.Algorithm[1]).WorkerName)" }
