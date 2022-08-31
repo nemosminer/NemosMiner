@@ -597,7 +597,7 @@ Do {
                             }
 
                             # Ports[0] = non-SSL, Port[1] = SSL
-                            $_.AvailablePorts = @($(If ($Config.SSL -ne "Always" -and $_.Port) { [UInt16]$_.Port } Else { $null }), $(If ($Config.SSL -ne "Never" -and $_.PortSSL) { [UInt16]$_.PortSSL } Else { $null }))
+                            $_.PoolPorts = @($(If ($Config.SSL -ne "Always" -and $_.Port) { [UInt16]$_.Port } Else { $null }), $(If ($Config.SSL -ne "Never" -and $_.PortSSL) { [UInt16]$_.PortSSL } Else { $null }))
                         }
                         Remove-Variable Factor, Pool
 
@@ -641,8 +641,8 @@ Do {
                         $Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $PoolsConfig.$($_.BaseName).MinWorker } | ForEach-Object { $_.Reasons += "Not enough workers at pool (MinWorker ``$($PoolsConfig.$($_.BaseName).MinWorker)`` in $($_.BaseName) pool config)" }
                         $Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $Config.MinWorker } | ForEach-Object { $_.Reasons += "Not enough workers at pool (MinWorker ``$($Config.MinWorker)`` in generic config)" }
                         # SSL
-                        If ($Config.SSL -eq "Never") { $Pools | Where-Object { $_.AvailablePorts[1] } | ForEach-Object { $_.Reasons += "Non-SSL port not available (Config.SSL = 'Never')" } }
-                        If ($Config.SSL -eq "Always") { $Pools | Where-Object { -not $_.AvailablePorts[1] } | ForEach-Object { $_.Reasons += "SSL port not available (Config.SSL = 'Always')" } }
+                        If ($Config.SSL -eq "Never") { $Pools | Where-Object { $_.PoolPorts[1] } | ForEach-Object { $_.Reasons += "Non-SSL port not available (Config.SSL = 'Never')" } }
+                        If ($Config.SSL -eq "Always") { $Pools | Where-Object { -not $_.PoolPorts[1] } | ForEach-Object { $_.Reasons += "SSL port not available (Config.SSL = 'Always')" } }
                         # Update pools last used, required for BalancesKeepAlive
                         If ($Variables.PoolsLastUsed) { $Variables.PoolsLastUsed | Get-SortedObject | ConvertTo-Json | Out-File -FilePath ".\Data\PoolsLastUsed.json" -Force -Encoding utf8NoBOM}
                         If ($Variables.AlgorithmsLastUsed) { $Variables.AlgorithmsLastUsed | Get-SortedObject | ConvertTo-Json | Out-File -FilePath ".\Data\AlgorithmsLastUsed.json" -Force -Encoding utf8NoBOM}
