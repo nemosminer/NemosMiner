@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.8.2"
+    $APIVersion = "0.4.8.3"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
@@ -359,7 +359,7 @@ Function Start-APIServer {
                             If ($Pools = @($Variables.Pools | Select-Object | Where-Object { $_.Name -in $Names -and $_.Algorithm -in $Algorithms -and $_.Currency -in $Currencies})) { 
                                 $Pools | ForEach-Object { 
                                     $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
-                                    $Data += "$($Stat_Name) ($($_.Region))`n"
+                                    $Data += "$($Stat_Name)`n"
                                     Disable-Stat -Name "$($Stat_Name)_Profit"
                                     $_.Disabled = $false
                                     $_.Reasons += "Disabled by user"
@@ -406,7 +406,7 @@ Function Start-APIServer {
                             If ($Pools = @($Variables.Pools | Select-Object | Where-Object { $_.Name -in $Names -and $_.Algorithm -in $Algorithms -and $_.Currency -in $Currencies})) { 
                                 $Pools | ForEach-Object { 
                                     $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
-                                    $Data += "$($Stat_Name) ($($_.Region))`n"
+                                    $Data += "$($Stat_Name)`n"
                                     Enable-Stat -Name "$($Stat_Name)_Profit"
                                     $_.Disabled = $false
                                     $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Disabled by user" } | Sort-Object -Unique)
@@ -445,10 +445,10 @@ Function Start-APIServer {
                     }
                     "/functions/stat/remove" { 
                         If ($Parameters.Pools) { 
-                            If ($Pools = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Algorithm, Currency, Name, Region)) { 
+                            If ($Pools = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Algorithm, Currency, Name)) { 
                                 $Pools | Sort-Object Name | ForEach-Object { 
                                     $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
-                                    $Data += "$($Stat_Name) ($($_.Region))`n"
+                                    $Data += "$($Stat_Name)`n"
                                     Remove-Stat -Name "$($Stat_Name)_Profit"
                                     $_.Reasons = [String[]]@()
                                     $_.Price = $_.Price_Bias = $_.StablePrice = $_.Accuracy = [Double]::Nan
