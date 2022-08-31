@@ -31,7 +31,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Tensority");            Fee = @(0.01);       MinMemGB = 2;                                     MemReserveGB = 0;    MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(30, 0);   Arguments = " --algo tensority --intensity 25" }
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm[0]).AvailablePorts -and (-not $_.Algorithm[1] -or $MinerPools[1].($_.Algorithm[1]).AvailablePorts) }) { 
+If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm[0]).PoolPorts -and (-not $_.Algorithm[1] -or $MinerPools[1].($_.Algorithm[1]).PoolPorts) }) { 
 
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 
@@ -50,7 +50,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # Get arguments for available miner devices
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "dual-algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $_.Arguments += " --url $(If ($MinerPools[0].($_.Algorithm[0]).AvailablePorts[1]) { "stratum+ssl" } Else { If ($MinerPools[0].($_.Algorithm[0]).DAGsizeGB -ne $null -and $MinerPools[0].($_.Algorithm[0]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { "stratum2+tcp" } Else { "stratum+tcp" } })://$($MinerPools[0].($_.Algorithm[0]).Host):$($MinerPools[0].($_.Algorithm[0]).AvailablePorts | Select-Object -Last 1)"
+                $_.Arguments += " --url $(If ($MinerPools[0].($_.Algorithm[0]).PoolPorts[1]) { "stratum+ssl" } Else { If ($MinerPools[0].($_.Algorithm[0]).DAGsizeGB -ne $null -and $MinerPools[0].($_.Algorithm[0]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { "stratum2+tcp" } Else { "stratum+tcp" } })://$($MinerPools[0].($_.Algorithm[0]).Host):$($MinerPools[0].($_.Algorithm[0]).PoolPorts | Select-Object -Last 1)"
                 $_.Arguments += " --user $($MinerPools[0].($_.Algorithm[0]).User)"
                 $_.Arguments += " --pass $($MinerPools[0].($_.Algorithm[0]).Pass)$(If ($MinerPools[0].($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
                 If ($MinerPools[0].($_.Algorithm[0]).WorkerName) { $_.Arguments += " --worker $($MinerPools[0].($_.Algorithm[0]).WorkerName)" }
@@ -60,7 +60,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 }
 
                 If ($_.Algorithm[1]) { 
-                    $_.Arguments += " --url2 $(If ($MinerPools[1].($_.Algorithm[1]).AvailablePorts[1]) { "stratum+ssl" } Else { If ($MinerPools[1].($_.Algorithm[1]).DAGsizeGB -ne $null -and $MinerPools[1].($_.Algorithm[1]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { "stratum2+tcp" } Else { "stratum+tcp" } })://$($MinerPools[1].($_.Algorithm[1]).Host):$($MinerPools[1].($_.Algorithm[1]).AvailablePorts | Select-Object -Last 1)"
+                    $_.Arguments += " --url2 $(If ($MinerPools[1].($_.Algorithm[1]).PoolPorts[1]) { "stratum+ssl" } Else { If ($MinerPools[1].($_.Algorithm[1]).DAGsizeGB -ne $null -and $MinerPools[1].($_.Algorithm[1]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { "stratum2+tcp" } Else { "stratum+tcp" } })://$($MinerPools[1].($_.Algorithm[1]).Host):$($MinerPools[1].($_.Algorithm[1]).PoolPorts | Select-Object -Last 1)"
                     $_.Arguments += " --user2 $($MinerPools[1].($_.Algorithm[1]).User)"
                     $_.Arguments += " --pass2 $($MinerPools[1].($_.Algorithm[1]).Pass)$(If ($MinerPools[1].($_.Algorithm[1]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
                     If ($MinerPools[1].($_.Algorithm[1]).WorkerName) { $_.Arguments += " --worker2 $($MinerPools[1].($_.Algorithm[1]).WorkerName)" }

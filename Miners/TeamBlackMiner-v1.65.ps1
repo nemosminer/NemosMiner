@@ -19,7 +19,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "VertHash";     Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 2.0;                                   MemReserveGB = 0;    ExcludePool = @("Zpool"); MinerSet = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo verthash" }
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).AvailablePorts }) { 
+If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 
 
     $Devices | Where-Object Type -in @($Algorithms.Type) | Select-Object Type, Model -Unique | ForEach-Object { 
 
@@ -36,10 +36,10 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # Get arguments for available miner devices
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "cl-devices", "cuda-devices", "tweak") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $_.Arguments += " --hostname $($MinerPools[0].($_.Algorithm).Host) --port $($MinerPools[0].($_.Algorithm).AvailablePorts | Select-Object -Last 1) --wallet $($MinerPools[0].($_.Algorithm).User)"
+                $_.Arguments += " --hostname $($MinerPools[0].($_.Algorithm).Host) --port $($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) --wallet $($MinerPools[0].($_.Algorithm).User)"
                 If ($MinerPools[0].($_.Algorithm).WorkerName) { $_.Arguments += " --worker-name $($MinerPools[0].($_.Algorithm).WorkerName)" }
                 If ($MinerPools[0].($_.Algorithm).Pass) { $_.Arguments += " --server-passwd $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })" }
-                If ($MinerPools[0].($_.Algorithm).AvailablePorts[1]) { $_.Arguments += " --ssl" }
+                If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { $_.Arguments += " --ssl" }
 
                 # Apply tuning parameters
                 If ($Variables.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }

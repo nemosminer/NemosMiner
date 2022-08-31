@@ -54,7 +54,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXtl";      MinMemGB = 2; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(75, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).AvailablePorts }) { 
+If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 
 
     $Currency = @{ 
         "CryptonightBittube2" = "cryptonight_bittube2"
@@ -101,11 +101,11 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                         Content  = [PSCustomObject]@{ 
                             pool_list = @(
                                 [PSCustomObject]@{ 
-                                    pool_address    = "$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).AvailablePorts | Select-Object -Last 1)"
+                                    pool_address    = "$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1)"
                                     wallet_address  = $MinerPools[0].($_.Algorithm).User
                                     pool_password   = $MinerPools[0].($_.Algorithm).Pass
                                     use_nicehash    = $($MinerPools[0].($_.Algorithm).BaseName -eq "NiceHash")
-                                    use_tls         = [Boolean]$MinerPools[0].($_.Algorithm).AvailablePorts[1]
+                                    use_tls         = [Boolean]$MinerPools[0].($_.Algorithm).PoolPorts[1]
                                     tls_fingerprint = ""
                                     pool_weight     = 1
                                     rig_id          = "$($MinerPools[0].($_.Algorithm).WorkerName)"

@@ -38,7 +38,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "UbqHash";      Type = "INTEL"; Fee = 0.01;  MinMemGB = $MinerPools[0].UbqHash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(75, 45); Coin = "UBQ" }
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).Host } | Where-Object { $MinerPools[0].($_.Algorithm).AvailablePorts[0] }) { 
+If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).Host } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] }) { 
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
@@ -59,13 +59,13 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
                 $Arguments = " -coin $($_.Coin)"
                 If (($MinerPools[0].($_.Algorithm).DAGsizeGB -gt 0 -or $_.Algorithm -in @("FiroPoW")) -and $MinerPools[0].($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash")) { $Arguments += " -protocol stratum" }
-                $Arguments += " -pool1 $($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).AvailablePorts | Select-Object -Last 1)"
-                If ($MinerPools[0].($_.Algorithm).BaseName -ne "NiceHash" -and $MinerPools[0].($_.Algorithm).AvailablePorts[0] -and $MinerPools[0].($_.Algorithm).AvailablePorts[1]) { $Arguments += " -pool2 $($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).AvailablePorts | Select-Object -First 1) -protocol JSON-RPC" } # Non-SSL fallback
+                $Arguments += " -pool1 $($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1)"
+                If ($MinerPools[0].($_.Algorithm).BaseName -ne "NiceHash" -and $MinerPools[0].($_.Algorithm).PoolPorts[0] -and $MinerPools[0].($_.Algorithm).PoolPorts[1]) { $Arguments += " -pool2 $($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -First 1) -protocol JSON-RPC" } # Non-SSL fallback
                 $Arguments += " -wallet $($MinerPools[0].($_.Algorithm).User)"
                 $Arguments += " -rigName '$(If ($MinerPools[0].($_.Algorithm).WorkerName) { "$($MinerPools[0].($_.Algorithm).WorkerName)" })'"
                 $Arguments += " -rigPassword $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
                 If ($MinerPools[0].($_.Algorithm).WorkerName) { $Arguments += " -rigName $($MinerPools[0].($_.Algorithm).WorkerName)" }
-                $Arguments += " -useSSL $("$([Boolean]($MinerPools[0].($_.Algorithm).AvailablePorts[1]))".ToLower())"
+                $Arguments += " -useSSL $("$([Boolean]($MinerPools[0].($_.Algorithm).PoolPorts[1]))".ToLower())"
                 $Arguments += " -mport 0 -webPort $MinerAPIPort -checkForUpdates false -noLog true -watchdog false"
                 $Arguments += " -devices $(($AvailableMiner_Devices | Sort-Object Name -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')"
 

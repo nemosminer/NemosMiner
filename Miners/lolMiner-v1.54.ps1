@@ -63,7 +63,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("UbqHash", "Kaspa");       Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGB = $MinerPools[0].UbqHash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 2; WarmupTimes = @(60, 30); Arguments = " --algo UBQHASH --dualmode KASPADUAL" }
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm[0]).AvailablePorts -and (-not $_.Algorithm[1] -or $MinerPools[1].($_.Algorithm[1]).AvailablePorts) }) { 
+If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm[0]).PoolPorts -and (-not $_.Algorithm[1] -or $MinerPools[1].($_.Algorithm[1]).PoolPorts) }) { 
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
@@ -81,7 +81,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
                 # Get arguments for available miner devices
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "coin") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
-                $_.Arguments += " --tls $(If ($MinerPools[0].($_.Algorithm[0]).AvailablePorts[1]) { "on" } Else { "off" }) --pool $($MinerPools[0].($_.Algorithm[0]).Host):$(($MinerPools[0].($_.Algorithm[0]).AvailablePorts | Select-Object -Last 1))"
+                $_.Arguments += " --tls $(If ($MinerPools[0].($_.Algorithm[0]).PoolPorts[1]) { "on" } Else { "off" }) --pool $($MinerPools[0].($_.Algorithm[0]).Host):$(($MinerPools[0].($_.Algorithm[0]).PoolPorts | Select-Object -Last 1))"
                 $_.Arguments += " --user $($MinerPools[0].($_.Algorithm[0]).User)$(If ($MinerPools[0].($_.Algorithm[0]).WorkerName) { ".$($MinerPools[0].($_.Algorithm[0]).WorkerName)" })"
                 $_.Arguments += " --pass $($MinerPools[0].($_.Algorithm[0]).Pass)$(If ($MinerPools[0].($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm[0] -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
 

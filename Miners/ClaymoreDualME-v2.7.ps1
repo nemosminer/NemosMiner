@@ -15,7 +15,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA";  Fee = 0.006; MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; Tuning = " -strap 1"; WarmupTimes = @(45, 0); Arguments = " -platform 2" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).AvailablePorts }) { 
+If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
@@ -34,15 +34,15 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
                 If ($MinerPools[0].($_.Algorithm).DAGsizeGB -ne $null -and $MinerPools[0].($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { 
                     $_.Arguments += " -esm 3"
-                    $_.Arguments += If ($MinerPools[0].($_.Algorithm).AvailablePorts[1]) { " -epool stratum+ssl://" } Else { " -epool stratum+tcp://" }
+                    $_.Arguments += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { " -epool stratum+ssl://" } Else { " -epool stratum+tcp://" }
                 }
                 Else { 
-                    $_.Arguments += If ($MinerPools[0].($_.Algorithm).AvailablePorts[1]) { " -epool ssl://" } Else { " -epool " }
+                    $_.Arguments += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { " -epool ssl://" } Else { " -epool " }
                 }
-                $_.Arguments += "$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).AvailablePorts | Select-Object -Last 1) -ewal $($MinerPools[0].($_.Algorithm).User)"
+                $_.Arguments += "$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) -ewal $($MinerPools[0].($_.Algorithm).User)"
                 $_.Arguments += " -epsw $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
                 If ($MinerPools[0].($_.Algorithm).WorkerName) { $_.Arguments += " -eworker $($MinerPools[0].($_.Algorithm).WorkerName)" }
-                If ($MinerPools[0].($_.Algorithm).AvailablePorts[1]) { $_.Arguments += " -checkcert 0" }
+                If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { $_.Arguments += " -checkcert 0" }
 
                 # Apply tuning parameters
                 If ($Variables.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }

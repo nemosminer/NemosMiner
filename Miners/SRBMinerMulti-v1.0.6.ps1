@@ -136,7 +136,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Zentoshi");             Type = "CPU"; Fee = 0.0085; MinerSet = 0; WarmupTimes = @(60, 0);   ExcludePool = @()       ; Arguments = " --algorithm balloon_zentoshi" }
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm[0]).AvailablePorts -and (-not $_.Algorithm[1] -or $MinerPools[1].($_.Algorithm[1]).AvailablePorts) }) { 
+If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm[0]).PoolPorts -and (-not $_.Algorithm[1] -or $MinerPools[1].($_.Algorithm[1]).PoolPorts) }) { 
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
@@ -155,18 +155,18 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # Get arguments for available miner devices
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algorithm") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $_.Arguments += " --pool $($MinerPools[0].($_.Algorithm[0]).Host):$($MinerPools[0].($_.Algorithm[0]).AvailablePorts | Select-Object -Last 1) --wallet $($MinerPools[0].($_.Algorithm[0]).User)"
+                $_.Arguments += " --pool $($MinerPools[0].($_.Algorithm[0]).Host):$($MinerPools[0].($_.Algorithm[0]).PoolPorts | Select-Object -Last 1) --wallet $($MinerPools[0].($_.Algorithm[0]).User)"
                 If ($MinerPools[0].($_.Algorithm[0]).WorkerName) { " --worker $($MinerPools[0].($_.Algorithm[0]).WorkerName)" }
                 $_.Arguments += " --password $($MinerPools[0].($_.Algorithm[0]).Pass)$(If ($MinerPools[0].($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
-                If ($MinerPools[0].($_.Algorithm[0]).AvailablePorts[1]) { $_.Arguments += " --tls true" }
+                If ($MinerPools[0].($_.Algorithm[0]).PoolPorts[1]) { $_.Arguments += " --tls true" }
                 If ($MinerPools[0].($_.Algorithm[0]).DAGsizeGB -ne $null -and $MinerPools[0].($_.Algorithm[0]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { $_.Arguments += " --nicehash true" }
                 If ($MinerPools[0].($_.Algorithm[0]).DAGsizeGB -ne $null -and $MinerPools[0].($_.Algorithm[0]).BaseName -eq "ProHashing") { $_.Arguments += " --esm 1" }
 
                 If ($_.Algorithm[1]) { 
-                    $_.Arguments += " --pool $($MinerPools[0].($_.Algorithm[1]).Host):$($MinerPools[0].($_.Algorithm[1]).AvailablePorts | Select-Object -Last 1) --wallet $($MinerPools[0].($_.Algorithm[1]).User)"
+                    $_.Arguments += " --pool $($MinerPools[0].($_.Algorithm[1]).Host):$($MinerPools[0].($_.Algorithm[1]).PoolPorts | Select-Object -Last 1) --wallet $($MinerPools[0].($_.Algorithm[1]).User)"
                     If ($MinerPools[0].($_.Algorithm[1]).WorkerName) { " --worker $($MinerPools[0].($_.Algorithm[1]).WorkerName)" }
                     $_.Arguments += " --password $($MinerPools[0].($_.Algorithm[1]).Pass)"
-                    If ($MinerPools[0].($_.Algorithm[1]).AvailablePorts[1]) { $_.Arguments += " --tls true" }
+                    If ($MinerPools[0].($_.Algorithm[1]).PoolPorts[1]) { $_.Arguments += " --tls true" }
                     If ($MinerPools[0].($_.Algorithm[1]).DAGsizeGB -ne $null -and $MinerPools[0].($_.Algorithm[1]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { $_.Arguments += " --nicehash true" }
                     If ($MinerPools[0].($_.Algorithm[1]).DAGsizeGB -ne $null -and $MinerPools[0].($_.Algorithm[1]).BaseName -eq "ProHashing") { $_.Arguments += " --esm 1" }
                 }
