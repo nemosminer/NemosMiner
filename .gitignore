@@ -4,3 +4,4 @@ Logs/
 *.rar
 *.7z
 *.zip
+AutoUpdate/Initialize-Autoupdate.ps1
