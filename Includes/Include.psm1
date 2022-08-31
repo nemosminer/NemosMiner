@@ -96,7 +96,6 @@ Class Pool {
     [Double]$Accuracy
     [String]$Algorithm
     [Boolean]$Available = $true
-    $AvailablePorts = @()
     [String]$BaseName
     [Boolean]$Best = $false
     [Nullable[Int64]]$BlockHeight = $null
@@ -111,13 +110,13 @@ Class Pool {
     # [String[]]$Hosts # To be implemented for pool failover
     [String]$Name
     [String]$Pass
+    $PoolPorts = @()
     [UInt16]$Port
     [UInt16]$PortSSL
     [Double]$Price
     [Double]$Price_Bias
     [String[]]$Reasons = @()
     [String]$Region
-    [String[]]$Regions
     [Double]$StablePrice
     [DateTime]$Updated = (Get-Date).ToUniversalTime()
     [String]$User
@@ -922,7 +921,7 @@ Function Get-Rate {
                         $Rates.$Currency | Add-Member $_ ([Double]$Rates.BTC.$_ / $Rates.BTC.$Currency) -Force
                     }
                 }
-                Write-Message -Level Info "Loaded currency exchange rates from 'min-api.cryptocompare.com'.$(If ($MissingCurrencies = Compare-Object $Currencies $Variables.AllCurrencies -PassThru) { " Warning: Could not get rates for '$($MissingCurrencies -join ', ')'." })"
+                Write-Message -Level Info "Loaded currency exchange rates from 'min-api.cryptocompare.com'.$(If ($MissingCurrencies = Compare-Object $Currencies $Variables.AllCurrencies -PassThru) { ". API does not provide rates for '$($MissingCurrencies -join ', ')'." })"
                 $Rates | ConvertTo-Json -Depth 5 | Out-File -FilePath $RatesFileName -Encoding utf8NoBOM -Force -ErrorAction SilentlyContinue
                 $Variables.Rates = $Rates
                 $Variables.RatesUpdated = (Get-Date).ToUniversalTime()
@@ -2823,6 +2822,10 @@ Function Get-PoolBaseName {
 Function Get-NMVersion { 
 
     # Check if new version is available
+        
+    # GitHub only suppors TLSv1.2 since feb 22 2018
+    [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+
     Try { 
         $UpdateVersion = (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Minerx117/NemosMiner/master/Version.txt" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
 
@@ -2859,208 +2862,29 @@ Function Initialize-Autoupdate {
         [Parameter(Mandatory = $true)]
         [PSCustomObject]$UpdateVersion
     )
-
-    Set-Location $Variables.MainPath
-    $UpdateLog = "$($Variables.MainPath)\Logs\AutoupdateLog_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt"
-    $BackupFile = "AutoupdateBackup_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").zip"
-
+    
     # GitHub only suppors TLSv1.2 since feb 22 2018
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
-    $NemosMinerFileHash = (Get-FileHash ".\$($Variables.Branding.ProductLabel).ps1").Hash
+    Set-Location $Variables.MainPath
+    If (-not (Test-Path -Path ".\AutoUpdate" -PathType Container)) { New-Item -Path . -Name "AutoUpdate" -ItemType Directory | Out-Null }
+    If (-not (Test-Path -Path ".\Logs" -PathType Container)) { New-Item -Path . -Name "Logs" -ItemType Directory | Out-Null }
 
-    "Version checker: New version $($UpdateVersion.Version) found. " | Tee-Object $UpdateLog | Write-Message -Level Verbose
-    "Starting auto update - Logging changes to '.\$($UpdateLog.Replace("$(Convert-Path '.\')\", ''))'." | Tee-Object $UpdateLog | Write-Message -Level Verbose
+    $UpdateScriptURL = "https://github.com/Minerx117/miners/releases/download/AutoUpdate/Autoupdate.ps1"
+    $UpdateScript = ".\AutoUpdate\AutoUpdate.ps1"
+    $UpdateLog = ".\Logs\AutoupdateLog_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt"
+    $BackupFile = ".\AutoUpdate\AutoupdateBackup_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").zip"
 
-    # Setting autostart to true
-    If ($Variables.MiningStatus -eq [MinerStatus]::Running) { $Config.AutoStart = $true }
-
-    # Download update file
-    $UpdateFileName = ".\$($UpdateVersion.Product)-$($UpdateVersion.Version)"
-    "Downloading new version..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose 
+    # Download update script
+    "Downloading update script..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose 
     Try { 
-        Invoke-WebRequest -Uri $UpdateVersion.Uri -OutFile "$($UpdateFileName).zip" -TimeoutSec 15 -UseBasicParsing
+        Invoke-WebRequest -Uri $UpdateScriptURL -OutFile $UpdateScript -TimeoutSec 15 -UseBasicParsing
+        "Executing update script..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose 
+        . $UpdateScript
     }
     Catch { 
-        "Downloading failed. Cannot complete auto-update :-(" | Tee-Object $UpdateLog -Append | Write-Message -Level Error
+        "Downloading update script failed. Cannot complete auto-update :-(" | Tee-Object $UpdateLog -Append | Write-Message -Level Error
         Return
-    }
-    If (-not (Test-Path -Path ".\$($UpdateFileName).zip" -PathType Leaf)) { 
-        Write-Message -Level Error "Cannot find update file. Cannot complete auto-update :-("
-        Return
-    }
-
-    If ($Variables.Branding.Version -le [System.Version]"3.9.9.17" -and $UpdateVersion.Version -ge [System.Version]"3.9.9.17") { 
-        # Balances & earnings files are no longer compatible
-        Write-Message -Level Warn "Balances & Earnings files are no longer compatible and will be reset."
-    }
-
-    # Stop processes
-    $Variables.NewMiningStatus = "Idle"
-
-    If ($Config.BackupOnAutoUpdate) { 
-        # Backup current version folder in zip file; exclude existing zip files and download folder
-        "Backing up current version as '.\$($BackupFile)'..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-        Start-Process ".\Utils\7z" "a $($BackupFile) .\* -x!*.zip -x!downloads -x!logs -x!cache -x!$UpdateLog -xr!VertHash.dat -bb1 -bd" -RedirectStandardOutput "$($UpdateLog)_tmp" -Wait -WindowStyle Hidden
-        Add-Content $UpdateLog (Get-Content -Path "$($UpdateLog)_tmp")
-        Remove-Item -Path "$($UpdateLog)_tmp" -Force
-
-        If (-not (Test-Path .\$BackupFile -PathType Leaf)) { 
-            "Backup failed. Cannot complete auto-update :-(" | Tee-Object $UpdateLog -Append | Write-Message -Level Error
-            Return
-        }
-    }
-
-    #Stop all background processes
-    Stop-Mining
-    Stop-Brain
-    Stop-IdleDetection
-    Stop-BalancesTracker
-
-    # Remove 'Debug' from LogToFile & LogToScreen
-    If ($Variables.Branding.Version -lt [System.Version]"4.1.0.0") { 
-        $Config.LogToFile = @($Config.LogToFile | Where-Object { $_ -ne "Debug" })
-        $Config.LogToScreen = @($Config.LogToScreen | Where-Object { $_ -ne "Debug" })
-    }
-    Write-Config -ConfigFile $Variables.ConfigFile
-
-    If ($Variables.Branding.Version -le [System.Version]"3.9.9.17" -and $UpdateVersion -ge [System.Version]"3.9.9.17") { 
-        # Remove balances & earnings files that are no longer compatible
-        If (Test-Path -Path ".\Logs\BalancesTrackerData*.*") { Get-ChildItem -Path ".\Logs\BalancesTrackerData*.*" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue} }
-        If (Test-Path -Path ".\Logs\DailyEarnings*.*") { Get-ChildItem -Path ".\Logs\DailyEarnings*.*" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue } }
-    }
-
-    # Move data files from '\Logs' to '\Data'
-    If (Test-Path -Path ".\Logs\BalancesTrackerData*.json" -PathType Leaf) { Move-Item ".\Logs\BalancesTrackerData*.json" ".\Data" -Force }
-    If (Test-Path -Path ".\Logs\EarningsChartData.json" -PathType Leaf) { Move-Item ".\Logs\EarningsChartData.json" ".\Data" -Force }
-    If (Test-Path -Path ".\Logs\DailyEarnings*.csv" -PathType Leaf) { Move-Item ".\Logs\DailyEarnings*.csv" ".\Data" -Force }
-    If (Test-Path -Path ".\Logs\PoolsLastUsed.json" -PathType Leaf) { Move-Item ".\Logs\PoolsLastUsed.json" ".\Data" -Force }
-
-    # Move data files from '\Data' to '\Cache'
-    If (Test-Path -Path ".\Data\DriverVersion.json" -PathType Leaf) { Move-Item ".\Data\DriverVersion.json" ".\Cache" -Force }
-
-    # Pre update specific actions if any
-    # Use PreUpdateActions.ps1 in new release to place code
-    # If (Test-Path -Path ".\$UpdateFilePath\PreUpdateActions.ps1" -PathType Leaf) { 
-    #     Invoke-Expression (Get-Content ".\$UpdateFilePath\PreUpdateActions.ps1" -Raw)
-    # }
-
-    # Empty folders
-    If (Test-Path -Path ".\Balances") { Get-ChildItem -Path ".\Balances" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue } }
-    If (Test-Path -Path ".\Brains") { Get-ChildItem -Path ".\Brains" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue } }
-    If (Test-Path -Path ".\Miners") { Get-ChildItem -Path ".\Miners" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue } }
-    If (Test-Path -Path ".\Pools") { Get-ChildItem -Path ".\Pools\" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue } }
-    If (Test-Path -Path ".\Web") { Get-ChildItem -Path ".\Web" -File | ForEach-Object { Remove-Item -Recurse -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue } }
-
-    # Unzip in child folder excluding config
-    "Unzipping update..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-    Start-Process ".\Utils\7z" "x $($UpdateFileName).zip -o.\$($UpdateFileName) -y -spe -xr!config -bb1 -bd" -RedirectStandardOutput "$($UpdateLog)_tmp" -Wait -WindowStyle Hidden
-    Add-Content $UpdateLog (Get-Content -Path "$($UpdateLog)_tmp")
-    Remove-Item -Path "$($UpdateLog)_tmp" -Force
-
-    #Update files are in a subdirectory
-    $UpdateFilePath = $UpdateFileName
-    If ((Get-ChildItem -Path $UpdateFileName -Directory).Count -eq 1) { 
-        $UpdateFilePath = "$UpdateFileName\$((Get-ChildItem -Path $UpdateFileName -Directory).Name)"
-    }
-
-    # Stop Snaketail
-    If (Get-CimInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe) { 
-        "Stopping SnakeTail..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-        (Get-CimInstance CIM_Process | Where-Object ExecutablePath -EQ $Variables.SnakeTailExe).ProcessId | ForEach-Object { Stop-Process -Id $_ }
-    }
-
-    # Copy files
-    "Copying new files..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-    Get-ChildItem -Path ".\$UpdateFilePath\*" -Recurse | ForEach-Object { 
-        $DestPath = $_.FullName.Replace($UpdateFilePath -replace "^\.", "")
-        If ($_.Attributes -eq "Directory") { 
-            If (-not (Test-Path -Path $DestPath -PathType Container)) { 
-                New-Item -Path $DestPath -ItemType Directory -Force
-                "Created directory '$DestPath'."
-            }
-        }
-        Else { 
-            Copy-Item -Path $_ -Destination $DestPath -Force
-            "Copied '$($_.Name)' to '$Destpath'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-        }
-    }
-
-    # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
-    Start-LogReader
-
-    # Remove obsolete miner stat files; must be done after new miner files have been unpacked
-    If ($ObsoleteMinerStats = Get-ObsoleteMinerStats) { 
-        "Removing obsolete stat files from miners that no longer exist..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-        $ObsoleteMinerStats | ForEach-Object { Remove-Item -Path ".\Stats\$($_).txt" -Force; "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
-    }
-    Remove-Variable ObsoleteMinerStats
-
-    "Cleaning up old files..." | Tee-Object -FilePath $UpdateLog -Append | Write-Message -Level Verbose
-    # Remove all TON stat files
-    Get-ChildItem -Path ".\Stats" -File | Where-Object { $_.Name -match '^.+_SHA256ton_.+\.txt$' } | Select-Object | ForEach-Object { Remove-Item -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
-    Get-ChildItem -Path ".\Stats" -File | Where-Object { $_.Name -match '^TonPool*_.+\.txt$' } | Select-Object | ForEach-Object { Remove-Item -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
-    Get-ChildItem -Path ".\Stats" -File | Where-Object { $_.Name -match '^TonWhales*_.+\.txt$' } | Select-Object | ForEach-Object { Remove-Item -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
-    # Remove all AHashPool stat files
-    Get-ChildItem -Path ".\Stats" -File | Where-Object { $_.Name -match '^AHashPool*_.+\.txt$' } | Select-Object | ForEach-Object { Remove-Item -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
-    # Remove all BlockMasters stat files
-    Get-ChildItem -Path ".\Stats" -File | Where-Object { $_.Name -match '^BlockMasters*_.+\.txt$' } | Select-Object | ForEach-Object { Remove-Item -Path $_.FullName -Force; "Removed '$_'" | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
-
-    # Remove old miner binaries
-    Get-ChildItem -Path ".\Bin" -Directory | ForEach-Object { 
-        If (-not (Test-Path -Path ".\Miners\$($_.Name).ps1" -PathType Leaf)) { 
-            Remove-Item -Path ".\Bin\$($_.Name)" -Recurse -Force
-            "Removed '\Bin\$($_.Name)'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-        }
-    }
-
-    # Remove temporary files
-    Remove-Item .\$UpdateFileName -Force -Recurse
-    Remove-Item ".\$($UpdateFileName).zip" -Force
-    If (Test-Path -Path ".\PreUpdateActions.ps1" -PathType Leaf) { 
-        Remove-Item ".\PreUpdateActions.ps1" -Force
-        "Removed '.\PreUpdateActions.ps1'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-    }
-    If (Test-Path -Path ".\PostUpdateActions.ps1" -PathType Leaf) { 
-        Remove-Item ".\PostUpdateActions.ps1" -Force
-        "Removed '.\PostUpdateActions.ps1'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-    }
-
-    # Keep only 3 file generations
-    Get-ChildItem -Path "AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $BackupFile } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
-    Get-ChildItem -Path ".\Logs\AutoupdateBackup_*.zip" -File | Where-Object { $_.name -ne $UpdateLog } | Sort-Object LastWriteTime -Descending | Select-Object -SkipLast 2 | ForEach-Object { Remove-Item -Path $_ -Force -Recurse; "Removed '$_'." | Out-File -FilePath $UpdateLog -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue }
-
-    # Start new instance
-    If ($UpdateVersion.RequireRestart -or $NemosMinerFileHash -ne (Get-FileHash ".\$($Variables.Branding.ProductLabel).ps1").Hash) { 
-        "Starting updated version..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-        $StartCommand = (Get-Process -Id $PID).CommandLine
-        $NewKid = Invoke-CimMethod -ClassName Win32_Process -MethodName "Create" -Arguments @{ CommandLine = "$StartCommand"; CurrentDirectory = $Variables.MainPath }
-        Start-Sleep 5
-
-        # Giving 10 seconds for process to start
-        $Waited = 0
-        While (-not (Get-Process -Id $NewKid.ProcessId -ErrorAction SilentlyContinue) -and ($waited -le 10)) { Start-Sleep -Seconds 1; $waited++ }
-        If (-not (Get-Process -Id $NewKid.ProcessId -ErrorAction SilentlyContinue)) { 
-            "Failed to start new instance of $($Variables.Branding.ProductLabel)." | Tee-Object $UpdateLog -Append | Write-Message -Level Error
-            Return
-        }
-    }
-
-    $VersionTable = (Get-Content -Path ".\Version.txt").trim() | ConvertFrom-Json -AsHashtable
-    $VersionTable | Add-Member @{ AutoUpdated = ((Get-Date).DateTime) } -Force
-    $VersionTable | Add-Member @{ Version = $UpdateVersion.Version } -Force
-    $VersionTable | ConvertTo-Json | Out-File -FilePath ".\Version.txt" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-
-    "Successfully updated $($UpdateVersion.Product) to version $($UpdateVersion.Version)." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-
-    # Display changelog
-    If ($Config.ShowChangeLog) { Notepad .\ChangeLog.txt }
-
-    If ($NewKid.ProcessId) { 
-        # Kill old instance
-        "Killing old instance..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose
-        Start-Sleep -Seconds 2
-        If (Get-Process -Id $NewKid.ProcessId) { Stop-Process -Id $PID }
     }
 }
 
