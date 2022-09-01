@@ -10,7 +10,7 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 # Algorithm parameter values are case sensitive!
 $Algorithms = [PSCustomObject[]]@( 
     [PSCustomObject]@{ Algorithm = "Argon2d16000";      Fee = 0.0085; MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 45); Arguments = " --algorithm argon2d_16000" }
-    [PSCustomObject]@{ Algorithm = "0x10";              Fee = 0.085;  MinMemGB = 2;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 45); Arguments = " --algorithm 0x10" }
+    [PSCustomObject]@{ Algorithm = "0x10";              Fee = 0.0085; MinMemGB = 2;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 45); Arguments = " --algorithm 0x10" }
     [PSCustomObject]@{ Algorithm = "Argon2d500";        Fee = 0.0085; MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 45); Arguments = " --algorithm argon2d_dynamic" }
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa";      Fee = 0.0085; MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 45); Arguments = " --algorithm argon2id_chukwa" }
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa2";     Fee = 0.0085; MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 45); Arguments = " --algorithm argon2id_chukwa2" }
@@ -32,7 +32,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "FiroPoW";           Fee = 0.0085; MinMemGB = $MinerPools[0].FiroPoW.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(90, 75); Arguments = " --algorithm firopow --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "HeavyHash";         Fee = 0.01;   MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 30); Arguments = " --algorithm heavyhash" }
     [PSCustomObject]@{ Algorithm = "Kangaroo12";        Fee = 0.0085; MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 30); Arguments = " --algorithm k12" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";            Fee = 0.085;  MinMemGB = $MinerPools[0].KawPoW.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(90, 75); Arguments = " --algorithm kawpow --gpu-boost 50" }
+    [PSCustomObject]@{ Algorithm = "KawPoW";            Fee = 0.0085; MinMemGB = $MinerPools[0].KawPoW.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(90, 75); Arguments = " --algorithm kawpow --gpu-boost 50" }
 #   [PSCustomObject]@{ Algorithm = "Keccak";            Fee = 0;      MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 30); Arguments = " --algorithm keccak" } # ASIC
     [PSCustomObject]@{ Algorithm = "Lyra2v2Webchain";   Fee = 0.0085; MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 30); Arguments = " --algorithm lyra2v2_webchain" }
     [PSCustomObject]@{ Algorithm = "ProgPoWEpic";       Fee = 0.0065; MinMemGB = 2;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 30); Arguments = " --algorithm progpow_epic" }
