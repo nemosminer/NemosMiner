@@ -2349,7 +2349,7 @@ Function Get-Device {
                                 "Polaris.*"   { "CGN4" }
                                 "Vega.*"      { "CGN5" }
                                 "Navi1.*"     { "RDNA" }
-                                "Nav12.*"     { "RDNA2" }
+                                "Navi2.*"     { "RDNA2" }
                                 Default       { "Other" }
                             }
                         )
