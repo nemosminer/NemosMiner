@@ -1,7 +1,9 @@
+AutoUpdate/
 Bin/
+Cache/
 Stats/
 Logs/
 *.rar
 *.7z
 *.zip
-AutoUpdate/Initialize-Autoupdate.ps1
+Data/EarningsChartData.json
