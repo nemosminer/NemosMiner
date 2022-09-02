@@ -388,7 +388,7 @@
                     <div title="When disabled only the best 5 miners per device are shown&#10;except while not benchmarking or measuring power usage&#10;&#10;Can be toggled by pressing 'v' in the text window while waiting for the next cycle">
                       <input type="checkbox" class="toggle-switch" id="ShowAllMiners" name="ShowAllMiners"> Show all miners
                     </div>
-                    <div style="padding-top: 0.5rem" title="Show the Pool Balances in the text windows&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)&#10;&#10;Can be toggled by pressing 'b' in the text windows while waiting for the next cycle">
+                    <div style="padding-top: 0.5rem" title="Show the Pool Balances in the text window&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)&#10;&#10;Can be toggled by pressing 'b' in the text window while waiting for the next cycle">
                       <input type="checkbox" class="toggle-switch" id="ShowPoolBalances" name="ShowPoolBalances" > Show pool balances
                     </div>
                     <br>
@@ -778,7 +778,7 @@
               }
               document.getElementById('PowerPricekWh').value = JSON.stringify(config.PowerPricekWh);
               if (config.IgnorePowerCost) document.getElementById('IgnorePowerCost').checked = true;
-              if (parseInt(config.PowerUsageIdleSystemW)) document.getElementById('PowerUsageIdleSystemW').value = parseInt(config.PowerUsageIdleSystemW);
+              if (parseInt(config.PowerUsageIdleSystemW) >= 0) document.getElementById('PowerUsageIdleSystemW').value = parseInt(config.PowerUsageIdleSystemW);
               // CalculatePowerCost click
               $(document.getElementById('CalculatePowerCost')).click(function (event) {
                 document.getElementById('PowerPricekWh').disabled = !(document.getElementById('CalculatePowerCost').checked);

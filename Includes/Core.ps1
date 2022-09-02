@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.2.0.2
-Version date:   30 August 2022
+Version:        4.2.1.0
+Version date:   02 September 2022
 #>
 
 using module .\Include.psm1
@@ -36,8 +36,10 @@ Do {
 
         $Variables.LogFile = "$($Variables.MainPath)\Logs\$($Variables.Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd").log"
 
-        # Always get the latest config
+        # Store some values to detect config changes
         $Variables.PoolName = $Config.PoolName
+
+        # Always get the latest config
         Read-Config -ConfigFile $Variables.ConfigFile
 
         If ($Config.IdleDetection) { 
@@ -368,7 +370,12 @@ Do {
                 $Variables.BasePowerCostBTC = [Double]($Config.PowerUsageIdleSystemW / 1000 * 24 * $Variables.PowerPricekWh / $Variables.Rates."BTC".($Config.Currency))
 
                 # Put here in case the port range has changed
-                Initialize-API
+                If ($Config.WebGUI -eq $true) { 
+                    Initialize-API
+                }
+                Else { 
+                    Stop-APIServer
+                }
 
                 # Send data to monitoring server
                 If ($Config.ReportToServer) { Update-MonitoringData }
@@ -543,7 +550,7 @@ Do {
                     $DeconfiguredPools = $Pools | Where-Object Name -notin $PoolNames
                     $Pools = @($Pools | Where-Object Name -in $PoolNames)
 
-                    If ($ComparePools = @(Compare-Object -PassThru @($Variables.NewPools | Select-Object) @($Pools | Select-Object) -Property Name, Algorithm, Host, Port, PortSSL, WorkerName -IncludeEqual)) { 
+                    If ($ComparePools = @(Compare-Object -PassThru @($Variables.NewPools | Select-Object) @($Pools | Select-Object) -Property Name, Algorithm -IncludeEqual)) { 
                         # Find new pools
                         $Variables.AddedPools = @($ComparePools | Where-Object SideIndicator -eq "<=" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ })
                         $Variables.UpdatedPools = @($ComparePools | Where-Object SideIndicator -eq "==" | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator'); $_ })
@@ -801,6 +808,7 @@ Do {
                     $_.Refresh($Variables.PowerCostBTCperW, $Variables.CalculatePowerCost) # Needs to be done after ReadPowerUsage evaluation
                     $_.WindowStyle = If ($Config.MinerWindowStyleNormalWhenBenchmarking -and $_.Benchmark) { "normal" } Else { $Config.MinerWindowStyle }
                 }
+                Remove-Variable Miner -ErrorAction Ignore
 
                 # Filter miners
                 $Miners | Where-Object Disabled -EQ $true | ForEach-Object { $_.Reasons += "Disabled by user" }
@@ -860,7 +868,7 @@ Do {
 
                 Write-Message -Level Info "Loaded $($Miners.Count) miner$(If ($Miners.Count -ne 1) { "s" }), filtered out $(($Miners | Where-Object Available -NE $true).Count) miner$(If (($Miners | Where-Object Available -NE $true).Count -ne 1) { "s" }). $(($Miners | Where-Object Available -EQ $true).Count) available miner$(If (($Miners | Where-Object Available -EQ $true).Count -ne 1) { "s" }) remain$(If (($Miners | Where-Object Available -EQ $true).Count -eq 1) { "s" })."
 
-                $DownloadList = @($Variables.MinersMissingPrerequisite | Select-Object @{ Name = "URI"; Expression = { $_.PrerequisiteURI } }, @{ Name = "Path"; Expression = { $_.PrerequisitePath } }, @{ Name = "Searchable"; Expression = { $false } }) + @($Variables.MinersMissingBinary | Select-Object URI, Path, @{ Name = "Searchable"; Expression = { $Miner = $_; ($Variables.Miners | Where-Object { (Split-Path $_.Path -Leaf) -eq (Split-Path $Miner.Path -Leaf) }).Count -eq 0 } }) | Select-Object * -Unique
+                $DownloadList = @($Variables.MinersMissingPrerequisite | Select-Object @{ Name = "URI"; Expression = { $_.PrerequisiteURI } }, @{ Name = "Path"; Expression = { $_.PrerequisitePath } }, @{ Name = "Searchable"; Expression = { $false } }) + @($Variables.MinersMissingBinary | Select-Object URI, Path, @{ Name = "Searchable"; Expression = { $false } }) | Select-Object * -Unique
                 If ($DownloadList) { 
                     If ($Variables.Downloader.State -ne "Running") { 
                         # Download miner binaries
@@ -950,12 +958,12 @@ Do {
                 }
 
                 $Variables.MiningEarning = [Double]($Variables.MinersBest_Combo | Measure-Object Earning -Sum).Sum
-                $Variables.MiningProfit = [Double]($Variables.MinersBest_Combo | Measure-Object Profit -Sum).Sum
+                $Variables.MiningProfit = [Double](($Variables.MinersBest_Combo | Measure-Object Profit -Sum).Sum - $Variables.BasePowerCostBTC)
                 $Variables.MiningPowerCost = [Double]($Variables.MinersBest_Combo | Measure-Object PowerCost -Sum).Sum
                 $Variables.MiningPowerUsage = [Double]($Variables.MinersBest_Combo | Measure-Object PowerUsage -Sum).Sum
 
                 # ProfitabilityThreshold check - OK to run miners?
-                If (-not $Variables.Rates -or -not $Variables.Rates.BTC.($Config.Currency) -or [Double]::IsNaN($Variables.MiningEarning) -or [Double]::IsNaN($Variables.MiningProfit) -or [Double]::IsNaN($Variables.MiningPowerCost) -or ($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) -ge ($Config.ProfitabilityThreshold / $Variables.Rates.BTC.($Config.Currency)) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
+                If (-not $Variables.Rates -or -not $Variables.Rates.BTC.($Config.Currency) -or [Double]::IsNaN($Variables.MiningEarning) -or [Double]::IsNaN($Variables.MiningProfit) -or [Double]::IsNaN($Variables.MiningPowerCost) -or ($Variables.MiningProfit -ge ($Config.ProfitabilityThreshold / $Variables.Rates.BTC.($Config.Currency))) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
                     $Variables.MinersBest_Combo | Select-Object | ForEach-Object { $_.Best = $true }
                 }
                 Else { 
@@ -990,13 +998,13 @@ Do {
                         $Variables.Summary += "Profit / day: n/a (Measuring power usage: $($Variables.MinersNeedingPowerUsageMeasurement.Count) $(If (($Variables.MinersNeedingPowerUsageMeasurement).Count -eq 1) { "miner" } Else { "miners" }) left$(If (($Variables.EnabledDevices | Sort-Object -Property { $_.DeviceNames -join ',' }).Count -gt 1) { " [$(($Variables.MinersNeedingPowerUsageMeasurement | Group-Object -Property { $_.DeviceNames -join ',' } | Sort-Object Name | ForEach-Object { "$($_.Name): $($_.Count)" }) -join '; ')]"}))"
                     }
                     ElseIf ($Variables.MiningPowerUsage -gt 0) { 
-                        $Variables.Summary += "Profit / day: {0:n} {1}" -f (($Variables.MiningProfit - $Variables.BasePowerCostBTC) * $Variables.Rates."BTC".($Config.Currency)), $Config.Currency
+                        $Variables.Summary += "Profit / day: {0:n} {1}" -f ($Variables.MiningProfit * $Variables.Rates."BTC".($Config.Currency)), $Config.Currency
                     }
                     Else { 
                         $Variables.Summary += "Profit / day: n/a (no power data)"
                     }
 
-                    If ($Variables.BasePowerCostBTC -gt 0) { 
+                    If ($Variables.CalculatePowerCost) { 
                         If ($Variables.Summary -ne "") { $Variables.Summary += "&ensp;&ensp;&ensp;" }
 
                         If ([Double]::IsNaN($Variables.MiningEarning) -or [Double]::IsNaN($Variables.MiningPowerCost)) { 
@@ -1188,7 +1196,7 @@ Do {
                     Remove-Variable Worker
                 }
             }
-            ElseIf ($Miner.DataCollectInterval -ne $DataCollectInterval) {
+            ElseIf ($Miner.DataCollectInterval -ne $DataCollectInterval -or $Config.CalculatePowerCost -ne $Variables.CalculatePowerCost) {
                 $Miner.DataCollectInterval = $DataCollectInterval
                 $Miner.RestartDataReader()
             }
@@ -1296,7 +1304,7 @@ Do {
                         If ($Sample.Hashrate) { 
                             $Miner.Hashrates_Live = $Sample.Hashrate.PSObject.Properties.Value
                             If (-not ($Miner.Data | Where-Object Date -GT $Miner.BeginTime.AddSeconds($Miner.WarmupTimes[1]))) { 
-                                Write-Message -Level Verbose "$($Miner.Name) data sample discarded [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$($_): $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Config.BadShareRatioThreshold) { " / Shares Total: $($Sample.Shares.$_[2]), Rejected: $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power usage: $($Sample.PowerUsage.ToString("N2"))W" })] (miner is warming up)."
+                                Write-Message -Level Verbose "$($Miner.Name) data sample discarded [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$($_): $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Config.BadShareRatioThreshold) { " / Shares Total: $($Sample.Shares.$_[2]), Rejected: $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power usage: $($Sample.PowerUsage.ToString("N2"))W" })] (Miner is warming up)."
                                 $Miner.Data = @($Miner.Data | Where-Object Date -LT $Miner.BeginTime)
                             }
                             Else { 
@@ -1304,7 +1312,7 @@ Do {
                                     $Miner.StatusMessage = "$(If ($Miner.Benchmark -eq $true -or $Miner.MeasurePowerUsage -eq $true) { "$($(If ($Miner.Benchmark -eq $true) { "Benchmarking" }), $(If ($Miner.Benchmark -eq $true -and $Miner.MeasurePowerUsage -eq $true) { "and" }), $(If ($Miner.MeasurePowerUsage -eq $true) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
                                     $Miner.Devices | ForEach-Object { $_.Status = $Miner.StatusMessage }
                                 }
-                                Write-Message -Level Verbose "$($Miner.Name) data sample retrieved [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$($_): $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Config.BadShareRatioThreshold) { " / Shares Total: $($Sample.Shares.$_[2]), Rejected: $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power usage: $($Sample.PowerUsage.ToString("N2"))W" })] ($($Miner.Data.Count) sample$(If ($Miner.Data.Count -ne 1) { "s" }))."
+                                Write-Message -Level Verbose "$($Miner.Name) data sample retrieved [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$($_): $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Config.BadShareRatioThreshold) { " / Shares Total: $($Sample.Shares.$_[2]), Rejected: $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power usage: $($Sample.PowerUsage.ToString("N2"))W" })] ($($Miner.Data.Count) Sample$(If ($Miner.Data.Count -ne 1) { "s" }))."
                             }
                         }
                     }

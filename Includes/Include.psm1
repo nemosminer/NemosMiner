@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.2.0.2
-Version date:   30 August 2022
+Version:        4.2.1.0
+Version date:   02 September 2022
 #>
 
 # Window handling
@@ -250,6 +250,7 @@ Class Miner {
     hidden StopDataReader() { 
         # Before stopping read data
         If ($this.DataReaderJob.HasMoreData) { $this.Data += @($this.DataReaderJob | Receive-Job | Select-Object) }
+        $this.PowerUsage_Live = [Double]::NaN
         $this.DataReaderJob | Stop-Job | Remove-Job -Force
     }
 
@@ -735,11 +736,14 @@ Function Stop-Mining {
         $Variables.Remove("Timer")
         $Variables.Remove("CoreRunspace")
 
-        $Variables.MiningStatus = "Idle"
-
         $Variables.Summary = "Mining processes stopped."
-        Write-Host $Variables.Summary
     }
+    $Variables.MiningStatus = "Idle"
+
+    $Variables.MiningEarning = $Variables.MiningProfit = $Variables.MiningPowerCost = [Double]::NaN
+
+    $Variables.RefreshNeeded = $true
+    Write-Host $Variables.Summary
 }
 
 Function Start-Brain { 
@@ -921,7 +925,7 @@ Function Get-Rate {
                         $Rates.$Currency | Add-Member $_ ([Double]$Rates.BTC.$_ / $Rates.BTC.$Currency) -Force
                     }
                 }
-                Write-Message -Level Info "Loaded currency exchange rates from 'min-api.cryptocompare.com'.$(If ($MissingCurrencies = Compare-Object $Currencies $Variables.AllCurrencies -PassThru) { ". API does not provide rates for '$($MissingCurrencies -join ', ')'." })"
+                Write-Message -Level Info "Loaded currency exchange rates from 'min-api.cryptocompare.com'.$(If ($MissingCurrencies = Compare-Object $Currencies $Variables.AllCurrencies -PassThru) { " API does not provide rates for '$($MissingCurrencies -join ', ')'." })"
                 $Rates | ConvertTo-Json -Depth 5 | Out-File -FilePath $RatesFileName -Encoding utf8NoBOM -Force -ErrorAction SilentlyContinue
                 $Variables.Rates = $Rates
                 $Variables.RatesUpdated = (Get-Date).ToUniversalTime()
@@ -1063,7 +1067,7 @@ Function Update-MonitoringData {
         worker  = $Config.WorkerName
         version = $Version
         status  = $Status
-        profit  = If ([Double]::IsNaN($Variables.MiningProfit)) { "n/a" } Else { [String]($Variables.MiningProfit - $Variables.BasePowerCostBTC) } # Earnings is NOT profit! Needs to be changed in mining monitor server
+        profit  = If ([Double]::IsNaN($Variables.MiningProfit)) { "n/a" } Else { [String]$Variables.MiningProfit } # Earnings is NOT profit! Needs to be changed in mining monitor server
         data    = ConvertTo-Json $Data
     }
 
@@ -2821,9 +2825,11 @@ Function Get-PoolBaseName {
 
 Function Get-NMVersion { 
 
-    # Check if new version is available
-        
-    # GitHub only suppors TLSv1.2 since feb 22 2018
+    # Updater always logs all messages to screen
+    $LogToScreenBackup = $Config.LogToScreen
+    $Config.LogToScreen = @("Info", "Warn", "Error", "Verbose", "Debug")
+
+    # GitHub only supports TLSv1.2 since feb 22 2018
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
     Try { 
@@ -2834,6 +2840,7 @@ Function Get-NMVersion {
         If ($UpdateVersion.Product -eq $Variables.Branding.ProductLabel -and [Version]$UpdateVersion.Version -gt $Variables.Branding.Version) { 
             If ($UpdateVersion.AutoUpdate -eq $true) { 
                 If ($Config.AutoUpdate) { 
+                    Write-Message -Level Verbose "Version checker: New Version $($UpdateVersion.Version) found. Starting update..."
                     Initialize-Autoupdate -UpdateVersion $UpdateVersion
                 }
                 Else { 
@@ -2863,7 +2870,7 @@ Function Initialize-Autoupdate {
         [PSCustomObject]$UpdateVersion
     )
     
-    # GitHub only suppors TLSv1.2 since feb 22 2018
+    # GitHub only supports TLSv1.2 since feb 22 2018
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
     Set-Location $Variables.MainPath
@@ -2872,8 +2879,8 @@ Function Initialize-Autoupdate {
 
     $UpdateScriptURL = "https://github.com/Minerx117/miners/releases/download/AutoUpdate/Autoupdate.ps1"
     $UpdateScript = ".\AutoUpdate\AutoUpdate.ps1"
-    $UpdateLog = ".\Logs\AutoupdateLog_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt"
-    $BackupFile = ".\AutoUpdate\AutoupdateBackup_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").zip"
+    $UpdateLog = ".\Logs\AutoUpdateLog_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt"
+    $BackupFile = ".\AutoUpdate\Backup_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").zip"
 
     # Download update script
     "Downloading update script..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose 
@@ -2884,8 +2891,8 @@ Function Initialize-Autoupdate {
     }
     Catch { 
         "Downloading update script failed. Cannot complete auto-update :-(" | Tee-Object $UpdateLog -Append | Write-Message -Level Error
-        Return
     }
+    $Config.LogToScreen = $LogToScreenBackup
 }
 
 Function Start-LogReader { 
@@ -3156,29 +3163,33 @@ Function Out-DataTable {
         [PSObject[]]$InputObject
     )
 
-    $DataTable = New-Object Data.datatable
-    $First = $true
-
-    ForEach ($Object in $InputObject) { 
-        $DataRow = $DataTable.NewRow()
-        ForEach ($Property in $Object.PSObject.Properties) { 
-            If ($First) { 
-                $Col = New-Object Data.DataColumn
-                $Col.ColumnName = $Property.Name.ToString()
-                If ($Property.Value) { 
-                    If ($Property.Value -isnot [System.DBNull]) { 
-                        $Col.DataType = [System.Type]::GetType($Property.TypeNameOfValue).Name
-                    }
-                }
-                $DataTable.Columns.Add($Col)
-            }
-            $DataRow.Item($Property.Name) = If ($Property.GetType().IsArray) { $Property.Value | ConvertTo-Xml -As String -NoTypeInformation -Depth 1 } Else { $Property.Value }
-        }
-        $DataTable.Rows.Add($DataRow)
-        $First = $false
+    Begin { 
+        $DataTable = New-Object Data.datatable
+        $First = $true
     }
-
-    Write-Output @(,($DataTable))
+    Process { 
+        ForEach ($Object in $InputObject) { 
+            $DataRow = $DataTable.NewRow()
+            ForEach ($Property in $Object.PSObject.Properties) { 
+                If ($First) { 
+                    $Col = New-Object Data.DataColumn
+                    $Col.ColumnName = $Property.Name.ToString()
+                    If ($Property.Value) { 
+                        If ($Property.Value -isnot [System.DBNull]) { 
+                            $Col.DataType = [System.Type]::GetType($Property.TypeNameOfValue).Name
+                        }
+                    }
+                    $DataTable.Columns.Add($Col)
+                }
+                $DataRow.Item($Property.Name) = If ($Property.GetType().IsArray) { $Property.Value | ConvertTo-Xml -As String -NoTypeInformation -Depth 1 } Else { $Property.Value }
+            }
+            $DataTable.Rows.Add($DataRow)
+            $First = $false
+        }
+    }
+    End { 
+        Write-Output @(,($DataTable))
+    }
 }
 
 Function Get-Median { 

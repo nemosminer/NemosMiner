@@ -35,6 +35,7 @@
       "PoolStatusUri": "https://www.mining-dutch.nl/api/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
+      "ShowStartStop": false,
       "UseFullTrust": false,
       "UseTransferFile": false
     },
@@ -201,6 +202,7 @@
       "PoolStatusUri": "https://www.nlpool.nl/api/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
+      "ShowStartStop": false,
       "UseFullTrust": false,
       "UseTransferFile": false
     },
@@ -242,6 +244,7 @@
       "PoolStatusUri": "https://prohashing.com/api/v1/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
+      "ShowStartStop": false,
       "UseFullTrust": false,
       "UseTransferFile": false
     },
@@ -284,6 +287,7 @@
       "PoolStatusUri": "https://api.zergpool.com:8443/api/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
+      "ShowStartStop": false,
       "UseFullTrust": false,
       "UseTransferFile": false
     },
@@ -350,6 +354,7 @@
       "PoolStatusUri": "https://www.zpool.ca/api/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
+      "ShowStartStop": false,
       "UseFullTrust": false,
       "UseTransferFile": false
     },

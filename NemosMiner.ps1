@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.2.0.2
-Version date:   30 August 2022
+Version:        4.2.1.0
+Version date:   02 September 2022
 #>
 
 [CmdletBinding()]
@@ -126,8 +126,6 @@ param(
     [Switch]$MinerWindowStyleNormalWhenBenchmarking = $true, # If true Miner window is shown normal when benchmarking (recommended to better see miner messages)
     [Parameter(Mandatory = $false)]
     [String]$MiningDutchAPIKey = "", # MiningDutch API Key (required to retrieve balance information)
-    # [Parameter(Mandatory = $false)]
-    # [String]$MiningDutchPayoutCoins = @("Bitcoin"), # MiningDutch payot coins
     [Parameter(Mandatory = $false)]
     [String]$MiningDutchUserName = (Get-Random @("UselessGuru")), # MiningDutch username
     [Parameter(Mandatory = $false)]
@@ -227,7 +225,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$StartGUIMinimized = $true, 
     [Parameter(Mandatory = $false)]
-    [String]$SSL = "prefer", # SSL pool connections: One of three values: 'Prefer' (use where available), 'Never' or 'Always' (pools that do not allow SSL are ignored)
+    [String]$SSL = "Prefer", # SSL pool connections: One of three values: 'Prefer' (use where available), 'Never' or 'Always' (pools that do not allow SSL are ignored)
     [Parameter(Mandatory = $false)]
     [String]$StartupMode = $false, # One of 'Idle', 'Paused' or 'Running'. This is the same as the buttons in the Web GUI
     [Parameter(Mandatory = $false)]
@@ -264,8 +262,8 @@ param(
 
 Set-Location (Split-Path $MyInvocation.MyCommand.Path)
 
-$ErrorActionPreference = "SilentlyContinue"
-$ProgressPreference = "SilentlyContinue"
+$Global:ErrorActionPreference = "SilentlyContinue"
+$Global:ProgressPreference = "SilentlyContinue"
 
 @"
 NemosMiner
@@ -287,7 +285,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.2.0.2"
+    Version      = [System.Version]"4.2.1.0"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -307,6 +305,61 @@ $Variables.LogFile = ".\Logs\$($Variables.Branding.ProductLabel)_$(Get-Date -For
 $Variables.ConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
 $Variables.PoolsConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($PoolsConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
 $Variables.BalancesTrackerConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.BalancesTrackerConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
+
+$Variables.AllCommandLineParameters = [Ordered]@{ }
+$MyInvocation.MyCommand.Parameters.Keys | Where-Object { Get-Variable $_ } | ForEach-Object { 
+    $Variables.AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly
+    If ($Variables.AllCommandLineParameters.$_ -is [Switch]) { $Variables.AllCommandLineParameters.$_ = [Boolean]$Variables.AllCommandLineParameters.$_ }
+    Remove-Variable $_
+}
+
+# Read configuration
+Read-Config -ConfigFile $Variables.ConfigFile
+
+# Update config file to include all new config items
+If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.Branding.Version) { 
+    Update-ConfigFile -ConfigFile $Variables.ConfigFile
+}
+
+# Start transcript log
+If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\$((Get-Item $MyInvocation.MyCommand.Path).BaseName)-Transcript_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
+
+# Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
+Start-LogReader
+
+Write-Message -Level Info "Starting $($Variables.Branding.ProductLabel)® v$($Variables.Branding.Version) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru"
+If (-not $Variables.FreshConfig) { Write-Message -Level Info "Using configuration file '$($Variables.ConfigFile)'." }
+Write-Host ""
+
+#Prerequisites check
+Write-Message -Level Verbose "Verifying pre-requisites..."
+$Prerequisites = @(
+    "$env:SystemRoot\System32\MSVCR120.dll", 
+    "$env:SystemRoot\System32\VCRUNTIME140.dll", 
+    "$env:SystemRoot\System32\VCRUNTIME140_1.dll"
+)
+
+If ($PrerequisitesMissing = @($Prerequisites | Where-Object { -not (Test-Path -Path $_ -PathType Leaf) })) { 
+    $PrerequisitesMissing | ForEach-Object { Write-Message -Level Warn "$_ is missing." }
+    Write-Message -Level Error "Please install the required runtime modules. Download and extract"
+    Write-Message -Level Error "https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip"
+    Write-Message -Level Error "and run 'install_all.bat' (Admin rights are required)."
+    Start-Sleep -Seconds 10
+    Exit
+}
+
+If ([System.Environment]::OSVersion.Version -lt [Version]"10.0.0.0" -and -not (Get-Command Get-PnpDevice)) { 
+    Write-Message -Level Error "Windows Management Framework 5.1 is missing."
+    Write-Message -Level Error "Please install the required runtime modules from https://www.microsoft.com/en-us/download/details.aspx?id=54616"
+    Start-Sleep -Seconds 10
+    Exit
+}
+
+Write-Message -Level Verbose "Pre-requisites verification OK."
+Remove-Variable Prerequisites, PrerequisitesMissing
+
+# Check if new version is available
+Get-NMVersion
 
 # Verify donation data
 $Variables.DonationData = Get-Content -Path ".\Data\DonationData.json" | ConvertFrom-Json -NoEnumerate
@@ -386,61 +439,6 @@ If (-not $Variables.AlgorithmsLastUsed.Keys) { $Variables.AlgorithmsLastUsed = @
 # Load EarningsChart data to make it available early in Web GUI
 If (Test-Path -Path ".\Data\EarningsChartData.json" -PathType Leaf) { $Variables.EarningsChartData = Get-Content ".\Data\EarningsChartData.json" | ConvertFrom-Json }
 
-$Variables.AllCommandLineParameters = [Ordered]@{ }
-$MyInvocation.MyCommand.Parameters.Keys | Where-Object { Get-Variable $_ } | ForEach-Object { 
-    $Variables.AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly
-    If ($Variables.AllCommandLineParameters.$_ -is [Switch]) { $Variables.AllCommandLineParameters.$_ = [Boolean]$Variables.AllCommandLineParameters.$_ }
-    Remove-Variable $_
-}
-
-# Read configuration
-Read-Config -ConfigFile $Variables.ConfigFile
-
-# Update config file to include all new config items
-If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.Branding.Version) { 
-    Update-ConfigFile -ConfigFile $Variables.ConfigFile
-}
-
-# Start transcript log
-If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\$((Get-Item $MyInvocation.MyCommand.Path).BaseName)-Transcript_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
-
-# Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
-Start-LogReader
-
-Write-Message -Level Info "Starting $($Variables.Branding.ProductLabel)® v$($Variables.Branding.Version) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru"
-If (-not $Variables.FreshConfig) { Write-Message -Level Info "Using configuration file '$($Variables.ConfigFile)'." }
-Write-Host ""
-
-#Prerequisites check
-Write-Message -Level Verbose "Verifying pre-requisites..."
-$Prerequisites = @(
-    "$env:SystemRoot\System32\MSVCR120.dll", 
-    "$env:SystemRoot\System32\VCRUNTIME140.dll", 
-    "$env:SystemRoot\System32\VCRUNTIME140_1.dll"
-)
-
-If ($PrerequisitesMissing = @($Prerequisites | Where-Object { -not (Test-Path -Path $_ -PathType Leaf) })) { 
-    $PrerequisitesMissing | ForEach-Object { Write-Message -Level Warn "$_ is missing." }
-    Write-Message -Level Error "Please install the required runtime modules. Download and extract"
-    Write-Message -Level Error "https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip"
-    Write-Message -Level Error "and run 'install_all.bat' (Admin rights are required)."
-    Start-Sleep -Seconds 10
-    Exit
-}
-
-If ([System.Environment]::OSVersion.Version -lt [Version]"10.0.0.0" -and -not (Get-Command Get-PnpDevice)) { 
-    Write-Message -Level Error "Windows Management Framework 5.1 is missing."
-    Write-Message -Level Error "Please install the required runtime modules from https://www.microsoft.com/en-us/download/details.aspx?id=54616"
-    Start-Sleep -Seconds 10
-    Exit
-}
-
-Write-Message -Level Verbose "Pre-requisites verification OK."
-Remove-Variable Prerequisites, PrerequisitesMissing
-
-# Check if new version is available
-Get-NMVersion
-
 Write-Host "Importing modules..." -ForegroundColor Yellow
 Try { 
     Add-Type -Path ".\Cache\~OpenCL_$($PSVersionTable.PSVersion.ToString()).dll" -ErrorAction Stop
@@ -483,6 +481,7 @@ $Variables.Pools = [Pool[]]@()
 $Variables.RestartCycle = $true # To simulate first loop
 $Variables.ScriptStartTime = (Get-Process -id $PID).StartTime.ToUniversalTime()
 $Variables.WatchdogTimers = @()
+$Variables.MiningEarning = $Variables.MiningProfit = $Variables.MiningPowerCost = [Double]::NaN
 
 Get-Rate
 
@@ -536,8 +535,8 @@ $Variables.DriverVersion | Add-Member "CUDA" $($Variables.CUDAVersionTable.($Var
 
 $Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "NVIDIA" } | ForEach-Object { $_ | Add-Member CUDAVersion $Variables.DriverVersion.CUDA }
 
-# Driver version have changed
-If ((Get-Content -Path ".\Cache\DriverVersion.json" | ConvertFrom-Json | ConvertTo-Json -compress) -ne ($Variables.DriverVersion | ConvertTo-Json -compress)) { 
+# Driver version changed
+If ((Get-Content -Path ".\Cache\DriverVersion.json" | ConvertFrom-Json | ConvertTo-Json -Compress) -ne ($Variables.DriverVersion | ConvertTo-Json -Compress)) { 
     If (Test-Path -Path ".\Cache\DriverVersion.json" -PathType Leaf) { Write-Message -Level Warn "Graphis card driver version data changed. It is recommended to re-download all binaries." }
     $Variables.DriverVersion | ConvertTo-Json | Out-File -FilePath ".\Cache\DriverVersion.json" -Encoding utf8NoBOM -Force
 }
@@ -764,15 +763,6 @@ Function Update-TabControl {
 
             Read-MonitoringData
 
-            If ([Boolean]$Variables.APIRunspace) { 
-                $ConfigMonitoring.Text = "To edit the monitoring settings use the Web GUI"
-                $ConfigMonitoring.Enabled = $true
-            }
-            Else { 
-                $ConfigMonitoring.Text = "The monitoring settings must be configured by editing '$($Variables.ConfigFile)'."
-                $ConfigMonitoring.Enabled = $false
-            }
-
             If ($Variables.Workers) { 
                 $Variables.Workers | ForEach-Object { 
                     $TimeSinceLastReport = New-TimeSpan -Start $_.date -End (Get-Date)
@@ -873,6 +863,7 @@ Function Update-TabControl {
         }
     }
 
+    MainForm_Resize
     $Mainform.Cursor = [System.Windows.Forms.Cursors]::Normal
 
 }
@@ -904,10 +895,10 @@ Function Global:TimerUITick {
                     Stop-BalancesTracker
                     Update-MonitoringData
 
-                    $LabelMiningStatus.Text = "Stopped | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
+                    $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version)`nStopped"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Red
 
-                    $Variables.Summary = "$($Variables.Branding.ProductLabel) is idle.<br>Click the 'Start mining' button to make money..."
+                    $Variables.Summary = "$($Variables.Branding.ProductLabel) is idle.<br>Click the 'Start mining' button to make money."
                     Write-Host "`n"
                     Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
 
@@ -928,7 +919,7 @@ Function Global:TimerUITick {
                     Start-Brain @(Get-PoolBaseName $(If ($Variables.NiceHashWalletIsInternal) { $Config.PoolName -replace "NiceHash", "NiceHash Internal" } Else { $Config.PoolName -replace "NiceHash", "NiceHash External" }))
                     Update-MonitoringData
 
-                    $LabelMiningStatus.Text = "Paused | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
+                    $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version)`nPaused"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Blue
 
                     $Variables.Summary = "$($Variables.Branding.ProductLabel) is paused.<br>Click the 'Start mining' button to make money."
@@ -950,7 +941,7 @@ Function Global:TimerUITick {
                     Stop-Mining
                     Start-Mining
 
-                    $LabelMiningStatus.Text = "Running | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
+                    $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version)`nRunning"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
 
                     $Variables.Summary = "$($Variables.Branding.ProductLabel) is getting ready.<br>Please wait..."
@@ -976,7 +967,17 @@ Function Global:TimerUITick {
         # Refresh selected tab
         Update-TabControl
 
-        $LabelEarningsDetails.Lines = @($Variables.Summary -replace "<br>|(&ensp;)+", "`n" -replace " / ", "/" -split "`n")
+        If ($EditConfigLink.Tag -eq "WebGUI" ) { 
+            $EditConfigLink.Text = "Edit configuration in the Web GUI"
+        }
+        Else { 
+            $EditConfigLink.Text = "Edit configuration file '$($Variables.ConfigFile)' in notepad."
+        }
+
+        $LabelEarningsDetails.Lines = @($Variables.Summary -replace "<br>", "`n" -replace "Power Cost", "`nPower Cost" -replace " / ", "/" -replace "&ensp;", " " -replace "   ", "  " -split "`n")
+
+        If ([Double]::IsNaN($Variables.MiningEarning)) { $LabelEarningsDetails.ForeColor = [System.Drawing.Color]::Black }
+        ElseIf ($Variables.MiningProfit -ge 0 -or ($Variables.MiningEarning -ge 0 -and [Double]::IsNaN($Variables.MiningProfit))) { $LabelEarningsDetails.ForeColor = [System.Drawing.Color]::Green } Else { $LabelEarningsDetails.ForeColor = [System.Drawing.Color]::Red }
 
         If ($Variables.Timer) { Clear-Host }
 
@@ -1128,13 +1129,13 @@ Function Global:TimerUITick {
 
         If (-not $Variables.Paused) { 
             If ($Variables.Miners | Where-Object Available -EQ $true | Where-Object { $_.Benchmark -eq $false -or $_.MeasurePowerUsage -eq $false }) { 
-                If ($Variables.MiningEarning -lt $Variables.MiningPowerCost) { 
+                If ($Variables.MiningProfit -lt 0) { 
                     # Mining causes a loss
-                    Write-Host -ForegroundColor Red ("Mining is currently NOT profitable and causes a loss of {0} {1:n$($Config.DecimalsMax)} / day (including Base Power Cost)." -f $Config.Currency, (-($Variables.MiningProfit - $Variables.BasePowerCostBTC) * $Variables.Rates.BTC.($Config.Currency)))
+                    Write-Host -ForegroundColor Red ("Mining is currently NOT profitable and causes a loss of {0} {1:n$($Config.DecimalsMax)} / day (including Base Power Cost)." -f $Config.Currency, (-$Variables.MiningProfit * $Variables.Rates.BTC.($Config.Currency)))
                 }
-                If (($Variables.MiningEarning - $Variables.MiningPowerCost) -lt $Config.ProfitabilityThreshold) { 
+                If ($Variables.MiningProfit -lt $Config.ProfitabilityThreshold) { 
                     # Mining profit is below the configured threshold
-                    Write-Host -ForegroundColor Blue ("Mining profit ({0} {1:n$($Config.DecimalsMax)}) is below the configured threshold of {0} {2:n$($Config.DecimalsMax)} / day. Mining is suspended until threshold is reached." -f $Config.Currency, (($Variables.MiningProfit - $Variables.BasePowerCostBTC) * $Variables.Rates.BTC.($Config.Currency)), $Config.ProfitabilityThreshold)
+                    Write-Host -ForegroundColor Blue ("Mining profit ({0} {1:n$($Config.DecimalsMax)}) is below the configured threshold of {0} {2:n$($Config.DecimalsMax)} / day. Mining is suspended until threshold is reached." -f $Config.Currency, ($Variables.MiningProfit * $Variables.Rates.BTC.($Config.Currency)), $Config.ProfitabilityThreshold)
                 }
             }
         }
@@ -1337,13 +1338,24 @@ $BenchmarksPage = New-Object System.Windows.Forms.TabPage
 $BenchmarksPage.Text = "Benchmarks"
 
 $LabelCopyright = New-Object System.Windows.Forms.LinkLabel
-$LabelCopyright.Size = New-Object System.Drawing.Size(320, 16)
+$LabelCopyright.Size = New-Object System.Drawing.Size(350, 20)
 $LabelCopyright.LinkColor = [System.Drawing.Color]::Blue
+$LabelCopyright.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $LabelCopyright.ActiveLinkColor = [System.Drawing.Color]::Blue
 $LabelCopyright.TextAlign = "MiddleRight"
 $LabelCopyright.Text = "Copyright (c) 2018-$((Get-Date).Year) Nemo, MrPlus && UselessGuru"
 $LabelCopyright.Add_Click({ Start-Process "https://github.com/Minerx117/NemosMiner/blob/master/LICENSE" })
 $MainFormControls += $LabelCopyright
+
+$EditConfigLink = New-Object System.Windows.Forms.LinkLabel
+$EditConfigLink.Size = New-Object System.Drawing.Size(150, 20)
+$EditConfigLink.LinkColor = [System.Drawing.Color]::Blue
+$EditConfigLink.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$EditConfigLink.ActiveLinkColor = [System.Drawing.Color]::Blue
+$EditConfigLink.TextAlign = "MiddleLeft"
+$EditConfigLink.Tag = If ([Boolean]$Variables.APIRunspace) { "WebGUI" } Else { "Notepad" }
+$EditConfigLink.Add_Click({ If ($EditConfigLink.Tag -eq "WebGUI") { Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/configedit.html" } Else { Edit-File $Variables.ConfigFile } })
+$MainFormControls += $EditConfigLink
 
 $TabControl = New-Object System.Windows.Forms.TabControl
 $TabControl.DataBindings.DefaultDataSourceUpdateMode = 0
@@ -1358,33 +1370,27 @@ $TabControl.Add_SelectedIndexChanged($TabControl_SelectedIndexChanged)
 
 $MainForm.Controls.Add($TabControl)
 
-$PictureBoxLogo = New-Object Windows.Forms.PictureBox
-$PictureBoxLogo.Width = 47 #$img.Size.Width
-$PictureBoxLogo.Height = 47 #$img.Size.Height
-$PictureBoxLogo.SizeMode = 1
-$PictureBoxLogo.ImageLocation = $Variables.Branding.LogoPath
-$MainFormControls += $PictureBoxLogo
-
-$LabelEarningsDetails = New-Object System.Windows.Forms.TextBox
+$LabelEarningsDetails = New-Object System.Windows.Forms.RichTextBox
 $LabelEarningsDetails.Tag = ""
 $LabelEarningsDetails.MultiLine = $true
 $LabelEarningsDetails.Text = ""
 $LabelEarningsDetails.AutoSize = $false
 $LabelEarningsDetails.Height = 77
-$LabelEarningsDetails.Location = [System.Drawing.Point]::new(57, 2)
+$LabelEarningsDetails.Location = [System.Drawing.Point]::new(12, 7)
 $LabelEarningsDetails.Font = [System.Drawing.Font]::new("Lucida Console", 10)
+$LabelEarningsDetails.Font.Height = 18
 $LabelEarningsDetails.BorderStyle = 'None'
 $LabelEarningsDetails.BackColor = [System.Drawing.SystemColors]::Control
-$LabelEarningsDetails.ForeColor = [System.Drawing.Color]::Green
 $LabelEarningsDetails.Visible = $true
+$LabelEarningsDetails.ForeColor = [System.Drawing.Color]::Green
+
 $MainFormControls += $LabelEarningsDetails
 
 $LabelMiningStatus = New-Object System.Windows.Forms.Label
 $LabelMiningStatus.Text = ""
 $LabelMiningStatus.AutoSize = $false
-$LabelMiningStatus.Location = [System.Drawing.Point]::new(247, 2)
-$LabelMiningStatus.Width = 300
-$LabelMiningStatus.Height = 30
+$LabelMiningStatus.Width = 205
+$LabelMiningStatus.Height = 46
 $LabelMiningStatus.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 14)
 $LabelMiningStatus.TextAlign = "MiddleRight"
 $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
@@ -1395,7 +1401,6 @@ $ButtonStart = New-Object System.Windows.Forms.Button
 $ButtonStart.Text = "Start"
 $ButtonStart.Width = 60
 $ButtonStart.Height = 30
-$ButtonStart.Location = [System.Drawing.Point]::new(550, 50)
 $ButtonStart.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ButtonStart.Visible = $true
 $ButtonStart.Enabled = (-not $Config.Autostart)
@@ -1405,7 +1410,6 @@ $ButtonPause = New-Object System.Windows.Forms.Button
 $ButtonPause.Text = "Pause"
 $ButtonPause.Width = 60
 $ButtonPause.Height = 30
-$ButtonPause.Location = [System.Drawing.Point]::new(610, 50)
 $ButtonPause.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ButtonPause.Visible = $true
 $ButtonPause.Enabled = $Config.Autostart
@@ -1415,25 +1419,10 @@ $ButtonStop = New-Object System.Windows.Forms.Button
 $ButtonStop.Text = "Stop"
 $ButtonStop.Width = 60
 $ButtonStop.Height = 30
-$ButtonStop.Location = [System.Drawing.Point]::new(670, 50)
 $ButtonStop.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ButtonStop.Visible = $true
 $ButtonStop.Enabled = $Config.Autostart
 $MainFormControls += $ButtonStop
-
-$LabelNotifications = New-Object System.Windows.Forms.TextBox
-$LabelNotifications.Tag = ""
-$LabelNotifications.MultiLine = $true
-$LabelNotifications.Text = ""
-$LabelNotifications.AutoSize = $false
-$LabelNotifications.Width = 280
-$LabelNotifications.Height = 18
-$LabelNotifications.Location = [System.Drawing.Point]::new(10, 49)
-$LabelNotifications.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$LabelNotifications.BorderStyle = 'None'
-$LabelNotifications.BackColor = [System.Drawing.SystemColors]::Control
-$LabelNotifications.Visible = $true
-$MainFormControls += $LabelNotifications
 
 # Run Page Controls
 $RunPageControls = @()
@@ -1447,7 +1436,6 @@ $Variables.LabelStatus.AutoSize = $true
 $Variables.LabelStatus.Height = 202
 $Variables.LabelStatus.Location = [System.Drawing.Point]::new(2, 2)
 $Variables.LabelStatus.Font = [System.Drawing.Font]::new("Consolas", 10)
-
 $RunPageControls += $Variables.LabelStatus
 
 $LabelRunningMiners = New-Object System.Windows.Forms.Label
@@ -1485,6 +1473,7 @@ $EarningsPageControls = @()
 
 $EarningsChart = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
 $EarningsChart.BackColor = [System.Drawing.Color]::FromArgb(255, 240, 240, 240) #"#F0F0F0"
+$EarningsChart.Location = [System.Drawing.Point]::new(2, -5) 
 $EarningsPageControls += $EarningsChart
 
 $LabelEarnings = New-Object System.Windows.Forms.Label
@@ -1655,14 +1644,6 @@ $WorkersDGV.EnableHeadersVisualStyles = $false
 $WorkersDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
 $MonitoringPageControls += $WorkersDGV
 
-$ConfigMonitoring = New-Object System.Windows.Forms.LinkLabel
-$ConfigMonitoring.Location = New-Object System.Drawing.Size(2, 304)
-$ConfigMonitoring.Size = New-Object System.Drawing.Size(500, 20)
-$ConfigMonitoring.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ConfigMonitoring.TextAlign = "MiddleLeft"
-$ConfigMonitoring.Add_Click({ If ($Variables.APIRunspace) { Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/rigmonitor.html" } })
-$MonitoringPageControls += $ConfigMonitoring
-
 $MainForm | Add-Member -Name Number -Value 0 -MemberType NoteProperty
 
 $TimerUI = New-Object System.Windows.Forms.Timer
@@ -1705,14 +1686,19 @@ $MonitoringPage.Controls.AddRange(@($MonitoringPageControls))
 Function MainForm_Resize { 
 
     $TabControl.Width = $MainForm.Width - 33
-    $TabControl.Height = $MainForm.Height - 139
-    $Variables.LabelStatus.Width = $RunningMinersDGV.Width = $EarningsDGV.Width = $SwitchingDGV.Width = $WorkersDGV.Width = $BenchmarksDGV.Width = $TabControl.Width - 13
+    $TabControl.Height = $MainForm.Height - 159
+    $Variables.LabelStatus.Width = $EditConfigLink.Width = $RunningMinersDGV.Width = $EarningsDGV.Width = $SwitchingDGV.Width = $WorkersDGV.Width = $BenchmarksDGV.Width = $TabControl.Width - 13
 
-    $LabelEarningsDetails.Width = $MainForm.Width - 270
-    $LabelMiningStatus.Location = [System.Drawing.Point]::new(($MainForm.Width - $LabelMiningStatus.Width - 22), 2)
+    $LabelEarningsDetails.Width = $MainForm.Width - 235
+
+    $LabelMiningStatus.Location = [System.Drawing.Point]::new(($MainForm.Width - $LabelMiningStatus.Width - 24), 7)
     $LabelMiningStatus.BringToFront()
 
-    $LabelCopyright.Location = [System.Drawing.Point]::new(($MainForm.Width - $LabelCopyright.Width - 22), 95)
+    $EditConfigLink.Location = [System.Drawing.Point]::new(10, $MainForm.Height - 66)
+    $EditConfigLink.Tag = If ($Variables.APIRunspace) { "WebGUI" } Else { "Notepad" }
+    $EditConfigLink.BringToFront()
+
+    $LabelCopyright.Location = [System.Drawing.Point]::new(($MainForm.Width - 375), $MainForm.Height - 66)
     $LabelCopyright.BringToFront()
 
     $ButtonStart.Location = [System.Drawing.Point]::new($MainForm.Width - 205, 62)
@@ -1731,8 +1717,7 @@ Function MainForm_Resize {
     $LabelRunningMiners.Location = [System.Drawing.Point]::new(2, ($Variables.LabelStatus.Height + 7))
     $RunningMinersDGV.Location = [System.Drawing.Point]::new(2, ($Variables.LabelStatus.Height + $LabelRunningMiners.Height + 10))
 
-    $WorkersDGV.Height = $TabControl.Height - 73
-    $ConfigMonitoring.Location = [System.Drawing.Point]::new(2, ($RunningMinersDGV.Bottom - 18))
+    $WorkersDGV.Height = $TabControl.Height - 53
 
     If ($MainForm.Width -gt 722) { 
         $EarningsChart.Width = ($TabControl.Width - 10)
@@ -1746,9 +1731,9 @@ Function MainForm_Resize {
     Else { 
         $EarningsDGV.ScrollBars = "None"
     }
-    $EarningsChart.Height = (($TabControl.Height - $LabelEarnings.Height - $EarningsDGV.Height - 41), 0 | Measure-Object -Maximum).Maximum
-    $LabelEarnings.Location = [System.Drawing.Point]::new(2, ($EarningsChart.Height + 7))
-    $EarningsDGV.Location = [System.Drawing.Point]::new(2, ($EarningsChart.Height + $LabelEarnings.Height + 10))
+    $EarningsChart.Height = (($TabControl.Height - $LabelEarnings.Height - $EarningsDGV.Height - 31), 0 | Measure-Object -Maximum).Maximum
+    $LabelEarnings.Location = [System.Drawing.Point]::new(2, ($EarningsChart.Height -3))
+    $EarningsDGV.Location = [System.Drawing.Point]::new(2, ($EarningsChart.Height + $LabelEarnings.Height))
 
     $SwitchingDGV.Height = $BenchmarksDGV.Height = $TabControl.Height - 53
 }
@@ -1797,8 +1782,6 @@ $MainForm.Add_FormClosing(
         $MainForm.DesktopBounds | ConvertTo-Json | Out-File -FilePath ".\Config\WindowSettings.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
 
         Write-Message -Level Info "$($Variables.Branding.ProductLabel) has shut down."
-
-        # Stop-Process -Id $PID -Force
     }
 )
 
@@ -1810,6 +1793,8 @@ $MainForm.Add_SizeChanged(
 
 [Void]$MainForm.ShowDialog()
 
-[Void]$MainForm.Close()
-
-Stop-Process -Id $PID -Force
+$MainForm.Close(
+    {
+        Stop-Process -Id $PID -Force
+    }
+)

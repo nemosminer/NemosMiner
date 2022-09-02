@@ -7,7 +7,36 @@ Breaking changes (from 3.8.x.x code base):
 If you are coming from 3.8.x.x it is highly recommended that you install NemosMiner 4.x.x.x to a new directory
 
 Known issues:
+- Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
+
+
+ChangeLog NemosMiner 4.2.1.0 02.09.2022
+=======================================
+
+Changes:
+- Core & Miners: Rename Property 'AvailablePorts' to 'PoolPorts'
+
+Enhancements:
+- Core / Autoupdater: Dynamically download autoupdate script from NemosMiner repository
+- Legacy GUI: Add 'Edit configuration' link
+
+Fixes:
+- API: Pool stat management broken (Regression from 4.1.0.0)
+- Core: Do not start Web GUI if configuration item 'WebGUI' is set to $false
+- Core: Stop Web GUI if configuration item 'WebGUI' is chaning to $false
+- Core / Pools: 'Algorithm 'Bitcore' was incorrectly mapped to 'MegaBtx' causing ever increasing number of MegaBtx pools with incorrects values
+- Core / Get-Device: AMD Navi2 architecture detected as 'other'
+- EthMiner-v0.19.0.18: Fix ssl @ NiceHash (Regression from 4.1.0.0)
+- SRBMiner: Fix 8.5% fee issue (https://github.com/Minerx117/NemosMiner/issues/89)
+- TeamBlackMiner-v1.6x: Fix ssl @ NiceHash (Regression from 4.1.0.0)
+- TeamBlackMiner-v1.6x: Exclude algorithm 'VertHash' at pool 'MiningDutch' (Pool is not supported by miner)
+- Web GUI / Configuration Editor: Property 'ShowChangeLog' not working
+- Web GUI / Configuration Editor: When 'Power usage of idle system' was set to 0W it was shown as 60W (default value)
+
+Miner updates:
+- lolMiner-v1.55 (Keeping lolMiner-v1.54 for Autolykos2 with AMD)
+- NBMiner-v42.3
 
 
 ChangeLog NemosMiner 4.2.0.2 30.08.2022
