@@ -967,6 +967,9 @@ Function Global:TimerUITick {
         # Refresh selected tab
         Update-TabControl
 
+        # Keep only 100 lines, more lines impact performance
+        $Variables.LabelStatus.Lines = @($Variables.LabelStatus.Lines | Select-Object -Last 100)
+
         If ($EditConfigLink.Tag -eq "WebGUI" ) { 
             $EditConfigLink.Text = "Edit configuration in the Web GUI"
         }
