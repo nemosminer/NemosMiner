@@ -990,11 +990,7 @@ Function Write-Message {
 
     If ($Config.LogToScreen -and $Level -in $Config.LogToScreen) { 
         # Update status text box in legacy GUI
-        If ($Variables.LabelStatus) { 
-            # Keep only 100 lines, more lines impact performance
-            $Variables.LabelStatus.Lines = @($Variables.LabelStatus.Lines | Select-Object -Last 100)
-            $Variables.LabelStatus.AppendText("$Date $($Level.ToUpper()): $Message`n")
-        }
+        If ($Variables.LabelStatus) { $Variables.LabelStatus.AppendText("`r`n$Date $($Level.ToUpper()): $Message") }
 
         # Write to console
         Switch ($Level) { 
