@@ -895,7 +895,7 @@ Function Global:TimerUITick {
                     Stop-BalancesTracker
                     Update-MonitoringData
 
-                    $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version)`nStopped"
+                    $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) is stopped"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Red
 
                     $Variables.Summary = "$($Variables.Branding.ProductLabel) is idle.<br>Click the 'Start mining' button to make money."
@@ -919,7 +919,7 @@ Function Global:TimerUITick {
                     Start-Brain @(Get-PoolBaseName $(If ($Variables.NiceHashWalletIsInternal) { $Config.PoolName -replace "NiceHash", "NiceHash Internal" } Else { $Config.PoolName -replace "NiceHash", "NiceHash External" }))
                     Update-MonitoringData
 
-                    $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version)`nPaused"
+                    $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) is paused"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Blue
 
                     $Variables.Summary = "$($Variables.Branding.ProductLabel) is paused.<br>Click the 'Start mining' button to make money."
@@ -941,7 +941,7 @@ Function Global:TimerUITick {
                     Stop-Mining
                     Start-Mining
 
-                    $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version)`nRunning"
+                    $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) is running"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
 
                     $Variables.Summary = "$($Variables.Branding.ProductLabel) is getting ready.<br>Please wait..."
@@ -974,10 +974,10 @@ Function Global:TimerUITick {
             $EditConfigLink.Text = "Edit configuration file '$($Variables.ConfigFile)' in notepad."
         }
 
-        $LabelEarningsDetails.Lines = @($Variables.Summary -replace "<br>", "`n" -replace "Power Cost", "`nPower Cost" -replace " / ", "/" -replace "&ensp;", " " -replace "   ", "  " -split "`n")
+        $EarningsSummary.Lines = @(($Variables.Summary -replace "<br>", "`n" -replace "Power Cost", "`nPower Cost" -replace " / ", "/" -replace "&ensp;", " " -replace "   ", "  ") -split "`n")
 
-        If ([Double]::IsNaN($Variables.MiningEarning)) { $LabelEarningsDetails.ForeColor = [System.Drawing.Color]::Black }
-        ElseIf ($Variables.MiningProfit -ge 0 -or ($Variables.MiningEarning -ge 0 -and [Double]::IsNaN($Variables.MiningProfit))) { $LabelEarningsDetails.ForeColor = [System.Drawing.Color]::Green } Else { $LabelEarningsDetails.ForeColor = [System.Drawing.Color]::Red }
+        If ([Double]::IsNaN($Variables.MiningEarning)) { $EarningsSummary.ForeColor = [System.Drawing.Color]::Black }
+        ElseIf ($Variables.MiningProfit -ge 0 -or ($Variables.MiningEarning -ge 0 -and [Double]::IsNaN($Variables.MiningProfit))) { $EarningsSummary.ForeColor = [System.Drawing.Color]::Green } Else { $EarningsSummary.ForeColor = [System.Drawing.Color]::Red }
 
         If ($Variables.Timer) { Clear-Host }
 
@@ -1370,32 +1370,35 @@ $TabControl.Add_SelectedIndexChanged($TabControl_SelectedIndexChanged)
 
 $MainForm.Controls.Add($TabControl)
 
-$LabelEarningsDetails = New-Object System.Windows.Forms.RichTextBox
-$LabelEarningsDetails.Tag = ""
-$LabelEarningsDetails.MultiLine = $true
-$LabelEarningsDetails.Text = ""
-$LabelEarningsDetails.AutoSize = $false
-$LabelEarningsDetails.Height = 77
-$LabelEarningsDetails.Location = [System.Drawing.Point]::new(12, 7)
-$LabelEarningsDetails.Font = [System.Drawing.Font]::new("Lucida Console", 10)
-$LabelEarningsDetails.Font.Height = 18
-$LabelEarningsDetails.BorderStyle = 'None'
-$LabelEarningsDetails.BackColor = [System.Drawing.SystemColors]::Control
-$LabelEarningsDetails.Visible = $true
-$LabelEarningsDetails.ForeColor = [System.Drawing.Color]::Green
-
-$MainFormControls += $LabelEarningsDetails
-
 $LabelMiningStatus = New-Object System.Windows.Forms.Label
 $LabelMiningStatus.Text = ""
 $LabelMiningStatus.AutoSize = $false
-$LabelMiningStatus.Width = 205
-$LabelMiningStatus.Height = 46
-$LabelMiningStatus.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 14)
-$LabelMiningStatus.TextAlign = "MiddleRight"
+$LabelMiningStatus.Height = 30
+$LabelMiningStatus.Location = [System.Drawing.Point]::new(10, 8)
+$LabelMiningStatus.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 11)
+$LabelMiningStatus.TextAlign = "MiddleLeft"
 $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
 $LabelMiningStatus.BackColor = [System.Drawing.Color]::Transparent
+$LabelMiningStatus.Visible = $true
+$LabelMiningStatus.ReadOnly = $true
 $MainFormControls += $LabelMiningStatus
+
+$EarningsSummary = New-Object System.Windows.Forms.TextBox
+$EarningsSummary.Tag = ""
+$EarningsSummary.MultiLine = $true
+$EarningsSummary.Lines = ""
+$EarningsSummary.AutoSize = $false
+$EarningsSummary.Height = 47
+$EarningsSummary.Location = [System.Drawing.Point]::new(12, 40)
+$EarningsSummary.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$EarningsSummary.TextAlign = "MiddleLeft"
+$EarningsSummary.BorderStyle = 'None'
+$EarningsSummary.BackColor = [System.Drawing.SystemColors]::Control
+$EarningsSummary.Visible = $true
+$EarningsSummary.ReadOnly = $true
+$EarningsSummary.ForeColor = [System.Drawing.Color]::Green
+$EarningsSummary.BackColor = [System.Drawing.Color]::Transparent
+$MainFormControls += $EarningsSummary
 
 $ButtonStart = New-Object System.Windows.Forms.Button
 $ButtonStart.Text = "Start"
@@ -1687,23 +1690,14 @@ Function MainForm_Resize {
 
     $TabControl.Width = $MainForm.Width - 33
     $TabControl.Height = $MainForm.Height - 159
-    $Variables.LabelStatus.Width = $EditConfigLink.Width = $RunningMinersDGV.Width = $EarningsDGV.Width = $SwitchingDGV.Width = $WorkersDGV.Width = $BenchmarksDGV.Width = $TabControl.Width - 13
 
-    $LabelEarningsDetails.Width = $MainForm.Width - 235
+    $LabelMiningStatus.Width = $MainForm.Width - 235
 
-    $LabelMiningStatus.Location = [System.Drawing.Point]::new(($MainForm.Width - $LabelMiningStatus.Width - 24), 7)
-    $LabelMiningStatus.BringToFront()
+    $ButtonStart.Location = [System.Drawing.Point]::new($MainForm.Width - 205, 7)
+    $ButtonPause.Location = [System.Drawing.Point]::new($MainForm.Width - 145, 7)
+    $ButtonStop.Location = [System.Drawing.Point]::new($MainForm.Width - 85, 7)
 
-    $EditConfigLink.Location = [System.Drawing.Point]::new(10, $MainForm.Height - 66)
-    $EditConfigLink.Tag = If ($Variables.APIRunspace) { "WebGUI" } Else { "Notepad" }
-    $EditConfigLink.BringToFront()
-
-    $LabelCopyright.Location = [System.Drawing.Point]::new(($MainForm.Width - 375), $MainForm.Height - 66)
-    $LabelCopyright.BringToFront()
-
-    $ButtonStart.Location = [System.Drawing.Point]::new($MainForm.Width - 205, 62)
-    $ButtonPause.Location = [System.Drawing.Point]::new($MainForm.Width - 145, 62)
-    $ButtonStop.Location = [System.Drawing.Point]::new($MainForm.Width - 85, 62)
+    $EarningsSummary.Width = $Variables.LabelStatus.Width = $EditConfigLink.Width = $RunningMinersDGV.Width = $EarningsDGV.Width = $SwitchingDGV.Width = $WorkersDGV.Width = $BenchmarksDGV.Width = $TabControl.Width - 13
 
     $RunningMinersDGV.Height = $RunningMinersDGV.RowTemplate.Height * $Variables.EnabledDevices.Count + $RunningMinersDGV.ColumnHeadersHeight
     If ($RunningMinersDGV.Height -gt $TabControl.Height / 2) { 
@@ -1736,6 +1730,13 @@ Function MainForm_Resize {
     $EarningsDGV.Location = [System.Drawing.Point]::new(2, ($EarningsChart.Height + $LabelEarnings.Height))
 
     $SwitchingDGV.Height = $BenchmarksDGV.Height = $TabControl.Height - 53
+    
+    $EditConfigLink.Location = [System.Drawing.Point]::new(10, $MainForm.Height - 66)
+    $EditConfigLink.Tag = If ($Variables.APIRunspace) { "WebGUI" } Else { "Notepad" }
+    $EditConfigLink.BringToFront()
+
+    $LabelCopyright.Location = [System.Drawing.Point]::new(($MainForm.Width - 375), $MainForm.Height - 66)
+    $LabelCopyright.BringToFront()
 }
 
 $MainForm.Add_Load(

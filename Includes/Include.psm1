@@ -989,16 +989,11 @@ Function Write-Message {
     $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
     If ($Config.LogToScreen -and $Level -in $Config.LogToScreen) { 
-        # Update status text box in GUI
+        # Update status text box in legacy GUI
         If ($Variables.LabelStatus) { 
-            $Variables.LabelStatus.Lines += "$Date $($Level.ToUpper()): $Message"
-
             # Keep only 100 lines, more lines impact performance
             $Variables.LabelStatus.Lines = @($Variables.LabelStatus.Lines | Select-Object -Last 100)
-
-            $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
-            $Variables.LabelStatus.ScrollToCaret()
-            $Variables.LabelStatus.Refresh()
+            $Variables.LabelStatus.AppendText("$Date $($Level.ToUpper()): $Message`n")
         }
 
         # Write to console
