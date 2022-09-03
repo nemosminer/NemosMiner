@@ -3093,6 +3093,9 @@ Function Get-DAGdata {
                 }
                 $Size *= 31
             }
+            "CFX" { 
+                $Size = 6GB
+            }
             Default { 
                 $Dataset_Bytes_Init = [Math]::Pow(2, 30) # 1GB
                 $Dataset_Bytes_Growth = [Math]::Pow(2, 23) # 8MB
