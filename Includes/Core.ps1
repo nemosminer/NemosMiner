@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.2.1.0
-Version date:   02 September 2022
+Version:        4.2.1.1
+Version date:   08 September 2022
 #>
 
 using module .\Include.psm1
@@ -911,6 +911,7 @@ Do {
                 $Miners | Select-Object | ForEach-Object { $_.Available = $false }
             }
             Remove-Variable AddSeconds, Miner, NewMiners -ErrorAction Ignore
+            $Variables.MostProfitableMiners = $Variables.MinersBest = $Variables.Miners_Device_Combos = $Variables.MinersBest_Combos = $Variables.MinersBest_Combo = [Miner[]]@()
 
             If ($Miners | Where-Object Available -EQ $true) { 
                 Write-Message -Level Info "Selecting best miner$(If (@($Variables.EnabledDevices.Model | Select-Object -Unique).Count -gt 1) { "s" }) based on$(If ($Variables.CalculatePowerCost) { " profit (power cost $($Config.Currency) $($Variables.PowerPricekWh)/kW⋅h)" } Else { " earning" })..."
@@ -946,7 +947,7 @@ Do {
                         }
                     )
                     $Variables.MinersBest_Combo = @(($Variables.MinersBest_Combos | Sort-Object -Descending { @($_.Combination | Where-Object { [Double]::IsNaN($_.$SortBy) }).Count }, { ($_.Combination | Measure-Object "$($SortBy)_Bias" -Sum).Sum }, { ($_.Combination | Where-Object { $_.$Sortby -ne 0 } | Measure-Object).Count } | Select-Object -First 1).Combination)
-                    Remove-Variable Miner_Device_Combo, Miner_Device_Count, Miner_Device_Regex
+                    Remove-Variable Combination, Miner_Device_Combo, Miner_Device_Count, Miner_Device_Regex
 
                     # Hack part 2: reverse temporarily forced positive bias
                     $Miners | ForEach-Object { $_."$($SortBy)_Bias" -= $SmallestBias }
@@ -971,12 +972,6 @@ Do {
                 }
             }
             Else { 
-                $Variables.MostProfitableMiners = @()
-                $Variables.MinersBest = @()
-                $Variables.Miners_Device_Combos = @()
-                $Variables.MinersBest_Combos = @()
-                $Variables.MinersBest_Combo = @()
-
                 $Variables.MiningEarning = $Variables.MiningProfit = $Variables.MiningPowerCost = $Variables.MiningPowerUsage = [Double]0
             }
 
@@ -996,6 +991,9 @@ Do {
 
                     If ($Variables.MinersNeedingPowerUsageMeasurement.Count -or [Double]::IsNaN($Variables.MiningPowerCost)) { 
                         $Variables.Summary += "Profit / day: n/a (Measuring power usage: $($Variables.MinersNeedingPowerUsageMeasurement.Count) $(If (($Variables.MinersNeedingPowerUsageMeasurement).Count -eq 1) { "miner" } Else { "miners" }) left$(If (($Variables.EnabledDevices | Sort-Object -Property { $_.DeviceNames -join ',' }).Count -gt 1) { " [$(($Variables.MinersNeedingPowerUsageMeasurement | Group-Object -Property { $_.DeviceNames -join ',' } | Sort-Object Name | ForEach-Object { "$($_.Name): $($_.Count)" }) -join '; ')]"}))"
+                    }
+                    ElseIf ($Variables.MinersNeedingBenchmark.Count) { 
+                        $Variables.Summary += "Profit / day: n/a"
                     }
                     ElseIf ($Variables.MiningPowerUsage -gt 0) { 
                         $Variables.Summary += "Profit / day: {0:n} {1}" -f ($Variables.MiningProfit * $Variables.Rates."BTC".($Config.Currency)), $Config.Currency
@@ -1171,6 +1169,7 @@ Do {
                         Start-Process $DefaultPrerunName -WorkingDirectory ".\Utils\Prerun" -WindowStyle hidden
                         Start-Sleep -Seconds 2
                     }
+                    Remove-Variable MinerAlgorithmPrerunName, AlgorithmPrerunName, DefaultPrerunName
                 }
                 # Add extra time when CPU mining and miner requires DAG creation
                 If ($Miner.Workers.Pool.DAGsizeGB -and ($Variables.Miners | Where-Object Best -EQ $true).Devices.Type -contains "CPU") { $Miner.WarmupTimes[0] += 15 <# seconds #>}

@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.2.1.0
-Version date:   02 September 2022
+Version:        4.2.1.1
+Version date:   08 September 2022
 #>
 
 [CmdletBinding()]
@@ -285,7 +285,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.2.1.0"
+    Version      = [System.Version]"4.2.1.1"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -887,6 +887,7 @@ Function Global:TimerUITick {
                 "Idle" { 
                     If ($Variables.MiningStatus) { 
                         $Variables.Summary = "'Stop mining' button clicked.<br>Stopping $($Variables.Branding.ProductLabel)..."
+                        Write-Host "`n"
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                     }
                     Stop-Mining
@@ -899,8 +900,8 @@ Function Global:TimerUITick {
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Red
 
                     $Variables.Summary = "$($Variables.Branding.ProductLabel) is idle.<br>Click the 'Start mining' button to make money."
-                    Write-Host "`n"
                     Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
+                    Write-Host "`n"
 
                     $ButtonPause.Enabled = $true
                     $ButtonStart.Enabled = $true
@@ -910,6 +911,7 @@ Function Global:TimerUITick {
 
                     If ($Variables.MiningStatus) { 
                         $Variables.Summary = "'Pause mining' button pressed.<br>Pausing $($Variables.Branding.ProductLabel)..."
+                        Write-Host "`n"
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                     }
                     Stop-Mining
@@ -932,6 +934,7 @@ Function Global:TimerUITick {
                 "Running" { 
                     If ($Variables.MiningStatus) { 
                         $Variables.Summary = "'Start mining' button clicked.<br>Starting $($Variables.Branding.ProductLabel)..."
+                        Write-Host "`n"
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                     }
 
@@ -1018,49 +1021,51 @@ Function Global:TimerUITick {
             $Variables.UIStyle = $Config.UIStyle
         }
 
-        # Display available miners list
-        [System.Collections.ArrayList]$Miner_Table = @(
-            @{ Label = "Miner"; Expression = { $_.Name } }
-            @{ Label = "Algorithm"; Expression = { $_.Workers.Pool.Algorithm -join " & " } }
-            If ($Variables.ShowMinerFee -and ($Variables.Miners.Workers.Fee)) { @{ Label = "Fee"; Expression = { $_.Workers.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } }; Align = "right" } }
-            @{ Label = "Hashrate"; Expression = { If (-not $_.Benchmark) { $_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" } } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } }; Align = "right" }
-            If (-not $Config.IgnorePowerCost -and $Variables.ShowProfitBias -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost -and -not $Config.IgnorePowerCost) { @{ Label = "ProfitBias"; Expression = { If ([Double]::IsNaN($_.Profit_Bias)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit_Bias * $Variables.Rates.BTC.($Config.Currency)) }; Align = "right" } } }
-            If (-not $Config.IgnorePowerCost -and $Variables.ShowProfit -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost -and -not $Config.IgnorePowerCost) { @{ Label = "Profit"; Expression = { If ([Double]::IsNaN($_.Profit)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
-            If ($Variables.ShowEarningBias) { @{ Label = "EarningBias"; Expression = { If ([Double]::IsNaN($_.Earning_Bias)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Earning_Bias * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
-            If ($Variables.ShowEarning) { @{ Label = "Earning"; Expression = { If ([Double]::IsNaN($_.Earning)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
-            If ($Config.IgnorePowerCost -and $Variables.ShowProfitBias -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "ProfitBias"; Expression = { If ([Double]::IsNaN($_.Profit_Bias)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit_Bias * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
-            If ($Config.IgnorePowerCost -and $Variables.ShowProfit -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "Profit"; Expression = { If ([Double]::IsNaN($_.Profit)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
-            If ($Variables.ShowPowerUsage -and $Config.CalculatePowerCost) { @{ Label = "PowerUsage"; Expression = { If (-not $_.MeasurePowerUsage) { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W"} } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } }; Align = "right" } }
-            If ($Variables.ShowPowerCost -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "PowerCost"; Expression = { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "-{0:n$($Config.DecimalsMax)}" -f ($_.PowerCost * $Variables.Rates.($Config.PayoutCurrency).($Config.Currency)) } }; Align = "right" } }
-            If ($Variables.ShowAccuracy) { @{ Label = "Accuracy"; Expression = { $_.Workers.Pool.Accuracy | ForEach-Object { "{0:P0}" -f [Double]$_ } }; Align = "right" } }
-            @{ Label = "Pool"; Expression = { $_.Workers.Pool.Name -join " & " } }
-            If ($Variables.ShowUser) { @{ Label = "User"; Expression = { $_.Workers.Pool.User -join ' & ' } } }
-            If ($Variables.ShowPoolFee -and ($Variables.Miners.Workers.Pool.Fee)) { @{ Label = "Fee"; Expression = { $_.Workers.Pool.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } }; Align = "right" } }
-            If ($Variables.ShowCurrency -and $Variables.Miners.Workers.Pool.Currency) { @{ Label = "Currency"; Expression = { "$(If ($_.Workers.Pool.Currency) { $_.Workers.Pool.Currency -join " & " })" } } }
-            If ($Variables.ShowCoinName -and $Variables.Miners.Workers.Pool.CoinName) { @{ Label = "CoinName"; Expression = { "$(If ($_.Workers.Pool.CoinName) { $_.Workers.Pool.CoinName -join " & " })" } } }
-        )
-        $SortBy = If ($Variables.CalculatePowerCost) { "Profit" } Else { "Earning" }
-        $Variables.Miners | Where-Object Available -EQ $true | Group-Object -Property { [String]$_.DeviceNames } | Sort-Object Name | ForEach-Object { 
-            $MinersDeviceGroup = @($_.Group)
-            $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object Benchmark -EQ $true)
-            $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object Enabled -EQ $True | Where-Object MeasurePowerUsage -EQ $true)
-            $MinersDeviceGroup = @($MinersDeviceGroup | Where-Object { $Variables.ShowAllMiners -or $_.MostProfitable -eq $true -or $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 })
-            $MinersDeviceGroup | Where-Object { 
-                $Variables.ShowAllMiners -or <#List all miners#>
-                $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <#List all miners when benchmarking#>
-                $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 -or <#List all miners when measuring power usage#>
-                $_.$SortBy -ge ($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index (($MinersDeviceGroup.Count, 5 | Measure-Object -Minimum).Minimum - 1)) -or <#Always list at least the top 5 miners per device group#>
-                $_.$SortBy -ge (($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -First 1) * 0.5) <#Always list the better 50% miners per device group#>
-            } | Sort-Object -Property DeviceName, @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = { $_.KeepRunning -eq $true }; Descending = $true }, @{ Expression = { $_.Prioritize -eq $true }; Descending = $true }, @{ Expression = { $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithms[0] }; Descending = $false }, @{ Expression = { $_.Algorithms[1] }; Descending = $false } | 
-            Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (@($_).Count -ne 1) { "s" })"; Expression = { "$($_.DeviceNames -join ',') [$(($Variables.Devices | Where-Object Name -In $_.DeviceNames).Model -join '; ')]" } } | Out-Host
+        If ($Variables.MiningStatus -eq "Running") { 
+            # Display available miners list
+            [System.Collections.ArrayList]$Miner_Table = @(
+                @{ Label = "Miner"; Expression = { $_.Name } }
+                @{ Label = "Algorithm"; Expression = { $_.Workers.Pool.Algorithm -join " & " } }
+                If ($Variables.ShowMinerFee -and ($Variables.Miners.Workers.Fee)) { @{ Label = "Fee"; Expression = { $_.Workers.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } }; Align = "right" } }
+                @{ Label = "Hashrate"; Expression = { If (-not $_.Benchmark) { $_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" } } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } }; Align = "right" }
+                If (-not $Config.IgnorePowerCost -and $Variables.ShowProfitBias -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost -and -not $Config.IgnorePowerCost) { @{ Label = "ProfitBias"; Expression = { If ([Double]::IsNaN($_.Profit_Bias)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit_Bias * $Variables.Rates.BTC.($Config.Currency)) }; Align = "right" } } }
+                If (-not $Config.IgnorePowerCost -and $Variables.ShowProfit -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost -and -not $Config.IgnorePowerCost) { @{ Label = "Profit"; Expression = { If ([Double]::IsNaN($_.Profit)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
+                If ($Variables.ShowEarningBias) { @{ Label = "EarningBias"; Expression = { If ([Double]::IsNaN($_.Earning_Bias)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Earning_Bias * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
+                If ($Variables.ShowEarning) { @{ Label = "Earning"; Expression = { If ([Double]::IsNaN($_.Earning)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
+                If ($Config.IgnorePowerCost -and $Variables.ShowProfitBias -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "ProfitBias"; Expression = { If ([Double]::IsNaN($_.Profit_Bias)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit_Bias * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
+                If ($Config.IgnorePowerCost -and $Variables.ShowProfit -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "Profit"; Expression = { If ([Double]::IsNaN($_.Profit)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
+                If ($Variables.ShowPowerUsage -and $Config.CalculatePowerCost) { @{ Label = "PowerUsage"; Expression = { If (-not $_.MeasurePowerUsage) { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W"} } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } }; Align = "right" } }
+                If ($Variables.ShowPowerCost -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "PowerCost"; Expression = { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "-{0:n$($Config.DecimalsMax)}" -f ($_.PowerCost * $Variables.Rates.($Config.PayoutCurrency).($Config.Currency)) } }; Align = "right" } }
+                If ($Variables.ShowAccuracy) { @{ Label = "Accuracy"; Expression = { $_.Workers.Pool.Accuracy | ForEach-Object { "{0:P0}" -f [Double]$_ } }; Align = "right" } }
+                @{ Label = "Pool"; Expression = { $_.Workers.Pool.Name -join " & " } }
+                If ($Variables.ShowUser) { @{ Label = "User"; Expression = { $_.Workers.Pool.User -join ' & ' } } }
+                If ($Variables.ShowPoolFee -and ($Variables.Miners.Workers.Pool.Fee)) { @{ Label = "Fee"; Expression = { $_.Workers.Pool.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } }; Align = "right" } }
+                If ($Variables.ShowCurrency -and $Variables.Miners.Workers.Pool.Currency) { @{ Label = "Currency"; Expression = { "$(If ($_.Workers.Pool.Currency) { $_.Workers.Pool.Currency -join " & " })" } } }
+                If ($Variables.ShowCoinName -and $Variables.Miners.Workers.Pool.CoinName) { @{ Label = "CoinName"; Expression = { "$(If ($_.Workers.Pool.CoinName) { $_.Workers.Pool.CoinName -join " & " })" } } }
+            )
+            $SortBy = If ($Variables.CalculatePowerCost) { "Profit" } Else { "Earning" }
+            $Variables.Miners | Where-Object Available -EQ $true | Group-Object -Property { [String]$_.DeviceNames } | Sort-Object Name | ForEach-Object { 
+                $MinersDeviceGroup = @($_.Group)
+                $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object Benchmark -EQ $true)
+                $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object Enabled -EQ $True | Where-Object MeasurePowerUsage -EQ $true)
+                $MinersDeviceGroup = @($MinersDeviceGroup | Where-Object { $Variables.ShowAllMiners -or $_.MostProfitable -eq $true -or $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 })
+                $MinersDeviceGroup | Where-Object { 
+                    $Variables.ShowAllMiners -or <#List all miners#>
+                    $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <#List all miners when benchmarking#>
+                    $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 -or <#List all miners when measuring power usage#>
+                    $_.$SortBy -ge ($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index (($MinersDeviceGroup.Count, 5 | Measure-Object -Minimum).Minimum - 1)) -or <#Always list at least the top 5 miners per device group#>
+                    $_.$SortBy -ge (($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -First 1) * 0.5) <#Always list the better 50% miners per device group#>
+                } | Sort-Object -Property DeviceName, @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = { $_.KeepRunning -eq $true }; Descending = $true }, @{ Expression = { $_.Prioritize -eq $true }; Descending = $true }, @{ Expression = { $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithms[0] }; Descending = $false }, @{ Expression = { $_.Algorithms[1] }; Descending = $false } | 
+                Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (@($_).Count -ne 1) { "s" })"; Expression = { "$($_.DeviceNames -join ',') [$(($Variables.Devices | Where-Object Name -In $_.DeviceNames).Model -join '; ')]" } } | Out-Host
 
-            # Display benchmarking progress
-            If ($MinersDeviceGroupNeedingBenchmark) { 
-                "Benchmarking for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingBenchmark.Count) miner$(If ($MinersDeviceGroupNeedingBenchmark.Count -gt 1) { 's' }) left to complete benchmark." | Out-Host
-            }
-            # Display power usage measurement progress
-            If ($MinersDeviceGroupNeedingPowerUsageMeasurement) { 
-                "Power usage measurement for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring." | Out-Host
+                # Display benchmarking progress
+                If ($MinersDeviceGroupNeedingBenchmark) { 
+                    "Benchmarking for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingBenchmark.Count) miner$(If ($MinersDeviceGroupNeedingBenchmark.Count -gt 1) { 's' }) left to complete benchmark." | Out-Host
+                }
+                # Display power usage measurement progress
+                If ($MinersDeviceGroupNeedingPowerUsageMeasurement) { 
+                    "Power usage measurement for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring." | Out-Host
+                }
             }
         }
 
@@ -1388,7 +1393,6 @@ $MainFormControls += $LabelMiningStatus
 
 $EarningsSummary = New-Object System.Windows.Forms.TextBox
 $EarningsSummary.Tag = ""
-$EarningsSummary.MultiLine = $true
 $EarningsSummary.Lines = ""
 $EarningsSummary.AutoSize = $false
 $EarningsSummary.Height = 47
@@ -1399,13 +1403,14 @@ $EarningsSummary.BorderStyle = 'None'
 $EarningsSummary.BackColor = [System.Drawing.SystemColors]::Control
 $EarningsSummary.Visible = $true
 $EarningsSummary.ReadOnly = $true
+$EarningsSummary.MultiLine = $true
 $EarningsSummary.ForeColor = [System.Drawing.Color]::Green
 $EarningsSummary.BackColor = [System.Drawing.Color]::Transparent
 $MainFormControls += $EarningsSummary
 
 $ButtonStart = New-Object System.Windows.Forms.Button
-$ButtonStart.Text = "Start"
-$ButtonStart.Width = 60
+$ButtonStart.Text = "Start mining"
+$ButtonStart.Width = 100
 $ButtonStart.Height = 30
 $ButtonStart.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ButtonStart.Visible = $true
@@ -1413,8 +1418,8 @@ $ButtonStart.Enabled = (-not $Config.Autostart)
 $MainFormControls += $ButtonStart
 
 $ButtonPause = New-Object System.Windows.Forms.Button
-$ButtonPause.Text = "Pause"
-$ButtonPause.Width = 60
+$ButtonPause.Text = "Pause mining"
+$ButtonPause.Width = 100
 $ButtonPause.Height = 30
 $ButtonPause.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ButtonPause.Visible = $true
@@ -1422,8 +1427,8 @@ $ButtonPause.Enabled = $Config.Autostart
 $MainFormControls += $ButtonPause
 
 $ButtonStop = New-Object System.Windows.Forms.Button
-$ButtonStop.Text = "Stop"
-$ButtonStop.Width = 60
+$ButtonStop.Text = "Stop mining"
+$ButtonStop.Width = 100
 $ButtonStop.Height = 30
 $ButtonStop.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $ButtonStop.Visible = $true
@@ -1440,6 +1445,8 @@ $Variables.LabelStatus.WordWrap = $true
 $Variables.LabelStatus.Text = ""
 $Variables.LabelStatus.AutoSize = $true
 $Variables.LabelStatus.Height = 202
+$Variables.LabelStatus.ReadOnly = $true
+$Variables.LabelStatus.MultiLine = $true
 $Variables.LabelStatus.Location = [System.Drawing.Point]::new(2, 2)
 $Variables.LabelStatus.Font = [System.Drawing.Font]::new("Consolas", 10)
 $RunPageControls += $Variables.LabelStatus
@@ -1479,7 +1486,7 @@ $EarningsPageControls = @()
 
 $EarningsChart = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
 $EarningsChart.BackColor = [System.Drawing.Color]::FromArgb(255, 240, 240, 240) #"#F0F0F0"
-$EarningsChart.Location = [System.Drawing.Point]::new(2, -5) 
+$EarningsChart.Location = [System.Drawing.Point]::new(-10, -5) 
 $EarningsPageControls += $EarningsChart
 
 $LabelEarnings = New-Object System.Windows.Forms.Label
@@ -1694,11 +1701,11 @@ Function MainForm_Resize {
     $TabControl.Width = $MainForm.Width - 33
     $TabControl.Height = $MainForm.Height - 159
 
-    $LabelMiningStatus.Width = $MainForm.Width - 235
+    $LabelMiningStatus.Width = $MainForm.Width - 345
 
-    $ButtonStart.Location = [System.Drawing.Point]::new($MainForm.Width - 205, 7)
-    $ButtonPause.Location = [System.Drawing.Point]::new($MainForm.Width - 145, 7)
-    $ButtonStop.Location = [System.Drawing.Point]::new($MainForm.Width - 85, 7)
+    $ButtonStart.Location = [System.Drawing.Point]::new($MainForm.Width - 325, 7)
+    $ButtonPause.Location = [System.Drawing.Point]::new($MainForm.Width - 225, 7)
+    $ButtonStop.Location = [System.Drawing.Point]::new($MainForm.Width - 125, 7)
 
     $EarningsSummary.Width = $Variables.LabelStatus.Width = $EditConfigLink.Width = $RunningMinersDGV.Width = $EarningsDGV.Width = $SwitchingDGV.Width = $WorkersDGV.Width = $BenchmarksDGV.Width = $TabControl.Width - 13
 

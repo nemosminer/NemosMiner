@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable algorithm
 
-Updated 02 September 2022
+Updated 08 September 2022
 
 
 Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
@@ -185,17 +185,17 @@ Easy configuration, easy start:
 
    Poolnames ending in *Plus
 
-      Uses calculations based on 24hr actual and current estimate prices to get a more realistic estimate.
-      Includes some trust index based on past 1hr current estimate variation from 24hr.
-      AND is NOT sensible to spikes.
-      This shows less switching than following current estimate and more switching that following the 24hr actual.
+      Use calculations based on 24hr actual and current estimate prices to get a more realistic estimate.
+      Include some trust index based on past 1hr current estimate variation from 24hr.
+      AND are NOT sensible to spikes.
+      They show less switching than following current estimate and more switching than following the 24hr actual.
       Better profitability.
 
    Balances Tracking
 
       Displays available balances and an estimation of when the pool payment threshold will be reached.
       Supported pools:
-         - HiveON
+         - HiveON (*)
          - MiningDutch
          - MiningPoolHub
          - NiceHash (internal & external wallet)
@@ -203,6 +203,8 @@ Easy configuration, easy start:
          - ProHashing
          - ZergPool
          - Zpool
+      (*) Pool does not support auto-exchange to other currencies.
+
       If mining more than one pool, NemosMiner shows stats for all supported pools.
       Press key 'b' in the console window to show/hide earnings.
 
@@ -212,6 +214,8 @@ Easy configuration, easy start:
       More than one instance of NemosMiner can run on the same rig
       Each instance must be placed in its own directory
       Miner has to be started prior the launch of the next instance
+      Do not use the same miner devices in more than one instance as this will give invalid hash rate
+      & power usage readings causing incorrect best miner selection.
 
    Miner switching log
 

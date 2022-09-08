@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.2.1.0
-Version date:   02 September 2022
+Version:        4.2.1.1
+Version date:   08 September 2022
 #>
 
 # Window handling
@@ -696,8 +696,9 @@ Function Start-Mining {
 
         $Variables.Timer = $null
         $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
-        $Variables.Pools = $null
-        $Variables.Miners = $null
+        $Variables.Pools = [Pool[]]@()
+        $Variables.Miners = [Miner[]]@()
+        $Variables.MinersBest_Combo = [Miner[]]@()
 
         $Variables.CoreRunspace = [RunspaceFactory]::CreateRunspace()
         $Variables.CoreRunspace.Open()
@@ -714,7 +715,6 @@ Function Start-Mining {
         $Variables.CoreRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
 
         $Variables.Summary = "Mining processes are running."
-        Write-Host $Variables.Summary
     }
 }
 
@@ -726,8 +726,6 @@ Function Stop-Mining {
         While (($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }) -and (Get-Date) -le $Timestamp) { 
             Start-Sleep -Seconds 1
         }
-        $Variables.MinersBest_Combo = @()
-        $Variables.Miners = @()
         $Variables.WatchdogTimers = @()
     
         $Variables.CoreRunspace.Close()
@@ -743,7 +741,6 @@ Function Stop-Mining {
     $Variables.MiningEarning = $Variables.MiningProfit = $Variables.MiningPowerCost = [Double]::NaN
 
     $Variables.RefreshNeeded = $true
-    Write-Host $Variables.Summary
 }
 
 Function Start-Brain { 
@@ -3009,8 +3006,7 @@ Function Update-ConfigFile {
             "Europe North" { "Europe" }
             "HongKong"     { "Asia" }
             "India"        { "Asia" }
-            "Japan"        { "Japan" }
-            "Russia"       { "Russia" }
+            "Russia"       { "Europe" }
             "US"           { "USA West" }
             Default        { "Europe" }
         }

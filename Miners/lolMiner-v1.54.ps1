@@ -29,14 +29,17 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
                 # Get arguments for available miner devices
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "coin") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
-                $_.Arguments += " --tls $(If ($MinerPools[0].($_.Algorithm[0]).PoolPorts[1]) { "on" } Else { "off" }) --pool $($MinerPools[0].($_.Algorithm[0]).Host):$(($MinerPools[0].($_.Algorithm[0]).PoolPorts | Select-Object -Last 1))"
+
+                $_.Arguments += " --pool $($MinerPools[0].($_.Algorithm[0]).Host):$(($MinerPools[0].($_.Algorithm[0]).PoolPorts | Select-Object -Last 1))"
                 $_.Arguments += " --user $($MinerPools[0].($_.Algorithm[0]).User)$(If ($MinerPools[0].($_.Algorithm[0]).WorkerName) { ".$($MinerPools[0].($_.Algorithm[0]).WorkerName)" })"
                 $_.Arguments += " --pass $($MinerPools[0].($_.Algorithm[0]).Pass)$(If ($MinerPools[0].($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm[0] -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
+                $_.Arguments += If ($MinerPools[0].($_.Algorithm[0]).PoolPorts[1]) { " --tls on" } Else { " --tls off" }
 
                 If ($_.Algorithm[1]) { 
-                    $_.Arguments += " --dualtls $(If ($MinerPools[1].($_.Algorithm[1]).SSL) { "on" } Else { "off" }) --dualpool $($MinerPools[1].($_.Algorithm[1]).Host):$($MinerPools[1].($_.Algorithm[1]).Port)"
+                    $_.Arguments += " --dualpool $($MinerPools[1].($_.Algorithm[1]).Host):$($MinerPools[1].($_.Algorithm[1]).PoolPorts | Select-Object -Last 1)"
                     $_.Arguments += " --dualuser $($MinerPools[1].($_.Algorithm[1]).User)$(If ($MinerPools[1].($_.Algorithm[1]).WorkerName) { ".$($MinerPools[1].($_.Algorithm[1]).WorkerName)" })"
                     $_.Arguments += " --dualpass $($MinerPools[1].($_.Algorithm[1]).Pass)$(If ($MinerPools[1].($_.Algorithm[1]).BaseName -eq "ProHashing" -and $_.Algorithm[1] -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
+                    $_.Arguments += If ($MinerPools[1].($_.Algorithm[1]).SSL) { " --dualtls on" } Else { " --dualtls off" }
                 }
 
                 If ($MinerPools[0].($_.Algorithm[0]).DAGsizeGB -gt 0) { 

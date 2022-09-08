@@ -10,6 +10,28 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.2.1.1 08.09.2022
+=======================================
+
+Changes:
+- Core: / Region.json: Region 'Russia' is no longer needed (HiveOn no longer uses region data)
+
+Enhancements:
+- Legacy GUI: Change layout, less text flickering
+
+Fixes:
+- AutoUpdater: Error stopping SnakeTail process if SnakeTail was not configured (Thank you Szentigrade)
+- Core / DAG data: Make Octopus DAG size static (currently 6.0GB; need to find out how to calculate it from block size)
+
+Miner changes:
+- NanoMiner-v3.7.0: Enable Octopus for AMD (https://github.com/Minerx117/NemosMiner/issues/90, Regression from 4.2.0.1)
+- PhoenixMiner-v6.2c: Do not enforce SSL certificate validity (-weakssl)
+- TeamBlackMiner-v1.6x: Do not enforce SSL certificate validity
+
+Pool changes:
+- HiveOn: No longer has servers in different regions
+- HiveOn: Support for 'RVN'. To mine RVN you need to set a RVN address in 'PoolsConfig.json'. Pool does not support auto-exchange to other currencies
+
 
 ChangeLog NemosMiner 4.2.1.0 02.09.2022
 =======================================

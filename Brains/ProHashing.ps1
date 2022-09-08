@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.2.1.0
-Version date:   02 September 2022
+Version:        4.2.1.1
+Version date:   08 September 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -141,11 +141,11 @@ While ($BrainConfig) {
 
     If ($BrainConfig.ShowStartStop) { Write-Message -Level Debug "End Brain '$Brainname' ($($Duration.TotalSeconds) sec.)." }
 
+    [System.GC]::Collect()
+
     Do { 
         Start-Sleep -Seconds 3
     } While (-not $Variables.Miners -or $CurDate -gt $Variables.PoolDataCollectedTimeStamp -or (Get-Date).ToUniversalTime().AddSeconds([Int]$Duration.TotalSeconds + 5) -lt $Variables.EndCycleTime)
 
     $BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig
-
-    [System.GC]::Collect()
 }

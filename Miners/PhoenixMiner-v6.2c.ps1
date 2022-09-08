@@ -72,6 +72,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("amd", "eres", "nvidia") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                 $_.Arguments += " -pool $(If ($MinerPools[0].($_.Algorithm[0]).PoolPorts[1]) { "ssl://" })$($MinerPools[0].($_.Algorithm[0]).Host):$($MinerPools[0].($_.Algorithm[0]).PoolPorts | Select-Object -Last 1) -wal $($MinerPools[0].($_.Algorithm[0]).User)"
+                If ($MinerPools[0].($_.Algorithm[0]).PoolPorts[1]) { $_.Arguments += " -weakssl" }
                 If ($MinerPools[0].($_.Algorithm[0]).WorkerName) { $_.Arguments += " -worker $($MinerPools[0].($_.Algorithm[0]).WorkerName)" }
                 $_.Arguments += " -pass $($MinerPools[0].($_.Algorithm[0]).Pass)$(If ($MinerPools[0].($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
 
@@ -88,6 +89,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
                 If ($_.Algorithm[1]) { 
                     $_.Arguments += " -dpool $(If ($MinerPools[1].($_.Algorithm[1]).SSL) { "ssl://" })$($MinerPools[1].($_.Algorithm[1]).Host):$($MinerPools[0].($_.Algorithm[1]).PoolPorts | Select-Object -Last 1) -dwal $($MinerPools[1].($_.Algorithm[1]).User) -dpass $($MinerPools[1].($_.Algorithm[1]).Pass)"
+                    # If ($MinerPools[1].($_.Algorithm[0]).PoolPorts[1]) { $_.Arguments += " -dweakssl" } #https://bitcointalk.org/index.php?topic=2647654.msg60898131#msg60898131
                     If ($MinerPools[1].($_.Algorithm[1]).WorkerName) { $_.Arguments += " -dworker $($MinerPools[1].($_.Algorithm[1]).WorkerName)" }
                 }
 

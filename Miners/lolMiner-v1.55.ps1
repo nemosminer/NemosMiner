@@ -36,7 +36,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("UbqHash", "Kaspa");       Type = "AMD"; Fee = @(0.01, 0.01); MinMemGB = $MinerPools[0].UbqHash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 2; WarmupTimes = @(60, 45); ExcludeGPUArchitecture = @();  Arguments = " --algo UBQHASH --dualmode KASPADUAL" }
 
 #   [PSCustomObject]@{ Algorithm = @("Autolykos2");             Type = "NVIDIA"; Fee = @(0.015);      MinMemGB = $MinerPools[0].Autolykos2.DAGSizeGB;   MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(45, 45); Arguments = " --algo AUTOLYKOS2" } #https://github.com/Lolliedieb/lolMiner-releases/issues/1692
-    [PSCustomObject]@{ Algorithm = @("BeamV3");                 Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 6.0;                                   MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " --algo BEAM-III" } # NBMiner-v42.2 is fastest
+    [PSCustomObject]@{ Algorithm = @("BeamV3");                 Type = "NVIDIA"; Fee = @(0.01);       MinMemGB = 6.0;                                   MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " --algo BEAM-III" } # NBMiner-v42.3 is fastest
     [PSCustomObject]@{ Algorithm = @("Cuckoo29");               Type = "NVIDIA"; Fee = @(0.02);       MinMemGB = 6.0;                                   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 45); Arguments = " --algo C29AE" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29B");            Type = "NVIDIA"; Fee = @(0.02);       MinMemGB = 6.0;                                   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 30); Arguments = " --algo CR29-40" }
     [PSCustomObject]@{ Algorithm = @("Cuckaroo29S");            Type = "NVIDIA"; Fee = @(0.02);       MinMemGB = 6.0;                                   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 30); Arguments = " --algo CR29-32" }
@@ -81,14 +81,17 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
                 # Get arguments for available miner devices
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "coin") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
-                $_.Arguments += " --tls $(If ($MinerPools[0].($_.Algorithm[0]).PoolPorts[1]) { "on" } Else { "off" }) --pool $($MinerPools[0].($_.Algorithm[0]).Host):$(($MinerPools[0].($_.Algorithm[0]).PoolPorts | Select-Object -Last 1))"
+
+                $_.Arguments += " --pool $($MinerPools[0].($_.Algorithm[0]).Host):$(($MinerPools[0].($_.Algorithm[0]).PoolPorts | Select-Object -Last 1))"
                 $_.Arguments += " --user $($MinerPools[0].($_.Algorithm[0]).User)$(If ($MinerPools[0].($_.Algorithm[0]).WorkerName) { ".$($MinerPools[0].($_.Algorithm[0]).WorkerName)" })"
                 $_.Arguments += " --pass $($MinerPools[0].($_.Algorithm[0]).Pass)$(If ($MinerPools[0].($_.Algorithm[0]).BaseName -eq "ProHashing" -and $_.Algorithm[0] -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
+                $_.Arguments += If ($MinerPools[0].($_.Algorithm[0]).PoolPorts[1]) { " --tls on" } Else { " --tls off" }
 
                 If ($_.Algorithm[1]) { 
-                    $_.Arguments += " --dualtls $(If ($MinerPools[1].($_.Algorithm[1]).SSL) { "on" } Else { "off" }) --dualpool $($MinerPools[1].($_.Algorithm[1]).Host):$($MinerPools[1].($_.Algorithm[1]).Port)"
+                    $_.Arguments += " --dualpool $($MinerPools[1].($_.Algorithm[1]).Host):$($MinerPools[1].($_.Algorithm[1]).PoolPorts | Select-Object -Last 1)"
                     $_.Arguments += " --dualuser $($MinerPools[1].($_.Algorithm[1]).User)$(If ($MinerPools[1].($_.Algorithm[1]).WorkerName) { ".$($MinerPools[1].($_.Algorithm[1]).WorkerName)" })"
                     $_.Arguments += " --dualpass $($MinerPools[1].($_.Algorithm[1]).Pass)$(If ($MinerPools[1].($_.Algorithm[1]).BaseName -eq "ProHashing" -and $_.Algorithm[1] -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
+                    $_.Arguments += If ($MinerPools[1].($_.Algorithm[1]).SSL) { " --dualtls on" } Else { " --dualtls off" }
                 }
 
                 If ($MinerPools[0].($_.Algorithm[0]).DAGsizeGB -gt 0) { 

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveOn.ps1
-Version:        4.2.1.0
-Version date:   02 September 2022
+Version:        4.2.1.1
+Version date:   08 September 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -56,39 +56,26 @@ If ($PoolConfig.Wallets) {
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
 
-        ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
-            If ($_.servers.region -eq "all") { 
-                $Region_Norm = "n/a"
-                $Server = $_.servers
-            }
-            Else {
-                $Server = $_.servers | Where-Object { (Get-Region $_.region) -eq $Region_Norm }
-            }
-
-            If ($Server) { 
-                [PSCustomObject]@{ 
-                    Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
-                    Algorithm                = [String]$Algorithm_Norm
-                    BaseName                 = [String]$Name
-                    Currency                 = [String]$Currency
-                    Disabled                 = [Boolean]$Stat.Disabled
-                    EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                    Fee                      = 0
-                    Host                     = [String]$Server.host
-                    Name                     = [String]$PoolVariant
-                    Pass                     = "x"
-                    Port                     = [UInt16]$Server.ports[0]
-                    PortSSL                  = [UInt16]$Server.ssl_ports[0]
-                    Price                    = [Double]$Stat.Live
-                    Region                   = [String]$Region_Norm
-                    StablePrice              = [Double]$Stat.Week
-                    Updated                  = [DateTime]$Stat.Updated
-                    User                     = "$($PoolConfig.Wallets.$Currency).$($PoolConfig.WorkerName)"
-                    Workers                  = [Int]$Request.stats.($_.name).workers
-                    WorkerName               = ""
-                }
-                Break
-            }
+        [PSCustomObject]@{ 
+            Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
+            Algorithm                = [String]$Algorithm_Norm
+            BaseName                 = [String]$Name
+            Currency                 = [String]$Currency
+            Disabled                 = [Boolean]$Stat.Disabled
+            EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+            Fee                      = 0
+            Host                     = [String]$_.servers[0].host
+            Name                     = [String]$PoolVariant
+            Pass                     = "x"
+            Port                     = [UInt16]$_.servers[0].ports[0]
+            PortSSL                  = [UInt16]$_.servers[0].ssl_ports[0]
+            Price                    = [Double]$Stat.Live
+            Region                   = [String]$PoolConfig.Region
+            StablePrice              = [Double]$Stat.Week
+            Updated                  = [DateTime]$Stat.Updated
+            User                     = "$($PoolConfig.Wallets.$Currency).$($PoolConfig.WorkerName)"
+            Workers                  = [Int]$Request.stats.($_.name).workers
+            WorkerName               = ""
         }
     }
 }
