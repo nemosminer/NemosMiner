@@ -83,6 +83,9 @@ While ($BrainConfig) {
             }
         } While (-not $AlgoData)
 
+        # Change estimate_last24 -> estimate_last24h (Error in API?)
+        $AlgoData = ($AlgoData | ConvertTo-Json) -replace '"estimate_last24":', '"estimate_last24h":' | ConvertFrom-Json
+
         ForEach ($Algo in (($AlgoData | Get-Member -MemberType NoteProperty).Name)) { 
             If (-not $AlgoData.$Algo.currency) { 
                 $Currencies = @(($CurrenciesData | Get-Member -MemberType NoteProperty).Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo } | ForEach-Object { $CurrenciesData.$_ })
@@ -147,7 +150,7 @@ While ($BrainConfig) {
         }
 
         ($AlgoData | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
-            If ([Double]($AlgoData.$_.actual_last24h_shared) -gt 0) { 
+            If ([Double]($AlgoData.$_.estimate_last24h) -gt 0) { 
                 $AlgoData.$_ | Add-Member Updated $CurDate -Force
             }
             Else { 
