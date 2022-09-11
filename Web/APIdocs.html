@@ -16,14 +16,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 Product:        NemosMiner
 File:           API.psm1
-version:        4.2.1.1
-version date:   08 September 2022-->
+version:        4.2.1.2
+version date:   11 September 2022-->
 
 
 <html>
 
 <body>
-  <h1>NemosMiner API (version 0.4.8.3)</h1>
+  <h1>NemosMiner API (version 0.4.8.5)</h1>
 
   API data is available at http://localhost:[API port]/&lt;resource&gt.
   (The default API port is 3999)
@@ -56,6 +56,9 @@ version date:   08 September 2022-->
   <br>
   <b><a href="http://localhost:3999/balancedata">/balancedata</a></b>
   <p>Returns the balances collected by the balances tracker used to calculate balance information.</p>
+  <br>
+  <b><a href="http://localhost:3999/braindata">/braindata</a></b>
+  <p>Returns the braindata information.</p>
   <br>
   <b><a href="http://localhost:3999/brainjobs">/brainjobs</a></b>
   <p>Returns the brainjobs information.</p>
@@ -100,7 +103,10 @@ version date:   08 September 2022-->
   <p>Shows the rig data as reported by the monitoring server.</p>
   <br>
   <b><a href="http://localhost:3999/donationdata">/donationdata</a></b>
-  <p>Returns the donation data stored in '.\Data\DonationData.json'.</p>
+  <p>Returns the donation data stored in 'Data\DonationData.json'.</p>
+  <br>
+  <b><a href="http://localhost:3999/donationlog">/donationlog</a></b>
+  <p>Returns the donation data stored in 'Log\DonateLog.json'.</p>
   <br>
   <b><a href="http://localhost:3999/driverversion">/driverversion</a></b>
   <p>Returns the installed CIM & OpenCL driver version numbers.</p>
@@ -256,7 +262,7 @@ version date:   08 September 2022-->
   <br><b>/functions/config/set</b>
   <br>Write full config
   <br>Parameters: full config (JSON)
-  <br>e.g.: /functions/config/set?{"Algorithm"%3A%5B%5D%2C"APILogfile"%3A""%2C"APIPort"%3A3999%2C"AutoReboot"%3Atrue%2C"AutoUpdate"%3Atrue%2C"AutoUpdateCheckInterval"%3A1%2C"BackupOnAutoUpdate"%3Atrue%2C"BadShareRatioThreshold"%3A0.05%2C"BalancesKeepAlive"%3Atrue%2C"BalancesShowInAllCurrencies"%3Atrue%2C"BalancesTrackerIgnorePool"%3A%5B%5D%2C"BalancesTrackerLog"%3Afalse%2C"BalancesTrackerPollInterval"%3A10%2C"CalculatePowerCost"%3Atrue%2C"ConfigFileVersion"%3A"4.2.1.1"%2C"CPUMinerProcessPriority"%3A-2%2C"Currency"%3A"CHF"%2C"DecimalsMax"%3A6%2C"Delay"%3A0%2C"DisableDualAlgoMining"%3Afalse%2C"DisableMinerFee"%3Afalse%2C"DisableMinersWithFee"%3Afalse%2C"DisableSingleAlgoMining"%3Afalse%2C"Donate"%3A13%2C"EarningsAdjustmentFactor"%3A1%2C"ExcludeDeviceName"%3A%5B%5D%2C"ExcludeMinerName"%3A%5B%5D%2C"ExtraCurrencies"%3A%5B"ETC"%2C"ETH"%2C"mBTC"%5D%2C"GPUMinerProcessPriority"%3A-1%2C"IdleDetection"%3Afalse%2C"IdleSec"%3A120%2C"IgnoreMinerFee"%3Afalse%2C"IgnorePoolFee"%3Afalse%2C"IgnorePowerCost"%3Afalse%2C"Interval"%3A90%2C"LogBalanceAPIResponse"%3Afalse%2C"LogToFile"%3A%5B"Info"%2C"Warn"%2C"Error"%2C"Verbose"%5D%2C"LogToScreen"%3A%5B"Info"%2C"Warn"%2C"Error"%2C"Verbose"%5D%2C"MinAccuracy"%3A0.5%2C"MinDataSamples"%3A20%2C"MinDataSamplesAlgoMultiplier"%3A{"X16r"%3A3}%2C"MinerInstancePerDeviceModel"%3Afalse%2C"MinerSet"%3A1%2C"MinerSwitchingThreshold"%3A10%2C"MinerWindowStyle"%3A"minimized"%2C"MinerWindowStyleNormalWhenBenchmarking"%3Atrue%2C"MiningPoolHubAPIKey"%3A""%2C"MiningPoolHubUserName"%3A"Nemo"%2C"MinInterval"%3A1%2C"MinWorker"%3A25%2C"MonitoringServer"%3A"https%3A%2F%2Fnemosminer.com"%2C"MonitoringUser"%3A""%2C"NiceHashAPIKey"%3A""%2C"NiceHashAPISecret"%3A""%2C"NiceHashOrganizationId"%3A""%2C"NiceHashWallet"%3A""%2C"NiceHashWalletIsInternal"%3Afalse%2C"OpenFirewallPorts"%3Atrue%2C"PayoutCurrency"%3A"BTC"%2C"PoolAPIAllowedFailureCount"%3A3%2C"PoolAPIRetryInterval"%3A3%2C"PoolAPITimeout"%3A20%2C"PoolName"%3A%5B"MiningPoolHubCoins"%2C"NiceHash"%5D%2C"PoolsConfigFile"%3A".%5C%5CConfig%5C%5CPoolsConfig.json"%2C"PoolTimeout"%3A20%2C"PowerPricekWh"%3A{"00%3A00"%3A0.26%2C"12%3A00"%3A0.3}%2C"PowerUsage"%3A{}%2C"PowerUsageIdleSystemW"%3A60%2C"ProfitabilityThreshold"%3A-99%2C"ProHashingAPIKey"%3A""%2C"ProHashingMiningMode"%3A"PPS"%2C"ProHashingUserName"%3A"UselessGuru"%2C"Proxy"%3A""%2C"Region"%3A"Europe"%2C"ReportToServer"%3Afalse%2C"ShowAccuracy"%3Atrue%2C"ShowAllMiners"%3Afalse%2C"ShowChangeLog"%3Afalse%2C"ShowCoinName"%3Atrue%2C"ShowCurrency"%3Atrue%2C"ShowEarning"%3Atrue%2C"ShowEarningBias"%3Atrue%2C"ShowMinerFee"%3Atrue%2C"ShowPoolBalances"%3Afalse%2C"ShowPoolFee"%3Atrue%2C"ShowPowerCost"%3Atrue%2C"ShowPowerUsage"%3Atrue%2C"ShowProfit"%3Atrue%2C"ShowProfitBias"%3Atrue%2C"ShowUser"%3Afalse%2C"ShowWorkerStatus"%3Atrue%2C"SnakeTailConfig"%3A".%5C%5CUtils%5C%5CNemosMiner_LogReader.xml"%2C"SnakeTailExe"%3A".%5C%5CUtils%5C%5CSnakeTail.exe"%2C"SSL"%3A"prefer"%2C"StartGUIMinimized"%3Atrue%2C"StartupMode"%3A"Idle"%2C"SubtractBadShares"%3Atrue%2C"SyncWindow"%3A3%2C"Transcript"%3Afalse%2C"UIStyle"%3A"light"%2C"UnrealMinerEarningFactor"%3A5%2C"UnrealPoolPriceFactor"%3A1.5%2C"UseAnycast"%3Atrue%2C"UsemBTC"%3Atrue%2C"UseMinerTweaks"%3Afalse%2C"Wallets"%3A{"BTC"%3A"1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"%2C"ETC"%3A""%2C"ETH"%3A""}%2C"Watchdog"%3Atrue%2C"WatchdogCount"%3A3%2C"WebGUI"%3Atrue%2C"UseColorForMinerStatus"%3Atrue%2C"WorkerName"%3A"BLACKBOX"}
+  <br>e.g.: /functions/config/set?{"Algorithm"%3A%5B%5D%2C"APILogfile"%3A""%2C"APIPort"%3A3999%2C"AutoReboot"%3Atrue%2C"AutoUpdate"%3Atrue%2C"AutoUpdateCheckInterval"%3A1%2C"BackupOnAutoUpdate"%3Atrue%2C"BadShareRatioThreshold"%3A0.05%2C"BalancesKeepAlive"%3Atrue%2C"BalancesShowInAllCurrencies"%3Atrue%2C"BalancesTrackerIgnorePool"%3A%5B%5D%2C"BalancesTrackerLog"%3Afalse%2C"BalancesTrackerPollInterval"%3A10%2C"CalculatePowerCost"%3Atrue%2C"ConfigFileVersion"%3A"4.2.1.2"%2C"CPUMinerProcessPriority"%3A-2%2C"Currency"%3A"CHF"%2C"DecimalsMax"%3A6%2C"Delay"%3A0%2C"DisableDualAlgoMining"%3Afalse%2C"DisableMinerFee"%3Afalse%2C"DisableMinersWithFee"%3Afalse%2C"DisableSingleAlgoMining"%3Afalse%2C"Donate"%3A13%2C"EarningsAdjustmentFactor"%3A1%2C"ExcludeDeviceName"%3A%5B%5D%2C"ExcludeMinerName"%3A%5B%5D%2C"ExtraCurrencies"%3A%5B"ETC"%2C"ETH"%2C"mBTC"%5D%2C"GPUMinerProcessPriority"%3A-1%2C"IdleDetection"%3Afalse%2C"IdleSec"%3A120%2C"IgnoreMinerFee"%3Afalse%2C"IgnorePoolFee"%3Afalse%2C"IgnorePowerCost"%3Afalse%2C"Interval"%3A90%2C"LogBalanceAPIResponse"%3Afalse%2C"LogToFile"%3A%5B"Info"%2C"Warn"%2C"Error"%2C"Verbose"%5D%2C"LogToScreen"%3A%5B"Info"%2C"Warn"%2C"Error"%2C"Verbose"%5D%2C"MinAccuracy"%3A0.5%2C"MinDataSamples"%3A20%2C"MinDataSamplesAlgoMultiplier"%3A{"X16r"%3A3}%2C"MinerInstancePerDeviceModel"%3Afalse%2C"MinerSet"%3A1%2C"MinerSwitchingThreshold"%3A10%2C"MinerWindowStyle"%3A"minimized"%2C"MinerWindowStyleNormalWhenBenchmarking"%3Atrue%2C"MiningPoolHubAPIKey"%3A""%2C"MiningPoolHubUserName"%3A"Nemo"%2C"MinInterval"%3A1%2C"MinWorker"%3A25%2C"MonitoringServer"%3A"https%3A%2F%2Fnemosminer.com"%2C"MonitoringUser"%3A""%2C"NiceHashAPIKey"%3A""%2C"NiceHashAPISecret"%3A""%2C"NiceHashOrganizationId"%3A""%2C"NiceHashWallet"%3A""%2C"NiceHashWalletIsInternal"%3Afalse%2C"OpenFirewallPorts"%3Atrue%2C"PayoutCurrency"%3A"BTC"%2C"PoolAPIAllowedFailureCount"%3A3%2C"PoolAPIRetryInterval"%3A3%2C"PoolAPITimeout"%3A20%2C"PoolName"%3A%5B"MiningPoolHubCoins"%2C"NiceHash"%5D%2C"PoolsConfigFile"%3A".%5C%5CConfig%5C%5CPoolsConfig.json"%2C"PoolTimeout"%3A20%2C"PowerPricekWh"%3A{"00%3A00"%3A0.26%2C"12%3A00"%3A0.3}%2C"PowerUsage"%3A{}%2C"PowerUsageIdleSystemW"%3A60%2C"ProfitabilityThreshold"%3A-99%2C"ProHashingAPIKey"%3A""%2C"ProHashingMiningMode"%3A"PPS"%2C"ProHashingUserName"%3A"UselessGuru"%2C"Proxy"%3A""%2C"Region"%3A"Europe"%2C"ReportToServer"%3Afalse%2C"ShowAccuracy"%3Atrue%2C"ShowAllMiners"%3Afalse%2C"ShowChangeLog"%3Afalse%2C"ShowCoinName"%3Atrue%2C"ShowCurrency"%3Atrue%2C"ShowEarning"%3Atrue%2C"ShowEarningBias"%3Atrue%2C"ShowMinerFee"%3Atrue%2C"ShowPoolBalances"%3Afalse%2C"ShowPoolFee"%3Atrue%2C"ShowPowerCost"%3Atrue%2C"ShowPowerUsage"%3Atrue%2C"ShowProfit"%3Atrue%2C"ShowProfitBias"%3Atrue%2C"ShowUser"%3Afalse%2C"ShowWorkerStatus"%3Atrue%2C"SnakeTailConfig"%3A".%5C%5CUtils%5C%5CNemosMiner_LogReader.xml"%2C"SnakeTailExe"%3A".%5C%5CUtils%5C%5CSnakeTail.exe"%2C"SSL"%3A"prefer"%2C"StartGUIMinimized"%3Atrue%2C"StartupMode"%3A"Idle"%2C"SubtractBadShares"%3Atrue%2C"SyncWindow"%3A3%2C"Transcript"%3Afalse%2C"UIStyle"%3A"light"%2C"UnrealMinerEarningFactor"%3A5%2C"UnrealPoolPriceFactor"%3A1.5%2C"UseAnycast"%3Atrue%2C"UsemBTC"%3Atrue%2C"UseMinerTweaks"%3Afalse%2C"Wallets"%3A{"BTC"%3A"1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"%2C"ETC"%3A""%2C"ETH"%3A""}%2C"Watchdog"%3Atrue%2C"WatchdogCount"%3A3%2C"WebGUI"%3Atrue%2C"UseColorForMinerStatus"%3Atrue%2C"WorkerName"%3A"BLACKBOX"}
 
   <br>
   <br><b>/functions/file/edit</b>
@@ -310,7 +316,7 @@ version date:   08 September 2022-->
   <br><b>/functions/stat/set</b>
   <br>Set miner hashrate value, not useful for pool stats:
   <br>Parameters: (JSON, pool list as array, requires properties Name=StatName, Algorithm=Algorithm(s), Type=Hashrate, Value (0=failed; -1=disabled)
-  <br>e.g.: /functions/stat/set?Miners%3D%5B{"Name"%3A"SRBMinerMulti-v1.0.5-1xRadeonRX5700XT8GB"%2C"Algorithms"%3A%5B"Argon2d16000"%5D}%5D%26Type%3DHashrate%26Value%3D-1
+  <br>e.g.: /functions/stat/set?Miners%3D%5B{"Name"%3A"SRBMinerMulti-v1.0.7-1xRadeonRX5700XT8GB"%2C"Algorithms"%3A%5B"Argon2d16000"%5D}%5D%26Type%3DHashrate%26Value%3D-1
   <br>
   <br><b>/functions/pool/enable</b>
   <br>Enable disabled pool

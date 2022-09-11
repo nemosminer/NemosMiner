@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.2.1.1
-Version date:   08 September 2022
+Version:        4.2.1.2
+Version date:   11 September 2022
 #>
 
 # Window handling
@@ -985,19 +985,23 @@ Function Write-Message {
 
     $Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
-    If ($Config.LogToScreen -and $Level -in $Config.LogToScreen) { 
-        # Update status text box in legacy GUI
-        If ($Variables.LabelStatus) { $Variables.LabelStatus.AppendText("`r`n$Date $($Level.ToUpper()): $Message") }
+    Try { 
+        # Ignore error when main window gets closed
+        If ($Config.LogToScreen -and $Level -in $Config.LogToScreen) { 
+            # Update status text box in legacy GUI
+            If ($Variables.LabelStatus.AppendText) { $Variables.LabelStatus.AppendText("`r`n$Date $($Level.ToUpper()): $Message") }
 
-        # Write to console
-        Switch ($Level) { 
-            "Error"   { Write-Host $Message -ForegroundColor "Red" }
-            "Warn"    { Write-Host $Message -ForegroundColor "Magenta" }
-            "Info"    { Write-Host $Message -ForegroundColor "White" }
-            "Verbose" { Write-Host $Message -ForegroundColor "Yello" }
-            "Debug"   { Write-Host $Message -ForegroundColor "Blue" }
+            # Write to console
+            Switch ($Level) { 
+                "Error"   { Write-Host $Message -ForegroundColor "Red" }
+                "Warn"    { Write-Host $Message -ForegroundColor "Magenta" }
+                "Info"    { Write-Host $Message -ForegroundColor "White" }
+                "Verbose" { Write-Host $Message -ForegroundColor "Yello" }
+                "Debug"   { Write-Host $Message -ForegroundColor "Blue" }
+            }
         }
     }
+    Catch { }
 
     If ($Variables.LogFile -and $Config.LogToFile -and $Level -in $Config.LogToFile) { 
         # Get mutex. Mutexes are shared across all threads and processes. 
@@ -1006,8 +1010,6 @@ Function Write-Message {
 
         # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
         If ($Mutex.WaitOne(1000)) { 
-
-
             "$Date $($Level.ToUpper()): $Message" | Out-File -FilePath $Variables.LogFile -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
             [void]$Mutex.ReleaseMutex()
         }
@@ -1130,33 +1132,33 @@ Function Merge-Hashtable {
     $HT1
 }
 
-Function Get-DonationPoolConfig { 
+Function Get-RandomDonationPoolsConfig { 
     # Randomize donation data
     # Build pool config with available donation data, not all devs have the same set of wallets available
 
-    $Variables.DonateRandom = $Variables.DonationData | Get-Random
-    $Variables.DonatePoolsConfig = [Ordered]@{ }
+    $Variables.DonationRandom = $Variables.DonationData | Get-Random
+    $Variables.DonationRandomPoolsConfig = [Ordered]@{ }
     (Get-ChildItem .\Pools\*.ps1 -File).BaseName | Sort-Object -Unique | ForEach-Object { 
         $PoolConfig = @{ }
         $PoolConfig.EarningsAdjustmentFactor = 1
         $PoolConfig.Region = $Config.PoolsConfig.$_.Region
-        $PoolConfig.WorkerName = "$($Variables.Branding.ProductLabel)-$($Variables.Branding.Version.ToString())-donate$($Config.Donate)"
+        $PoolConfig.WorkerName = "$($Variables.Branding.ProductLabel)-$($Variables.Branding.Version.ToString())-donate$($Config.Donation)"
         Switch -regex ($_) { 
             "^MiningDutch$|^MiningPoolHub$|^ProHashing$" { 
-                If ($Variables.DonateRandom."$($_)UserName") { # not all devs have a known MiningDutch or ProHashing account
-                    $PoolConfig.UserName = $Variables.DonateRandom."$($_)UserName"
+                If ($Variables.DonationRandom."$($_)UserName") { # not all devs have a known MiningDutch or ProHashing account
+                    $PoolConfig.UserName = $Variables.DonationRandom."$($_)UserName"
                     $PoolConfig.Variant = $Config.PoolsConfig.$_.Variant
-                    $Variables.DonatePoolsConfig.$_ = $PoolConfig
+                    $Variables.DonationRandomPoolsConfig.$_ = $PoolConfig
                 }
                 Break
             }
             Default { 
-                If ($Variables.DonateRandom.Wallets) { 
+                If ($Variables.DonationRandom.Wallets) { 
                     # not all devs have a known ETC or ETH address
-                    If ($Config.PoolName -match $_ -and (Compare-Object @($Variables.PoolData.$_.GuaranteedPayoutCurrencies) @($Variables.DonateRandom.Wallets.PSObject.Properties.Name) -IncludeEqual -ExcludeDifferent)) { 
+                    If ($Config.PoolName -match $_ -and (Compare-Object @($Variables.PoolData.$_.GuaranteedPayoutCurrencies) @($Variables.DonationRandom.Wallets.PSObject.Properties.Name) -IncludeEqual -ExcludeDifferent)) { 
                         $PoolConfig.Variant = If ($Config.PoolsConfig.$_.Variant) { $Config.PoolsConfig.$_.Variant } Else { $Config.PoolName -match $_ }
-                        $PoolConfig.Wallets = $Variables.DonateRandom.Wallets | ConvertTo-Json | ConvertFrom-Json -AsHashtable
-                        $Variables.DonatePoolsConfig.$_ = $PoolConfig
+                        $PoolConfig.Wallets = $Variables.DonationRandom.Wallets | ConvertTo-Json | ConvertFrom-Json -AsHashtable
+                        $Variables.DonationRandomPoolsConfig.$_ = $PoolConfig
                     }
                 }
                 Break
@@ -2926,6 +2928,7 @@ Function Update-ConfigFile {
             "APIKEY" { $Config.MiningPoolHubAPIKey = $Config.$_; $Config.Remove($_) }
             "BalancesTrackerConfigFile" { $Config.Remove($_) }
             "DeductRejectedShares" { $Config.SubtractBadShares = $Config.$_; $Config.Remove($_) }
+            "Donate" { $Config.Donation = $Config.$_; $Config.Remove($_) }
             "EnableEarningsTrackerLog" { $Config.EnableBalancesLog = $Config.$_; $Config.Remove($_) }
             "EstimateCorrection" { $Config.Remove($_) }
             "EthashLowMemMinMemGB" { $Config.Remove($_) }
@@ -2989,7 +2992,7 @@ Function Update-ConfigFile {
                 $PoolsConfig.$_.PSObject.Members.Remove("Wallet")
             }
         }
-        $PoolsConfig | ConvertTo-Json | Out-File -FilePath .\Config\PoolsConfig.json -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+        $PoolsConfig | ConvertTo-Json | Out-File -FilePath ".\Config\PoolsConfig.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
     }
 
     # Rename MPH to MiningPoolHub

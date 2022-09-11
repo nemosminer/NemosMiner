@@ -15,11 +15,11 @@
       <BookmarkTextColor>Yellow</BookmarkTextColor>
       <BookmarkBackColor>DarkGreen</BookmarkBackColor>
       <Modeless>false</Modeless>
-      <Title>NemosMiner_2022-04-26.log</Title>
+      <Title>NemosMiner_2022-09-06.log</Title>
       <WindowState>Maximized</WindowState>
       <WindowSize>
-        <Width>2319</Width>
-        <Height>1204</Height>
+        <Width>1886</Width>
+        <Height>1059</Height>
       </WindowSize>
       <WindowPosition>
         <X>-11</X>
@@ -187,12 +187,12 @@
   </TailFiles>
   <SelectedTab>0</SelectedTab>
   <WindowSize>
-    <Width>2323</Width>
-    <Height>1308</Height>
+    <Width>1890</Width>
+    <Height>1163</Height>
   </WindowSize>
   <WindowPosition>
-    <X>272</X>
-    <Y>130</Y>
+    <X>126</X>
+    <Y>118</Y>
   </WindowPosition>
   <MinimizedToTray>false</MinimizedToTray>
   <AlwaysOnTop>false</AlwaysOnTop>

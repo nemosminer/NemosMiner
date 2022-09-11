@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.2.1.1
-Version date:   08 September 2022
+Version:        4.2.1.2
+Version date:   11 September 2022
 #>
 
 Function Initialize-API { 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.8.3"
+    $APIVersion = "0.4.8.4"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
@@ -665,6 +665,10 @@ Function Start-APIServer {
                         $Data = ConvertTo-Json -Depth 10 @($Variables.BalancesCurrencies)
                         break
                     }
+                    "/braindata" { 
+                        $Data = ConvertTo-Json -Depth 2 ($Variables.BrainData | Select-Object)
+                        Break
+                    }
                     "/brainjobs" { 
                         $Data = ConvertTo-Json -Depth 2 ($Variables.BrainJobs | Select-Object)
                         Break
@@ -745,6 +749,10 @@ Function Start-APIServer {
                     }
                     "/donationdata" { 
                         $Data =  ConvertTo-Json $Variables.DonationData
+                        Break
+                    }
+                    "/donationlog" { 
+                        $Data =  ConvertTo-Json $Variables.DonationLog
                         Break
                     }
                     "/driverversion" { 

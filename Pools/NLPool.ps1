@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NLPool.ps1
-Version:        4.2.1.1
-Version date:   08 September 2022
+Version:        4.2.1.2
+Version date:   11 September 2022
 #>
 
 using module ..\Includes\Include.psm1

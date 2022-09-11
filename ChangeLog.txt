@@ -10,6 +10,30 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+
+ChangeLog NemosMiner 4.2.1.2 11.09.2022
+=======================================
+
+Enhancements:
+- API: Added '/braindata'
+- API: Added '/donationlog'
+- Core: Do not donate more than once a day after a NemosMier restart
+- Core: Renamed configuaration item 'Donate' to 'Donation'
+- Core: Write donation log for the last 365 days to 'Logs\DonationLog.json'
+- Web GUI / Earnings Chart: Added grey scale color scheme
+
+Miner changes:
+- Kudaraidee-v1.2.0a: Enable for AMD (https://github.com/RainbowMiner/RainbowMiner/issues/2131)
+- MiniZ-v1.9z2
+- NanoMiner-v3.7.1
+- SRBMinerMulti-v1.0.7
+
+Pool changes:
+- NiceHash: Add support for EtcHash (ETC)
+- ZergPool: Enable more algorithms ($_.actual_last24h_shared -> $_.estimate_last24h)
+- ZergPoolCoins*: Fix error 'No data from pool'
+
+
 ChangeLog NemosMiner 4.2.1.1 08.09.2022
 =======================================
 

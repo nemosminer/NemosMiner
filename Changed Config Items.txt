@@ -317,6 +317,7 @@ Removed Config Items
 
 Renamed config items (same functionality)
 =========================================
+  "Donate" renamed to "Donation"
   "MineWhenIdle" renamed to "IdleDetection"
   "RunningMinerGainPct" renamed to "MinerSwitchingThreshold" 
 

@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.2.1.1
-Version date:   08 September 2022
+Version:        4.2.1.2
+Version date:   11 September 2022
 #>
 
 [CmdletBinding()]
@@ -285,7 +285,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.2.1.1"
+    Version      = [System.Version]"4.2.1.2"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -367,6 +367,11 @@ If (-not $Variables.DonationData) {
     Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\DonationData.json' is not a valid JSON file. Please restore it from your original download."
     Start-Sleep -Seconds 10
     Exit
+}
+# Verify donation log
+$Variables.DonationLog = Get-Content -Path ".\Logs\DonateLog.json" | ConvertFrom-Json -NoEnumerate
+If (-not $Variables.DonationLog) { 
+    $Variables.DonationLog = @()
 }
 # Load algorithm list
 $Variables.Algorithms = Get-Content -Path ".\Data\Algorithms.json" | ConvertFrom-Json

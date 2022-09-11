@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.2.1.1
-Version date:   08 September 2022
+Version:        4.2.1.2
+Version date:   11 September 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -65,9 +65,7 @@ While ($BrainConfig) {
                         $BestCurrency = ($_.Group | Sort-Object estimate_current | Select-Object -First 1)
                         $BestCurrency | Add-Member coinname ($BestCurrency.name -replace "coin$", "Coin" -replace "hash$", "Hash") -Force
                         $BestCurrency | Add-Member name $BestCurrency.algo -Force
-                        # $BestCurrency | Add-Member estimate_last24h $BestCurrency.estimate_last24
                         $BestCurrency.PSObject.Properties.Remove("algo")
-                        # $BestCurrency.PSObject.Properties.Remove("estimate_last24")
                         $BestCurrency.PSObject.Properties.Remove("symbol")
                         $AlgoData | Add-Member $BestCurrency.name $BestCurrency
                     }
@@ -94,31 +92,29 @@ While ($BrainConfig) {
             }
 
             $AlgoData.$Algo.estimate_last24h = [Double]$AlgoData.$Algo.estimate_last24h
-            If ($AlgoData.$Algo.actual_last24h) { $AlgoData.$Algo.actual_last24h = [Double]($AlgoData.$Algo.actual_last24h / 1000) }
-            # If ($AlgoData.$Algo.actual_last24h_shared) { $AlgoData.$Algo.actual_last24h_shared = [Double]($AlgoData.$Algo.actual_last24h_shared / 1000) }
-            # If ($AlgoData.$Algo.actual_last24h_solo) { $AlgoData.$Algo.actual_last24h_solo = [Double]($AlgoData.$Algo.actual_last24h_solo / 1000) }
-            $BasePrice = If ($AlgoData.$Algo.actual_last24h) { [Double]$AlgoData.$Algo.actual_last24h } Else { [Double]$AlgoData.$Algo.estimate_last24h }
+            If ($AlgoData.$Algo.actual_last24h_shared) { $AlgoData.$Algo.actual_last24h_shared = [Double]($AlgoData.$Algo.actual_last24h_shared / 1000) }
+            $BasePrice = If ($AlgoData.$Algo.actual_last24h_shared) { [Double]$AlgoData.$Algo.actual_last24h_shared } Else { [Double]$AlgoData.$Algo.estimate_last24h }
             $AlgoData.$Algo.estimate_current = [math]::max(0, [Double]($AlgoData.$Algo.estimate_current * ( 1 - ($BrainConfig.PoolAPIPerFailPercentPenalty * [math]::max(0, $APICallFails - $BrainConfig.PoolAPIAllowedFailureCount) / 100))))
             $AlgoObject += [PSCustomObject]@{
-                Date               = $CurDate
-                Name               = $AlgoData.$Algo.name
-                Port               = $AlgoData.$Algo.port
-                Coins              = $AlgoData.$Algo.coins
-                CoinName           = $AlgoData.$Algo.CoinName
-                Currency           = $AlgoData.$Algo.Currency
-                Fees               = $AlgoData.$Algo.Fees
-                Hashrate           = $AlgoData.$Algo.Hashrate
-                Workers            = $AlgoData.$Algo.Workers
-                estimate_current   = $AlgoData.$Algo.estimate_current -as [Double]
-                estimate_last24h   = $AlgoData.$Algo.estimate_last24h
-                actual_last24h     = $BasePrice
-                hashrate_last24h   = $AlgoData.$Algo.hashrate_last24h
-                Last24Drift        = $AlgoData.$Algo.estimate_current - $BasePrice
-                Last24DriftSign    = If (($AlgoData.$Algo.estimate_current - $BasePrice) -ge 0) { "Up" } Else { "Down" }
-                Last24DriftPercent = If ($BasePrice -gt 0) { ($AlgoData.$Algo.estimate_current - $BasePrice) / $BasePrice } Else { 0 }
-                FirstDate          = $AlgoObject[0].Date
-                TimeSpan           = If ($null -ne $AlgoObject.Date) { (New-TimeSpan -Start ($AlgoObject[0]).Date -End $CurDate).TotalMinutes }
-            }
+                Date                  = $CurDate
+                Name                  = $AlgoData.$Algo.name
+                Port                  = $AlgoData.$Algo.port
+                Coins                 = $AlgoData.$Algo.coins
+                CoinName              = $AlgoData.$Algo.CoinName
+                Currency              = $AlgoData.$Algo.Currency
+                Fees                  = $AlgoData.$Algo.Fees
+                # Hashrate              = $AlgoData.$Algo.Hashrate
+                Workers               = $AlgoData.$Algo.Workers
+                estimate_current      = $AlgoData.$Algo.estimate_current -as [Double]
+                estimate_last24h      = $AlgoData.$Algo.estimate_last24h
+                actual_last24h_shared = $BasePrice
+                # hashrate_last24h      = $AlgoData.$Algo.hashrate_last24h
+                Last24Drift           = $AlgoData.$Algo.estimate_current - $BasePrice
+                Last24DriftSign       = If (($AlgoData.$Algo.estimate_current - $BasePrice) -ge 0) { "Up" } Else { "Down" }
+                Last24DriftPercent    = If ($BasePrice -gt 0) { ($AlgoData.$Algo.estimate_current - $BasePrice) / $BasePrice } Else { 0 }
+                FirstDate             = $AlgoObject[0].Date
+                TimeSpan              = If ($null -ne $AlgoObject.Date) { (New-TimeSpan -Start ($AlgoObject[0]).Date -End $CurDate).TotalMinutes }
+            }   
         }
 
         If ($PoolVariant -match "Plus$") {
@@ -136,7 +132,7 @@ While ($BrainConfig) {
                 $PenaltySampleSizeHalf = ((($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Down" }).Count) / (($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Count)) * [math]::abs(($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Median)
                 $PenaltySampleSizeNoPercent = ((($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Down" }).Count) / (($GroupMedSampleSize | Where-Object { $_.Name -eq $Name }).Count)) * [math]::abs(($GroupMedSampleSizeNoPercent | Where-Object { $_.Name -eq $Name }).Median)
                 $Penalty = ($PenaltySampleSizeHalf * $BrainConfig.SampleHalfPower + $PenaltySampleSizeNoPercent) / ($BrainConfig.SampleHalfPower + 1)
-                $Price = [math]::max(0, [Double](($Penalty) + ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).actual_last24h))
+                $Price = [math]::max(0, [Double](($Penalty) + ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).actual_last24h_shared))
                 If ($BrainConfig.UseFullTrust) { 
                     If ($Penalty -gt 0) { 
                         $Price = [Math]::max([Double]$Price, [Double]($CurAlgoObject | Where-Object { $_.Name -eq $Name }).estimate_current)

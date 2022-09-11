@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.2.1.1
-Version date:   08 September 2022
+Version:        4.2.1.2
+Version date:   11 September 2022
 #>
 
 using module .\Include.psm1
@@ -106,41 +106,49 @@ Do {
                 $PoolNames = If ($Variables.NiceHashWalletIsInternal) { $Config.PoolName -replace "NiceHash", "NiceHash Internal" } Else { $Config.PoolName -replace "NiceHash", "NiceHash External" }
                 $PoolsConfig = $Config.PoolsConfig
 
-                If ($Config.Donate -gt 0) { 
+                If ($Config.Donation -gt 0) { 
                     # Re-Randomize donation start once per day, do not donate if remaing time for today is less than donation duration
-                    If (($Variables.DonateStart).Date -ne (Get-Date).Date -and (Get-Date).AddMinutes($Config.Donate).Date -eq (Get-Date).Date) { 
-                        $Variables.DonateStart = (Get-Date).AddMinutes((Get-Random -Minimum $Config.Donate -Maximum (1440 - $Config.Donate - (Get-Date).TimeOfDay.TotalMinutes))).ToUniversalTime()
-                        $Variables.DonateEnd = $null
+                    If (($Variables.DonationLog.Start | Select-Object -Last 1) -ne (Get-Date).Date) { 
+                        If (-not $Variables.DonationStart) { 
+                            $Variables.DonationStart = (Get-Date).AddMinutes((Get-Random -Minimum $Config.Donation -Maximum (1440 - $Config.Donation - (Get-Date).TimeOfDay.TotalMinutes))).ToUniversalTime()
+                            $Variables.DonationEnd = $null
+                        }
                     }
 
-                    If ((Get-Date).ToUniversalTime() -ge $Variables.DonateStart -and $null -eq $Variables.DonateEnd) { 
+                    If ((Get-Date).ToUniversalTime() -ge $Variables.DonationStart -and -not $Variables.DonationEnd) { 
                         # We get here only once per day, ensure full donation period
-                        $Variables.DonateStart = (Get-Date).ToUniversalTime()
-                        $Variables.DonateEnd = $Variables.DonateStart.AddMinutes($Config.Donate)
+                        $Variables.DonationStart = (Get-Date).ToUniversalTime()
+                        $Variables.DonationEnd = $Variables.DonationStart.AddMinutes($Config.Donation)
 
                         # Add pool config to config (in-memory only)
-                        Get-DonationPoolConfig
+                        Get-RandomDonationPoolsConfig
 
                         # Clear all pools
                         $Variables.Pools = [Pool[]]@()
                     }
                 }
 
-                If ($Variables.DonateRandom) { 
-                    If ((Get-Date).ToUniversalTime() -ge $Variables.DonateStart -and (Get-Date).ToUniversalTime() -lt $Variables.DonateEnd) { 
+                If ($Variables.DonationRandomPoolsConfig) { 
+                    If ((Get-Date).ToUniversalTime() -ge $Variables.DonationStart -and (Get-Date).ToUniversalTime() -lt $Variables.DonationEnd) { 
                         # Ensure full donation period
-                        $Variables.EndCycleTime = $Variables.DonateEnd
+                        $Variables.EndCycleTime = $Variables.DonationEnd
                         # Activate donation
-                        $PoolNames = $Variables.DonatePoolsConfig.Keys -replace "Nicehash", "NiceHash External"
-                        $PoolsConfig = $Variables.DonatePoolsConfig
+                        $PoolNames = $Variables.DonationRandomPoolsConfig.Keys -replace "Nicehash", "NiceHash External"
+                        $PoolsConfig = $Variables.DonationRandomPoolsConfig
                         $Variables.NiceHashWalletIsInternal = $false
-                        Write-Message -Level Info "Donation run: Mining for '$($Variables.DonateRandom.Name)' for the next $(If (($Config.Donate - ((Get-Date) - $Variables.DonateStart).Minutes) -gt 1) { "$($Config.Donate - ((Get-Date) - $Variables.DonateStart).Minutes) minutes" } Else { "minute" }). $($Variables.Branding.ProductLabel) will use these pools while donating: '$($PoolNames -join ', ')'."
+                        Write-Message -Level Info "Donation run: Mining for '$($Variables.DonationRandom.Name)' for the next $(If (($Config.Donation - ((Get-Date) - $Variables.DonationStart).Minutes) -gt 1) { "$($Config.Donation - ((Get-Date) - $Variables.DonationStart).Minutes) minutes" } Else { "minute" }). $($Variables.Branding.ProductLabel) will use these pools while donating: '$($PoolNames -join ', ')'."
                     }
-                    ElseIf ((Get-Date).ToUniversalTime() -gt $Variables.DonateEnd) { 
-                        $Variables.DonatePoolsConfig = $null
-                        $Variables.DonateRandom = $null
+                    ElseIf ((Get-Date).ToUniversalTime() -gt $Variables.DonationEnd) { 
+                        [Array]$Variables.DonationLog += [PSCustomObject]@{ 
+                            Start = $Variables.DonationStart
+                            End   = $Variables.DonationEnd
+                            Name  = $Variables.DonationRandom.Name
+                        }
+                        $Variables.DonationLog = $Variables.DonationLog | Select-Object -Last 365 # Keep data for one year
+                        $Variables.DonationLog | ConvertTo-Json | Out-File -FilePath ".\Logs\DonateLog.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+                        $Variables.DonationRandomPoolsConfig = $null
+                        $Variables.DonationRandom = $null
                         Write-Message -Level Info "Donation run complete - thank you! Mining for you again. :-)"
-
                         # Clear all pools
                         $Variables.Pools = [Pool[]]@()
                     }
@@ -783,7 +791,7 @@ Do {
             If ($Miners -and $Variables.PoolsBest) { 
                 $AddSeconds = $Config.Interval * ($Config.MinInterval -1)
                 $Miners | Select-Object | ForEach-Object { 
-                    $_.KeepRunning = $_.Status -eq [MinerStatus]::Running -and -not ($_.Benchmark -or $_.MeasurePowerUsage -or $Variables.DonateRandom) -and $_.BeginTime.AddSeconds($AddSeconds) -gt $Variables.Timer # Minimum numbers of full cycles not yet reached
+                    $_.KeepRunning = $_.Status -eq [MinerStatus]::Running -and -not ($_.Benchmark -or $_.MeasurePowerUsage -or $Variables.DonationRandom) -and $_.BeginTime.AddSeconds($AddSeconds) -gt $Variables.Timer # Minimum numbers of full cycles not yet reached
 
                     If (-not $_.KeepRunning) { 
                         If ($Miner = Compare-Object -PassThru @($NewMiners | Select-Object) @($_ | Select-Object) -Property Name, Algorithms -ExcludeDifferent | Select-Object -ExcludeProperty SideIndicator) { 

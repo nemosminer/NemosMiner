@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningDutch.ps1
-Version:        4.2.1.1
-Version date:   08 September 2022
+Version:        4.2.1.2
+Version date:   11 September 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -56,19 +56,15 @@ While ($BrainConfig) {
             Try { 
 
                 If (-not $AlgoData) { $AlgoData = Invoke-RestMethod -Uri $BrainConfig.PoolstatusUri -Headers $Headers -UserAgent $UserAgent -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout }
-                If ($BrainConfig.PoolCurrenciesUri -and -not $CurrenciesData) { $CurrenciesData = Invoke-RestMethod -Uri $BrainConfig.PoolCurrenciesUri -Headers $Headers -UserAgent $UserAgent -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout }
                 $APICallFails = 0
             }
             Catch { 
                 $APICallFails++
                 Start-Sleep -Seconds ($APICallFails * $BrainConfig.PoolAPIRetryInterval)
             }
-        } While (-not $AlgoData -or ($BrainConfig.PoolCurrenciesUri -and -not $CurrenciesData))
-
-        If ($BrainConfig.PoolCurrenciesUri)  { ($CurrenciesData | Get-Member -MemberType NoteProperty).Name | ForEach-Object { $CurrenciesData.$_ | Add-Member -Force @{Symbol = If ($CurrenciesData.$_.Symbol) { $CurrenciesData.$_.Symbol -replace "-.+" } Else { $_ -replace "-.+"} } } }
+        } While (-not $AlgoData)
 
         ForEach ($Algo in (($AlgoData | Get-Member -MemberType NoteProperty).Name)) { 
-            If ($BrainConfig.PoolCurrenciesUri) { $Currencies = @(($CurrenciesData | Get-Member -MemberType NoteProperty).Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo } | ForEach-Object { $CurrenciesData.$_ }) }
             $Currency = If ($Currencies.Symbol) { ($Currencies | Sort-Object Estimate)[-1].Symbol } Else { "" }
             $AlgoData.$Algo | Add-Member @{ Currency = $Currency.Trim() }
 

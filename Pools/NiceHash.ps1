@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.2.1.1
-Version date:   08 September 2022
+Version:        4.2.1.2
+Version date:   11 September 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -60,6 +60,7 @@ If ($Wallet) {
             "BEAMV3"         { "BEAM" }
             "CUCKOOCYCLE"    { "AE" }
             "EAGLESONG"      { "CKB" }
+            "ETCHASH"        { "ETC" }
             "GRINCUCKATOO31" { "GRIN" }
             "GRINCUCKATOO32" { "GRIN" }
             "HANDSHAKE"      { "HNS" }
@@ -72,13 +73,12 @@ If ($Wallet) {
             Default          { "" }
         }
 
-        $Port = $_.algodetails.port
         $Divisor = 100000000
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor) -FaultDetection $false
 
         [PSCustomObject]@{ 
-            Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Minute_5_Fluctuation), 1)) # Use short timespan to counter price peaks
+            Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Minute_5_Fluctuation), 1)) # Use short timespan to counter price spikes
             Algorithm                = [String]$Algorithm_Norm
             BaseName                 = [String]$Name
             Currency                 = [String]$Currency
