@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.8.4"
+    $APIVersion = "0.4.8.5"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
@@ -761,6 +761,10 @@ Function Start-APIServer {
                     }
                     "/earningschartdata" { 
                         $Data =  ConvertTo-Json $Variables.EarningsChartData
+                        Break
+                    }
+                    "/equihashcoinpers" { 
+                        $Data = Get-Content -Path ".\Data\EquihashCoinPers.json"
                         Break
                     }
                     "/extracurrencies" { 
