@@ -17,6 +17,7 @@ ChangeLog NemosMiner 4.2.1.2 11.09.2022
 Enhancements:
 - API: Added '/braindata'
 - API: Added '/donationlog'
+- API: Added '/equihashcoinpers'
 - Core: Do not donate more than once a day after a NemosMier restart
 - Core: Renamed configuaration item 'Donate' to 'Donation'
 - Core: Write donation log for the last 365 days to 'Logs\DonationLog.json'
