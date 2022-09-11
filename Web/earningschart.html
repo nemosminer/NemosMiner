@@ -2,20 +2,48 @@
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h2 data-navbaractive="navearningschart">Earnings Chart</h2>
           </div>
-          <div class="alert alert-info" role="alert">Consolidated earnings of the last 30 active mining days<br>The data is taken from the pools APIs and may not yet include results from recent mining</div>
-          <canvas id="EarningsChart" role="img" style="padding-right: 1%;"></canvas>
+          <table class="alert alert-info table" role="alert">
+            <tr>
+              <td>Consolidated earnings of the last 30 active mining days<br>The data is taken from the pools APIs and may not yet include results from recent mining</td>
+              <td data-halign="right" style="padding-top: 1.5rem">
+                Grey scale <input type="checkbox" class="toggle-switch" id="useColor" name="useColor"> Colors
+              </td>
+            </tr>
+          </table>
+          <canvas style=" top:-30px;" id="EarningsChart" role="img"></canvas>
 <!-- Start of page scripts 'earningschart.html' -->
           <script type="text/javascript">
             var canvas = document.getElementById('EarningsChart');
 
+            //get stored variables
+            var useColor = JSON.parse(localStorage.getItem('useColor'));
+            if (useColor == null) useColor = true;
+            document.getElementById('useColor').checked = useColor
+            $(document.getElementById('useColor')).change(function (event) {
+              useColor = Boolean(document.getElementById('useColor').checked);
+              localStorage.setItem('useColor', useColor);
+              updateEarningsChart();
+            });
+
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - 175;
+            canvas.height = window.innerHeight - 155;
 
             Chart.defaults.color = 'black';
             Chart.defaults.font.size = 16;
 
-            // Colors = ['#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#FFEB3B', '#FFC107', '#FF9800', '#E91E63', '#9C27B0', '#3F51B5'];
-            var Colors = ['#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#FFEB3B', '#FFC107', '#FF9800', '#E91E63', '#9C27B0', '#3F51B5'];
+            function GetColor (items, item) {
+              // Colors = ['#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#FFEB3B', '#FFC107', '#FF9800', '#E91E63', '#9C27B0', '#3F51B5'];
+              var Colors = ['#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#FFEB3B', '#FFC107', '#FF9800', '#E91E63', '#9C27B0', '#3F51B5'];
+
+              if (useColor) return Colors[item];
+
+              return Greyscale(items, item);
+            }
+
+            function Greyscale (items, item) {
+              var shade = 60 + Math.trunc(192 / items * item);
+              return 'rgb(' + shade + ', ' + shade + ', ' + shade + ')';
+            };
 
             function HslColor (items, item) {
               var hue = Math.trunc(360 / items * item);
@@ -176,10 +204,7 @@
                     var earnings = {
                       label: pool.replace('Internal', '(Internal)').replace('External', '(External)'),
                       data: BTCvalue,
-                      backgroundColor: Colors[datasets.length]
-                      // backgroundColor: HslColor(Object.keys(earningsdata.Earnings).length, datasets.length)
-                      // backgroundColor: HsvColor(Object.keys(earningsdata.Earnings).length, datasets.length)
-                      // backgroundColor: RGBcolor(Object.keys(earningsdata.Earnings).length, datasets.length)
+                      backgroundColor: GetColor(Object.keys(earningsdata.Earnings).length, datasets.length)
                     };
                     datasets.push(earnings);
                   }
