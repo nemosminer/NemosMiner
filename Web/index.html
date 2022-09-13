@@ -171,28 +171,30 @@
                 {{#if total}}
                 {{else}}
                   <div class="card-body text-center">
-                    <p class="card-text currencies">
+                    <p title="{{#if balanceinmaincurrency}}{{maincurrency}}: {{formatCurrency balanceinmaincurrency}}{{/if}}" class="card-text currencies">
                       {{#each balances}}
-                      <b>{{@key}}: {{formatCurrency this}}</b>
-                      <br>
+                        <b>{{@key}}: {{formatCurrency this}}</b>
+                        <br/>
                       {{/each}}
+                    <p>
+                    <p class="card-text currencies">
+                      <div class="payout text-center">
+                        {{#if payoutthreshold}}
+                        <div title="{{percentage}}% of {{formatCurrency payoutthreshold rate}} {{maincurrency}}">
+                          Payout threshold<br/><b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{currency}}</b>
+                        </div>
+                        {{else}}
+                        <div title="{{percentage}}% of {{formatCurrency payoutthreshold rate}} {{maincurrency}}">
+                          Payout threshold<br/><b>Unknown</b>
+                        </div>
+                        {{/if}}
+                        <br/>
+                        <div title="Projection is based on the current daily average earnings">
+                          Projected paydate<br/><b>{{paydate}}</b>
+                        </div>
+                      </div>
+                    </p>
                   </div>
-                  <div class="payout text-center">
-                    {{#if payoutthreshold}}
-                    <div title="{{percentage}}% of {{formatCurrency payoutthreshold rate}} {{maincurrency}}">
-                      Payout threshold<br/><b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{currency}}</b>
-                    </div>
-                    {{else}}
-                    <div title="{{percentage}}% of {{formatCurrency payoutthreshold rate}} {{maincurrency}}">
-                      Payout threshold<br/><b>Unknown</b>
-                    </div>
-                    {{/if}}
-                    <br/>
-                    <div title="Projection is based on the current daily average earnings">
-                      Projected paydate<br/><b>{{paydate}}</b>
-                    </div>
-                  </div>
-                </p>
                 {{/if}}
               </div>
             </script>
@@ -370,9 +372,9 @@
                                 avgdailygrowth: item.AvgDailyGrowth * factor,
                                 avgweeklygrowth: item.AvgWeeklyGrowth * factor,
                                 payoutthreshold: item.PayoutThreshold * factor,
-                                maincurrency: config.Currency,
                                 rate: currencyrate,
                                 currency: currency,
+                                maincurrency: config.Currency,
                                 percentage: (item.Balance / item.PayoutThreshold * 100).toFixed(2),
                                 paydate: formatDate(item.ProjectedPayDate),
                                 showaverages: config.BalancesShowAverages,
@@ -390,8 +392,11 @@
                                 $.each(item.Currencies, function(cindex, currency) {
                                   if (rates[currency]) data['balances'][currency] = item.Balance * rates[item.Currency][currency];
                                 });
+                                data.balanceinmaincurrency = item.Balance * rates[item.Currency][config.Currency];
                               } else { 
-                                if (config.BalancesShowInAllCurrencies) data['balances']['Exchange rates unknown'] = "";
+                                if (config.BalancesShowInAllCurrencies) {
+                                  data['balances']['Exchange rates unknown'] = "";
+                                }
                                 data['balances'][item.Currency] = item.Balance;
                               }
 
