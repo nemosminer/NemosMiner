@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.2.1.2
-Version date:   11 September 2022
+Version:        4.2.1.3
+Version date:   15 September 2022
 #>
 
 # Window handling
@@ -1137,7 +1137,7 @@ Function Get-RandomDonationPoolsConfig {
     # Build pool config with available donation data, not all devs have the same set of wallets available
 
     $Variables.DonationRandom = $Variables.DonationData | Get-Random
-    $Variables.DonationRandomPoolsConfig = [Ordered]@{ }
+    $DonationRandomPoolsConfig = [Ordered]@{ }
     (Get-ChildItem .\Pools\*.ps1 -File).BaseName | Sort-Object -Unique | ForEach-Object { 
         $PoolConfig = @{ }
         $PoolConfig.EarningsAdjustmentFactor = 1
@@ -1145,21 +1145,20 @@ Function Get-RandomDonationPoolsConfig {
         $PoolConfig.WorkerName = "$($Variables.Branding.ProductLabel)-$($Variables.Branding.Version.ToString())-donate$($Config.Donation)"
         Switch -regex ($_) { 
             "^MiningDutch$|^MiningPoolHub$|^ProHashing$" { 
-                If ($Variables.DonationRandom."$($_)UserName") { # not all devs have a known MiningDutch or ProHashing account
+                If ($Variables.DonationRandom."$($_)UserName") { 
+                    # not all devs have a known MiningDutch or ProHashing account
                     $PoolConfig.UserName = $Variables.DonationRandom."$($_)UserName"
                     $PoolConfig.Variant = $Config.PoolsConfig.$_.Variant
-                    $Variables.DonationRandomPoolsConfig.$_ = $PoolConfig
+                    $DonationRandomPoolsConfig.$_ = $PoolConfig
                 }
                 Break
             }
             Default { 
-                If ($Variables.DonationRandom.Wallets) { 
-                    # not all devs have a known ETC or ETH address
-                    If ($Config.PoolName -match $_ -and (Compare-Object @($Variables.PoolData.$_.GuaranteedPayoutCurrencies) @($Variables.DonationRandom.Wallets.PSObject.Properties.Name) -IncludeEqual -ExcludeDifferent)) { 
-                        $PoolConfig.Variant = If ($Config.PoolsConfig.$_.Variant) { $Config.PoolsConfig.$_.Variant } Else { $Config.PoolName -match $_ }
-                        $PoolConfig.Wallets = $Variables.DonationRandom.Wallets | ConvertTo-Json | ConvertFrom-Json -AsHashtable
-                        $Variables.DonationRandomPoolsConfig.$_ = $PoolConfig
-                    }
+                # not all devs have a known ETC or ETH address
+                If (Compare-Object @($Variables.PoolData.$_.GuaranteedPayoutCurrencies | Select-Object) @($Variables.DonationRandom.Wallets.PSObject.Properties.Name | Select-Object) -IncludeEqual -ExcludeDifferent) { 
+                    $PoolConfig.Variant = If ($Config.PoolsConfig.$_.Variant) { $Config.PoolsConfig.$_.Variant } Else { $Config.PoolName -match $_ }
+                    $PoolConfig.Wallets = $Variables.DonationRandom.Wallets | ConvertTo-Json | ConvertFrom-Json -AsHashtable
+                    $DonationRandomPoolsConfig.$_ = $PoolConfig
                 }
                 Break
             }
@@ -1167,6 +1166,8 @@ Function Get-RandomDonationPoolsConfig {
     }
 
     Remove-Variable PoolConfig
+
+    Return $DonationRandomPoolsConfig
 }
 
 Function Read-Config { 
@@ -3022,6 +3023,10 @@ Function Update-ConfigFile {
     Remove-Item ".\Stats\AhashPool*.txt" -Force
     # Remove BlockMasters config data
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "BlockMasters*" }
+    Remove-Item ".\Stats\BlockMasters*.txt" -Force
+    # Remove BlockMasters config data
+    $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "NLPool*" }
+    Remove-Item ".\Stats\NLPool*.txt" -Force
     # Remove TonPool config
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "TonPool" }
     # Remove TonWhales config

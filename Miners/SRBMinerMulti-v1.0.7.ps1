@@ -98,7 +98,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("ProgPoWVeriblock");     Type = "CPU"; Fee = @(0.0085); MinerSet = 0; WarmupTimes = @(30, 0);   ExcludePool = @()       ; Arguments = " --algorithm progpow_veriblock" }
     [PSCustomObject]@{ Algorithm = @("ProgPoWZ");             Type = "CPU"; Fee = @(0.0085); MinerSet = 0; WarmupTimes = @(30, 0);   ExcludePool = @()       ; Arguments = " --algorithm progpow_zano" }
     [PSCustomObject]@{ Algorithm = @("Pufferfish2BMB");       Type = "CPU"; Fee = @(0.01);   MinerSet = 0; WarmupTimes = @(30, 0);   ExcludePool = @()       ; Arguments = " --algorithm pufferfish2bmb" }    
-    [PSCustomObject]@{ Algorithm = @("RandomxArq");           Type = "CPU"; Fee = @(0.0085); MinerSet = 0; WarmupTimes = @(30, 0);   ExcludePool = @()       ; Arguments = " --algorithm randomarq --randomx-use-1gb-pages" }
+    [PSCustomObject]@{ Algorithm = @("RandomxArq");           Type = "CPU"; Fee = @(0.0085); MinerSet = 0; WarmupTimes = @(60, 0);   ExcludePool = @()       ; Arguments = " --algorithm randomarq --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = @("RandomxEpic");          Type = "CPU"; Fee = @(0.0085); MinerSet = 0; WarmupTimes = @(30, 0);   ExcludePool = @()       ; Arguments = " --algorithm randomepic" }
     [PSCustomObject]@{ Algorithm = @("RandomGrft");           Type = "CPU"; Fee = @(0.0085); MinerSet = 0; WarmupTimes = @(30, 0);   ExcludePool = @()       ; Arguments = " --algorithm randomgrft --randomx-use-1gb-pages" }
     [PSCustomObject]@{ Algorithm = @("RandomHash2");          Type = "CPU"; Fee = @(0.0085); MinerSet = 0; WarmupTimes = @(30, 0);   ExcludePool = @()       ; Arguments = " --algorithm randomarq --randomx-use-1gb-pages" }
@@ -136,10 +136,10 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Zentoshi");             Type = "CPU"; Fee = @(0.0085); MinerSet = 0; WarmupTimes = @(60, 0);   ExcludePool = @()       ; Arguments = " --algorithm balloon_zentoshi" }
 )
 
-If ($MinerPools[0].CryptonightUpx.BaseName -ne "ZergPool" -or ($MinerPools[0].CryptonightUpx.PoolPort -and -not $MinerPools[0].CryptonightUpx.PoolPort[1])) {  # SSL not working @ ZergPool, https://github.com/doktor83/SRBMiner-Multi/issues/135
-    $Algorithms += [PSCustomObject]@{ Algorithm = @("CryptonightUpx"); Type = "AMD"; Fee = @(0.0085); MinMemGB = 1; MemReserveGB = 0; MinerSet = 1; WarmupTimes = @(60, 30); ExcludePool = @(); Arguments = " --algorithm cryptonight_upx" }
-    $Algorithms += [PSCustomObject]@{ Algorithm = @("CryptonightUpx"); Type = "CPU"; Fee = @(0.0085); MinerSet = 0; WarmupTimes = @(30, 15); ExcludePool = @(); Arguments = " --algorithm cryptonight_upx" }
-}
+# If ($MinerPools[0].CryptonightUpx.BaseName -ne "ZergPool" -or ($MinerPools[0].CryptonightUpx.PoolPort -and -not $MinerPools[0].CryptonightUpx.PoolPort[1])) {  # SSL not working @ ZergPool, https://github.com/doktor83/SRBMiner-Multi/issues/135
+#     $Algorithms += [PSCustomObject]@{ Algorithm = @("CryptonightUpx"); Type = "AMD"; Fee = @(0.0085); MinMemGB = 1; MemReserveGB = 0; MinerSet = 1; WarmupTimes = @(60, 30); ExcludePool = @(); Arguments = " --algorithm cryptonight_upx" }
+#     $Algorithms += [PSCustomObject]@{ Algorithm = @("CryptonightUpx"); Type = "CPU"; Fee = @(0.0085); MinerSet = 0; WarmupTimes = @(30, 15); ExcludePool = @(); Arguments = " --algorithm cryptonight_upx" }
+# }
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm[0]).PoolPorts -and (-not $_.Algorithm[1] -or $MinerPools[1].($_.Algorithm[1]).PoolPorts) }) { 
 

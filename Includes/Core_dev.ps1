@@ -185,6 +185,7 @@ Do {
                     }
                     $NewPools_Jobs = @(
                         $PoolNames | ForEach-Object { 
+                            If ($DebugPools) { $TmpPools = Get-ChildItemContent ".\Pools\$((Get-PoolBaseName $_) -replace "^NiceHash .*", "NiceHash").*" -Parameters @{ Config = $Config; PoolsConfig = $PoolsConfig; PoolVariant = $_; Variables = $Variables } -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object Type -EQ "CPU") { "Normal" }) }
                             Get-ChildItemContent ".\Pools\$((Get-PoolBaseName $_) -replace "^NiceHash .*", "NiceHash").*" -Parameters @{ Config = $Config; PoolsConfig = $PoolsConfig; PoolVariant = $_; Variables = $Variables } -Threaded -Priority $(If ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Where-Object Type -EQ "CPU") { "Normal" })
                         }
                     )
@@ -1133,6 +1134,8 @@ Do {
         # Optional delay to avoid blue screens
         Start-Sleep -Seconds $Config.Delay
 
+        # $Variables.Miners | Where-Object { $_.GetStatus() -ne [MinerStatus]::Running } | Sort-Object Name, Algorithm | ConvertTo-Json -depth 99 > "$(Get-Date -Format "HH_mm_ss").json"
+
         ForEach ($Miner in ($Variables.Miners | Where-Object Best -EQ $true)) { 
 
             If ($Miner.Benchmark -eq $true -or $Miner.MeasurePowerUsage -eq $true) { 
@@ -1239,6 +1242,8 @@ Do {
         }
         Remove-Variable MinersDeviceGroup, MinersDeviceGroupNeedingBenchmark, MinersDeviceGroupNeedingPowerUsageMeasurement
 
+        If ($ReadBalances) { . .\Includes\BalancesTracker.ps1 }
+
         Get-Job -State "Completed" -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
         Get-Job -State "Stopped" -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
 
@@ -1275,6 +1280,10 @@ Do {
                         }
                         [Void][Win32]::SetWindowText((Get-Process -Id $Miner.ProcessId).mainWindowHandle, $WindowTitle)
                     } Catch {}
+
+                    If ($GetMinerData) { 
+                        $Miner.GetMinerData()
+                    }
 
                     If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
                         # Miner crashed

@@ -29,6 +29,7 @@
     "AutoExchange": true,
     "BalancesKeepAlive": 180, // https://www.mining-dutch.nl/index.php?page=wallets
     "BrainConfig": {
+      "Debug": true,
       "PoolAPIAllowedFailureCount": 3,
       "PoolAPIPerFailPercentPenalty": 10,
       "PoolAPIRetryInterval": 3,
@@ -37,7 +38,6 @@
       "PoolStatusUri": "https://www.mining-dutch.nl/api/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
-      "ShowStartStop": false,
       "UseFullTrust": false,
       "UseTransferFile": false
     },
@@ -97,6 +97,10 @@
       "YEC": "Ycash",
       "ZEC": "Zcash",
       "ZEN": "Horizen"
+    },
+    "PayoutThreshold": {
+      "*": 0.00000025,
+      "BTC": 0.001
     },
     "Region": [
       "asia",
@@ -195,53 +199,11 @@
       }
     }
   },
-  "NLPool": {
-    "AutoExchange": true,
-    "BalancesKeepAlive": 30, // Accounts with no mining activity for 1 month are purged
-    "BrainConfig": {
-      "PoolAPIAllowedFailureCount": 3,
-      "PoolAPIPerFailPercentPenalty": 10,
-      "PoolAPIRetryInterval": 3,
-      "PoolAPITimeout": 20,
-      "PoolCurrenciesUri": "https://www.nlpool.nl/api/currencies",
-      "PoolStatusUri": "https://www.nlpool.nl/api/status",
-      "SampleHalfPower": 0,
-      "SampleSizeMinutes": 45,
-      "ShowStartStop": false,
-      "UseFullTrust": false,
-      "UseTransferFile": false
-    },
-    "GuaranteedPayoutCurrencies": [
-      "BTC",
-      "LTC"
-    ],
-    "PayoutCurrency": "[Default]",
-    "PayoutThreshold": {
-      "LTC": 0.05,
-      "mBTC": 1
-    },
-    "Region": [
-      "eu-west"
-    ],
-    "Variant": {
-      "NLPool": {
-        "DivisorMultiplier": 1000000,
-        "PriceField": "estimate_current"
-      },
-      "NLPool24hr": {
-        "DivisorMultiplier": 1000000,
-        "PriceField": "estimate_last24h"
-      },
-      "NLPoolPlus": {
-        "DivisorMultiplier": 1000000,
-        "PriceField": "Plus_Price"
-      }
-    }
-  },
   "ProHashing": {
     "AutoExchange": true,
     "BalancesKeepAlive": 90, // The customer has not mined with the pool for 90 days (https://prohashing.com/help/prohashing-legal-information#terms)
     "BrainConfig": {
+      "Debug": false,
       "PoolAPIAllowedFailureCount": 3,
       "PoolAPIPerFailPercentPenalty": 10,
       "PoolAPIRetryInterval": 3,
@@ -250,7 +212,6 @@
       "PoolStatusUri": "https://prohashing.com/api/v1/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
-      "ShowStartStop": false,
       "UseFullTrust": false,
       "UseTransferFile": false
     },
@@ -286,6 +247,7 @@
     "AutoExchange": true,
     "BalancesKeepAlive": 90, // Accounts with no mining activity for 3 months are purged 
     "BrainConfig": {
+      "Debug": false,
       "PoolAPIAllowedFailureCount": 3,
       "PoolAPIPerFailPercentPenalty": 10,
       "PoolAPIRetryInterval": 3,
@@ -294,7 +256,6 @@
       "PoolStatusUri": "https://api.zergpool.com:8443/api/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
-      "ShowStartStop": false,
       "UseFullTrust": false,
       "UseTransferFile": false
     },
@@ -354,6 +315,7 @@
     "AutoExchange": true,
     "BalancesKeepAlive": 90, // Inactive accounts are purged after 90 days
     "BrainConfig": {
+      "Debug": false,
       "PoolAPIAllowedFailureCount": 3,
       "PoolAPIPerFailPercentPenalty": 10,
       "PoolAPIRetryInterval": 3,
@@ -362,7 +324,6 @@
       "PoolStatusUri": "https://www.zpool.ca/api/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
-      "ShowStartStop": false,
       "UseFullTrust": false,
       "UseTransferFile": false
     },

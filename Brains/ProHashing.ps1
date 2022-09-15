@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.2.1.2
-Version date:   11 September 2022
+Version:        4.2.1.3
+Version date:   15 September 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -43,11 +43,11 @@ $ProgressPreference = "SilentlyContinue"
 
 While ($BrainConfig) { 
 
-    If ($BrainConfig.ShowStartStop) { Write-Message -Level Debug "Start Brain '$Brainname'." }
-
     $Duration = Measure-Command { 
         $CurDate = (Get-Date).ToUniversalTime()
         $PoolVariant = $Config.PoolName | Where-Object { $_ -match "$($BrainName)*" } 
+
+        If ($BrainConfig.Debug) { Write-Message -Level Debug "Start Brain '$Brainname ($PoolVariant)'." }
 
         Do {
             Try { 
@@ -129,7 +129,7 @@ While ($BrainConfig) {
 
         $Variables.BrainData | Add-Member $BrainName $AlgoData -Force
 
-        If ($BrainConfig.UseTransferFile) { 
+        If ($BrainConfig.UseTransferFile -or $BrainConfig.Debug) { 
             ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Out-File -FilePath $TransferFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
         }
 
@@ -139,7 +139,7 @@ While ($BrainConfig) {
         Remove-Variable AlgoData, BasePrice, CurAlgoObject, CurrenciesData, Currencies, Currency, SampleSizeHalfts, SampleSizets, GroupAvgSampleSize, GroupAvgSampleSizeHalf, GroupMedSampleSize, GroupMedSampleSizeHalf, GroupMedSampleSizeNoPercent, Name, Penalty, PenaltySampleSizeHalf, PenaltySampleSizeNoPercent, Price -ErrorAction Ignore
     }
 
-    If ($BrainConfig.ShowStartStop) { Write-Message -Level Debug "End Brain '$Brainname' ($($Duration.TotalSeconds) sec.)." }
+    If ($BrainConfig.Debug) { Write-Message -Level Debug "End Brain '$Brainname' ($($Duration.TotalSeconds) sec.)." }
 
     [System.GC]::Collect()
 

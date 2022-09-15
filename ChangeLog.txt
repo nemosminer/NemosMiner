@@ -11,6 +11,24 @@ Known issues:
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
 
+ChangeLog NemosMiner 4.2.1.3 nn.09.2022
+=======================================
+
+Enhancements:
+- Core: CPU miner power usage is subtracted from computer base power usage
+- Web GUI / Balances: Add tool tip to display pool balance value in main currency 
+
+Fixes:
+- Core: Do not donate more than once a day after a NemosMiner restart (Regression of 4.2.1.2)
+
+Miner Changes:
+- lolMiner-v1.56 (keep v1.54 for Autolykos2, https://github.com/Lolliedieb/lolMiner-releases/issues/1706)
+- MiniZ-v1.8z3 (revert back to older version; v1.9z2 has issues with Equihash)
+
+Pool changes:
+- NLPool: Pool removed (pool is closing)
+
+
 ChangeLog NemosMiner 4.2.1.2 11.09.2022
 =======================================
 
@@ -18,8 +36,8 @@ Enhancements:
 - API: Added '/braindata'
 - API: Added '/donationlog'
 - API: Added '/equihashcoinpers'
-- Core: Do not donate more than once a day after a NemosMier restart
-- Core: Renamed configuaration item 'Donate' to 'Donation'
+- Core: Do not donate more than once a day after a NemosMiner restart
+- Core: Renamed configuration item 'Donate' to 'Donation'
 - Core: Write donation log for the last 365 days to 'Logs\DonationLog.json'
 - Web GUI / Earnings Chart: Added grey scale color scheme
 

@@ -358,6 +358,12 @@
 
                               if (rates[item.Currency]) currencyrate = rates[item.Currency][config.Currency] / factor;
 
+                              // MiningDutch payout threshold
+                              if (item.Pool == "MiningDutch" && item.Currency != "BTC" && rates[item.Currency]) {
+                                item.PayoutThresholdCurrency = "BTC";
+                                item.PayoutThreshold = item.PayoutThreshold / rates[item.Currency][item.PayoutThresholdCurrency];
+                              }
+
                               var data = {
                                 name: item.Pool + ' (' + item.Currency + ')',
                                 uri: item.Uri,

@@ -19,7 +19,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02;  MinMemGB = $MinerPools[0].KawPoW.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(75, 30); ExcludeGPUArchitecture = @();       Coin = "RVN" } # TeamRedMiner-v0.10.2 is fastest
     [PSCustomObject]@{ Algorithm = "Octopus";       Type = "AMD"; Fee = 0.02;  MinMemGB = $MinerPools[0].Octopus.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(125, 0); ExcludeGPUArchitecture = @("CGN4"); Coin = "CFX" }
     [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01;  MinMemGB = $MinerPools[0].UbqHash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(75, 45); ExcludeGPUArchitecture = @();       Coin = "UBQ" } # PhoenixMiner-v6.2c is fastest
-    # [PSCustomObject]@{ Algorithm = "VertHash";      Type = "AMD"; Fee = 0.01;  MinMemGB = 3;                                     MemReserveGB = 0;    MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 0);  ExcludeGPUArchitecture = @("RDNA"); Coin = "VTC" } # SSL @ ZergPool is not supported (https://github.com/nanopool/nanominer/issues/363)
+    [PSCustomObject]@{ Algorithm = "VertHash";      Type = "AMD"; Fee = 0.01;  MinMemGB = 3;                                     MemReserveGB = 0;    MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 0);  ExcludeGPUArchitecture = @("RDNA"); Coin = "VTC" } # SSL @ ZergPool is not supported (https://github.com/nanopool/nanominer/issues/363)
 
 #   [PSCustomObject]@{ Algorithm = "RandomX";   Type = "CPU"; Fee = 0.02; MinerSet = 1; WarmupTimes = @(45, 0); Coin = "XMR" } # Not profitable at all
     [PSCustomObject]@{ Algorithm = "VerusHash"; Type = "CPU"; Fee = 0.02; MinerSet = 0; WarmupTimes = @(45, 0); Coin = "VRSC" }
@@ -39,7 +39,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "UbqHash";      Type = "INTEL"; Fee = 0.01;  MinMemGB = $MinerPools[0].UbqHash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(75, 45); Coin = "UBQ" }
 )
 
-If ($MinerPools[0].VertHash.BaseName -ne "ZergPool" -or ($MinerPools[0].VertHash.PoolPort -and -not $MinerPools[0].VertHash.PoolPort[1])) { $Algorithms += [PSCustomObject]@{ Algorithm = "VertHash"; Type = "AMD"; Fee = 0.01;  MinMemGB = 3; MemReserveGB = 0; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 0); ExcludeGPUArchitecture = @("RDNA"); Coin = "VTC" } } # SSL @ ZergPool is not supported (https://github.com/nanopool/nanominer/issues/363)
+# If ($MinerPools[0].VertHash.BaseName -ne "ZergPool" -or ($MinerPools[0].VertHash.PoolPort -and -not $MinerPools[0].VertHash.PoolPort[1])) { $Algorithms += [PSCustomObject]@{ Algorithm = "VertHash"; Type = "AMD"; Fee = 0.01;  MinMemGB = 3; MemReserveGB = 0; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 0); ExcludeGPUArchitecture = @("RDNA"); Coin = "VTC" } } # SSL @ ZergPool is not supported (https://github.com/nanopool/nanominer/issues/363)
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).Host } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] }) { 
 
