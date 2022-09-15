@@ -29,7 +29,7 @@
     "AutoExchange": true,
     "BalancesKeepAlive": 180, // https://www.mining-dutch.nl/index.php?page=wallets
     "BrainConfig": {
-      "Debug": true,
+      "Debug": false,
       "PoolAPIAllowedFailureCount": 3,
       "PoolAPIPerFailPercentPenalty": 10,
       "PoolAPIRetryInterval": 3,
