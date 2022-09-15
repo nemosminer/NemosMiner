@@ -198,6 +198,7 @@ function formatWatt(value) {
 };
 
 function formatPercent(value) {
+  if (value == 0) return "0.00 %";
   if (parseFloat(value)) return parseFloat(value * 100).toFixed(2) + ' %';
   return '';
 };
