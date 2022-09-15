@@ -91,6 +91,8 @@ While ($BrainConfig) {
                 $AlgoData.$Algo | Add-Member @{ Currency = $Currency.Trim() }
             }
 
+            $AlgoData.$Algo | Add-Member fees $Config.PoolsConfig.$BrainName.Variant.$PoolVariant.DefaultFee -ErrorAction Ignore
+
             $AlgoData.$Algo.estimate_last24h = [Double]$AlgoData.$Algo.estimate_last24h
             If ($AlgoData.$Algo.actual_last24h_shared) { $AlgoData.$Algo.actual_last24h_shared = [Double]($AlgoData.$Algo.actual_last24h_shared / 1000) }
             $BasePrice = If ($AlgoData.$Algo.actual_last24h_shared) { [Double]$AlgoData.$Algo.actual_last24h_shared } Else { [Double]$AlgoData.$Algo.estimate_last24h }
@@ -100,9 +102,9 @@ While ($BrainConfig) {
                 Name                  = $AlgoData.$Algo.name
                 Port                  = $AlgoData.$Algo.port
                 Coins                 = $AlgoData.$Algo.coins
-                CoinName              = $AlgoData.$Algo.CoinName
+                CoinName              = $AlgoData.$Algo.coinname
                 Currency              = $AlgoData.$Algo.Currency
-                Fees                  = $AlgoData.$Algo.Fees
+                Fees                  = $AlgoData.$Algo.fees
                 # Hashrate              = $AlgoData.$Algo.Hashrate
                 Workers               = $AlgoData.$Algo.Workers
                 estimate_current      = $AlgoData.$Algo.estimate_current -as [Double]

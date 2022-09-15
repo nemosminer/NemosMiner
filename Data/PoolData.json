@@ -291,21 +291,26 @@
     "Variant": {
       "ZergPool": {
         "DivisorMultiplier": 1000000,
+        "DefaultFee": 0.5,
         "PriceField": "estimate_current"
       },
       "ZergPool24hr": {
+        "DefaultFee": 0.5,
         "DivisorMultiplier": 1000000,
         "PriceField": "estimate_last24h"
       },
       "ZergPoolCoins": {
+        "DefaultFee": 0.5,
         "DivisorMultiplier": 1000000,
         "PriceField": "estimate_current"
       },
       "ZergPoolCoinsPlus": {
+        "DefaultFee": 0.5,
         "DivisorMultiplier": 1000000,
         "PriceField": "Plus_Price"
       },
       "ZergPoolPlus": {
+        "DefaultFee": 0.5,
         "DivisorMultiplier": 1000000,
         "PriceField": "Plus_Price"
       }
