@@ -17,12 +17,25 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           demo.psm1
+File:           ServerSide.psm1
 Version:        4.2.1.4
 Version date:   18 September 2022
 #>
 
-# Try running this script as:  http://localhost:3999/scripts/demo.ps1?message=Hello%20World!
+While ($true) { 
+    $Response = @{}
+    $Response.ContentType = "text/event-stream"
+    $Response.Expires = -1
+    $Response.Data = "The server time is: $(Get-Date())"
+    $Response
 
-param($Parameters)
-Write-Output $Parameters.message
+
+    $Response.Headers.Add("Content-Type", $ContentType)
+    $Response.StatusCode = $StatusCode
+    $ResponseBuffer = [System.Text.Encoding]::UTF8.GetBytes($Data)
+    $Response.ContentLength64 = $ResponseBuffer.Length
+    $Response.OutputStream.Write($ResponseBuffer, 0, $ResponseBuffer.Length)
+    $Response.Close()
+
+    Start-Sleep 1
+}

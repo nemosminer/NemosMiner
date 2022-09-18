@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.2.1.3
-Version date:   15 September 2022
+Version:        4.2.1.4
+Version date:   18 September 2022
 #>
 
 using module .\Include.psm1
@@ -288,7 +288,7 @@ Do {
 
                 If (-not $Variables.DAGdata.Currency."*") { 
                     $BlockHeight = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400
-                    Write-Message -Level Warn "Cannot load ethash DAG size information from 'https://minerstat.com', using calculated block height $BlockHeight based on 6400 blocks per day since 30 July 2015."
+                    Write-Message -Level Warn "Cannot load ethash DAG size information, using calculated block height $BlockHeight based on 6400 blocks per day since 30 July 2015."
                     $Variables.DAGdata.Currency.Add("*", (Get-DAGdata -BlockHeight $BlockHeight -Currency "ETH"))
                 }
 

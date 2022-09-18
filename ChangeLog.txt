@@ -11,7 +11,21 @@ Known issues:
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
 
-ChangeLog NemosMiner 4.2.1.3 nn.09.2022
+ChangeLog NemosMiner 4.2.1.4 nn.09.2022
+=======================================
+
+Fixes:
+- Web GUI: 0% values displayed as empty instead of '0.00 %'
+
+Miner changes:
+- KawpowMiner-v1.2.3: Disable SSL cerrtificate check
+- TeamRedMiner-v0.10.3.1
+
+Pool changes:
+- ZergPool: Set default pool fee in 'Data\PoolData.json' (Workaround if pool API does not contain fee information)
+
+
+ChangeLog NemosMiner 4.2.1.3 15.09.2022
 =======================================
 
 Enhancements:
@@ -22,10 +36,11 @@ Fixes:
 - Core: Do not donate more than once a day after a NemosMiner restart (Regression of 4.2.1.2)
 
 Miner Changes:
-- lolMiner-v1.56 (keep v1.54 for Autolykos2, https://github.com/Lolliedieb/lolMiner-releases/issues/1706)
+- lolMiner-v1.57
 - MiniZ-v1.8z3 (revert back to older version; v1.9z2 has issues with Equihash)
 
 Pool changes:
+- Disable 'ETH' mining (Ethereum in no longer minable)
 - NLPool: Pool removed (pool is closing)
 
 
