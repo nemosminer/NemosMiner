@@ -24,7 +24,7 @@ $Algorithms = [PSCustomObject[]]@(
      [PSCustomObject]@{ Algorithm = @("CryptonightGpu");            Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 30); ExcludePool = @()       ; Arguments = " --algorithm cryptonight_gpu" }
      [PSCustomObject]@{ Algorithm = @("CryptonightTalleo");         Type = "AMD"; Fee = @(0);            MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 30); ExcludePool = @()       ; Arguments = " --algorithm cryptonight_talleo" }
     #  [PSCustomObject]@{ Algorithm = @("CryptonightUpx");            Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(60, 30); ExcludePool = @()       ; Arguments = " --algorithm cryptonight_upx" } # SSL not working @ ZergPool
-     [PSCustomObject]@{ Algorithm = @("CryptonightTurtle");         Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 30); ExcludePool = @()       ; Arguments = " --algorithm cryptonight_turtle" } # TeamRedMiner-v0.10.2 is fastest
+     [PSCustomObject]@{ Algorithm = @("CryptonightTurtle");         Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 30); ExcludePool = @()       ; Arguments = " --algorithm cryptonight_turtle" } # TeamRedMiner-v0.10.3 is fastest
      [PSCustomObject]@{ Algorithm = @("CryptonightHeavyXhv");       Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 30); ExcludePool = @()       ; Arguments = " --algorithm cryptonight_xhv" }
      [PSCustomObject]@{ Algorithm = @("CurveHash");                 Type = "AMD"; Fee = @(0.0085);       MinMemGB = 2;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 30); ExcludePool = @()       ; Arguments = " --algorithm curvehash" }
 #    [PSCustomObject]@{ Algorithm = @("DynamoCoin");                Type = "AMD"; Fee = @(0.01);         MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 30); ExcludePool = @()       ; Arguments = " --algorithm dynamo" } # Algorithm 'dynamo' supports only 'pool' mode (yiimp stratum compatibility removed)
@@ -135,11 +135,6 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("Yescrypt");             Type = "CPU"; Fee = @(0.0085); MinerSet = 0; WarmupTimes = @(90, 0);   ExcludePool = @()       ; Arguments = " --algorithm yescrypt" }
     [PSCustomObject]@{ Algorithm = @("Zentoshi");             Type = "CPU"; Fee = @(0.0085); MinerSet = 0; WarmupTimes = @(60, 0);   ExcludePool = @()       ; Arguments = " --algorithm balloon_zentoshi" }
 )
-
-# If ($MinerPools[0].CryptonightUpx.BaseName -ne "ZergPool" -or ($MinerPools[0].CryptonightUpx.PoolPort -and -not $MinerPools[0].CryptonightUpx.PoolPort[1])) {  # SSL not working @ ZergPool, https://github.com/doktor83/SRBMiner-Multi/issues/135
-#     $Algorithms += [PSCustomObject]@{ Algorithm = @("CryptonightUpx"); Type = "AMD"; Fee = @(0.0085); MinMemGB = 1; MemReserveGB = 0; MinerSet = 1; WarmupTimes = @(60, 30); ExcludePool = @(); Arguments = " --algorithm cryptonight_upx" }
-#     $Algorithms += [PSCustomObject]@{ Algorithm = @("CryptonightUpx"); Type = "CPU"; Fee = @(0.0085); MinerSet = 0; WarmupTimes = @(30, 15); ExcludePool = @(); Arguments = " --algorithm cryptonight_upx" }
-# }
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm[0]).PoolPorts -and (-not $_.Algorithm[1] -or $MinerPools[1].($_.Algorithm[1]).PoolPorts) }) { 
 
