@@ -39,6 +39,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     Port        = $MinerAPIPort
                     URI         = $Uri
                     WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
+                    EnvVars     = @("SSL_NOVERIFY=ON")
                 }
             }
         }
