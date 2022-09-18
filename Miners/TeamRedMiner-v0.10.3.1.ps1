@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0" })) { Return }
 
-$Uri = "https://github.com/todxx/teamredminer/releases/download/v0.10.2/teamredminer-v0.10.2-win.zip"
+$Uri = "https://github.com/todxx/teamredminer/releases/download/v0.10.3.1/teamredminer-v0.10.3.1-win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\teamredminer.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
