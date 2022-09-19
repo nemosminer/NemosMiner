@@ -62,7 +62,7 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
         $Currency = "$($Request.$_.currency)".Trim()
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
         $Fee = $Request.$_."$($PoolConfig.MiningMode)_fee"
-        $Pass = @("a=$($Algorithm.ToLower())", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)") -join ','
+        $Pass = @("a=$($Algorithm.ToLower())", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)", $(If ($Config.ProHashingMiningMode -eq "PPLNS") { "m=pplns" })) -join ','
 
         # Add coin name
         If ($Request.$_.CoinName -and $Currency) { Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName }
