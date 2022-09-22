@@ -1676,7 +1676,7 @@ While ($true) {
     # Show legacy GUI
     If ($Config.StartGUI) { 
         [Void]$MainForm.ShowDialog()
-        If ($Config.StartGUI) { Exit }
+        If ($Config.StartGUI) { Stop-Process -Id $PID -Force }
     }
     Else {
         MainLoop
