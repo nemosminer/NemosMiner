@@ -1359,7 +1359,7 @@ $MainForm.Add_Load(
 
 $MainForm.Add_FormClosing(
     { 
-        If ($Config.ShowGUI) { 
+        If ($Config.StartGUI) { 
             Write-Message -Level Info "Shutting down $($Variables.Branding.ProductLabel)..."
             $Variables.NewMiningStatus = "Idle"
             $TimerUI.Stop()
