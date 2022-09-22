@@ -10,15 +10,31 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.2.1.4 24.09.2022
+=======================================
 
-ChangeLog NemosMiner 4.2.1.4 nn.09.2022
+Enhancements:
+- New configuration item 'StartGUI'
+
+Fixes:
+- Disable algorithm 'EthashLowMem' for some miners (pool connection issue)
+
+Miner changes:
+- SRBMinerMulti-v1.0.8
+- TeamBlackMiner-v1.69
+
+Pool changes:
+- ProHashing: Add 'pplns' parameter to miners
+
+
+ChangeLog NemosMiner 4.2.1.4 18.09.2022
 =======================================
 
 Fixes:
 - Web GUI: 0% values displayed as empty instead of '0.00 %'
 
 Miner changes:
-- KawpowMiner-v1.2.3: Disable SSL cerrtificate check
+- KawpowMiner-v1.2.3: Disable SSL certificate check
 - TeamRedMiner-v0.10.3.1
 
 Pool changes:
@@ -195,7 +211,7 @@ ChangeLog NemosMiner 4.1.0.0 23.08.2022
 =======================================
 
 Changes:
-- Changed config item 'WebGUIUseColor' to 'UseColorForMinerStatus'
+- Changed configuration item 'WebGUIUseColor' to 'UseColorForMinerStatus'
 
 Enhancements:
 - Balances tracker: Always list all balances (even when pool is down)
@@ -314,10 +330,10 @@ Enhancements:
 
 Fixes:
 - Core: Dual mining broken (regression from 4.0.2.1)
-- Core: Config item 'DisableDualAlgoMining' ignored (regression from 4.0.0.7)
-- Core: Config item 'DisableSingleAlgoMining' ignored (regression from 4.0.0.7)
-- Core: Config item 'DisableMinersWithFee' ignored (regression from 4.0.0.7)
-- Main text window: Do not show 'PowerUsage' rows when config item 'CalculatePowerCost' is set to $false
+- Core: Configuration item 'DisableDualAlgoMining' ignored (regression from 4.0.0.7)
+- Core: Configuration item 'DisableSingleAlgoMining' ignored (regression from 4.0.0.7)
+- Core: Configuration item 'DisableMinersWithFee' ignored (regression from 4.0.0.7)
+- Main text window: Do not show 'PowerUsage' rows when configuration item 'CalculatePowerCost' is set to $false
 
 Miner changes:
 - CcminerLyraYesscrypt-v8.21r18v5: Invalid miner path
@@ -411,7 +427,7 @@ ChangeLog NemosMiner 4.0.1.2 23.06.2022
 =======================================
 
 Changes:
-- Changed config item 'PoolBalancesUpdateInterval' to 'BalancesTrackerPollInterval'
+- Changed configuration item 'PoolBalancesUpdateInterval' to 'BalancesTrackerPollInterval'
 - Donation list: Removed 'MrPlus', re-added 'grantemsley'
 
 Enhancements:

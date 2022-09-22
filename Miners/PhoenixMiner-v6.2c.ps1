@@ -12,8 +12,8 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("EtcHash", "Blake2s");      Type = "AMD"; Fee = @(0.009, 0); MinMemGB = $MinerPools[0].Etchash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 0; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @();                Arguments = " -amd -eres 1 -coin ETC -dcoin blake2s" }
     [PSCustomObject]@{ Algorithm = @("Ethash");                  Type = "AMD"; Fee = @(0.0065);   MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @();                Arguments = " -amd -eres 1 -coin ETH" } # GMiner-v3.05 is just as fast, PhoenixMiner-v6.2c is maybe faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");       Type = "AMD"; Fee = @(0.009, 0); MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 0; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @();                Arguments = " -amd -eres 1 -coin ETH -dcoin blake2s" }
-    [PSCustomObject]@{ Algorithm = @("EthashLowMem");            Type = "AMD"; Fee = @(0.0065);   MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @();                Arguments = " -amd -eres 1 -coin ETH" } # GMiner-v3.05 is just as fast, PhoenixMiner-v6.2c is maybe faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = @("EthashLowMem", "Blake2s"); Type = "AMD"; Fee = @(0.009, 0); MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.42; MinerSet = 0; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @("RDNA", "RDNA2"); Arguments = " -amd -eres 1 -coin ETH -dcoin blake2s" }
+    # [PSCustomObject]@{ Algorithm = @("EthashLowMem");            Type = "AMD"; Fee = @(0.0065);   MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @();                Arguments = " -amd -eres 1 -coin ETH" } # GMiner-v3.05 is just as fast, PhoenixMiner-v6.2c is maybe faster, but I see lower speed at the pool
+    # [PSCustomObject]@{ Algorithm = @("EthashLowMem", "Blake2s"); Type = "AMD"; Fee = @(0.009, 0); MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.42; MinerSet = 0; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @("RDNA", "RDNA2"); Arguments = " -amd -eres 1 -coin ETH -dcoin blake2s" }
     [PSCustomObject]@{ Algorithm = @("UbqHash");                 Type = "AMD"; Fee = @(0.0065);   MinMemGB = $MinerPools[0].UbqHash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 0; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @();                Arguments = " -amd -eres 1 -coin UBQ" }
     [PSCustomObject]@{ Algorithm = @("UbqHash", "Blake2s");      Type = "AMD"; Fee = @(0.009, 0); MinMemGB = $MinerPools[0].UbqHash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 0; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @("RDNA", "RDNA2"); Arguments = " -amd -eres 1 -coin UBQ -dcoin blake2s" }
       
@@ -21,8 +21,8 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = @("EtcHash", "Blake2s");      Type = "NVIDIA"; Fee = @(0.009, 0); MinMemGB = $MinerPools[0].Etchash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 0; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(45, 0); Arguments = " -nvidia -eres 1 -coin ETC -dcoin blake2s" }
     [PSCustomObject]@{ Algorithm = @("Ethash");                  Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(45, 0); Arguments = " -nvidia -eres 1 -coin ETH" } # GMiner-v3.05 is just as fast, PhoenixMiner-v6.2c is maybe faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = @("Ethash", "Blake2s");       Type = "NVIDIA"; Fee = @(0.009, 0); MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 0; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(45, 0); Arguments = " -nvidia -eres 1 -coin ETH -dcoin blake2s" }
-    [PSCustomObject]@{ Algorithm = @("EthashLowMem");            Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(45, 0); Arguments = " -nvidia -eres 1 -coin ETH" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = @("EthashLowMem", "Blake2s"); Type = "NVIDIA"; Fee = @(0.009, 0); MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.42; MinerSet = 0; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(45, 0); Arguments = " -nvidia -eres 1 -coin ETH -dcoin blake2s" }
+    # [PSCustomObject]@{ Algorithm = @("EthashLowMem");            Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(45, 0); Arguments = " -nvidia -eres 1 -coin ETH" } # TTMiner-v5.0.3 is fastest
+    # [PSCustomObject]@{ Algorithm = @("EthashLowMem", "Blake2s"); Type = "NVIDIA"; Fee = @(0.009, 0); MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.42; MinerSet = 0; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(45, 0); Arguments = " -nvidia -eres 1 -coin ETH -dcoin blake2s" }
     [PSCustomObject]@{ Algorithm = @("UbqHash");                 Type = "NVIDIA"; Fee = @(0.0065);   MinMemGB = $MinerPools[0].UbqHash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(45, 0); Arguments = " -nvidia -eres 1 -coin UBQ" }
     [PSCustomObject]@{ Algorithm = @("UbqHash", "Blake2s");      Type = "NVIDIA"; Fee = @(0.009, 0); MinMemGB = $MinerPools[0].UbqHash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(45, 0); Arguments = " -nvidia -eres 1 -coin UBQ -dcoin blake2s" }
 )
@@ -30,16 +30,14 @@ $Algorithms = [PSCustomObject[]]@(
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm[0]).PoolPorts -and (-not $_.Algorithm[1] -or $MinerPools[1].($_.Algorithm[1]).PoolPorts) }) { 
 
     # Intensities for 2. algorithm
-    $Intensities = [PSCustomObject]@{ 
+    $IntensityValues = [PSCustomObject]@{ 
         "Blake2s" = @(10, 20, 30, 40)
     }
 
     # Build command sets for intensities
     $Algorithms = $Algorithms | ForEach-Object { 
         $_.PsObject.Copy()
-        $Arguments = $_.Arguments
-        ForEach ($Intensity in ($Intensities.($_.Algorithm[1]) | Select-Object)) { 
-            $_ | Add-Member Arguments "$Arguments -sci $Intensity" -Force
+        ForEach ($Intensity in ($IntensityValues.($_.Algorithm[1]) | Select-Object)) { 
             $_ | Add-Member Intensity $Intensity -Force
             $_.PsObject.Copy()
         }
@@ -91,6 +89,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     $_.Arguments += " -dpool $(If ($MinerPools[1].($_.Algorithm[1]).SSL) { "ssl://" })$($MinerPools[1].($_.Algorithm[1]).Host):$($MinerPools[0].($_.Algorithm[1]).PoolPorts | Select-Object -Last 1) -dwal $($MinerPools[1].($_.Algorithm[1]).User) -dpass $($MinerPools[1].($_.Algorithm[1]).Pass)"
                     # If ($MinerPools[1].($_.Algorithm[0]).PoolPorts[1]) { $_.Arguments += " -dweakssl" } #https://bitcointalk.org/index.php?topic=2647654.msg60898131#msg60898131
                     If ($MinerPools[1].($_.Algorithm[1]).WorkerName) { $_.Arguments += " -dworker $($MinerPools[1].($_.Algorithm[1]).WorkerName)" }
+                    If ($_.Intensity) { $_.Arguments += " -sci $($_.Intensity)" }
                 }
 
                 # Apply tuning parameters

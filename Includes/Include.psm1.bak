@@ -438,10 +438,14 @@ Class Miner {
     }
 
     [Double]GetPowerUsage() { 
+        [Device]$Device = $null
+        $RegistryData = [PSCustomObject]@{ }
+        $RegistryEntry = [PSCustomObject]@{ }
+        $RegistryHive = "HKCU:\Software\HWiNFO64\VSB"
         $TotalPowerUsage = [Double]0
 
         # Read power usage from HwINFO64 reg key, otherwise use hardconfigured value
-        $RegistryData = Get-ItemProperty "HKCU:\Software\HWiNFO64\VSB"
+        $RegistryData = Get-ItemProperty $RegistryHive
         ForEach ($Device in $this.Devices) { 
             If ($RegistryEntry = $RegistryData.PSObject.Properties | Where-Object { ($_.Value -split " ") -contains $Device.Name }) { 
                 $TotalPowerUsage += [Double]($RegistryData.($RegistryEntry.Name -replace "Label", "Value") -split ' ' | Select-Object -First 1)
@@ -701,12 +705,12 @@ Function Start-Mining {
         $Variables.CoreRunspace.SessionStateProxy.SetVariable('Config', $Config)
         $Variables.CoreRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
         $Variables.CoreRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
-        $Variables.CoreRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath) | Out-Null
+        $Variables.CoreRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
 
         $PowerShell = [PowerShell]::Create()
         $PowerShell.Runspace = $Variables.CoreRunspace
-        $PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1") | Out-Null
-        $PowerShell.BeginInvoke() | Out-Null
+        $PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
+        $PowerShell.BeginInvoke()
 
         $Variables.CoreRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
 
@@ -771,7 +775,7 @@ Function Start-Brain {
             If (Test-Path -Path $BrainScript -PathType Leaf) {  
                 $PowerShell = [powershell]::Create()
                 $PowerShell.RunspacePool = $Variables.BrainRunspacePool
-                $PowerShell.AddScript($BrainScript) | Out-Null
+                $PowerShell.AddScript($BrainScript)
                 $Variables.Brains.$_ = @{ Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell }
                 $BrainsStarted += $_
             }
@@ -830,12 +834,12 @@ Function Start-BalancesTracker {
             $Variables.BalancesTrackerRunspace.Open()
             $Variables.BalancesTrackerRunspace.SessionStateProxy.SetVariable('Config', $Config)
             $Variables.BalancesTrackerRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-            $Variables.BalancesTrackerRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath) | Out-Null
+            $Variables.BalancesTrackerRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
 
             $PowerShell = [PowerShell]::Create()
             $PowerShell.Runspace = $Variables.BalancesTrackerRunspace
-            $PowerShell.AddScript("$($Variables.MainPath)\Includes\BalancesTracker.ps1") | Out-Null
-            $PowerShell.BeginInvoke() | Out-Null
+            $PowerShell.AddScript("$($Variables.MainPath)\Includes\BalancesTracker.ps1")
+            $PowerShell.BeginInvoke()
 
             $Variables.BalancesTrackerRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
         }
@@ -888,7 +892,7 @@ Function Get-CommandLineParameters {
         [String]$Arguments
     )
 
-    If (Test-Json $Arguments) { $Arguments = $Arguments | ConvertFrom-Json }
+    If (Test-Json $Arguments) { Return ($Arguments | ConvertFrom-Json).Arguments }
     Return $Arguments
 }
 

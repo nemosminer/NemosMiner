@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.Type -eq "NVIDIA" -and $_.CUDAVersion -ge "11.5") })) { Return }
 
-$Uri = "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.67/TeamBlackMiner_1_67_cuda_11_5_fix.7z"
+$Uri = "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.69/TeamBlackMiner_1_69_cuda_11_5.7z"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\TBMiner.exe"
 

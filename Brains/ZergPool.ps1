@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.2.1.4
-Version date:   18 September 2022
+Version:        4.2.1.5
+Version date:   24 September 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -51,7 +51,7 @@ While ($BrainConfig) {
 
         Do {
             Try { 
-            $CurrenciesData = Invoke-RestMethod -Uri $BrainConfig.PoolCurrenciesUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout
+                $CurrenciesData = Invoke-RestMethod -Uri $BrainConfig.PoolCurrenciesUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout
                 If ($PoolVariant -match "Coins(|Plus)$") { 
                     $AlgoData = [PSCustomObject]@{ }
                     $CurrenciesArray = @()
@@ -69,6 +69,7 @@ While ($BrainConfig) {
                         $BestCurrency.PSObject.Properties.Remove("symbol")
                         $AlgoData | Add-Member $BestCurrency.name $BestCurrency
                     }
+                    Remove-Variable BestCurrency, CurrenciesArray
                 }
                 Else{ 
                     $AlgoData = Invoke-RestMethod -Uri $BrainConfig.PoolStatusUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout

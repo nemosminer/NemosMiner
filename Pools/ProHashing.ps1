@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.2.1.4
-Version date:   18 September 2022
+Version:        4.2.1.5
+Version date:   24 September 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -61,8 +61,8 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $Currency = "$($Request.$_.currency)".Trim()
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
-        $Fee = $Request.$_."$($PoolConfig.MiningMode)_fee"
-        $Pass = @("a=$($Algorithm.ToLower())", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)", $(If ($Config.ProHashingMiningMode -eq "PPLNS") { "m=pplns" })) -join ','
+        $Fee = If ($Currency) { $Request.$_."$($PoolConfig.MiningMode)_fee" } Else { $Request.$_."pps_fee" }
+        $Pass = @("a=$($Algorithm.ToLower())", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)", $(If ($Currency -and $Config.ProHashingMiningMode -eq "PPLNS") { "m=pplns,c=$Currency" }) | Select-Object) -join ','
 
         # Add coin name
         If ($Request.$_.CoinName -and $Currency) { Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName }

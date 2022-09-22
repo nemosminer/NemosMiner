@@ -81,14 +81,12 @@
                     <label for="ProHashingAPIKey">ProHashing API key</label>
                     <input type="text" id="ProHashingAPIKey" name="ProHashingAPIKey" maxlength=65 size=70>
                   </div>
-                  <div title="ProHashing mining mode&#10;Google for more information on PPS & PPLNS" for="ProHashingMiningMode">
-                    <label for="ProHashingMiningMode">ProHashing mining mode</label>
-                    <select name="" id="ProHashingMiningMode">
-                      <option title="Pay Per Share (high pool fee)" value=PPS>PPS</option>
-                      <option title="Pay Per Last N Shares (lower pool fee)" value=PPLNS>PPLNS</option>
-                    </select>
-                  </div>
-                  <br>
+                  <a href="https://prohashing.com/help/configuring-miners-at-prohashing#miningmodes" target="_blank" title="PPLNS is only supported for algorithms&#10;that have a currency assigned">ProHashing mining mode</a>
+                  <select name="" id="ProHashingMiningMode">
+                    <option title="Pay Per Share (high pool fee)" value=PPS>PPS</option>
+                    <option title="Pay Per Last N Shares (lower pool fee)" value=PPLNS>PPLNS</option>
+                  </select>
+                  <br><br>
 
                   <!-- Currency Settings -->
                   <legend class=h6><b>Currency Settings</b></legend>
@@ -123,7 +121,8 @@
                     <input type="checkbox" class="toggle-switch" id="IdleDetection" name="IdleDetection"> Idle detection: Start mining when system is idle for
                     <input type="number" id="IdleSec" name="IdleSec" min=0 max=3600 value=120 step=1 size=4> seconds
                   </div>
-                  <div style="padding-top: 0.5rem" title="Start the legacy GUI as minimized window">
+                  <div style="padding-top: 0.5rem" title="Start the legacy GUI">
+                    <input type="checkbox" class="toggle-switch" id="StartGUI" name="StartGUI"> Start legacy GUI
                     <input type="checkbox" class="toggle-switch" id="StartGUIMinimized" name="StartGUIMinimized"> Start legacy GUI minimized
                   </div>
                   <div style="padding-top: 0.7rem" title="Watchdog will monitor pools & miners for frequent failures&#10;and suspend failing pools or miners for some cycles.">
@@ -590,7 +589,12 @@
               $(document.getElementById('IdleDetection')).click(function (event) {
                 document.getElementById('IdleSec').disabled = !(document.getElementById('IdleDetection').checked);
               });
+              if (config.StartGUI) document.getElementById('StartGUI').checked = true;
               if (config.StartGUIMinimized) document.getElementById('StartGUIMinimized').checked = true;
+              $(document.getElementById('StartGUI')).change(function (event) {
+                document.getElementById('StartGUIMinimized').disabled = !(document.getElementById('StartGUI').checked);
+              });
+              $(document.getElementById('StartGUI')).trigger('change');
               if (config.Watchdog) document.getElementById('Watchdog').checked = true;
               if (config.AutoReboot) document.getElementById('AutoReboot').checked = true;
               if (Number.isInteger(config.Donation)) document.getElementById('Donate').value = parseInt(config.Donation);
@@ -1182,6 +1186,7 @@
                   else config.StartupMode = 'Idle';
                   config.IdleDetection = document.getElementById('IdleDetection').checked;
                   config.IdleSec = parseInt(document.getElementById('IdleSec').value);
+                  config.StartGUI = document.getElementById('StartGUI').checked;
                   config.StartGUIMinimized = document.getElementById('StartGUIMinimized').checked;
                   config.Watchdog = document.getElementById('Watchdog').checked;
                   config.AutoReboot = document.getElementById('AutoReboot').checked;

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.2.1.4
-Version date:   18 September 2022
+Version:        4.2.1.5
+Version date:   24 September 2022
 #>
 
 using module .\Include.psm1
@@ -1133,7 +1133,7 @@ Do {
         # Optional delay to avoid blue screens
         Start-Sleep -Seconds $Config.Delay
 
-        ForEach ($Miner in ($Variables.Miners | Where-Object Best -EQ $true)) { 
+        ForEach ($Miner in $Variables.MinersBest_Combo) { 
 
             If ($Miner.Benchmark -eq $true -or $Miner.MeasurePowerUsage -eq $true) { 
                 $DataCollectInterval = 1
@@ -1185,7 +1185,7 @@ Do {
                     Remove-Variable MinerAlgorithmPrerunName, AlgorithmPrerunName, DefaultPrerunName
                 }
                 # Add extra time when CPU mining and miner requires DAG creation
-                If ($Miner.Workers.Pool.DAGsizeGB -and ($Variables.Miners | Where-Object Best -EQ $true).Devices.Type -contains "CPU") { $Miner.WarmupTimes[0] += 15 <# seconds #>}
+                If ($Miner.Workers.Pool.DAGsizeGB -and $Variables.MinersBest_Combo.Devices.Type -contains "CPU") { $Miner.WarmupTimes[0] += 15 <# seconds #>}
 
                 $Miner.DataCollectInterval = $DataCollectInterval
                 $Miner.SetStatus([MinerStatus]::Running)
@@ -1360,8 +1360,9 @@ Do {
         ($_.InvocationInfo | Format-List -Force) >> "Logs\Error.txt"
         Write-Message -Level Error "Error in core detected. Respawning core..."
         $Variables.MiningStatus = $null
-        $Variables.RestartCycle = $true
     }
+
+    $Variables.RestartCycle = $true
 
 } While ($Variables.NewMiningStatus -eq "Running")
 

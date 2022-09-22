@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.2.1.4
-Version date:   18 September 2022
+Version:        4.2.1.5
+Version date:   24 September 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -66,14 +66,15 @@ If ($PoolConfig.UserName) {
 
             # Temp fix
             $Regions = If ($Current.host_list.split(";").count -eq 1) { @("n/a") } Else { $PoolConfig.Region }
+
+            # Temp fix for pool API errors
             Switch ($Algorithm_Norm) { 
-                # "Ethash"   { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }) } # temp fix
-                "KawPoW"    { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("us-east") }) } # temp fix
-                "Lyra2RE2"  { $Current.host_list = $Current.host } # Error in API
-                "Neoscrypt" { $Current.host_list = $Current.host } # Error in API
-                "Skein"     { $Current.host_list = $Current.host } # Error in API
-                "VertHash"  { $Current.host_list = $Current.host } # Error in API
-                "Yescrypt"  { $Current.host_list = $Current.host } # Error in API
+                # "Ethash"   { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }) }
+                "KawPoW"    { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("us-east") }) }
+                # "Lyra2RE2"  { $Current.host_list = $Current.host }
+                # "Neoscrypt" { $Current.host_list = $Current.host }
+                # "Skein"     { $Current.host_list = $Current.host }
+                "VertHash"    { $Current.host_list = $Current.host; $Port = 20534 }
                 # Default     { $Port = $Current.port }
             }
 
@@ -123,11 +124,13 @@ If ($PoolConfig.UserName) {
 
             $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $false
 
-            # Temp fix
             $Regions = If ($Current.all_host_list.split(";").count -eq 1) { @("n/a") } Else { $PoolConfig.Region }
+
+            # Temp fix for pool API errors
             Switch ($Algorithm_Norm) { 
-                # "Ethash"   { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }) } # temp fix
-                "KawPoW"     { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("us-east") }) } # temp fix
+                # "Ethash"   { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }) }
+                # "Ethash"   { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }) }
+                "KawPoW"     { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("us-east") }) }
                 "VertHash"   { $Port = 20534 }
                 # Default    { $Port = $Current.algo_switch_port }
             }
