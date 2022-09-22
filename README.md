@@ -282,13 +282,13 @@ If you use older drivers some miners will not be available.
 
       windows10-8xAMD-6700XT/Octominer (test Rig 1)
       windows10-6xRTX-3070/RYZEN-3950x (test Rig 2)
-      windows10-2xRX-6700XT4x6600XT/RYZEN-3950x (test Rig 3)
+      windows10-2xRX-6700XT/4xRX-6600XT/RYZEN-3950x (test Rig 3)
       windows11-1xGTX1030-2GB/1xGTX-1060Super/1xGTX750Ti-2GB/1xRX580-8GB/RX5700/Inteli5-8600K (test Rig 4)
       windows10-7xAMD-6600XT/RYZEN-3900x (test Rig 5)
       (users have reported up to 12cards are working, I have not tested myself)
       Some miners do not support more than 9 cards
 
-      CPU miners are tested with AMD Ryzen 3700x & Inteli5-8600K CPUs
+      CPU miners are tested with AMD Ryzen 3900x & Inteli5-8600K CPUs
 
 *****
 
