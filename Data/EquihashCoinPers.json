@@ -1,3 +1,4 @@
+
 {
     "AION":  "AION0PoW",
     "ANON":  "AnonyPoW",
@@ -9,6 +10,7 @@
     "BTH":  "BethdPoW",
     "BTCZ":  "BitcoinZ",
     "BZE":  "BZEZhash",
+    "CDY":  "CandyPoW",
     "DEFIS":  "GrimmPOW",
     "FLUX":  "ZelProof",
     "GENX":  "GENX_PoW",
