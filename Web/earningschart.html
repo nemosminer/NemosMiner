@@ -14,6 +14,8 @@
 <!-- Start of page scripts 'earningschart.html' -->
           <script type="text/javascript">
             var canvas = document.getElementById('EarningsChart');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - 175;
 
             //get stored variables
             var useColor = JSON.parse(localStorage.getItem('useColor'));
@@ -24,12 +26,6 @@
               localStorage.setItem('useColor', useColor);
               updateEarningsChart();
             });
-
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - 175;
-
-            Chart.defaults.color = 'black';
-            Chart.defaults.font.size = 16;
 
             function GetColor (items, item) {
               // Colors = ['#03A9F4', '#00BCD4', '#009688', '#4CAF50', '#8BC34A', '#FFEB3B', '#FFC107', '#FF9800', '#E91E63', '#9C27B0', '#3F51B5'];
@@ -106,6 +102,9 @@
             var myChart = new Chart(ctx);
 
             function renderChart(labels, datasets, currency) {
+              Chart.defaults.color = 'black';
+              Chart.defaults.font.size = 16;
+
               myChart.destroy();
               myChart = new Chart(ctx, {
                 type: 'bar',
@@ -132,7 +131,6 @@
                         },
                         text: currency
                       },
-                      // reverse: true,
                       stacked: true
                     }
                   },
@@ -143,7 +141,6 @@
                           size: 18
                         }
                       }
-                      // ,reverse: true
                     },
                     title: {
                       display: true,
@@ -158,12 +155,7 @@
                       enabled: true,
                       callbacks: {
                         label: function(context) {
-                          var label = context.dataset.label || '';
-                          if (label) label = ' ' + label + ': ';
-                          if (context.parsed.y > 0) {
-                            label += context.parsed.y.toFixed(config.DecimalsMax) + ' ' + currency;
-                            return label;
-                          }
+                          if (context.parsed.y > 0) return ' ' + context.dataset.label + ': ' + context.parsed.y.toFixed(config.DecimalsMax) + ' ' + currency;
                         },
                         footer: function(data) {
                           // Loop through all datasets to get the actual total of the index
@@ -219,7 +211,7 @@
 
               window.setInterval(function() {
                 updateEarningsChart();
-              }, parseInt(config.BalancesTrackerPollInterval) * 1000 * 60);   // refresh once per balances tracker interval
+              }, parseInt(Math.max(10, config.BalancesTrackerPollInterval)) * 1000 * 60);   // refresh once per balances tracker interval or every 10 minutes
             });
 
             </script>
