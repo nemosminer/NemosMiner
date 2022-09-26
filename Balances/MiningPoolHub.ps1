@@ -45,7 +45,7 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.MiningPoolHubAPIKey
         }
 
         If ($APIResponse.getuserallbalances) { 
-            $APIResponse.getuserallbalances.data | Where-Object coin | Where-Object confirmed -gt 0 | ForEach-Object { 
+            $APIResponse.getuserallbalances.data | Where-Object coin | ForEach-Object { 
                 $Currency = ""
                 $RetryCount2 = 3
                 $GetPoolInfo = $null
@@ -75,19 +75,17 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.MiningPoolHubAPIKey
                     If ((-not $PayoutThreshold) -and $Currency -eq "BTC" -and $Config.PoolsConfig.$Name.PayoutThreshold.mBTC) { $PayoutThreshold = $Config.PoolsConfig.$Name.PayoutThreshold.mBTC / 1000 }
                     If (-not $PayoutThreshold) { $PayoutThreshold = $GetPoolInfo.min_ap_threshold }
 
-                    If ($_.confirmed -gt 0) { 
-                        [PSCustomObject]@{ 
-                            DateTime        = (Get-Date).ToUniversalTime()
-                            Pool            = "$Name"
-                            Currency        = $Currency
-                            Wallet          = $Config.MiningPoolHubUserName
-                            Pending         = [Double]$_.unconfirmed
-                            Balance         = [Double]$_.confirmed
-                            Unpaid          = [Double]($_.confirmed + $_.unconfirmed)
-                            # Total           = [Double]($_.confirmed + $_.unconfirmed + $_.ae_confirmed + $_.ae_unconfirmed + $_.exchange)
-                            PayoutThreshold = [Double]$PayoutThreshold
-                            Url             = "https://$($_.coin).miningpoolhub.com/index.php?page=account&action=pooledit"
-                        }
+                    [PSCustomObject]@{ 
+                        DateTime        = (Get-Date).ToUniversalTime()
+                        Pool            = "$Name"
+                        Currency        = $Currency
+                        Wallet          = $Config.MiningPoolHubUserName
+                        Pending         = [Double]$_.unconfirmed
+                        Balance         = [Double]$_.confirmed
+                        Unpaid          = [Double]($_.confirmed + $_.unconfirmed)
+                        # Total           = [Double]($_.confirmed + $_.unconfirmed + $_.ae_confirmed + $_.ae_unconfirmed + $_.exchange)
+                        PayoutThreshold = [Double]$PayoutThreshold
+                        Url             = "https://$($_.coin).miningpoolhub.com/index.php?page=account&action=pooledit"
                     }
                 }
             }
