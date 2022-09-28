@@ -1,0 +1,65 @@
+{
+  "Blockmasters" : {
+    "Algorithm" : [
+        "+m7m"
+    ],
+    "Variant": {
+      "BlockmastersPlus": {
+      }
+    }
+  },
+  "MiningPoolHub": {
+    "Algorithm" :[
+        "+Ethash",
+        "+KawPoW"
+    ],
+    "Variant": {
+      "MiningPoolHubCoins": {
+      }
+    }
+  },
+  "NiceHash": {
+    "Algorithm": [
+        "+Cuckaroom",
+        "+Cuckaroo29bfc",
+        "+Cuckarooz29",
+        "+Cuckoocycle",
+        "+Cuckaroo29",
+        "+Cuckarood29",
+        "+Cuckatoo31",
+        "+Cuckatoo32",
+        "+Eaglesong",
+        "+Ethash",
+        "+Handshake"
+    ],
+    "Variant": {
+      "NiceHash External": {
+      }
+    }
+  },
+  "ZergPool": {
+    "Algorithm": [
+        "+CryptonightConceal",
+        "+CryptonightHaven",
+        "+CryptonightHeavy",
+        "+CryptonightHeavyx",
+        "+CryptonightUpx",
+        "+Ethash",
+        "+Randomsfx",
+        "+Randomwow",
+        "+VerusHash",
+        "+YescryptR8g",
+        "+Yespoweriots"
+    ],
+    "Variant": {
+      "ZergPoolCoinsPlus": {
+      }
+    }
+  },
+  "ZPool": {
+    "Variant": {
+      "ZPoolPlus": {
+      }
+    }
+  }
+}

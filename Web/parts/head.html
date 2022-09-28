@@ -1,0 +1,312 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <link rel="shortcut icon" type="image/x-icon" href="https://avatars2.githubusercontent.com/u/50767117?s=400&u=659df63c55ea1bafbb5256e6872ba1662950aae8&v=4"/>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/css/bootstrap.min.css" integrity="sha512-T584yQ/tdRR5QwOpfvDfVQUidzfgc2339Lc8uBDtcp/wYu80d7jwBgAxbyMh0a9YM9F8N3tdErpFI8iaGx6x5g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link rel="stylesheet" href="/css/dashboard.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.20.0/bootstrap-table.min.css" integrity="sha512-nzArdKTq1Qen0WaritWm58OHlBGtmhPsPpBAAhycApOu04oqBmxDg0v/qEqT0UqP0cU6qc7KGt1pb1PYK8m0kg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/extensions/filter-control/bootstrap-table-filter-control.min.css" integrity="sha512-IK+plgQ3Qomdj9Mzq2WbM5LF8JY0PPXHGGfiBqBkwhXUi1tVAIvIaLbt330r3t0Y4EUxqG0YGfEhRrQS0gKeYQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.js" integrity="sha512-n/4gHW3atM3QqRcbCn6ewmpxcLAHGaDjpEBu4xZd47N0W2oQ+6q7oc3PXstrJYXcbNU1OHdQ1T7pAP+gi5Yu8g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/js/bootstrap.bundle.min.js" integrity="sha512-mULnawDVcCnsk9a4aG1QLZZ6rcce/jSzEGqUkeOLy0b6q0+T6syHrxlsAGH7ZVoqC93Pd0lBqd6WguPWih7VHA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.20.0/bootstrap-table.min.js" integrity="sha512-/IpP6WXzuFivkftado9CA8RGAZDN1VZk5euUeS/00cJhPhvmBMjByheZ7nCdvWGimz+RIj33gA0Of82W8jtUTQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.20.0/extensions/auto-refresh/bootstrap-table-auto-refresh.min.js" integrity="sha512-/ukLUr4U4v24YlVok+dZFO0in7Pjdqm8TLhVHmY6izQVs74WNFuCbujPGTtiEqzOTj80KX3YP2fRA/76uOr2fA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/extensions/filter-control/bootstrap-table-filter-control.min.js" integrity="sha512-nrE3yoRxAz6j1ZhkE59hXcSKV0cewPN+8ZEXJZnsz2qofCEOwmctecuKrBnWQUj7UA5dOnI+Cam52/AdvB6HKQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.20.0/extensions/resizable/bootstrap-table-resizable.min.js" integrity="sha512-bgkuo4QdLte46cGhcd5p47PgHxChwIUPEhQYMHxS0eZCXSxlrRyV45sP1/Dwc8tOjfUqOczuuhEVWCsKaP+00w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js" integrity="sha512-6PM0qYu5KExuNcKt5bURAoT6KCThUmHRewN3zUFNaoI6Di7XJPTMoT6K0nsagZKk2OB4L7E3q1uQKHNHd4stIQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.4.1/chart.min.js" integrity="sha512-5vwN8yor2fFT9pgPS9p9R7AszYaNn0LkQElTXIsZFCL7ucT8zDCAqlQXDdaqgA1mZP47hdvztBMsIoFxq/FyyQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js" integrity="sha512-QSkVNOCYLtj73J4hbmVoOV6KVZuMluZlioC+trLpewV8qMjsWqlIQvkn1KGX2StWvPMdWGBqim1xlC8krl1EKQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js" integrity="sha512-RNLkV3d+aLtfcpEyFG8jRbnWHxUqVZozacROI4J2F1sTaDqo1dPQYs01OMi1t1w9Y2FdbSCDSQ2ZVdAC8bzgAg==" crossorigin="anonymous"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js" integrity="sha512-37T7leoNS06R80c8Ulq7cdCDU5MNQBwlYoy1TX/WUsLFC2eYNqtKlV0QjH7r8JpG/S0GUMZwebnVFLPd6SU5yg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/additional-methods.min.js" integrity="sha512-XZEy8UQ9rngkxQVugAdOuBRDmJ5N4vCuNXCh8KlniZgDKTvf7zl75QBtaVG1lEhMFe2a2DuA22nZYY+qsI2/xA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="/js/utilities.js"></script>
+  </head>
+<!-- Start of page scripts 'head.html' -->
+  <script type="text/javascript">
+    let config = {};
+    let maincurrency = "";
+    let rate = 0;
+    let version = "";
+
+    // Get current config
+    $.ajax({
+      async: false,
+      dataType: 'json',
+      timeout: 10,
+      url: '/config',
+      success: function(result) {
+        config = result;
+      }
+    });
+
+    // get main currency
+    $.ajax({
+      async: false,
+      dataType: 'json',
+      timeout: 10,
+      url: '/currency',
+      success: function(result) {
+        maincurrency = result;
+      }
+    });
+
+    $(document).ready(function() {
+      // set the values in the header
+      updateHeader();
+      window.setInterval(function() { 
+        updateHeader();
+      }, 10000);
+    });
+
+    function updateHeader() {
+      // get BTC rate of first currency
+      $.ajax({
+        async: false,
+        dataType: 'json',
+        timeout: 10,
+        url: '/btc',
+        success: function(result) {
+          rate = result;
+        }
+      });
+
+      // get page header info
+      $.ajax({
+        async: false,
+        dataType: 'json',
+        timeout: 10,
+        url: '/summary',
+        success: function(result) {
+          $("#summary").empty().append(result);
+        }
+      });
+
+      //Set mining button status
+      $.ajax({
+        async: false,
+        dataType: 'json',
+        timeout: 10,
+        url: '/functions/mining/getstatus',
+        success: function(result) {
+          switch (result) {
+            case "Running": 
+              document.getElementById('miningstart').disabled = true;
+              document.getElementById('miningstart').title = "Mining processes are already running.";
+              document.getElementById('miningpause').disabled = false;
+              document.getElementById('miningpause').title = "Pause mining processes. Background processes remain running.";
+              document.getElementById('miningstop').disabled = false;
+              document.getElementById('miningstop').title = "Stop mining processes. Background processes will also stop.";
+              break;
+            case "Paused":
+              document.getElementById('miningstart').disabled = false;
+              document.getElementById('miningstart').title ="Start the mining process.";
+              document.getElementById('miningpause').disabled = true;
+              document.getElementById('miningpause').title = "Mining processes are stopped. Background processes remain running.";
+              document.getElementById('miningstop').disabled = false;
+              document.getElementById('miningstop').title = "Stop mining processes. Background processes will also stop.";
+              break;
+            case "Idle":
+              document.getElementById('miningstart').disabled = false;
+              document.getElementById('miningstart').title ="Start the mining process.";
+              document.getElementById('miningpause').disabled = false;
+              document.getElementById('miningpause').title = "Mining will not start. Background processes will start.";
+              document.getElementById('miningstop').disabled = true;
+              document.getElementById('miningstop').title = "All mining processes are already stopped.";
+              break;
+          }
+        },
+      });
+    }
+  </script>
+<!-- End of page scripts 'head.html' -->
+  <body>
+    <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+      <a class="navbar-brand" href="/">NemosMiner</a>
+      <div class="navbar-button">
+        <button id="miningstart" class="btn btn-success btn-lg" disabled>Start mining</button>
+        <button id="miningpause" class="btn btn-info btn-lg" disabled>Pause mining</button>
+        <button id="miningstop" class="btn btn-danger btn-lg" disabled>Stop mining</button>
+      </div>
+      <div class="justify-content-between navbar-summary" id="summary"></div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <nav class="d-none d-md-block bg-light sidebar nav-collapse" id="sidebar">
+          <div class="sidebar-sticky">
+            <ul class="nav flex-column mb-2">
+              <li class="nav-item" title="Shows information about the running miners as well as the reported earning data">
+                <a id="navdashboard" class="nav-link" href="/">
+                  <span data-feather="home"></span>
+                  <i class="fas fa-tachometer-alt" aria-hidden="true" style="margin-right:15px"></i>Dashboard
+                </a>
+              </li>
+              <li class="nav-item" title="Displays a bar graph of the reported earnings">
+                <a id="navearningschart" class="nav-link" href="earningschart.html">
+                  <i class="fas fa-chart-column" aria-hidden="true" style="margin-right:15px"></i>Earnings Chart
+                </a>
+              </li>
+            </ul>
+
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+              <span>Miners</span>
+            </h6>
+
+            <ul class="nav flex-column mb-2">
+              <li class="nav-item" title="Shows a list of the miners that were calculated as the most profitable">
+                <a id="navminersmostprofitable" class="nav-link" href="minersmostprofitable.html">
+                  <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(48, 192, 48); margin-right:15px"></i>Most Profitable Miners
+                </a>
+              </li>
+              <li class="nav-item" title="Shows a list of all unavailable miners">
+                <a id="navminersunavailable" class="nav-link" href="minersunavailable.html">
+                  <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(224, 32, 32); margin-right:15px"></i>Unavailable Miners
+                </a>
+              </li>
+              <li class="nav-item" title="Shows a list of all miners">
+                <a id="navminers" class="nav-link" href="miners.html">
+                  <i class="fas fa-hammer" aria-hidden="true" style="color:rgb(0, 0, 0); margin-right:15px"></i>All Miners
+                </a>
+              </li>
+            </ul>
+
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+              <span>Pools</span>
+            </h6>
+
+            <ul class="nav flex-column mb-2">
+              <li class="nav-item" title="Shows a list of the pools that were calculated as the most profitable">
+                <a id="navpoolsbest" class="nav-link" href="poolsbest.html">
+                  <i class="fas fa-database" aria-hidden="true" style="color:rgb(48, 192, 48); margin-right:15px"></i>Best Pools
+                </a>
+              </li>
+              <li class="nav-item" title="Shows a list of all unavailable pools">
+                <a id="navpoolsunavailable" class="nav-link" href="poolsunavailable.html">
+                  <i class="fas fa-database" aria-hidden="true" style="color:rgb(224, 32, 32); margin-right:15px"></i>Unavailable Pools
+                </a>
+              </li>
+              <li class="nav-item" title="Shows a list of all pools">
+                <a id="navallpools" class="nav-link" href="pools.html">
+                  <i class="fas fa-database" aria-hidden="true" style="color:rgb(0, 0, 0); margin-right:15px"></i>All Pools
+                </a>
+              </li>
+            </ul>
+
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+              <span>Configuration</span>
+            </h6>
+
+            <ul class="nav flex-column mb-2">
+              <li class="nav-item" title="Configuration editor&#10;Allows you to edit most configuration items">
+                <a id="navconfigedit" class="nav-link" href="configedit.html">
+                  <i class="fas fa-cogs" aria-hidden="true" style="margin-right:12px"></i>Edit Configuration
+                </a>
+              </li>
+              <li class="nav-item" title="Display and configure the devices (GPUs and CPUs)">
+                <a id="navdevices" class="nav-link" href="devices.html">
+                  <i class="fa fa-microchip" aria-hidden="true" style="margin-right:15px"></i>Devices
+                </a>
+              </li>
+              <li class="nav-item" title="View and reset common stat data">
+                <a id="navminerstats" class="nav-link" href="stats.html">
+                  <i class="fa fa-list-ul" aria-hidden="true" style="margin-right:15px"></i>Manage Stats
+                </a>
+              </li>
+              <li class="nav-item" title="Edit the list of unprofitable algorithms">
+                <a id="navunprofitablealgorithms" class="nav-link" href="unprofitablealgorithms.html">
+                  <i class="fa fa-list-ol" aria-hidden="true" style="margin-right:15px"></i>Unprofitable Algorithms
+                </a>
+              </li>
+            </ul>
+
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+              <span>Extras</span>
+            </h6>
+
+            <ul class="nav flex-column mb-2">
+              <li class="nav-item" title="Rig Monitor configuration & Rig status">
+                <a id="navrigmonitor" class="nav-link" href="rigmonitor.html">
+                  <i class="fas far fa-eye" aria-hidden="true" style="margin-right:15px"></i>Rig Monitor
+                </a>
+              </li>
+              <li class="nav-item" title="Lists the executed miners and the command lines used to do so (last 1000 entries)">
+                <a id="navswitchinglog" class="nav-link" href="switchinglog.html">
+                  <i class="fas fa-random" aria-hidden="true" style="margin-right:15px"></i>Switching Log
+                </a>
+              </li>
+              <li class="nav-item" title="Shows the last 40 lines of the NemosMiner log">
+                <a id="navtaillog" class="nav-link" href="logviewer.html">
+                  <i class="fa-solid fa-file-lines" aria-hidden="true" style="margin-right:17px"></i>System Log
+                </a>
+              </li>
+              <li class="nav-item" title="Shows the running configuration">
+                <a id="navconfigrunning" class="nav-link" href="configrunning.html">
+                  <i class="fas fa-running" aria-hidden="true" style="margin-right:16px"></i>Running Configuration
+                </a>
+              </li>
+              <li class="nav-item" title="Displays the watchdog timers information">
+                <a id="navwatchdogtimers" class="nav-link" href="watchdogtimers.html">
+                  <i class="fas fa-dog" aria-hidden="true" style="margin-right:14px"></i>Watchdog Timers
+                </a>
+              </li>
+              <li class="nav-item" title="Shows the balance data that was collected by the balance tracker (last 30 days)">
+                <a id="navbalancedata" class="nav-link" href="balancedata.html">
+                  <i class="fa-solid fa-money-check-dollar" aria-hidden="true" style="margin-right:14px"></i>Balance Data
+                </a>
+              </li>
+            </ul>
+
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+              <span>Links</span>
+            </h6>
+
+            <ul class="nav flex-column mb-2">
+              <li class="nav-item" title="Open the NemosMiner homepage in a new browser window">
+                <a class="nav-link" href="https://nemosminer.com/" target="_blank">
+                  <i class="fa fa-external-link-alt" aria-hidden="true" style="margin-right:15px"></i>Website
+                </a>
+              </li>
+              <li class="nav-item" title="Open the NemosMiner repository on Github in a new browser window">
+                <a class="nav-link" href="https://github.com/Minerx117/NemosMiner/tree/testing" target="_blank">
+                  <i class="fab fa-github" aria-hidden="true" style="margin-right:15px"></i>Github
+                </a>
+              </li>
+              <li class="nav-item" title="Open the NemosMiner API documentation in a new browser window">
+                <a class="nav-link" href="APIDocs.html" target="_blank">
+                  <i class="fa fa-book" aria-hidden="true" style="margin-right:15px"></i>API Documentation
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <main role="main" class="main col-sm-12">
+          <div class="modal" id="myModal" role="dialog">
+            <div class="modal-dialog modal-lg">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">OK</button>
+                </div>
+              </div>
+            </div>
+          </div>

@@ -1,0 +1,199 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TailConfig>
+  <TailFiles>
+    <TailFileConfig>
+      <FilePath>..\Logs\NemosMiner_????-??-??.log</FilePath>
+      <FileEncoding>System.Text.UTF8Encoding</FileEncoding>
+      <FileCacheSize>1000</FileCacheSize>
+      <FileCheckInterval>10</FileCheckInterval>
+      <FileChangeCheckInterval>500</FileChangeCheckInterval>
+      <FileCheckPattern>true</FileCheckPattern>
+      <TitleMatchFilename>true</TitleMatchFilename>
+      <TextColor>White</TextColor>
+      <BackColor>Black</BackColor>
+      <FontInvariant>Consolas, 9pt</FontInvariant>
+      <BookmarkTextColor>Yellow</BookmarkTextColor>
+      <BookmarkBackColor>DarkGreen</BookmarkBackColor>
+      <Modeless>false</Modeless>
+      <Title>NemosMiner_2021-08-31.log</Title>
+      <WindowState>Maximized</WindowState>
+      <WindowSize>
+        <Width>1395</Width>
+        <Height>596</Height>
+      </WindowSize>
+      <WindowPosition>
+        <X>-11</X>
+        <Y>-45</Y>
+      </WindowPosition>
+      <ServiceName />
+      <ServiceMachineName />
+      <IconFile />
+      <DisplayTabIcon>true</DisplayTabIcon>
+      <ColumnFilterActive>false</ColumnFilterActive>
+      <KeywordHighlight>
+        <Keyword>
+          <Keyword>Benchmark.+for .+ in progress|Power usage measurement for.+ in progress</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>true</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>false</AlertHighlight>
+          <TextColor>#FF8000</TextColor>
+          <BackColor>Black</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>Benchmark done|Power usage measurement done</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>true</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>false</AlertHighlight>
+          <TextColor>#FFC082</TextColor>
+          <BackColor>Black</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>Reported worker status to monitoring server|Retrieved worker status from</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>true</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>true</AlertHighlight>
+          <TextColor>#55AAAA</TextColor>
+          <BackColor>Black</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>Some miners binaries are missing, starting downloader...</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>false</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>false</AlertHighlight>
+          <TextColor>Fuchsia</TextColor>
+          <BackColor>Black</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>Downloader:</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>false</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>false</AlertHighlight>
+          <TextColor>#FF80FF</TextColor>
+          <BackColor>Black</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>more profitable than the fastest miner:</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>false</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>false</AlertHighlight>
+          <TextColor>#400040</TextColor>
+          <BackColor>#FFFF80</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>Starting NemosMiner|Using configuration file|Web GUI and API.+ running</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>true</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>false</AlertHighlight>
+          <TextColor>Aqua</TextColor>
+          <BackColor>Black</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>Started idle detection|Mining is suspended until system is idle again|Stopped idle detection</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>true</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>false</AlertHighlight>
+          <TextColor>Gray</TextColor>
+          <BackColor>Black</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>Donation run</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>false</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>false</AlertHighlight>
+          <TextColor>Silver</TextColor>
+          <BackColor>#400040</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Started new cycle|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Collecting miner data while|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+:.Ending cycle</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>true</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>false</AlertHighlight>
+          <TextColor>#0080FF</TextColor>
+          <BackColor>Black</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Stopping miner .*</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>true</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>false</AlertHighlight>
+          <TextColor>#00AC00</TextColor>
+          <BackColor>Black</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Starting miner .*</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>true</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>false</AlertHighlight>
+          <TextColor>#00E600</TextColor>
+          <BackColor>Black</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} WARN:.*</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>true</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>false</AlertHighlight>
+          <TextColor>#FFFF80</TextColor>
+          <BackColor>Black</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} ERROR:.*</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>true</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>true</AlertHighlight>
+          <TextColor>White</TextColor>
+          <BackColor>Red</BackColor>
+        </Keyword>
+        <Keyword>
+          <Keyword>Stopped idle detection</Keyword>
+          <MatchCaseSensitive>false</MatchCaseSensitive>
+          <MatchRegularExpression>false</MatchRegularExpression>
+          <LogHitCounter>false</LogHitCounter>
+          <TextColoring>true</TextColoring>
+          <AlertHighlight>true</AlertHighlight>
+          <TextColor>White</TextColor>
+          <BackColor>Black</BackColor>
+        </Keyword>
+      </KeywordHighlight>
+      <ExternalTools />
+    </TailFileConfig>
+  </TailFiles>
+  <SelectedTab>0</SelectedTab>
+  <WindowSize>
+    <Width>1399</Width>
+    <Height>700</Height>
+  </WindowSize>
+  <WindowPosition>
+    <X>19</X>
+    <Y>20</Y>
+  </WindowPosition>
+  <MinimizedToTray>false</MinimizedToTray>
+  <AlwaysOnTop>false</AlwaysOnTop>
+</TailConfig>

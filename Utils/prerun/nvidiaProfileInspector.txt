@@ -1,0 +1,4 @@
+the nvidiaProfileInspector.exe has removed from shipment.
+
+you can find latest version here:
+https://github.com/Orbmu2k/nvidiaProfileInspector/releases
