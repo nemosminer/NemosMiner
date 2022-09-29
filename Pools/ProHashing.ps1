@@ -62,10 +62,10 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
         $Currency = "$($Request.$_.currency)".Trim()
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
         $Fee = If ($Currency) { $Request.$_."$($PoolConfig.MiningMode)_fee" } Else { $Request.$_."pps_fee" }
-        $Pass = @("a=$($Algorithm.ToLower())", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)", $(If ($Currency -and $Config.ProHashingMiningMode -eq "PPLNS") { "m=pplns,c=$Currency" }) | Select-Object) -join ','
+        $Pass = @("a=$($Algorithm.ToLower())", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)", $(If ($Algorithm_Norm -ne "Ethash" -and $Currency -and $Config.ProHashingMiningMode -eq "PPLNS") { "m=pplns,c=$Currency" }) | Select-Object) -join ','
 
         # Add coin name
-        If ($Request.$_.CoinName -and $Currency) { Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName }
+        If ($Request.$_.CoinName -and $Currency) { [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName) }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
