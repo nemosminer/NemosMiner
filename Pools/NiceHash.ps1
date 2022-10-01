@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.2.1.5
-Version date:   24 September 2022
+Version:        4.2.1.6
+Version date:   30 September 2022
 #>
 
 using module ..\Includes\Include.psm1

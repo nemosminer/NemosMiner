@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.2.1.5
-Version date:   24 September 2022
+Version:        4.2.1.6
+Version date:   30 September 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -117,7 +117,7 @@ While ($BrainConfig) {
                 Last24DriftPercent    = If ($BasePrice -gt 0) { ($AlgoData.$Algo.estimate_current - $BasePrice) / $BasePrice } Else { 0 }
                 FirstDate             = $AlgoObject[0].Date
                 TimeSpan              = If ($null -ne $AlgoObject.Date) { (New-TimeSpan -Start ($AlgoObject[0]).Date -End $CurDate).TotalMinutes }
-            }   
+            }
         }
 
         If ($PoolVariant -match "Plus$") {
@@ -161,21 +161,30 @@ While ($BrainConfig) {
 
         If ($BrainConfig.UseTransferFile -or $BrainConfig.Debug) { 
             ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Out-File -FilePath $TransferFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+
+        }
+
+        If ($BrainConfig.Debug) { 
+            Write-Message -Level Debug "$(($AlgoObject | ConvertTo-Json -compress).length)"
+            Get-MemoryUsage
         }
 
         # Limit to only sample size + 10 minutes min history
-        $AlgoObject = $AlgoObject | Where-Object { $_.Date -ge $CurDate.AddMinutes(-($BrainConfig.SampleSizeMinutes + 10)) }
+        $AlgoObject = @($AlgoObject | Where-Object { $_.Date -ge $CurDate.AddMinutes(-($BrainConfig.SampleSizeMinutes + 10)) })
 
         Remove-Variable AlgoData, BasePrice, CurAlgoObject, CurrenciesData, Currencies, Currency, SampleSizeHalfts, SampleSizets, GroupAvgSampleSize, GroupAvgSampleSizeHalf, GroupMedSampleSize, GroupMedSampleSizeHalf, GroupMedSampleSizeNoPercent, Name, Penalty, PenaltySampleSizeHalf, PenaltySampleSizeNoPercent, Price -ErrorAction Ignore
     }
 
-    If ($BrainConfig.Debug) { Write-Message -Level Debug "End Brain '$Brainname' ($($Duration.TotalSeconds) sec.)." }
+    $null = [System.GC]::GetTotalMemory("forcefullcollection")
 
-    [System.GC]::Collect()
+    If ($BrainConfig.Debug) { 
+        Get-MemoryUsage
+        Write-Message -Level Debug "End Brain '$Brainname' ($($Duration.TotalSeconds) sec.)."
+    }
 
     Do { 
         Start-Sleep -Seconds 3
-    } While (-not $Variables.Miners -or $CurDate -gt $Variables.PoolDataCollectedTimeStamp -or (Get-Date).ToUniversalTime().AddSeconds([Int]$Duration.TotalSeconds + 5) -lt $Variables.EndCycleTime)
+    } While (($Variables.MiningStatus -eq "Running" -and (-not $Variables.Miners -or $CurDate -gt $Variables.PoolDataCollectedTimeStamp -or (Get-Date).ToUniversalTime().AddSeconds([Int]$Duration.TotalSeconds + 5) -lt $Variables.EndCycleTime)) -or $CurDate.AddSeconds([Int]$Config.Interval) -gt (Get-Date).ToUniversalTime())
 
     $BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig
 }

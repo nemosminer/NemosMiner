@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.2.1.5
-Version date:   24 September 2022
+Version:        4.2.1.6
+Version date:   30 September 2022
 #>
 
 Function Initialize-API { 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.8.5"
+    $APIVersion = "0.4.9.0"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
@@ -324,23 +324,14 @@ Function Start-APIServer {
                         $Data = "<pre>$Data</pre>"
                         Break
                     }
-                    "/functions/stat/get" { 
-                        $TempStats = @(If ($null -ne $Parameters.Value) { @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Live -eq $Parameters.Value } | ForEach-Object { $Stats.$_ }) } Else { @($Stats) })
-
-                        If ($TempStats) { 
-                            If ($null -ne $Parameters.Value) { 
-                                $TempStats | Sort-Object Name | ForEach-Object { $Data += "$($_.Name -replace "_$($Parameters.Type)")`n" }
-                                If ($Parameters.Type -eq "Hashrate") { $Data += "`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)H/s $($Parameters.Type)." }
-                                ElseIf ($Parameters.Type -eq "PowerUsage") { $Data += "`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)W $($Parameters.Type)." }
-                            }
-                            Else { 
-                                $Data = $TempStats | ConvertTo-Json
-                            }
+                    "/functions/querypoolapi" { 
+                        If (-not $Config.PoolsConfig.$($Parameters.Pool).BrainConfig.$($Parameters.Type)) { 
+                            $Data = "No pool config data for '/functions/querypoolapi?Pool=$($Parameters.Pool)&Type=$($Parameters.Type)'"
                         }
-                        Else { 
-                            $Data = "No matching stats found."
+                        ElseIf (-not ($Data = (Invoke-RestMethod -Uri $Config.PoolsConfig.$($Parameters.Pool).BrainConfig.$($Parameters.Type) -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec 5) | ConvertTo-Json)) {
+                            $Data = "No data for '/functions/querypoolapi?Pool=$($Parameters.Pool)&Type=$($Parameters.Type)'"
                         }
-                        Break
+                        break
                     }
                     "/functions/removeorphanedminerstats" { 
                         If ($StatNames = Remove-ObsoleteMinerStats) { 
@@ -442,6 +433,24 @@ Function Start-APIServer {
                             }
                             Break
                         }
+                    }
+                    "/functions/stat/get" { 
+                        $TempStats = @(If ($null -ne $Parameters.Value) { @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Live -eq $Parameters.Value } | ForEach-Object { $Stats.$_ }) } Else { @($Stats) })
+
+                        If ($TempStats) { 
+                            If ($null -ne $Parameters.Value) { 
+                                $TempStats | Sort-Object Name | ForEach-Object { $Data += "$($_.Name -replace "_$($Parameters.Type)")`n" }
+                                If ($Parameters.Type -eq "Hashrate") { $Data += "`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)H/s $($Parameters.Type)." }
+                                ElseIf ($Parameters.Type -eq "PowerUsage") { $Data += "`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)W $($Parameters.Type)." }
+                            }
+                            Else { 
+                                $Data = $TempStats | ConvertTo-Json
+                            }
+                        }
+                        Else { 
+                            $Data = "No matching stats found."
+                        }
+                        Break
                     }
                     "/functions/stat/remove" { 
                         If ($Parameters.Pools) { 
@@ -831,6 +840,10 @@ Function Start-APIServer {
                         $Data = $Variables.MiningProfit
                         Break
                     }
+                    "/pooldata" { 
+                        $Data = ConvertTo-Json -Depth 10 $Variables.PoolData
+                        break
+                    }
                     "/poolsconfig" { 
                         $Data = ConvertTo-Json -Depth 10 ($Config.PoolsConfig | Select-Object)
                         Break
@@ -838,10 +851,6 @@ Function Start-APIServer {
                     "/poolsconfigfile" { 
                         $Data = $Variables.PoolsConfigFile
                         Break
-                    }
-                    "/pooldata" { 
-                        $Data = ConvertTo-Json -Depth 10 $Variables.PoolData
-                        break
                     }
                     "/pools" { 
                         $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Select-Object | Sort-Object Algorithm, Name, Region)

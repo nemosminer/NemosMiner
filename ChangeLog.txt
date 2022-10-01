@@ -10,7 +10,32 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
-ChangeLog NemosMiner 4.2.1.4 24.09.2022
+ChangeLog NemosMiner 4.2.1.6 30.09.2022
+=======================================
+
+Changes:
+- Core: Rename algorithm 'Kaspa' to 'kHeavyHash'
+
+Fixes:
+- Core / DAG data: Calculate Octopus DAG size (Thank you RainbowMiner)
+- Core: Crash when donation duration longer tha rest of the day
+- Core: Configuration variables '$ProfitabilityThreshold' had no effect. Mining would continue at loss
+- Core: Fix miners getting stopped with message 'No samples received...'
+
+Miner changes:
+- Radiator-v1.0.0
+- GMiner-v3.06
+- lolMiner-v1.59a
+- NanoMiner-v3.7.2
+- SRBMinerMulti-v1.0.9
+- Trex-v0.26.6
+- Wildrig-v0.32.5
+
+Pool changes:
+- Prohashing: Support für EthashPoW (ETHW)
+
+
+ChangeLog NemosMiner 4.2.1.5 24.09.2022
 =======================================
 
 Enhancements:
@@ -49,11 +74,15 @@ Enhancements:
 - Web GUI / Balances: Add tool tip to display pool balance value in main currency 
 
 Fixes:
+- Balance tracker / MiningPoolHub: Ignore 0 valued balances
 - Core: Do not donate more than once a day after a NemosMiner restart (Regression of 4.2.1.2)
+- Web GUI / Earnings Chart: Tooltips not shown if $BalancesTrackerPollInterval -eq 0
 
 Miner Changes:
+- GMiner-v2.75: Incorrect coin pers used
 - lolMiner-v1.57
 - MiniZ-v1.8z3 (revert back to older version; v1.9z2 has issues with Equihash)
+- Trex-v0.26.6
 
 Pool changes:
 - Disable 'ETH' mining (Ethereum in no longer minable)

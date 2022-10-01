@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveOn.ps1
-Version:        4.2.1.5
-Version date:   24 September 2022
+Version:        4.2.1.6
+Version date:   30 September 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -52,7 +52,7 @@ If ($PoolConfig.Wallets) {
         $Divisor = [Double]$_.profitPerPower
 
         # Add coin name
-        If ($_.title -and $Currency) { Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $_.title }
+        If ($_.title -and $Currency) { [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $_.title) }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
 

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.2.1.5
-Version date:   24 September 2022
+Version:        4.2.1.6
+Version date:   30 September 2022
 #>
 
 # Window handling
@@ -383,6 +383,9 @@ Class Miner {
             $this.Process | Remove-Job -Force
             $this.Process = $null 
         }
+
+        $this.Data = $null
+        $this.DataReaderJob = $null
 
         $this.Status = If ($this.Status -eq [MinerStatus]::Running) { [MinerStatus]::Idle } Else { [MinerStatus]::Failed }
         $this.Devices | ForEach-Object { $_.Status = $this.Status }
@@ -753,7 +756,7 @@ Function Start-Brain {
 
         # Create the sessionstate variable entries
         @("Config", "Variables") | ForEach-Object { 
-            $InitialSessionState.Variables.Add((New-Object System.Management.Automation.Runspaces.SessionStateVariableEntry -ArgumentList $_, (Get-Variable $_ -ValueOnly), $Null))
+            $InitialSessionState.Variables.Add((New-Object System.Management.Automation.Runspaces.SessionStateVariableEntry -ArgumentList $_, (Get-Variable $_ -ValueOnly), $null))
         }
 
         $Variables.BrainRunspacePool = [RunspaceFactory]::CreateRunspacePool(1, (Get-Item -Path ".\Brains\*.ps1").Count, $InitialSessionState, $Host)
@@ -801,7 +804,7 @@ Function Stop-Brain {
             $BrainsStopped += $_
         }
 
-        [System.GC]::Collect()
+        $null = [System.GC]::GetTotalMemory("forcefullcollection")
 
         If ($BrainsStopped.Count -gt 0) { Write-Message -Level Info  "Pool Brain Job$(If ($BrainsStopped.Count -gt 1) { "s" }) for '$(($BrainsStopped | Sort-Object) -join ", ")' stopped." }
 
@@ -814,7 +817,7 @@ Function Stop-Brain {
         $Variables.Remove("Brains")
         $Variables.Remove("BrainData")
 
-        [System.GC]::Collect()
+        $null = [System.GC]::GetTotalMemory("forcefullcollection")
     }
 }
 
@@ -1414,7 +1417,8 @@ Function Get-SortedObject {
     }
 
     Remove-Variable Key, Object, Property -ErrorAction Ignore
-    $SortedObject
+
+    Return $SortedObject
 }
 
 Function Enable-Stat { 
@@ -1685,7 +1689,7 @@ Function Get-Stat {
             }
             Catch { 
                 Write-Message -Level Warn "Stat file ($Stat_Name) is corrupt and will be reset."
-                Remove-Stat $Stat_Name
+                [Void](Remove-Stat $Stat_Name)
             }
         }
 
@@ -1732,7 +1736,7 @@ Function Get-ArgumentsPerDevice {
     " $($Arguments.TrimStart().TrimEnd())" -split "(?=\s+[-]{1,2})" | ForEach-Object { 
         $Token = $_
         $Prefix = ""
-        $ParameterSeparator = ""
+        $TokenSeparator = ""
         $ValueSeparator = ""
         $Values = ""
 
@@ -1741,9 +1745,9 @@ Function Get-ArgumentsPerDevice {
             $Token = $Token -split $Matches[0] | Select-Object -Last 1
 
             If ($Token -match "(?:[ =]+)" <#supported separators are listed in brackets [ =]#>) { 
-                $ParameterSeparator = $Matches[0]
-                $Parameter = $Token -split $ParameterSeparator | Select-Object -First 1
-                $Values = $Token.Substring(("$Parameter$($ParameterSeparator)").length)
+                $TokenSeparator = $Matches[0]
+                $Parameter = $Token -split $TokenSeparator | Select-Object -First 1
+                $Values = $Token.Substring(("$Parameter$($TokenSeparator)").length)
 
                 If ($Parameter -notin $ExcludeArguments -and $Values -match "(?:[,; ]{1})" <#supported separators are listed in brackets [,; ]#>) { 
                     $ValueSeparator = $Matches[0]
@@ -1751,9 +1755,9 @@ Function Get-ArgumentsPerDevice {
                     $DeviceIDs | ForEach-Object { 
                         $RelevantValues += ($Values.Split($ValueSeparator) | Select-Object -Index $_)
                     }
-                    $ArgumentsPerDevice += "$Prefix$Parameter$ParameterSeparator$($RelevantValues -join $ValueSeparator)"
+                    $ArgumentsPerDevice += "$Prefix$Parameter$TokenSeparator$($RelevantValues -join $ValueSeparator)"
                 }
-                Else { $ArgumentsPerDevice += "$Prefix$Parameter$ParameterSeparator$Values" }
+                Else { $ArgumentsPerDevice += "$Prefix$Parameter$TokenSeparator$Values" }
             }
             Else { $ArgumentsPerDevice += "$Prefix$Token" }
         }
@@ -1838,7 +1842,6 @@ Function Get-ChildItemContent {
         Return (& $ScriptBlock -Path $Path -Parameters $Parameters)
     }
 
-    Remove-Variable Content, Expression, Parameters, Priority, ScriptBlock, Threaded, Name -ErrorAction Ignore
 }
 
 Function Invoke-TcpRequest { 
@@ -2552,12 +2555,10 @@ public static class Kernel32
         If (-not $WorkingDirectory) { $WorkingDirectory = [IntPtr]::Zero }
 
         # Call CreateProcess
-        [Kernel32]::CreateProcess($BinaryPath, "$BinaryPath $ArgumentList", [ref]$SecAttr, [ref]$SecAttr, $false, $CreationFlags, [IntPtr]::Zero, $WorkingDirectory, [ref]$StartupInfo, [ref]$ProcessInfo) | Out-Null
-
+        [Void]([Kernel32]::CreateProcess($BinaryPath, "$BinaryPath $ArgumentList", [ref]$SecAttr, [ref]$SecAttr, $false, $CreationFlags, [IntPtr]::Zero, $WorkingDirectory, [ref]$StartupInfo, [ref]$ProcessInfo))
         $Process = Get-Process -Id $ProcessInfo.dwProcessId
         If ($null -eq $Process) { 
-            [PSCustomObject]@{ ProcessId = $null }
-            Return
+            Return [PSCustomObject]@{ ProcessId = $null }
         }
 
         [PSCustomObject]@{ProcessId = $Process.Id; ProcessHandle = $Process.Handle }
@@ -2660,8 +2661,8 @@ Function Get-Algorithm {
 
     $Algorithm = (Get-Culture).TextInfo.ToTitleCase($Algorithm.ToLower() -replace '-|_|/| ')
 
-    If ($Global:Algorithms.$Algorithm) { $Global:Algorithms.$Algorithm }
-    Else { $Algorithm }
+    If ($Global:Algorithms.$Algorithm) { Return $Global:Algorithms.$Algorithm }
+    Else { Return $Algorithm }
 }
 
 Function Get-Region { 
@@ -2677,11 +2678,9 @@ Function Get-Region {
         $Global:Regions = Get-Content -Path ".\Data\Regions.json" -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
     }
 
-    If ($List) { $Global:Regions.$Region }
-    ElseIf ($Global:Regions.$Region) { $($Global:Regions.$Region | Select-Object -First 1) }
-    Else { $Region }
-
-    Remove-Variable List, Region -ErrorAction Ignore
+    If ($List) { Return $Global:Regions.$Region }
+    ElseIf ($Global:Regions.$Region) { Return $($Global:Regions.$Region | Select-Object -First 1) }
+    Else { Return $Region }
 }
 
 Function Add-CoinName { 
@@ -2807,7 +2806,7 @@ Function Get-PoolBaseName {
         [String[]]$PoolNames
     )
 
-    $PoolNames -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$"
+    Return ($PoolNames -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$")
 }
 
 Function Get-NMVersion { 
@@ -2848,6 +2847,8 @@ Function Get-NMVersion {
     Catch { 
         Write-Message -Level Warn "Version checker could not contact update server."
     }
+
+    Remove-Variable UpdateVersion -ErrorAction Ignore
 }
 
 Function Initialize-Autoupdate { 
@@ -3039,7 +3040,8 @@ Function Get-ObsoleteMinerStats {
     Get-Stat | Out-Null
 
     $MinerNames = @(Get-ChildItem ".\Miners\*.ps1").BaseName
-    @($Global:Stats.Keys | Where-Object { $_ -match "_Hashrate$|_PowerUsage$" } | Where-Object { (($_ -split "-" | Select-Object -First 2) -join "-") -notin $MinerNames})
+
+    Return (@($Global:Stats.Keys | Where-Object { $_ -match "_Hashrate$|_PowerUsage$" } | Where-Object { (($_ -split "-" | Select-Object -First 2) -join "-") -notin $MinerNames}))
 }
 
 Function Test-Prime { 
@@ -3054,6 +3056,88 @@ Function Test-Prime {
     Return $true
 }
 
+Function Get-DAGsize { 
+
+    Param(
+        [Parameter(Mandatory = $true)]
+        [Double]$Epoch,
+        [Parameter(Mandatory = $true)]
+        [String]$Currency
+    )
+
+    Switch ($Currency) { 
+        # https://github.com/RainbowMiner/RainbowMiner/issues/2102
+        "ERG" { 
+            $Size = [Math]::Pow(2, 26)
+            $Blockheight = [Math]::Min($Blockheight, 4198400)
+            If ($Blockheight -ge 614400) { 
+                $P = [Math]::Floor(($Blockheight - 614400) / 51200) + 1
+                While ($P-- -gt 0) {
+                    $Size = [Math]::Floor($Size / 100) * 105
+                }
+            }
+            $Size *= 31
+        }
+        "CFX" { 
+            $Dataset_Bytes_Init = 4294967296
+            $Dataset_Bytes_Growth = 16777216
+            $Mix_Bytes = 256
+            $Size = ($Dataset_Bytes_Init + $Dataset_Bytes_Growth * $Epoch) - $Mix_Bytes
+            While (-not (Test-Prime ($Size / $Mix_Bytes))) { 
+                $Size -= 2 * $Mix_Bytes
+            }
+        }
+        Default { 
+            $Dataset_Bytes_Init = [Math]::Pow(2, 30) # 1GB
+            $Dataset_Bytes_Growth = [Math]::Pow(2, 23) # 8MB
+            $Mix_Bytes = 128
+            $Size = ($Dataset_Bytes_Init + $Dataset_Bytes_Growth * $Epoch) - $Mix_Bytes
+            While (-not (Test-Prime ($Size / $Mix_Bytes))) { 
+                $Size -= 2 * $Mix_Bytes
+            }
+        }
+    }
+
+    Return [Int64]$Size
+}
+
+Function Get-Epoch { 
+
+    Param(
+        [Parameter(Mandatory = $true)]
+        [Double]$Blockheight,
+        [Parameter(Mandatory = $true)]
+        [String]$Currency
+    )
+
+    Switch ($Currency) { 
+        "ERG"   { $Blockheight -= 416768 } # Epoch 0 starts @ 417792
+        Default { }
+    }
+
+    Return [Int][Math]::Floor($Blockheight / (Get-EpochLength -Blockheight $Blockheight -Currency $Currency))
+}
+
+Function Get-EpochLength { 
+
+    Param(
+        [Parameter(Mandatory = $true)]
+        [Double]$Blockheight,
+        [Parameter(Mandatory = $true)]
+        [String]$Currency
+    )
+
+    Switch ($Currency) { 
+        "CFX"   { Return 524288 }
+        "ERG"   { Return 1024 }
+        "ETC"   { If ($Blockheight -ge 11700000 ) { Return 60000 } Else { Return 30000 } }
+        "FIRO"  { Return 1300 }
+        "RVN"   { Return 7500 }
+        Default { return 30000 }
+    }
+
+}
+
 Function Get-DAGdata { 
 
     Param(
@@ -3062,83 +3146,10 @@ Function Get-DAGdata {
         [Parameter(Mandatory = $false)]
         [String]$Currency = "ETH"
     )
-        Function Get-DAGsize { 
-
-        Param(
-            [Parameter(Mandatory = $true)]
-            [Double]$Epoch,
-            [Parameter(Mandatory = $true)]
-            [String]$Currency
-        )
-
-        Switch ($Currency) { 
-            # https://github.com/RainbowMiner/RainbowMiner/issues/2102
-            "ERG" { 
-                $Size = [Math]::Pow(2, 26)
-                $Blockheight = [Math]::Min($Blockheight, 4198400)
-                If ($Blockheight -ge 614400) { 
-                    $P = [Math]::Floor(($Blockheight - 614400) / 51200) + 1
-                    While ($P-- -gt 0) {
-                        $Size = [Math]::Floor($Size / 100) * 105
-                    }
-                }
-                $Size *= 31
-            }
-            "CFX" { 
-                $Size = 6GB
-            }
-            Default { 
-                $Dataset_Bytes_Init = [Math]::Pow(2, 30) # 1GB
-                $Dataset_Bytes_Growth = [Math]::Pow(2, 23) # 8MB
-                $Mix_Bytes = 128
-                $Size = ($Dataset_Bytes_Init + $Dataset_Bytes_Growth * $Epoch) - $Mix_Bytes
-                While (-not (Test-Prime ($Size / $Mix_Bytes))) { 
-                    $Size -= 2 * $Mix_Bytes
-                }
-            }
-        }
-
-        Return [Int64]$Size
-    }
-
-    Function Get-Epoch { 
-
-        Param(
-            [Parameter(Mandatory = $true)]
-            [Double]$Blockheight,
-            [Parameter(Mandatory = $true)]
-            [String]$Currency
-        )
-
-        Switch ($Currency) { 
-            "ERG"   { $Blockheight -= 416768 } # Epoch 0 starts @ 417792
-            Default { }
-        }
-
-        Return [Int][Math]::Floor($Blockheight / (Get-EpochLength -Blockheight $Blockheight -Currency $Currency))
-    }
-
-    Function Get-EpochLength { 
-
-        Param(
-            [Parameter(Mandatory = $true)]
-            [Double]$Blockheight,
-            [Parameter(Mandatory = $true)]
-            [String]$Currency
-        )
-
-        Switch ($Currency) { 
-            "ERG"   { Return 1024 }
-            "ETC"   { If ($Blockheight -ge 11700000 ) { Return 60000 } Else { Return 30000 } }
-            "FIRO"  { Return 1300 }
-            "RVN"   { Return 7500 }
-            Default { return 30000 }
-        }
-    }
 
     $Epoch = Get-Epoch -BlockHeight $BlockHeight -Currency $Currency
 
-    [PSCustomObject]@{ 
+    Return [PSCustomObject]@{ 
         BlockHeight = [Int]$BlockHeight
         CoinName    = Get-CoinName $Currency
         Algorithm   = Get-CurrencyAlgorithm $Currency
@@ -3182,7 +3193,7 @@ Function Out-DataTable {
         }
     }
     End { 
-        Write-Output @(,($DataTable))
+        Return @(,($DataTable))
     }
 }
 
@@ -3197,9 +3208,30 @@ Function Get-Median {
     $NumberSeries += $Number
     $SortedNumbers = @($NumberSeries | Sort-Object)
     If ($NumberSeries.Count % 2) { 
-        $SortedNumbers[($SortedNumbers.Count / 2) - 1]
+        Return $SortedNumbers[($SortedNumbers.Count / 2) - 1]
     }
     Else { 
-        ($SortedNumbers[($SortedNumbers.Count / 2)] + $SortedNumbers[($SortedNumbers.Count / 2) - 1]) / 2
+        Return ($SortedNumbers[($SortedNumbers.Count / 2)] + $SortedNumbers[($SortedNumbers.Count / 2) - 1]) / 2
     }
+}
+
+Function Get-MemoryUsage {
+    $MemUsageByte = [System.GC]::GetTotalMemory('forcefullcollection')
+    $MemUsageMB = $memusagebyte / 1MB
+    $DiffBytes = $memusagebyte - $Script:last_memory_usage_byte
+    $BiffText = ''
+    $Sign = ''
+    if ( $Script:last_memory_usage_byte -ne 0 )
+    {
+    if ( $DiffBytes -ge 0 )
+    {
+        $Sign = '+'
+    }
+    $DiffText = ", $Sign$DiffBytes"
+    }
+    $Message = "Memory usage: {0:n1} MB ({1:n0} Bytes{2})" -f  $MemUsageMB, $MemUsageByte, $Difftext
+    Write-Message -Level DEBUG $Message
+
+    # save last value in script global variable
+    $Script:last_memory_usage_byte = $MemUsageByte
 }

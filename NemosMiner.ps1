@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.2.1.5
-Version date:   24 September 2022
+Version:        4.2.1.6
+Version date:   30 September 2022
 #>
 
 [CmdletBinding()]
@@ -287,7 +287,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.2.1.5"
+    Version      = [System.Version]"4.2.1.6"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -490,7 +490,7 @@ $Variables.ScriptStartTime = (Get-Process -id $PID).StartTime.ToUniversalTime()
 $Variables.WatchdogTimers = @()
 $Variables.MiningEarning = $Variables.MiningProfit = $Variables.MiningPowerCost = [Double]::NaN
 
-Get-Rate
+[Void](Get-Rate)
 
 # Set operational values for text window
 $Variables.ShowAccuracy = $Config.ShowAccuracy
@@ -893,7 +893,7 @@ Function MainForm_Load {
                 $MainForm.Number = 0
                 $TimerUI.Remove_Tick({ TimerUITick })
                 $TimerUI.Dispose()
-                [System.GC]::Collect()
+                $null = [System.GC]::GetTotalMemory("forcefullcollection")
                 $TimerUI = New-Object System.Windows.Forms.Timer
                 $TimerUI.Add_Tick({ TimerUITick })
             }
@@ -913,6 +913,7 @@ $MainForm.Icon = New-Object System.Drawing.Icon (".\Data\NM.ICO")
 $MainForm.MinimumSize = [System.Drawing.Size]::new(756, 501) # best to keep under 800x600
 $MainForm.Text = $Variables.Branding.ProductLabel
 $MainForm.MaximizeBox = $true
+$MainForm.TopMost = $false
 
 # Form Controls
 $MainFormControls = @()
@@ -954,11 +955,11 @@ $TabControl.DataBindings.DefaultDataSourceUpdateMode = 0
 $TabControl.Location = [System.Drawing.Point]::new(10, 91)
 $TabControl.Name = "TabControl"
 $TabControl.Controls.AddRange(@($RunPage, $EarningsPage, $SwitchingPage, $MonitoringPage, $BenchmarksPage))
-
-$TabControl_SelectedIndexChanged = { 
-    Update-TabControl
-}
-$TabControl.Add_SelectedIndexChanged($TabControl_SelectedIndexChanged)
+$TabControl.Add_SelectedIndexChanged(
+    { 
+        Update-TabControl
+    }
+)
 
 $MainForm.Controls.Add($TabControl)
 
@@ -1345,14 +1346,8 @@ $MainForm.Add_Load(
         }
         # Update-TabControl
 
-        If ($Config.StartGUIMinimized) { 
-            $MainForm.WindowState = [System.Windows.Forms.FormWindowState]::Minimized
-            $MainForm.TopMost = $false
-        }
-        Else { 
-            $MainForm.TopMost = $true
-        }
-        
+        If ($Config.StartGUIMinimized) { $MainForm.WindowState = [System.Windows.Forms.FormWindowState]::Minimized }
+
        MainForm_Load
     }
 )
@@ -1534,7 +1529,7 @@ Function MainLoop {
             $Variables.UIStyle = $Config.UIStyle
         }
 
-        If ($Variables.MiningStatus -eq "Running") { 
+        If ($Variables.MiningStatus -eq "Running" -and $Variables.MinersBest_Combo) { 
             # Display available miners list
             [System.Collections.ArrayList]$Miner_Table = @(
                 @{ Label = "Miner"; Expression = { $_.Name } }
@@ -1582,8 +1577,8 @@ Function MainLoop {
             }
         }
 
-        If ($ProcessesRunning = @($Variables.Miners | Where-Object { $_.Status -eq "Running" })) { 
-            Write-Host "Running $(If ($ProcessesRunning.Count -eq 1) { "miner:" } Else { "miners: $($ProcessesRunning.Count)" })"
+        If ($Variables.MinersBest_Combo) { 
+            Write-Host "Running $(If ($Variables.MinersBest_Combo.Count -eq 1) { "miner:" } Else { "miners: $($Variables.MinersBest_Combo.Count)" })"
             [System.Collections.ArrayList]$Miner_Table = @(
                 @{ Label = "Hashrate(s)"; Expression = { (($_.Hashrates_Live | ForEach-Object { If ([Double]::IsNaN($_)) { "n/a" } Else { "$($_ | ConvertTo-Hash)/s" } }) -join ' & ') -replace '\s+', ' ' }; Align = "right" }
                 If ($Config.CalculatePowerCost -and $Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ([Double]::IsNaN($_.PowerUsage_Live)) { "n/a" } Else { "$($_.PowerUsage_Live.ToString("N2")) W" } }; Align = "right" } }
@@ -1594,7 +1589,7 @@ Function MainLoop {
                 @{ Label = "Name"; Expression = { $_.Name } }
                 @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
             )
-            $ProcessesRunning | Sort-Object DeviceName | Format-Table $Miner_Table -Wrap | Out-Host
+            $Variables.MinersBest_Combo | Sort-Object DeviceName | Format-Table $Miner_Table -Wrap | Out-Host
         }
 
         If ($Variables.UIStyle -eq "full" -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurem) { 

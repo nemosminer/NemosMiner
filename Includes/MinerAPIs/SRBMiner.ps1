@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           SRBminer.ps1
-Version:        4.2.1.5
-Version date:   24 September 2022
+Version:        4.2.1.6
+Version date:   30 September 2022
 #>
 
 class SRBMiner : Miner { 
@@ -38,7 +38,7 @@ class SRBMiner : Miner {
             Return $null
         }
 
-        $Type = If ($Data.total_cpu_workers -gt 0) {"cpu"} Else {"gpu"}
+        $Type = If ($Data.total_cpu_workers -gt 0) { "cpu" } Else { "gpu" }
 
         $HashRate = [PSCustomObject]@{ }
         $HashRate_Name = [String]$this.Algorithms[0]

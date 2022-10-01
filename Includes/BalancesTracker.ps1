@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.2.1.5
-Version date:   24 September 2022
+Version:        4.2.1.6
+Version date:   30 September 2022
 #>
 
 Do {
@@ -90,7 +90,7 @@ Do {
         $BalanceObjects = $BalanceObjects | Where-Object { $_.Balance -gt 0 }
 
         # Read exchange rates
-        Get-Rate
+        $null = Get-Rate
 
         $BalanceObjects | ForEach-Object { 
             $PoolBalanceObject = $_
@@ -382,7 +382,7 @@ Do {
         # Sleep until next update (at least 1 minute, maximum 60 minutes)
         While ((Get-Date).ToUniversalTime() -le $Now.AddMinutes((60, (1, [Int]$Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum | Measure-Object -Minimum).Minimum)) { Start-Sleep -Seconds 5 }
 
-        [System.GC]::Collect()
+        $null = [System.GC]::GetTotalMemory("forcefullcollection")
 
     }
 
@@ -392,4 +392,4 @@ Do {
 
 } While ($true)
 
-[System.GC]::Collect()
+$null = [System.GC]::GetTotalMemory("forcefullcollection")

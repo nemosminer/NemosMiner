@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.2.1.5
-Version date:   24 September 2022
+Version:        4.2.1.6
+Version date:   30 September 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -60,7 +60,7 @@ If ($PoolConfig.UserName) {
             $Port = $Current.port
 
             # Add coin name
-            If ($Current.coin_name -and $Currency) { Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Current.coin_name }
+            If ($Current.coin_name -and $Currency) { [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Current.coin_name) }
 
             $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ($_.profit / $Divisor) -FaultDetection $false
 
@@ -70,9 +70,9 @@ If ($PoolConfig.UserName) {
             # Temp fix for pool API errors
             Switch ($Algorithm_Norm) { 
                 # "Ethash"   { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }) }
-                "KawPoW"    { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("us-east") }) }
+                "KawPoW"    { $Regions = @($PoolConfig.Region | Where-Object { $_ -notin @("europe") }) }
                 # "Lyra2RE2"  { $Current.host_list = $Current.host }
-                # "Neoscrypt" { $Current.host_list = $Current.host }
+                "Neoscrypt" { $Current.host_list = $Current.host }
                 # "Skein"     { $Current.host_list = $Current.host }
                 "VertHash"    { $Current.host_list = $Current.host; $Port = 20534 }
                 # Default     { $Port = $Current.port }
@@ -129,8 +129,8 @@ If ($PoolConfig.UserName) {
             # Temp fix for pool API errors
             Switch ($Algorithm_Norm) { 
                 # "Ethash"   { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }) }
-                # "Ethash"   { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }) }
-                "KawPoW"     { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("us-east") }) }
+                "KawPoW"     { $Regions = @($PoolConfig.Region | Where-Object { $_ -notin @("europe") }) }
+                "Neoscrypt" { $Current.host_list = $Current.host }
                 "VertHash"   { $Port = 20534 }
                 # Default    { $Port = $Current.algo_switch_port }
             }
