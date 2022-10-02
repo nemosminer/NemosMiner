@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.2.1.6
-Version date:   30 September 2022
+Version:        4.2.1.7
+Version date:   02 October 2022
 #>
 
 using module .\Include.psm1
@@ -69,7 +69,7 @@ Do {
 
         $Miners = $Variables.Miners # Much faster
 
-        If ($Variables.EnabledDevices = $Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | ConvertTo-Json -Depth 10 | ConvertFrom-Json) { 
+        If ($Variables.EnabledDevices = [Device[]]@($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName).Clone()) { 
             # For GPUs set type equal to vendor
             $Variables.EnabledDevices | Where-Object Type -EQ "GPU" | ForEach-Object { $_.Type = $_.Vendor }
             # Remove model information from devices -> will create only one miner instance
