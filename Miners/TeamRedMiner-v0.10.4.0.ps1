@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0" })) { Return }
 
-$Uri = "https://github.com/todxx/teamredminer/releases/download/v0.10.3.1/teamredminer-v0.10.3.1-win.zip"
+$Uri = "https://github.com/todxx/teamredminer/releases/download/v0.10.4/teamredminer-v0.10.4-win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\teamredminer.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -11,7 +11,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Autolykos2";           Fee = @(0.025); MinMemGB = $MinerPools[0].Autolykos2.DAGSizeGB;   MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(60, 15);   ExcludeGPUArchitecture = @();       Arguments = " --algo=autolykos2" }
     [PSCustomObject]@{ Algorithm = "Chukwa";               Fee = @(0.025); MinMemGB = 2.0;                                   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15);   ExcludeGPUArchitecture = @("RDNA"); Arguments = " --algo=trtl_chukwa" }
     [PSCustomObject]@{ Algorithm = "Chukwa2";              Fee = @(0.025); MinMemGB = 2.0;                                   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15);   ExcludeGPUArchitecture = @("RDNA"); Arguments = " --algo=trtl_chukwa2" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Fee = @(0.025); MinMemGB = 2.0;                                   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15);   ExcludeGPUArchitecture = @("RDNA"); Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" } # SRBMinerMulti-v1.0.9 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Fee = @(0.025); MinMemGB = 2.0;                                   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15);   ExcludeGPUArchitecture = @("RDNA"); Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" } # SRBMinerMulti-v1.1.0 is fastest
     [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     Fee = @(0.025); MinMemGB = 2.0;                                   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15);   ExcludeGPUArchitecture = @("RDNA"); Arguments = " --algo=cn_heavy --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
     [PSCustomObject]@{ Algorithm = "CryptonightHaven";     Fee = @(0.025); MinMemGB = 2.0;                                   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15);   ExcludeGPUArchitecture = @("RDNA"); Arguments = " --algo=cn_haven --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
     [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; Fee = @(0.025); MinMemGB = 2.0;                                   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15);   ExcludeGPUArchitecture = @("RDNA"); Arguments = " --algo=cn_saber --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
@@ -29,6 +29,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EthashLowMem";         Fee = @(0.01);  MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(45, 75);   ExcludeGPUArchitecture = @();       Arguments = " --algo=ethash" }
     [PSCustomObject]@{ Algorithm = "FiroPoW";              Fee = @(0.02);  MinMemGB = $MinerPools[0].FiroPoW.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(45, 75);   ExcludeGPUArchitecture = @();       Arguments = " --algo=firopow" } # Wildrig-v0.32.5 is fastest on Polaris
     [PSCustomObject]@{ Algorithm = "KawPoW";               Fee = @(0.02);  MinMemGB = $MinerPools[0].KawPoW.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(60, 75);   ExcludeGPUArchitecture = @();       Arguments = " --algo=kawpow" } # Wildrig-v0.32.5 is fastest on Polaris
+    [PSCustomObject]@{ Algorithm = "kHeavyHash";           Fee = @(0.01);  MinMemGB = 2.0;                                   MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(60, 15);   ExcludeGPUArchitecture = @();       Arguments = " --algo=kas" }
     [PSCustomObject]@{ Algorithm = "Lyra2z";               Fee = @(0.03);  MinMemGB = 2.0;                                   MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(60, 15);   ExcludeGPUArchitecture = @("RDNA"); Arguments = " --algo=lyra2z" } # XmRig-v6.18.0 is faster
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";             Fee = @(0.025); MinMemGB = 2.0;                                   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 15);   ExcludeGPUArchitecture = @("RDNA"); Arguments = " --algo=lyra2rev3" }
     [PSCustomObject]@{ Algorithm = "MTP";                  Fee = @(0.025); MinMemGB = 2.0;                                   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 45);   ExcludeGPUArchitecture = @();       Arguments = " --algo=mtp" }

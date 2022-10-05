@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.2.1.7
-Version date:   02 October 2022
+Version:        4.2.1.8
+Version date:   05 October 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -60,7 +60,7 @@ If ($PoolConfig.UserName) {
             $Port = $Current.port
 
             # Add coin name
-            If ($Current.coin_name -and $Currency) { [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Current.coin_name) }
+            If ($Current.coin_name -and $Currency) { [void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Current.coin_name) }
 
             $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ($_.profit / $Divisor) -FaultDetection $false
 
@@ -69,7 +69,7 @@ If ($PoolConfig.UserName) {
 
             # Temp fix for pool API errors
             Switch ($Algorithm_Norm) { 
-                # "Ethash"   { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }) }
+                # "Ethash"    { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }) }
                 "KawPoW"    { $Regions = @($PoolConfig.Region | Where-Object { $_ -notin @("europe") }) }
                 # "Lyra2RE2"  { $Current.host_list = $Current.host }
                 "Neoscrypt" { $Current.host_list = $Current.host }

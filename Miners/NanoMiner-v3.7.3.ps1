@@ -3,8 +3,8 @@ using module ..\Includes\Include.psm1
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -ne "NVIDIA" -or $_.OpenCL.DriverVersion -ge "410.48" })) { Return }
 
 $Uri = Switch ($Variables.DriverVersion.OpenCL.NVIDIA ) { 
-    { $_ -ge "455.23" } { "https://github.com/nanopool/nanominer/releases/download/v3.7.2/nanominer-windows-3.7.2-cuda11.zip"; Break }
-    Default             { "https://github.com/nanopool/nanominer/releases/download/v3.7.2/nanominer-windows-3.7.2.zip" }
+    { $_ -ge "455.23" } { "https://github.com/nanopool/nanominer/releases/download/v3.7.3/nanominer-windows-3.7.3-cuda11.zip"; Break }
+    Default             { "https://github.com/nanopool/nanominer/releases/download/v3.7.3/nanominer-windows-3.7.3.zip" }
 }
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\nanominer.exe"
@@ -16,7 +16,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01;  MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 45); ExcludePool = @();                ExcludeGPUArchitecture = @();       Arguments = " -algo Ethash" } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "AMD"; Fee = 0.01;  MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 45); ExcludePool = @();                ExcludeGPUArchitecture = @();       Arguments = " -algo Ethash" } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithm = "FiroPoW";       Type = "AMD"; Fee = 0.01;  MinMemGB = $MinerPools[0].FiroPoW.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 45); ExcludePool = @();                ExcludeGPUArchitecture = @();       Arguments = " -algo FiroPow" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02;  MinMemGB = $MinerPools[0].KawPoW.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(75, 30); ExcludePool = @("MiningPoolHub"); ExcludeGPUArchitecture = @();       Arguments = " -algo KawPow" } # TeamRedMiner-v0.10.3 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02;  MinMemGB = $MinerPools[0].KawPoW.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(75, 30); ExcludePool = @("MiningPoolHub"); ExcludeGPUArchitecture = @();       Arguments = " -algo KawPow" } # TeamRedMiner-v0.10.4 is fastest
     [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01;  MinMemGB = $MinerPools[0].UbqHash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(75, 45); ExcludePool = @();                ExcludeGPUArchitecture = @();       Arguments = " -algo Ubqhash" } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithm = "VertHash";      Type = "AMD"; Fee = 0.01;  MinMemGB = 3;                                     MemReserveGB = 0;    MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 0);  ExcludePool = @();                ExcludeGPUArchitecture = @("_RDNA"); Arguments = " -algo Verthash" } # SSL @ ZergPool is not supported (https://github.com/nanopool/nanominer/issues/363)
 

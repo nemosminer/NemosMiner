@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.2.1.7
-Version date:   02 October 2022
+Version:        4.2.1.8
+Version date:   05 October 2022
 #>
 
 Function Initialize-API { 
@@ -85,21 +85,21 @@ Function Start-APIServer {
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
     # Setup runspace to launch the API webserver in a separate thread
-    $APIRunspace = [RunspaceFactory]::CreateRunspace()
-    $APIRunspace.Open()
+    $Variables.APIRunspace = [RunspaceFactory]::CreateRunspace()
+    $Variables.APIRunspace.Open()
     Get-Variable -Scope Global | Where-Object Name -in @("Config", "Stats", "Variables") | ForEach-Object { 
         Try { 
-            $APIRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
+            $Variables.APIRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
         }
         Catch { }
     }
 
-    $APIRunspace | Add-Member -Force @{ APIPort = $Port }
-    $APIRunspace.SessionStateProxy.SetVariable("APIVersion", $APIVersion)
-    $APIRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+    $Variables.APIRunspace | Add-Member -Force @{ APIPort = $Port }
+    $Variables.APIRunspace.SessionStateProxy.SetVariable("APIVersion", $APIVersion)
+    $Variables.APIRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath) | Out-Null
 
     $PowerShell = [PowerShell]::Create()
-    $PowerShell.Runspace = $APIRunspace
+    $PowerShell.Runspace = $Variables.APIRunspace
     $PowerShell.AddScript(
         { 
             (Get-Process -Id $PID).PriorityClass = "Normal"
@@ -735,9 +735,9 @@ Function Start-APIServer {
                     }
                     "/displayworkers" { 
                         If ($Config.ShowWorkerStatus -and $Config.MonitoringUser -and $Config.MonitoringServer -and $Variables.WorkersLastUpdated -lt (Get-Date).AddSeconds(-30)) { 
-                            Read-MonitoringData
+                            [void](Read-MonitoringData)
                         }
-                        $DisplayWorkers = [System.Collections.ArrayList]@(
+                        $Workers = [System.Collections.ArrayList]@(
                             $Variables.Workers | Select-Object @(
                                 @{ Name = "Algorithm"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join "<br/>" } }, 
                                 @{ Name = "Benchmark Hashrate"; Expression = { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { If ([Double]$_ -gt 0) { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " } Else { "-" } }) -join " & " }) -join "<br>" } }, 
@@ -753,7 +753,8 @@ Function Start-APIServer {
                                 @{ Name = "Worker"; Expression = { $_.worker } }
                             ) | Sort-Object "Worker Name"
                         )
-                        $Data = ConvertTo-Json @($DisplayWorkers | Select-Object)
+                        $Data = ConvertTo-Json @($Workers | Select-Object)
+                        Remove-Variable Workers
                         Break
                     }
                     "/donationdata" { 
@@ -1016,10 +1017,9 @@ Function Start-APIServer {
             $Server.Stop()
             $Server.Close()
         }
-    ) # End of $APIServer
+    ) | Out-Null # End of $APIServer
     $AsyncObject = $PowerShell.BeginInvoke()
 
-    $Variables.APIRunspace = $APIRunspace
     $Variables.APIRunspace | Add-Member -Force @{ 
         PowerShell = $PowerShell
         AsyncObject = $AsyncObject
@@ -1037,4 +1037,5 @@ Function Stop-APIServer {
         If ($Variables.APIRunspace.PowerShell) { $Variables.APIRunspace.PowerShell.Dispose() }
         $Variables.Remove("APIRunspace")
     }
+    [void][System.GC]::GetTotalMemory("forcefullcollection")
 }

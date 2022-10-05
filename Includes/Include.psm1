@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.2.1.7
-Version date:   02 October 2022
+Version:        4.2.1.8
+Version date:   05 October 2022
 #>
 
 # Window handling
@@ -244,7 +244,7 @@ Class Miner {
             }
         }
         # Start Miner data reader
-        $this | Add-Member -Force @{ DataReaderJob = Start-ThreadJob -Name "$($this.Name)_DataReader" -ThrottleLimit 99 -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithms, DataCollectInterval, Devices, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore) }
+        $this | Add-Member -Force @{ DataReaderJob = Start-ThreadJob -Name "$($this.Name)_DataReader" -ThrottleLimit 30 -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithms, DataCollectInterval, Devices, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore) }
     }
 
     hidden StopDataReader() { 
@@ -379,8 +379,11 @@ Class Miner {
             }
             $this.ProcessId = $null
         }
+
         If ($this.Process) { 
-            $this.Process | Remove-Job -Force
+            if ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
+                $this.Process | Remove-Job -Force
+            }
             $this.Process = $null 
         }
 
@@ -1177,6 +1180,9 @@ Function Read-Config {
     )
 
     Function Get-DefaultConfig { 
+
+        $Config = @{}
+
         $Config.ConfigFileVersion = $Variables.Branding.Version.ToString()
         $Variables.FreshConfig = $true
 
@@ -1215,7 +1221,6 @@ Function Read-Config {
         Else { 
             # Fix upper / lower case (Web GUI is case sensitive)
             $Config_Tmp.PSObject.Properties.Name | ForEach-Object { 
-                $Config.Remove($_)
                 $Config.$_ = $Config_Tmp.$_ 
 
                 # Enforce array
@@ -1302,7 +1307,7 @@ Function Read-Config {
     }
     $Config.PoolsConfig = $PoolsConfig
 
-    Remove-Variable Config_Tmp, CustomPoolsConfig, PoolConfig, PoolName, Temp -ErrorAction Ignore
+    Remove-Variable Config_Tmp, CustomPoolsConfig, PoolConfig, PoolName, PoolsConfig, Temp -ErrorAction Ignore
 }
 
 Function Write-Config { 
@@ -1352,12 +1357,12 @@ Function Edit-File {
     While ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)")) { 
         Try { 
             $FGWindowPid  = [IntPtr]::Zero
-            [Void][Win32]::GetWindowThreadProcessId([Win32]::GetForegroundWindow(), [ref]$FGWindowPid)
+            [void][Win32]::GetWindowThreadProcessId([Win32]::GetForegroundWindow(), [ref]$FGWindowPid)
             $MainWindowHandle = (Get-Process -Id $NotepadProcess.ProcessId).MainWindowHandle
             If ($NotepadProcess.ProcessId -ne $FGWindowPid) {
                 If ([Win32]::GetForegroundWindow() -ne $MainWindowHandle) { 
-                    [Void][Win32]::ShowWindowAsync($MainWindowHandle, 6) # SW_MINIMIZE 
-                    [Void][Win32]::ShowWindowAsync($MainWindowHandle, 9) # SW_RESTORE
+                    [void][Win32]::ShowWindowAsync($MainWindowHandle, 6) # SW_MINIMIZE 
+                    [void][Win32]::ShowWindowAsync($MainWindowHandle, 9) # SW_RESTORE
                 }
             }
             Start-Sleep -MilliSeconds 100
@@ -1383,9 +1388,6 @@ Function Get-SortedObject {
         [Object]$Object
     )
 
-    $Object = $Object | ConvertTo-Json -Depth 99 | ConvertFrom-Json -NoEnumerate
-
-    # Build an ordered hashtable of the property-value pairs.
     $SortedObject = [Ordered]@{ }
 
     Switch -Regex ($Object.GetType().Name) { 
@@ -1689,7 +1691,7 @@ Function Get-Stat {
             }
             Catch { 
                 Write-Message -Level Warn "Stat file ($Stat_Name) is corrupt and will be reset."
-                [Void](Remove-Stat $Stat_Name)
+                [void](Remove-Stat $Stat_Name)
             }
         }
 
@@ -1836,7 +1838,7 @@ Function Get-ChildItemContent {
     }
 
     If ($Threaded) { 
-        Return (Start-ThreadJob -Name "Get-ChildItemContent_$($Path -replace '\.\\|\.\*' -replace '\\', '_')" -ThrottleLimit 99 -ScriptBlock $ScriptBlock -ArgumentList $Path, $Parameters, $Priority)
+        Return (Start-ThreadJob -Name "Get-ChildItemContent_$($Path -replace '\.\\|\.\*' -replace '\\', '_')" -ThrottleLimit 99 -ScriptBlock $ScriptBlock -ArgumentList $Path, $Parameters, $Priority -StreamingHost $null)
     }
     Else { 
         Return (& $ScriptBlock -Path $Path -Parameters $Parameters)
@@ -2555,7 +2557,7 @@ public static class Kernel32
         If (-not $WorkingDirectory) { $WorkingDirectory = [IntPtr]::Zero }
 
         # Call CreateProcess
-        [Void]([Kernel32]::CreateProcess($BinaryPath, "$BinaryPath $ArgumentList", [ref]$SecAttr, [ref]$SecAttr, $false, $CreationFlags, [IntPtr]::Zero, $WorkingDirectory, [ref]$StartupInfo, [ref]$ProcessInfo))
+        [void]([Kernel32]::CreateProcess($BinaryPath, "$BinaryPath $ArgumentList", [ref]$SecAttr, [ref]$SecAttr, $false, $CreationFlags, [IntPtr]::Zero, $WorkingDirectory, [ref]$StartupInfo, [ref]$ProcessInfo))
         $Process = Get-Process -Id $ProcessInfo.dwProcessId
         If ($null -eq $Process) { 
             Return [PSCustomObject]@{ ProcessId = $null }
@@ -2892,12 +2894,12 @@ Function Start-LogReader {
             # Activate existing Snaketail window
             $MainWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
             If (@($SnaketailMainWindowHandle).Count -eq 1) { 
-                [Void][Win32]::ShowWindowAsync($MainWindowHandle, 6) # SW_MINIMIZE 
-                [Void][Win32]::ShowWindowAsync($MainWindowHandle, 9) # SW_RESTORE
+                [void][Win32]::ShowWindowAsync($MainWindowHandle, 6) # SW_MINIMIZE 
+                [void][Win32]::ShowWindowAsync($MainWindowHandle, 9) # SW_RESTORE
             }
         }
         Else { 
-            [Void](Invoke-CreateProcess -BinaryPath $Variables.SnakeTailExe -ArgumentList $Variables.SnakeTailConfig -WorkingDirectory (Split-Path $Variables.SnakeTailExe) -MinerWindowStyle "Normal" -Priority "-2" -EnvBlock $null -LogFile $null -JobName "Snaketail")
+            [void](Invoke-CreateProcess -BinaryPath $Variables.SnakeTailExe -ArgumentList $Variables.SnakeTailConfig -WorkingDirectory (Split-Path $Variables.SnakeTailExe) -MinerWindowStyle "Normal" -Priority "-2" -EnvBlock $null -LogFile $null -JobName "Snaketail")
         }
     }
 }
@@ -3149,10 +3151,10 @@ Function Get-DAGdata {
 
     $Epoch = Get-Epoch -BlockHeight $BlockHeight -Currency $Currency
 
-    Return [PSCustomObject]@{ 
+    Return @{ 
+        Algorithm   = Get-CurrencyAlgorithm $Currency
         BlockHeight = [Int]$BlockHeight
         CoinName    = Get-CoinName $Currency
-        Algorithm   = Get-CurrencyAlgorithm $Currency
         DAGsize     = Get-DAGSize -Epoch $Epoch -Currency $Currency
         Epoch       = $Epoch
     }
@@ -3216,7 +3218,7 @@ Function Get-Median {
 }
 
 Function Get-MemoryUsage {
-    $MemUsageByte = [System.GC]::GetTotalMemory('forcefullcollection')
+    $MemUsageByte = [System.GC]::GetTotalMemory("forcefullcollection")
     $MemUsageMB = $memusagebyte / 1MB
     $DiffBytes = $memusagebyte - $Script:last_memory_usage_byte
     $BiffText = ''

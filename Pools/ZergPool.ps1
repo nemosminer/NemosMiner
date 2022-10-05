@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.2.1.7
-Version date:   02 October 2022
+Version:        4.2.1.8
+Version date:   05 October 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -72,7 +72,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
         $Fee = $Request.$_.Fees / 100
 
         # Add coin name
-        If ($Request.$_.CoinName -and $Currency) { [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName) }
+        If ($Request.$_.CoinName -and $Currency) { [void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName) }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency_Norm) { "-$($Currency_Norm)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 

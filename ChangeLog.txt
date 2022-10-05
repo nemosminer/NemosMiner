@@ -10,6 +10,27 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+
+ChangeLog NemosMiner 4.2.1.8 nn.10.2022
+=======================================
+
+Fixes:
+- Core: FiroPoW dag size broken (regression from 4.2.1.5)
+
+Miner updates:
+- GMiner-v3.07
+- NanoMiner-v3.7.3
+- SRBMinerMulti-v1.1.0
+- TeamRedMiner-v0.10.4.0
+
+
+ChangeLog NemosMiner 4.2.1.7 02.10.2022
+=======================================
+
+Fixes:
+- Core: Migitate memory leak
+
+
 ChangeLog NemosMiner 4.2.1.6 30.09.2022
 =======================================
 

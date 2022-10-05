@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Nheq.ps1
-Version:        4.2.1.7
-Version date:   02 October 2022
+Version:        4.2.1.8
+Version date:   05 October 2022
 #>
 
 class Nheq : Miner { 

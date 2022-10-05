@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { (($_.Type -eq "AMD" -and $_.Architecture -ne "Other") -or $_.OpenCL.ClVersion -ge "OpenCL C 2.0") -or $_.Type -eq "CPU" })) { Return }
 
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/1.0.9/SRBMiner-Multi-1-0-9-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/1.1.0/SRBMiner-Multi-1-1-0-win64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -24,7 +24,7 @@ $Algorithms = [PSCustomObject[]]@(
      [PSCustomObject]@{ Algorithm = @("CryptonightGpu");            Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 30); ExcludeGPUArchitecture = @();        ExcludePool = @()           ; Arguments = " --algorithm cryptonight_gpu" }
      [PSCustomObject]@{ Algorithm = @("CryptonightTalleo");         Type = "AMD"; Fee = @(0);            MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 30); ExcludeGPUArchitecture = @();        ExcludePool = @()           ; Arguments = " --algorithm cryptonight_talleo" }
      [PSCustomObject]@{ Algorithm = @("CryptonightUpx");            Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(60, 30); ExcludeGPUArchitecture = @();        ExcludePool = @()           ; Arguments = " --algorithm cryptonight_upx" }
-     [PSCustomObject]@{ Algorithm = @("CryptonightTurtle");         Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @();        ExcludePool = @()           ; Arguments = " --algorithm cryptonight_turtle" } # TeamRedMiner-v0.10.3 is fastest
+     [PSCustomObject]@{ Algorithm = @("CryptonightTurtle");         Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @();        ExcludePool = @()           ; Arguments = " --algorithm cryptonight_turtle" } # TeamRedMiner-v0.10.4 is fastest
      [PSCustomObject]@{ Algorithm = @("CryptonightHeavyXhv");       Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @();        ExcludePool = @()           ; Arguments = " --algorithm cryptonight_xhv" }
      [PSCustomObject]@{ Algorithm = @("CurveHash");                 Type = "AMD"; Fee = @(0.0085);       MinMemGB = 2;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @();        ExcludePool = @()           ; Arguments = " --algorithm curvehash" }
      [PSCustomObject]@{ Algorithm = @("DynamoCoin");                Type = "AMD"; Fee = @(0.01);         MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @();        ExcludePool = @()           ; Arguments = " --algorithm dynamo" } # Algorithm 'dynamo' supports only 'pool' mode (yiimp stratum compatibility removed)

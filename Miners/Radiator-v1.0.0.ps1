@@ -12,7 +12,8 @@ $Path = ".\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-     [PSCustomObject]@{ Algorithm = "SHA512256d"; MinMemGB = 2; MinerSet = 2; WarmupTimes = @(60, 0);  Arguments = " --algo=rad" }
+    [PSCustomObject]@{ Algorithm = "SHA512256d"; MinMemGB = 2; MinerSet = 2; WarmupTimes = @(60, 0);  Arguments = " --algo=rad" }
+    [PSCustomObject]@{ Algorithm = "SHA256dt";   MinMemGB = 2; MinerSet = 2; WarmupTimes = @(60, 0);  Arguments = " --algo=novo" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).Host } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] }) { 

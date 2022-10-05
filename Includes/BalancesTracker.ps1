@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.2.1.7
-Version date:   02 October 2022
+Version:        4.2.1.8
+Version date:   05 October 2022
 #>
 
 Do {
@@ -71,7 +71,7 @@ Do {
             Get-ChildItem ".\Data\DailyEarnings_*.csv" | Sort-Object | Select-Object -Skiplast 3 | Remove-Item -Force -Recurse
         }
 
-        $Now = (Get-Date).ToUniversalTime()
+        $Now = (Get-Date)
 
         # Get pools to track
         $PoolsToTrack = @(Get-PoolBaseName (Get-ChildItem ".\Balances\*.ps1" -File).BaseName) | Sort-Object -Unique | Where-Object { $_ -notin $Config.BalancesTrackerIgnorePool }
@@ -288,9 +288,9 @@ Do {
 
             $PoolTodayEarning = $Earnings | Where-Object Pool -EQ $PoolBalanceObject.Pool | Where-Object Currency -EQ $PoolBalanceObject.Currency | Where-Object Wallet -EQ $PoolBalanceObject.Wallet | Select-Object -Last 1
 
-            If ([String]$PoolTodayEarning.Date -eq $Now.ToLocalTime().ToString("yyyy-MM-dd")) { 
+            If ([String]$PoolTodayEarning.Date -eq $Now.ToString("yyyy-MM-dd")) { 
                 $PoolTodayEarning.DailyEarnings = [Double]$GrowthToday
-                $PoolTodayEarning.EndTime = $Now.ToLocalTime().ToString("T")
+                $PoolTodayEarning.EndTime = $Now.ToString("T")
                 $PoolTodayEarning.EndValue = [Double]$PoolBalanceObject.Earnings
                 $PoolTodayEarning.Balance = [Double]$PoolBalanceObject.Balance
                 $PoolTodayEarning.Unpaid = [Double]$PoolBalanceObject.Unpaid
@@ -298,14 +298,14 @@ Do {
             }
             Else { 
                 $Earnings += [PSCustomObject]@{ 
-                    Date          = $Now.ToLocalTime().ToString("yyyy-MM-dd")
+                    Date          = $Now.ToString("yyyy-MM-dd")
                     Pool          = $EarningsObject.Pool
                     Currency      = $EarningsObject.Currency
                     Wallet        = $PoolBalanceObject.Wallet
                     DailyEarnings = [Double]$GrowthToday
-                    StartTime     = $Now.ToLocalTime().ToString("T")
+                    StartTime     = $Now.ToString("T")
                     StartValue    = If ($PoolTodayEarning) { [Double]$PoolTodayEarning.EndValue } Else { [Double]$EarningsObject.Earnings }
-                    EndTime       = $Now.ToLocalTime().ToString("T")
+                    EndTime       = $Now.ToString("T")
                     EndValue      = [Double]$EarningsObject.Earnings
                     Balance       = [Double]$EarningsObject.Balance
                     Pending       = [Double]$EarningsObject.Pending
@@ -345,7 +345,7 @@ Do {
         $Variables.EarningsChartData = [PSCustomObject]@{ 
             Labels = @(
                 $ChartData.Group.Date | Sort-Object -Unique | ForEach-Object { 
-                    [DateTime]::parseexact($_, "yyyy-MM-dd", $null).ToLocalTime().ToShortDateString()
+                    [DateTime]::parseexact($_, "yyyy-MM-dd", $null).ToShortDateString()
                 }
             )
             # Use dates for x-axis label
@@ -380,7 +380,7 @@ Do {
         $Variables.BalanceData = $Variables.BalanceData
 
         # Sleep until next update (at least 1 minute, maximum 60 minutes)
-        While ((Get-Date).ToUniversalTime() -le $Now.AddMinutes((60, (1, [Int]$Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum | Measure-Object -Minimum).Minimum)) { Start-Sleep -Seconds 5 }
+        While ((Get-Date) -le $Now.AddMinutes((60, (1, [Int]$Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum | Measure-Object -Minimum).Minimum)) { Start-Sleep -Seconds 5 }
 
         $null = [System.GC]::GetTotalMemory("forcefullcollection")
 

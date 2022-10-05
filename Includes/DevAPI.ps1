@@ -278,11 +278,11 @@ Switch ($Path) {
             # Check if the window isn't already in foreground
             While ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($Variables.PoolsConfigFile)")) { 
                 $FGWindowPid  = [IntPtr]::Zero
-                [Void][Win32]::GetWindowThreadProcessId([Win32]::GetForegroundWindow(), [ref]$FGWindowPid)
+                [void][Win32]::GetWindowThreadProcessId([Win32]::GetForegroundWindow(), [ref]$FGWindowPid)
                 If ($NotepadProcess.ProcessId -ne $FGWindowPid) { 
                     If ([Win32]::GetForegroundWindow() -ne $NotepadMainWindowHandle) { 
-                        [Void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 6)
-                        [Void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 9)
+                        [void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 6)
+                        [void][Win32]::ShowWindowAsync($NotepadMainWindowHandle, 9)
                     }
                 }
                 Start-Sleep -MilliSeconds 100

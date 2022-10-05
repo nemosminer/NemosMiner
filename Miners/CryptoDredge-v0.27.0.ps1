@@ -24,7 +24,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXhv";    Fee = 0.01; MinMemGB = 1;                                     MemReserveGB = 0;    ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(75, 15); Arguments = " --algo cnhaven --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Ethash";            Fee = 0.01; MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.42; ExcludePool = @("MiningPoolHub", "NiceHash"); MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo ethash" }
     [PSCustomObject]@{ Algorithm = "EthashLowMem";      Fee = 0.01; MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.42; ExcludePool = @("MiningPoolHub", "NiceHash"); MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo ethash" }
-    [PSCustomObject]@{ Algorithm = "FiroPoW";           Fee = 0.01; MinMemGB = $MinerPools[0].FiroPoW.DAGSizeGB;      MemReserveGB = 0.42; ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo firopow" }
+    [PSCustomObject]@{ Algorithm = "FiroPoW";           Fee = 0.01; MinMemGB = $MinerPools[0].FiroPoW.DAGSizeGB;      MemReserveGB = 0.50; ExcludePool = @();                            MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo firopow" }
     [PSCustomObject]@{ Algorithm = "KawPoW";            Fee = 0.01; MinMemGB = $MinerPools[0].KawPoW.DAGSizeGB;       MemReserveGB = 0.42; ExcludePool = @();                            MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo kawpow --intensity 8" } # TTMiner-v5.0.3 is fastest
 )
 

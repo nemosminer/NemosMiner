@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.2.1.7
-Version date:   02 October 2022
+Version:        4.2.1.8
+Version date:   05 October 2022
 #>
 
 [CmdletBinding()]
@@ -287,7 +287,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.2.1.7"
+    Version      = [System.Version]"4.2.1.8"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -466,7 +466,7 @@ Catch {
 }
 Add-Type -AssemblyName System.Windows.Forms
 [System.Windows.Forms.Application]::EnableVisualStyles()
-[Void][Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms.DataVisualization")
+[void][Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms.DataVisualization")
 Import-Module NetSecurity -ErrorAction SilentlyContinue
 Import-Module Defender -ErrorAction SilentlyContinue -SkipEditionCheck
 
@@ -490,7 +490,7 @@ $Variables.ScriptStartTime = (Get-Process -id $PID).StartTime.ToUniversalTime()
 $Variables.WatchdogTimers = @()
 $Variables.MiningEarning = $Variables.MiningProfit = $Variables.MiningPowerCost = [Double]::NaN
 
-[Void](Get-Rate)
+[void](Get-Rate)
 
 # Set operational values for text window
 $Variables.ShowAccuracy = $Config.ShowAccuracy
@@ -512,7 +512,7 @@ $Variables.UIStyle = $Config.UIStyle
 $Variables.VerthashDatPath = ".\Cache\VertHash.dat"
 If (Test-Path -Path $Variables.VerthashDatPath -PathType Leaf) { 
     Write-Message -Level Verbose "Verifying integrity of VertHash data file '$($Variables.VerthashDatPath)'..."
-    $VertHashDatCheckJob = Start-ThreadJob -ThrottleLimit 99 -ScriptBlock { (Get-FileHash -Path ".\Cache\VertHash.dat").Hash -eq "A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48" }
+    $VertHashDatCheckJob = Start-Job -ScriptBlock { (Get-FileHash -Path ".\Cache\VertHash.dat").Hash -eq "A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48" }
 }
 
 $Variables.Summary = "Loading miner device information.<br>This will take a while..."
@@ -694,7 +694,7 @@ Function Update-TabControl {
                     $Color = (Get-NextColor -Color $Color -Factors -0, -20, -20, -20)
                     $I = 0
         
-                    [Void]$EarningsChart.Series.Add($Pool)
+                    [void]$EarningsChart.Series.Add($Pool)
                     $EarningsChart.Series[$Pool].ChartArea = "ChartArea"
                     $EarningsChart.Series[$Pool].ChartType = "StackedColumn"
                     $EarningsChart.Series[$Pool].BorderWidth = 3
@@ -763,7 +763,7 @@ Function Update-TabControl {
         }
         "Rig Monitor" { 
 
-            Read-MonitoringData
+            [void](Read-MonitoringData)
 
             If ($Variables.Workers) { 
                 $Variables.Workers | ForEach-Object { 
@@ -1403,7 +1403,7 @@ Function MainLoop {
                     Stop-Brain
                     Stop-IdleDetection
                     Stop-BalancesTracker
-                    Update-MonitoringData
+                    [void](Update-MonitoringData)
 
                     $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) is stopped"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Red
@@ -1426,7 +1426,7 @@ Function MainLoop {
                     Initialize-Application
                     Start-BalancesTracker
                     Start-Brain @(Get-PoolBaseName $(If ($Variables.NiceHashWalletIsInternal) { $Config.PoolName -replace "NiceHash", "NiceHash Internal" } Else { $Config.PoolName -replace "NiceHash", "NiceHash External" }))
-                    Update-MonitoringData
+                    [void](Update-MonitoringData)
 
                     $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) is paused"
                     $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Blue
@@ -1670,7 +1670,7 @@ Function MainLoop {
 While ($true) { 
     # Show legacy GUI
     If ($Config.StartGUI) { 
-        [Void]$MainForm.ShowDialog()
+        [void]$MainForm.ShowDialog()
         If ($Config.StartGUI) { Stop-Process -Id $PID -Force }
     }
     Else {
