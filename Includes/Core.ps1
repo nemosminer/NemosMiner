@@ -978,7 +978,7 @@ Do {
         }
 
         # ProfitabilityThreshold check - OK to run miners?
-        If ($Variables.DonationEnd -or [Double]::IsNaN($Variables.MiningEarning) -or [Double]::IsNaN($Variables.MiningProfit) -or [Double]::IsNaN($Variables.MiningPowerCost) -or ($Variables.MiningProfit -ge ($Config.ProfitabilityThreshold / $Variables.Rates.BTC.($Config.Currency))) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
+        If ($Variables.DonationEnd -or (-not $Config.CalculatePowerCost -and $Variables.MiningEarning -ge ($Config.ProfitabilityThreshold / $Variables.Rates.BTC.($Config.Currency))) -or ($Config.CalculatePowerCost -and $Variables.MiningProfit -ge ($Config.ProfitabilityThreshold / $Variables.Rates.BTC.($Config.Currency))) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
             $Variables.MinersBest_Combo | Select-Object | ForEach-Object { $_.Best = $true }
             If ($Variables.Rates."BTC") { 
                 If ($Variables.MinersNeedingBenchmark.Count) { 
@@ -1033,10 +1033,15 @@ Do {
             }
         }
         Else { 
-            # Mining profit is below threshold
+            # Mining earning/profit is below threshold
             $Variables.MinersBest_Combo = [Miner[]]@()
-            $Variables.Summary = "Mining profit {0} {1:n$($Config.DecimalsMax)} is below the configured threshold of {0} {2:n$($Config.DecimalsMax)}/day. Mining is suspended until threshold is reached." -f $Config.Currency, (($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) * $Variables.Rates."BTC".($Config.Currency)), $Config.ProfitabilityThreshold
-            Write-Message -Level Warn ($Variables.Summary -replace '<br>', ' ')
+            If ($Config.CalculatePowerCost) { 
+                $Variables.Summary = "Mining profit {0} {1:n$($Config.DecimalsMax)} / day is below the configured threshold of {0} {2:n$($Config.DecimalsMax)} / day. Mining is suspended until threshold is reached." -f $Config.Currency, (($Variables.MiningEarning - $Variables.MiningPowerCost - $Variables.BasePowerCostBTC) * $Variables.Rates."BTC".($Config.Currency)), $Config.ProfitabilityThreshold
+            }
+            Else { 
+                $Variables.Summary = "Mining earning {0} {1:n$($Config.DecimalsMax)} / day is below the configured threshold of {0} {2:n$($Config.DecimalsMax)} / day. Mining is suspended until threshold is reached." -f $Config.Currency, ($Variables.MiningEarning * $Variables.Rates."BTC".($Config.Currency)), $Config.ProfitabilityThreshold
+            }
+            Write-Message -Level Warn ($Variables.Summary -replace '<br>', ' ' -replace ' / day', '/day')
             If ($Variables.Rates) { 
                 # Add currency conversion rates
                 If ($Variables.Summary -ne "") { $Variables.Summary += "<br>" }
@@ -1084,6 +1089,7 @@ Do {
         If (-not $Variables.MinersBest_Combo) { 
             Start-Sleep -Seconds $Config.Interval
             Remove-Variable Miners
+            Write-Message -Level Info "Ending cycle."
             Continue
         }
 

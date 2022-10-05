@@ -279,11 +279,6 @@
                   <div style="padding-top: 0.2rem" title="NemosMiner will ignore power cost in best miner selection&#10;and will select miners with best earnings (and not best profit)">
                     <input style="margin-left:20px" type="checkbox" class="toggle-switch" id="IgnorePowerCost" name="IgnorePowerCost"> Ignore power cost
                   </div>
-                  <div style="padding-top: 0.5rem" id="ProfitabilityThresholdTitle">
-                    <label style="margin-left:20px" for="ProfitabilityThreshold">Profitability threshold</label>
-                    <input type="number" step="0.001" min=-999999 max=999999 id="ProfitabilityThreshold" name="ProfitabilityThreshold" value=0.0>
-                    <label id="ProfitabilityThresholdCurrency" for="ProfitabilityThreshold">
-                  </div>
                   <br>
 
                   <!-- Calculation Settings -->
@@ -317,6 +312,11 @@
                   </div>
                   <div style="padding-top: 0.5rem" title="NemosMiner will deduct bad shares (e.g. invalid, rejected or stale) when calculating effective hashrates&#10;This will lower stored hashrates and increase earnings accuracy">
                     <input type="checkbox" class="toggle-switch" id="SubtractBadShares" name="SubtractBadShares"> Deduct bad shares when calculating effective hashrates
+                  </div>
+                  <div style="padding-top: 0.5rem" id="ProfitabilityThresholdTitle">
+                    <label for="ProfitabilityThreshold">Profitability threshold</label>
+                    <input type="number" step="0.001" min=-999999 max=999999 id="ProfitabilityThreshold" name="ProfitabilityThreshold" value=0.0>
+                    <label id="ProfitabilityThresholdCurrency" for="ProfitabilityThreshold">
                   </div>
                   <br>
 
@@ -778,7 +778,6 @@
                 document.getElementById('PowerPricekWh').disabled = true;
                 document.getElementById('PowerUsageIdleSystemW').disabled = true;
                 document.getElementById('IgnorePowerCost').disabled = true;
-                document.getElementById('ProfitabilityThreshold').disabled = true;
               }
               document.getElementById('PowerPricekWh').value = JSON.stringify(config.PowerPricekWh);
               if (config.IgnorePowerCost) document.getElementById('IgnorePowerCost').checked = true;
@@ -788,15 +787,16 @@
                 document.getElementById('PowerPricekWh').disabled = !(document.getElementById('CalculatePowerCost').checked);
                 document.getElementById('PowerUsageIdleSystemW').disabled = !(document.getElementById('CalculatePowerCost').checked);
                 document.getElementById('IgnorePowerCost').disabled = !(document.getElementById('CalculatePowerCost').checked);
-                document.getElementById('ProfitabilityThreshold').disabled = !(document.getElementById('CalculatePowerCost').checked);
+                $(document.getElementById('Currency')).trigger('change');
+
               });
               // ProfitabilityThreshold
-              document.getElementById('ProfitabilityThreshold').value = config.ProfitabilityThreshold;
               $(document.getElementById('Currency')).change(function (event) {
                 document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
                 document.getElementById('PowerPricekWhCurrency').innerHTML = '(time: ' + document.getElementById('Currency').value.split(',')[0] + ' per kW/h)';
                 document.getElementById('PowerPricekWhTitle').title = 'Price of power in ' + document.getElementById('Currency').value.split(',')[0] + ' per kW⋅h, valid from HH:mm (24hr format)\nData must be in compressed JSON format\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom 00:00h to 12:00h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom 12:00h to 23:59h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h'
-                document.getElementById('ProfitabilityThresholdTitle').title = 'Mining will stop when profit (earnings - power cost) is less than the configured value\n(e.g. ' + document.getElementById('Currency').value.split(',')[0] + ' 1.00). Use negative numbers to allow mining at loss.\n\nNote: This does not apply when benchmarking'
+                if (document.getElementById('CalculatePowerCost').checked) document.getElementById('ProfitabilityThresholdTitle').title = 'Mining will stop when profit (earnings - power cost) is less than the configured value\n(e.g. ' + document.getElementById('Currency').value.split(',')[0] + ' 1.00). Use negative numbers to allow mining at loss.\n\nNote: This does not apply when benchmarking or measuring power cost'
+                else document.getElementById('ProfitabilityThresholdTitle').title = 'Mining will stop when earning is less than the configured value\n(e.g. ' + document.getElementById('Currency').value.split(',')[0] + ' 1.00). Use negative numbers to allow mining at loss.\n\nNote: This does not apply when benchmarking'
               });
               $(document.getElementById('Currency')).trigger('change');
 
@@ -811,6 +811,7 @@
               document.getElementById('MinerSwitchingThreshold').value = parseFloat(config.MinerSwitchingThreshold);
               if (config.SubtractBadShares) document.getElementById('SubtractBadShares').checked = true;
               if (config.IgnoreMinerFee) document.getElementById('IgnoreMinerFee').checked = true;
+              document.getElementById('ProfitabilityThreshold').value = config.ProfitabilityThreshold;
 
               // Balance Tracker Settings
               if (parseInt(config.BalancesTrackerPollInterval) >= 1 && parseInt(config.BalancesTrackerPollInterval) <= 9) document.getElementById('BalancesTrackerPollInterval').value = 10;
@@ -1049,11 +1050,6 @@
                     required: true,
                     step: 1
                   },
-                  ProfitabilityThreshold: {
-                    range: [-999999, 999999],
-                    required: true,
-                    step: 0.001
-                  },
                   UnrealPoolPriceFactor: {
                     range: [1, 10],
                     required: true,
@@ -1088,6 +1084,11 @@
                     range: [0, 100],
                     required: true,
                     step: 1
+                  },
+                  ProfitabilityThreshold: {
+                    range: [-999999, 999999],
+                    required: true,
+                    step: 0.001
                   },
                   BalancesTrackerPollInterval: {
                     digits: true,
@@ -1254,7 +1255,6 @@
                   }
                   config.PowerUsageIdleSystemW = parseInt(document.getElementById('PowerUsageIdleSystemW').value);
                   config.IgnorePowerCost = document.getElementById('IgnorePowerCost').checked;
-                  config.ProfitabilityThreshold = parseFloat(document.getElementById('ProfitabilityThreshold').value);
 
                   // Calculation Settings
                   config.UnrealPoolPriceFactor = parseFloat(document.getElementById('UnrealPoolPriceFactor').value);
@@ -1267,6 +1267,7 @@
                   config.IgnoreMinerFee = document.getElementById('IgnoreMinerFee').checked;
                   config.BadShareRatioThreshold = parseFloat(document.getElementById('BadShareRatioThreshold').value) / 100;
                   config.SubtractBadShares = document.getElementById('SubtractBadShares').checked;
+                  config.ProfitabilityThreshold = parseFloat(document.getElementById('ProfitabilityThreshold').value);
 
                   // Balance Tracker Settings
                   config.BalancesTrackerPollInterval = parseInt(document.getElementById('BalancesTrackerPollInterval').value);
