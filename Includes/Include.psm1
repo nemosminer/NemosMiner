@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.2.1.8
-Version date:   05 October 2022
+Version:        4.2.2.0
+Version date:   09 October 2022
 #>
 
 # Window handling
@@ -252,6 +252,7 @@ Class Miner {
         If ($this.DataReaderJob.HasMoreData) { $this.Data += @($this.DataReaderJob | Receive-Job | Select-Object) }
         $this.PowerUsage_Live = [Double]::NaN
         $this.DataReaderJob | Stop-Job | Remove-Job -Force
+        $this.DataReaderJob = $null
     }
 
     hidden RestartDataReader() { 
@@ -386,9 +387,6 @@ Class Miner {
             }
             $this.Process = $null 
         }
-
-        $this.Data = $null
-        $this.DataReaderJob = $null
 
         $this.Status = If ($this.Status -eq [MinerStatus]::Running) { [MinerStatus]::Idle } Else { [MinerStatus]::Failed }
         $this.Devices | ForEach-Object { $_.Status = $this.Status }
@@ -588,7 +586,7 @@ Function Start-IdleDetection {
     $Variables.IdleRunspace.Open()
     $Variables.IdleRunspace.SessionStateProxy.SetVariable('Config', $Config)
     $Variables.IdleRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-    $Variables.IdleRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath)
+    $Variables.IdleRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath) | Out-Null
     $Variables.IdleRunspace | Add-Member MiningStatus "Running" -Force
 
     $PowerShell = [PowerShell]::Create()
@@ -674,7 +672,7 @@ namespace PInvoke.Win32 {
             }
         }
     ) | Out-Null
-    $PowerShell.BeginInvoke()
+    $PowerShell.BeginInvoke() | Out-Null
 
     $Variables.IdleRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
 }
@@ -884,7 +882,9 @@ Function Initialize-Application {
 
 Function Get-DefaultAlgorithm { 
 
-    If ($PoolsAlgos = Get-Content ".\Data\PoolsConfig-Recommended.json" -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue) { Return ($PoolsAlgos.PSObject.Properties.Name | Where-Object { $_ -in @(Get-PoolBaseName $Config.PoolName) } | ForEach-Object {$PoolsAlgos.$_.Algorithm }) | Sort-Object -Unique }
+    If ($PoolsAlgos = Get-Content ".\Data\PoolsConfig-Recommended.json" -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue) { 
+        Return ($PoolsAlgos.PSObject.Properties.Name | Where-Object { $_ -in @(Get-PoolBaseName $Config.PoolName) } | ForEach-Object {$PoolsAlgos.$_.Algorithm }) | Sort-Object -Unique
+    }
     Return
 }
 
@@ -1031,9 +1031,6 @@ Function Update-MonitoringData {
     If (-not $Config.MonitoringServer) { Return }
     If (-not $Config.MonitoringUser) { Return }
 
-    $Version = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version.ToString())"
-    $Status = $Variables.NewMiningStatus
-
     # Build object with just the data we need to send, and make sure to use relative paths so we don't accidentally
     # reveal someone's windows username or other system information they might not want sent
     # For the ones that can be an array, comma separate them
@@ -1057,8 +1054,8 @@ Function Update-MonitoringData {
     $Body = @{ 
         user    = $Config.MonitoringUser
         worker  = $Config.WorkerName
-        version = $Version
-        status  = $Status
+        version = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version.ToString())"
+        status  = $Variables.NewMiningStatus
         profit  = If ([Double]::IsNaN($Variables.MiningProfit)) { "n/a" } Else { [String]$Variables.MiningProfit } # Earnings is NOT profit! Needs to be changed in mining monitor server
         data    = ConvertTo-Json $Data
     }
@@ -1077,7 +1074,7 @@ Function Update-MonitoringData {
         Write-Message -Level Warn "Monitoring: Unable to send status to '$($Config.MonitoringServer)' [ID $($Config.MonitoringUser)]."
     }
 
-    Remove-Variable Body, Data, Response, Status, Version
+    Remove-Variable Body, Data, Response
 }
 
 Function Read-MonitoringData { 
@@ -2823,7 +2820,7 @@ Function Get-NMVersion {
     Try { 
         $UpdateVersion = (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Minerx117/NemosMiner/master/Version.txt" -TimeoutSec 15 -UseBasicParsing -SkipCertificateCheck -Headers @{ "Cache-Control" = "no-cache" }).Content | ConvertFrom-Json
 
-        $Variables.CheckedForUpdate = (Get-Date).ToUniversalTime()
+        $Variables.CheckedForUpdate = Get-Date
 
         If ($UpdateVersion.Product -eq $Variables.Branding.ProductLabel -and [Version]$UpdateVersion.Version -gt $Variables.Branding.Version) { 
             If ($UpdateVersion.AutoUpdate -eq $true) { 

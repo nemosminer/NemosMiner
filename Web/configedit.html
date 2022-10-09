@@ -132,7 +132,7 @@
                     <input type="checkbox" class="toggle-switch" id="AutoReboot" name="AutoReboot"> Restart computer on dead miners
                   </div>
                   <div style="padding-top: 0.5rem" title="Donation duration per day&#10;&#10;Please help support the great team behind NemosMiner&#10;by leaving mining donations turned on&#10;(min=0, max=60, default 13 &#8792; 0.9% minutes)"> Donation 
-                    <input type="number" id="Donate" name="Donate" min=0 max=60 value=13> minutes per day
+                    <input type="number" id="Donation" name="Donation" min=0 max=60 value=13> minutes per day
                   </div>
                   <div style="padding-top: 0.3rem" title="Cycle duration&#10;This defines the approximate duration for one cycle.&#10;(min=30, max=3600, default=90 seconds)" for="Interval">Cycle duration
                     <input type="number" id="Interval" name="Interval" min=30 max=3600 step=1 value=90> seconds
@@ -597,9 +597,9 @@
               $(document.getElementById('StartGUI')).trigger('change');
               if (config.Watchdog) document.getElementById('Watchdog').checked = true;
               if (config.AutoReboot) document.getElementById('AutoReboot').checked = true;
-              if (Number.isInteger(config.Donation)) document.getElementById('Donate').value = parseInt(config.Donation);
+              if (Number.isInteger(config.Donation)) document.getElementById('Donation').value = parseInt(config.Donation);
               // Donation nag
-              if (parseInt(document.getElementById('Donate').value) <= 0) {
+              if (parseInt(document.getElementById('Donation').value) <= 0) {
                 $('.modal-title').html('&#128546  Donation duration set to 0 minutes  &#128546');
                 $('.modal-body').html('Please help support the great team behind NemosMiner by leaving mining donations turned on.&#10;&#10;Thank you!');
                 $('#myModal').modal({ show: true });
@@ -1005,7 +1005,7 @@
                     required: true,
                     step: 1
                   },
-                  Donate: {
+                  Donation: {
                     digits: true,
                     range: [0, 60],
                     required: true,
@@ -1191,7 +1191,7 @@
                   config.StartGUIMinimized = document.getElementById('StartGUIMinimized').checked;
                   config.Watchdog = document.getElementById('Watchdog').checked;
                   config.AutoReboot = document.getElementById('AutoReboot').checked;
-                  config.Donation = parseInt(document.getElementById('Donate').value);
+                  config.Donation = parseInt(document.getElementById('Donation').value);
                   config.Interval = parseInt(document.getElementById('Interval').value);
                   config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
                   config.MinInterval = parseInt(document.getElementById('MinInterval').value);

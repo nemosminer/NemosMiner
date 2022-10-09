@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Downloader.ps1
-Version:        4.2.1.8
-Version date:   05 October 2022
+Version:        4.2.2.0
+Version date:   09 October 2022
 #>
 
 using module .\Includes\Include.psm1
@@ -64,7 +64,7 @@ $DownloadList | Select-Object | ForEach-Object {
             If ($Path_Old) { 
                 If (Test-Path -Path (Split-Path $Path_New) -PathType Container) { (Split-Path $Path_New) | Remove-Item -Recurse -Force }
                 (Split-Path $Path_Old) | Copy-Item -Destination (Split-Path $Path_New) -Recurse -Force
-                Write-Message -Level Verbose "Downloader: Copied '$($Path.Replace("$($Variables.MainPath)\", ''))' from local repository '$PathOld'."
+                Write-Message -Level Info "Downloader: Copied '$($Path.Replace("$($Variables.MainPath)\", ''))' from local repository '$PathOld'."
             }
             Else { 
                 If ($URI) { Write-Message -Level Warn "Downloader: Cannot find '$($Path.Replace("$($Variables.MainPath)\", ''))' distributed at '$URI'." }

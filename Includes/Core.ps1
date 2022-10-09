@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.2.1.8
-Version date:   05 October 2022
+Version:        4.2.2.0
+Version date:   09 October 2022
 #>
 
 using module .\Include.psm1
@@ -97,7 +97,7 @@ Do {
                 Else { $Variables.WatchdogTimers = @() }
 
                 # Check for new version
-                If ($Config.AutoUpdateCheckInterval -and $Variables.CheckedForUpdate -lt (Get-Date).ToUniversalTime().AddDays(-$Config.AutoUpdateCheckInterval)) { Get-NMVersion }
+                If ($Config.AutoUpdateCheckInterval -and $Variables.CheckedForUpdate -lt (Get-Date).AddDays(-$Config.AutoUpdateCheckInterval)) { Get-NMVersion }
 
                 # Use non-donate pool config
                 $Variables.NiceHashWalletIsInternal = $Config.NiceHashWalletIsInternal
@@ -108,15 +108,15 @@ Do {
                     # Re-Randomize donation start once per day, do not donate if remaing time for today is less than donation duration
                     If (($Variables.DonationLog.Start | Sort-Object | Select-Object -Last 1).Date -ne (Get-Date).Date) { 
                         If (-not $Variables.DonationStart) { 
-                            $Variables.DonationStart = (Get-Date).AddMinutes((Get-Random -Minimum $Config.Donation -Maximum (1440 - $Config.Donation - [Int](Get-Date).TimeOfDay.TotalMinutes))).ToUniversalTime()
+                            $Variables.DonationStart = (Get-Date).AddMinutes((Get-Random -Minimum $Config.Donation -Maximum (1440 - $Config.Donation - [Int](Get-Date).TimeOfDay.TotalMinutes)))
                             $Variables.DonationEnd = $null
                         }
 
-                        If ((Get-Date).ToUniversalTime() -ge $Variables.DonationStart -and -not $Variables.DonationEnd) { 
+                        If ((Get-Date) -ge $Variables.DonationStart -and -not $Variables.DonationEnd) { 
                             # Add pool config to config (in-memory only)
                             If ($Variables.DonationRandomPoolsConfig = Get-RandomDonationPoolsConfig) { 
                                 # We get here only once per day, ensure full donation period
-                                $Variables.DonationStart = (Get-Date).ToUniversalTime()
+                                $Variables.DonationStart = Get-Date
                                 $Variables.DonationEnd = $Variables.DonationStart.AddMinutes($Config.Donation)
 
                                 # Clear all pools
@@ -124,33 +124,34 @@ Do {
                             }
                         }
                     }
-                }
 
-                If ($Variables.DonationRandomPoolsConfig) { 
-                    If ((Get-Date).ToUniversalTime() -ge $Variables.DonationStart -and (Get-Date).ToUniversalTime() -le $Variables.DonationEnd) { 
+                    If ((Get-Date) -ge $Variables.DonationStart -and (Get-Date) -le $Variables.DonationEnd) { 
                         # Ensure full donation period
                         $Variables.EndCycleTime = $Variables.DonationEnd
+                        $Variables.DonationRunning = $true
                         # Activate donation
                         $PoolNames = $Variables.DonationRandomPoolsConfig.Keys -replace "Nicehash", "NiceHash External"
                         $PoolsConfig = $Variables.DonationRandomPoolsConfig
                         $Variables.NiceHashWalletIsInternal = $false
                         Write-Message -Level Info "Donation run: Mining for '$($Variables.DonationRandom.Name)' for the next $(If (($Config.Donation - ((Get-Date) - $Variables.DonationStart).Minutes) -gt 1) { "$($Config.Donation - ((Get-Date) - $Variables.DonationStart).Minutes) minutes" } Else { "minute" }). $($Variables.Branding.ProductLabel) will use these pools while donating: '$($PoolNames -join ', ')'."
                     }
-                    ElseIf ((Get-Date).ToUniversalTime() -gt $Variables.DonationEnd) { 
-                        [Array]$Variables.DonationLog += [PSCustomObject]@{ 
-                            Start = $Variables.DonationStart
-                            End   = $Variables.DonationEnd
-                            Name  = $Variables.DonationRandom.Name
-                        }
-                        $Variables.DonationLog = $Variables.DonationLog | Select-Object -Last 365 # Keep data for one year
-                        $Variables.DonationLog | ConvertTo-Json | Out-File -FilePath ".\Logs\DonateLog.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-                        $Variables.DonationRandomPoolsConfig = $null
-                        $Variables.DonationRandom = $null
-                        $Variables.DonationEnd = $null
-                        Write-Message -Level Info "Donation run complete - thank you! Mining for you again. :-)"
-                        # Clear all pools
-                        $Variables.Pools = [Pool[]]@()
+                }
+
+                If ($Variables.DonationRunning -and (Get-Date) -gt $Variables.DonationEnd) { 
+                    [Array]$Variables.DonationLog += [PSCustomObject]@{ 
+                        Start = $Variables.DonationStart
+                        End   = $Variables.DonationEnd
+                        Name  = $Variables.DonationRandom.Name
                     }
+                    $Variables.DonationLog = $Variables.DonationLog | Select-Object -Last 365 # Keep data for one year
+                    $Variables.DonationLog | ConvertTo-Json | Out-File -FilePath ".\Logs\DonateLog.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+                    $Variables.DonationRandomPoolsConfig = $null
+                    $Variables.DonationRandom = $null
+                    $Variables.DonationEnd = $null
+                    $Variables.DonationRunning = $false
+                    Write-Message -Level Info "Donation run complete - thank you! Mining for you again. :-)"
+                    # Clear all pools
+                    $Variables.Pools = [Pool[]]@()
                 }
 
                 [void](Stop-Brain @($Variables.Brains.Keys | Where-Object { $_ -notin (Get-PoolBaseName $PoolNames) }))
@@ -373,7 +374,7 @@ Do {
                     # 00:00h power price is the same as the latest price of the previous day
                     $Config.PowerPricekWh | Add-Member "00:00" (($Config.PowerPricekWh.($Config.PowerPricekWh | Get-Member -MemberType NoteProperty).Name | Sort-Object | Select-Object -Last 1))
                 }
-                $Variables.PowerPricekWh = [Double]($Config.PowerPricekWh.(($Config.PowerPricekWh | Get-Member -MemberType NoteProperty).Name | Sort-Object | Where-Object { $_ -lt (Get-Date -Format HH:mm).ToString() } | Select-Object -Last 1))
+                $Variables.PowerPricekWh = [Double]($Config.PowerPricekWh.(($Config.PowerPricekWh | Get-Member -MemberType NoteProperty).Name | Sort-Object | Where-Object { $_ -le (Get-Date -Format HH:mm).ToString() } | Select-Object -Last 1))
                 $Variables.PowerCostBTCperW = [Double](1 / 1000 * 24 * $Variables.PowerPricekWh / $Variables.Rates."BTC".($Config.Currency))
 
                 # Put here in case the port range has changed
@@ -633,8 +634,8 @@ Do {
                         $Pools | Where-Object Price -EQ [Double]::NaN | ForEach-Object { $_.Reasons += "No price data" }
                         # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than second highest price of all other pools with same algorithm; NiceHash & MiningPoolHub are always right
                         If ($Config.UnrealPoolPriceFactor -gt 1 -and ($Pools.BaseName | Sort-Object -Unique).Count -gt 1) { 
-                            $Pools | Where-Object Price_Bias -GT 0 | Group-Object -Property Algorithm | ForEach-Object { 
-                                If (($_.Group.BaseName | Sort-Object -Unique).Count -ge 3 -and ($PriceThreshold = @($_.Group.Price_Bias | Sort-Object -Unique)[-2] * $Config.UnrealPoolPriceFactor)) { 
+                            $Pools | Where-Object Price_Bias -GT 0 | Group-Object -Property Algorithm | Where-Object { $_.Count -ge 2 } | ForEach-Object { 
+                                If ($PriceThreshold = @($_.Group.Price_Bias | Sort-Object -Unique)[-2] * $Config.UnrealPoolPriceFactor) { 
                                     $_.Group | Where-Object { $_.BaseName -notmatch "NiceHash *|MiningPoolHub" } | Where-Object Price_Bias -GT $PriceThreshold | ForEach-Object { $_.Reasons += "Unreal price ($($Config.UnrealPoolPriceFactor)x higher than second highest price)" }
                                 }
                             }
@@ -655,8 +656,6 @@ Do {
                         # Update pools last used, required for BalancesKeepAlive
                         If ($Variables.PoolsLastUsed) { $Variables.PoolsLastUsed | Get-SortedObject | ConvertTo-Json | Out-File -FilePath ".\Data\PoolsLastUsed.json" -Force -Encoding utf8NoBOM}
                         If ($Variables.AlgorithmsLastUsed) { $Variables.AlgorithmsLastUsed | Get-SortedObject | ConvertTo-Json | Out-File -FilePath ".\Data\AlgorithmsLastUsed.json" -Force -Encoding utf8NoBOM}
-                        # ETH is POS
-                        $Pools | Where-Object Currency -eq "ETH" | ForEach-Object { $_.Reasons += "ETH has switched to Proof of Stake" }
 
                         # Apply watchdog to pools
                         If ($Config.Watchdog) { 
@@ -882,7 +881,7 @@ Do {
                             DownloadList = $DownloadList
                             Variables = $Variables
                         }
-                        $Variables.Downloader = Start-Job -Name Downloader -InitializationScript ([scriptblock]::Create("Set-Location '$($Variables.MainPath)'")) -ArgumentList $Downloader_Parameters -FilePath ".\Includes\Downloader.ps1"
+                        $Variables.Downloader = Start-ThreadJob -Name Downloader -InitializationScript ([scriptblock]::Create("Set-Location '$($Variables.MainPath)'")) -ArgumentList $Downloader_Parameters -FilePath ".\Includes\Downloader.ps1"
                         Remove-Variable Downloader_Parameters
                     }
                     ElseIf (-not ($Miners | Where-Object Available -EQ $true)) { 
@@ -978,7 +977,7 @@ Do {
         }
 
         # ProfitabilityThreshold check - OK to run miners?
-        If ($Variables.DonationEnd -or (-not $Config.CalculatePowerCost -and $Variables.MiningEarning -ge ($Config.ProfitabilityThreshold / $Variables.Rates.BTC.($Config.Currency))) -or ($Config.CalculatePowerCost -and $Variables.MiningProfit -ge ($Config.ProfitabilityThreshold / $Variables.Rates.BTC.($Config.Currency))) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
+        If ($Variables.DonationRunning -or (-not $Config.CalculatePowerCost -and $Variables.MiningEarning -ge ($Config.ProfitabilityThreshold / $Variables.Rates.BTC.($Config.Currency))) -or ($Config.CalculatePowerCost -and $Variables.MiningProfit -ge ($Config.ProfitabilityThreshold / $Variables.Rates.BTC.($Config.Currency))) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
             $Variables.MinersBest_Combo | Select-Object | ForEach-Object { $_.Best = $true }
             If ($Variables.Rates."BTC") { 
                 If ($Variables.MinersNeedingBenchmark.Count) { 
@@ -1086,13 +1085,6 @@ Do {
         Remove-Variable CompareMiners, Miner, WatchdogTimers -ErrorAction Ignore
         $Variables.RefreshNeeded = $true
 
-        If (-not $Variables.MinersBest_Combo) { 
-            Start-Sleep -Seconds $Config.Interval
-            Remove-Variable Miners
-            Write-Message -Level Info "Ending cycle."
-            Continue
-        }
-
         $Miners | Select-Object | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator') }
 
         # Kill stuck miners
@@ -1145,6 +1137,13 @@ Do {
         }
 
         Remove-Variable Miners, WatchdogTimer -ErrorAction Ignore
+
+        If (-not $Variables.MinersBest_Combo) { 
+            Start-Sleep -Seconds $Config.Interval
+            Remove-Variable Miners
+            Write-Message -Level Info "Ending cycle."
+            Continue
+        }
 
         # Faster shutdown
         If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.MiningStatus -eq "Idle") { Continue }
@@ -1358,7 +1357,7 @@ Do {
             # - a miner crashed (and no other miners are benchmarking or measuring power usage)
             # - all benchmarking miners have collected enough samples
             # - WarmupTimes[0] is reached (no readout from miner)
-        }  While ($Variables.NewMiningStatus -eq "Running" -and $Variables.IdleRunspace.MiningStatus -ne "Idle" -and ((Get-Date).ToUniversalTime() -le $Variables.EndCycleTime -or $Variables.BenchmarkingOrMeasuringMiners) -and -not $Variables.EndCycleMessage)
+        }  While (-not $Variables.EndCycleMessage -and $Variables.NewMiningStatus -eq "Running" -and $Variables.IdleRunspace.MiningStatus -ne "Idle" -and ((Get-Date) -le $Variables.EndCycleTime -or $Variables.BenchmarkingOrMeasuringMiners))
 
         Write-Message -Level Info "Ending cycle$($Variables.EndCycleMessage)."
 

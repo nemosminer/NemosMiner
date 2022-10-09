@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.2.1.8
-Version date:   05 October 2022
+Version:        4.2.2.0
+Version date:   09 October 2022
 #>
 
 [CmdletBinding()]
@@ -78,7 +78,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$DisableSingleAlgoMining = $false, # If true will not use any single algorithm miners
     [Parameter(Mandatory = $false)]
-    [Int]$Donate = 13, # Minutes per Day
+    [Int]$Donation = 13, # Minutes per Day
     [Parameter(Mandatory = $false)]
     [Double]$EarningsAdjustmentFactor = 1, # Default factor with which multiplies the prices reported by ALL pools. Allowed values: 0.0 - 10.0
     [Parameter(Mandatory = $false)]
@@ -287,7 +287,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.2.1.8"
+    Version      = [System.Version]"4.2.2.0"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 

@@ -11,7 +11,23 @@ Known issues:
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
 
-ChangeLog NemosMiner 4.2.1.8 nn.10.2022
+ChangeLog NemosMiner 4.2.2.0 09.10.2022
+=======================================
+
+Enhancements:
+- Make '$ProfitabilityThreshold' also work when power cost is not part of the calculation
+
+Fixes:
+- Core: Invalid PowerPrice at 00:00h
+
+Miner changes:
+- MiniZ-v1.9z3
+- lolMiner-v1.60 (Keep 1.59a for Flux on AMD Pascal cards; https://github.com/Lolliedieb/lolMiner-releases/issues/1746)
+- TeamRedMiner-v0.10.4.0
+- Wildrig-v0.33.1
+
+
+ChangeLog NemosMiner 4.2.1.8 05.10.2022
 =======================================
 
 Fixes:

@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.Type -eq "NVIDIA"})) { Return }
 
-$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.32.5/wildrig-multi-windows-0.32.5.7z"
+$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.33.1/wildrig-multi-windows-0.33.1.7z"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\wildrig.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -49,6 +49,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "ProgPoWVeil";      Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                                    MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo progpow-veil" }
     [PSCustomObject]@{ Algorithm = "ProgPoWVeriblock"; Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                                    MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo vprogpow" }
     [PSCustomObject]@{ Algorithm = "ProgPoWZ";         Type = "AMD"; Fee = @(0.01); MinMemGB = $MinerPools[0].ProgPoWZ.DAGSizeGB;    MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo progpowz" }
+    [PSCustomObject]@{ Algorithm = "Pufferfish2BMB";   Type = "AMD"; Fee = @(0.01); MinMemGB = 8;                                    MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo pufferfish2" }
     [PSCustomObject]@{ Algorithm = "Renesis";          Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                                    MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo renesis" }
     [PSCustomObject]@{ Algorithm = "SHA256csm";        Type = "AMD"; Fee = @(0.02); MinMemGB = 2;                                    MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo sha256csm" }
 #   [PSCustomObject]@{ Algorithm = "SHA256t";          Type = "AMD"; Fee = @(0.01); MinMemGB = 2;                                    MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo sha256t" } # Takes too long until it starts mining

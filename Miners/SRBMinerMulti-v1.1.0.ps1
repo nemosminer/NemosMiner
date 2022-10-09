@@ -24,7 +24,7 @@ $Algorithms = [PSCustomObject[]]@(
      [PSCustomObject]@{ Algorithm = @("CryptonightGpu");            Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 30); ExcludeGPUArchitecture = @();        ExcludePool = @()           ; Arguments = " --algorithm cryptonight_gpu" }
      [PSCustomObject]@{ Algorithm = @("CryptonightTalleo");         Type = "AMD"; Fee = @(0);            MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(60, 30); ExcludeGPUArchitecture = @();        ExcludePool = @()           ; Arguments = " --algorithm cryptonight_talleo" }
      [PSCustomObject]@{ Algorithm = @("CryptonightUpx");            Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(60, 30); ExcludeGPUArchitecture = @();        ExcludePool = @()           ; Arguments = " --algorithm cryptonight_upx" }
-     [PSCustomObject]@{ Algorithm = @("CryptonightTurtle");         Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @();        ExcludePool = @()           ; Arguments = " --algorithm cryptonight_turtle" } # TeamRedMiner-v0.10.4 is fastest
+     [PSCustomObject]@{ Algorithm = @("CryptonightTurtle");         Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @();        ExcludePool = @()           ; Arguments = " --algorithm cryptonight_turtle" } # TeamRedMiner-v0.10.4.1 is fastest
      [PSCustomObject]@{ Algorithm = @("CryptonightHeavyXhv");       Type = "AMD"; Fee = @(0.0085);       MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @();        ExcludePool = @()           ; Arguments = " --algorithm cryptonight_xhv" }
      [PSCustomObject]@{ Algorithm = @("CurveHash");                 Type = "AMD"; Fee = @(0.0085);       MinMemGB = 2;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @();        ExcludePool = @()           ; Arguments = " --algorithm curvehash" }
      [PSCustomObject]@{ Algorithm = @("DynamoCoin");                Type = "AMD"; Fee = @(0.01);         MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @();        ExcludePool = @()           ; Arguments = " --algorithm dynamo" } # Algorithm 'dynamo' supports only 'pool' mode (yiimp stratum compatibility removed)
@@ -148,9 +148,10 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Algorithms | Where-Object Type -EQ $_.Type | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePool } | Select-Object | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
 
+            $ExcludeGPUArchitecture = $_.ExcludeGPUArchitecture
             $MinMemGB = $_.MinMemGB + $_.MemReserveGB
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or ($_.MemoryGB -gt $MinMemGB) }) { 
+            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or ($_.MemoryGB -gt $MinMemGB) } | Where-Object { $_.Architecture -notin $ExcludeGPUArchitecture }) { 
 
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) + @(If ($_.Algorithm[1]) { "$($_.Algorithm[0])&$($_.Algorithm[1])" }) | Select-Object) -join '-' -replace ' '
 

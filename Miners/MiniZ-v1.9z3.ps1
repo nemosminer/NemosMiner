@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -in @("AMD", "NVIDIA"))) { Return }
 
-$Uri = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v1.8z3_win-x64.zip"
+$Uri = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v1.9z3_win-x64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\miniZ.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -15,9 +15,9 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Equihash1927";     Type = "AMD"; Fee = @(0.02);   MinMemGB = 2.3;                                   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @("CGN4", "RDNA"); Arguments = " --amd --par=192,7 $(Get-EquihashCoinPers -Command "--pers " -Currency $MinerPools[0].Equihash1927.Currency -DefaultCommand "--smart-pers")" }
     [PSCustomObject]@{ Algorithm = "Equihash2109";     Type = "AMD"; Fee = @(0.02);   MinMemGB = 2.0;                                   MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @("RDNA");         Arguments = " --amd --par=210,9 --smart-pers" }
     [PSCustomObject]@{ Algorithm = "Equihash965";      Type = "AMD"; Fee = @(0.02);   MinMemGB = 2.0;                                   MemReserveGB = 0;    MinerSet = 1; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @("CGN4", "RDNA"); Arguments = " --amd --par=96,5 --smart-pers" }
-    [PSCustomObject]@{ Algorithm = "EtcHash";          Type = "AMD"; Fee = @(0.0075); MinMemGB = $MinerPools[0].Etchash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("RDNA");         Arguments = " --amd --par=EtcHash --dag-fix" }
-    [PSCustomObject]@{ Algorithm = "Ethash";           Type = "AMD"; Fee = @(0.0075); MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("RDNA");         Arguments = " --amd --par=Ethash --dag-fix" }
-    [PSCustomObject]@{ Algorithm = "EthashLowMem";     Type = "AMD"; Fee = @(0.0075); MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("RDNA");         Arguments = " --amd --par=Ethash --dag-fix" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "EtcHash";          Type = "AMD"; Fee = @(0.0075); MinMemGB = $MinerPools[0].Etchash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("CGN4", "RDNA"); Arguments = " --amd --par=EtcHash --dag-fix" }
+    [PSCustomObject]@{ Algorithm = "Ethash";           Type = "AMD"; Fee = @(0.0075); MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("CGN4", "RDNA"); Arguments = " --amd --par=Ethash --dag-fix" }
+    [PSCustomObject]@{ Algorithm = "EthashLowMem";     Type = "AMD"; Fee = @(0.0075); MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("CGN4", "RDNA"); Arguments = " --amd --par=Ethash --dag-fix" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = "FiroPoW";          Type = "AMD"; Fee = @(0.0075); MinMemGB = $MinerPools[0].FiroPoW.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; WarmupTimes = @(55, 45); ExcludeGPUArchitecture = @("CGN4", "RDNA"); Arguments = " --amd --pers=firo" }
     [PSCustomObject]@{ Algorithm = "KawPoW";           Type = "AMD"; Fee = @(0.01);   MinMemGB = $MinerPools[0].KawPoW.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(45, 35); ExcludeGPUArchitecture = @("CGN4", "RDNA"); Arguments = " --amd --par=Kawpow --dag-fix --pers=RAVENCOINKAWPOW" }
     [PSCustomObject]@{ Algorithm = "ProgPoWSero";      Type = "AMD"; Fee = @(0.01);   MinMemGB = $MinerPools[0].ProgPoWSero.DAGSizeGB;  MemReserveGB = 0.42; MinerSet = 0; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @("CGN4", "RDNA"); Arguments = " --amd --pers=sero" }
