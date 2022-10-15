@@ -11,6 +11,30 @@ Known issues:
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
 
+ChangeLog NemosMiner 4.2.2.1 14.10.2022
+=======================================
+
+Enhancements:
+- WebGUI: Reduce number of API calls
+- Core / Include.psm1: Speed up miner launch
+- Core: Improve GPU architecture detection
+- Core: Remove NiceHash pool name suffixes 'External' & 'Internal'
+
+Fixes:
+- Core / Legacy GUI: Do not scroll messages to end when text is selected
+- Core / Include.psm1: Config file version not saved to config (regeression from 4.2.2.0)
+- Core / Include.psm1: Get-CommandLineParameters broken for FireIce API (regression from 4.2.1.5)
+- Core: Main text window: Invalid running minr information on first cycle (regeression from 4.2.2.0)
+- Core: Switching log not updated correctly when switching to/from donation
+
+Miner updates:
+- GMiner-v3.08
+- lolMiner-v1.61
+- TeamBlackMiner-v1.70
+- Trex-v0.26.8
+- Wildrig-v0.33.2
+
+
 ChangeLog NemosMiner 4.2.2.0 09.10.2022
 =======================================
 

@@ -43,10 +43,9 @@
     var version = '';
 
     //get stored variables
-    var config = JSON.parse(localStorage.getItem('config'));
-    var rate = JSON.parse(localStorage.getItem('rate'));
-    var summary = JSON.parse(localStorage.getItem('summary'));
-    var version = JSON.parse(localStorage.getItem('version'));
+    var config = JSON.parse(sessionStorage.getItem('config'));
+    var rate = JSON.parse(sessionStorage.getItem('rate'));
+
 
     function updateHeader() {
       // Get current config
@@ -57,7 +56,7 @@
         url: '/config',
         success: function(result) {
           config = result;
-          localStorage.setItem('config', JSON.stringify(result));
+          sessionStorage.setItem('config', JSON.stringify(config));
         }
       });
 
@@ -69,7 +68,7 @@
         url: '/btc',
         success: function(result) {
           rate = result;
-          localStorage.setItem('btc', JSON.stringify(result));
+          sessionStorage.setItem('btc', JSON.stringify(rate));
         }
       });
 
@@ -81,7 +80,7 @@
         url: '/summary',
         success: function(result) {
           $('#summary').empty().append(result);
-          localStorage.setItem('summary', JSON.stringify(result));
+          sessionStorage.setItem('summary', JSON.stringify(result));
         }
       });
 

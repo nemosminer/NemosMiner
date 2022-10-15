@@ -2,15 +2,15 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.Type -eq"NVIDIA" })) { Return }
 
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/3.07/gminer_3_07_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/3.08/gminer_3_08_windows64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\miner.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Equihash1254"; Type = "AMD"; Fee = @(0.02);  MinMemGB = 1.8;                                   MemReserveGB = 0;    Tuning = ""; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo equihash125_4 --cuda 0 --opencl 1" } # lolMiner-v1.60 is fastest
-    [PSCustomObject]@{ Algorithm = "Equihash1445"; Type = "AMD"; Fee = @(0.02);  MinMemGB = 1.8;                                   MemReserveGB = 0;    Tuning = ""; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo equihash144_5 $(Get-EquihashCoinPers -Command "--pers " -Currency $MinerPools[0].Equihash1445.Currency -DefaultCommand "--pers auto") --cuda 0 --opencl 1" } # lolMiner-v1.60 is fastest
-    [PSCustomObject]@{ Algorithm = "Equihash2109"; Type = "AMD"; Fee = @(0.02);  MinMemGB = 2.8;                                   MemReserveGB = 0;    Tuning = ""; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo equihash210_9 --cuda 0 --opencl 1" } # lolMiner-v1.60 is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash1254"; Type = "AMD"; Fee = @(0.02);  MinMemGB = 1.8;                                   MemReserveGB = 0;    Tuning = ""; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo equihash125_4 --cuda 0 --opencl 1" } # lolMiner-v1.61 is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash1445"; Type = "AMD"; Fee = @(0.02);  MinMemGB = 1.8;                                   MemReserveGB = 0;    Tuning = ""; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo equihash144_5 $(Get-EquihashCoinPers -Command "--pers " -Currency $MinerPools[0].Equihash1445.Currency -DefaultCommand "--pers auto") --cuda 0 --opencl 1" } # lolMiner-v1.61 is fastest
+    [PSCustomObject]@{ Algorithm = "Equihash2109"; Type = "AMD"; Fee = @(0.02);  MinMemGB = 2.8;                                   MemReserveGB = 0;    Tuning = ""; MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo equihash210_9 --cuda 0 --opencl 1" } # lolMiner-v1.61 is fastest
     [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "AMD"; Fee = @(0.01);  MinMemGB = $MinerPools[0].Etchash.DAGSizeGB;      MemReserveGB = 0.41; Tuning = ""; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo etchash --cuda 0 --opencl 1" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "Ethash";       Type = "AMD"; Fee = @(0.01);  MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.41; Tuning = ""; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "AMD"; Fee = @(0.01);  MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.41; Tuning = ""; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
@@ -25,6 +25,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Ethash";        Type = "NVIDIA"; Fee = @(0.01);  MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.41; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "NVIDIA"; Fee = @(0.01);  MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.41; Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(45, 0); Arguments = " --algo ethash --cuda 1 --opencl 0" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "NVIDIA"; Fee = @(0.01);  MinMemGB = $MinerPools[0].KawPoW.DAGSizeGB;       MemReserveGB = 0.41; Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(45, 0); Arguments = " --algo kawpow --cuda 1 --opencl 0" } # XmRig-v6.18.0 is almost as fast but has no fee
+    [PSCustomObject]@{ Algorithm = "kHeavyHash";    Type = "NVIDIA"; Fee = @(0.01);  MinMemGB = 2gb;                                   MemReserveGB = 0.41; Tuning = " --mt 2"; MinerSet = 1; WarmupTimes = @(45, 0); Arguments = " --algo kaspa --cuda 1 --opencl 0" } # XmRig-v6.18.0 is almost as fast but has no fee
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 

@@ -1,8 +1,8 @@
 using module ..\Includes\Include.psm1
 
-If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.Type -eq "NVIDIA" -and $_.CUDAVersion -ge "11.5") })) { Return }
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.Type -eq "NVIDIA" -and $_.CUDAVersion -ge "11.7") })) { Return }
 
-$Uri = "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.69/TeamBlackMiner_1_69_cuda_11_5.7z"
+$Uri = "https://github.com/Minerx117/miners/releases/download/TeamBlackMiner/TeamBlackMiner_1_70_cuda_11_7.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\TBMiner.exe"
 
@@ -10,15 +10,17 @@ $DeviceSelector = @{ AMD = " --cl-devices"; NVIDIA = " --cuda-devices" }
 $DeviceEnumerator = @{ AMD = "Type_Vendor_Id"; NVIDIA = "Type_Vendor_Index" } # Device numeration seems to be mixed up with OpenCL
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "AMD"; Fee = 0.005; MinMemGB = $MinerPools[0].Etchash.DAGSizeGB;      MemReserveGB = 0.41; ExcludePool = @();              MinerSet = 0; Tuning = ""; WarmupTimes = @(45, 0); Arguments = " --algo etchash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "AMD"; Fee = 0.005; MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.41; ExcludePool = @();              MinerSet = 0; Tuning = ""; WarmupTimes = @(45, 0); Arguments = " --algo ethash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "AMD"; Fee = 0.005; MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.41; ExcludePool = @();              MinerSet = 1; Tuning = ""; WarmupTimes = @(45, 0); Arguments = " --algo ethash"} # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = "VertHash";     Type = "AMD"; Fee = 0.01;  MinMemGB = 2.0;                                   MemReserveGB = 0;    ExcludePool = @("MiningDutch"); MinerSet = 1; Tuning = ""; WarmupTimes = @(60, 0); Arguments = " --algo verthash" } # https://github.com/sp-hash/TeamBlackMiner/issues/303
+    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "AMD"; Fee = 0.005; MinMemGB = $MinerPools[0].Etchash.DAGSizeGB;      MemReserveGB = 0.41; ExcludePool = @(); MinerSet = 0; Tuning = ""; WarmupTimes = @(45, 0); Arguments = " --algo etchash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "AMD"; Fee = 0.005; MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.41; ExcludePool = @(); MinerSet = 0; Tuning = ""; WarmupTimes = @(45, 0); Arguments = " --algo ethash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "AMD"; Fee = 0.005; MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.41; ExcludePool = @(); MinerSet = 1; Tuning = ""; WarmupTimes = @(45, 0); Arguments = " --algo ethash"} # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "AMD"; Fee = 0.01;  MinMemGB = $MinerPools[0].KawPoW.DAGSizeGB;       MemReserveGB = 0;    ExcludePool = @(); MinerSet = 1; Tuning = ""; WarmupTimes = @(60, 0); Arguments = " --algo kawpow" }
+    [PSCustomObject]@{ Algorithm = "VertHash";     Type = "AMD"; Fee = 0.01;  MinMemGB = 2.0;                                   MemReserveGB = 0;    ExcludePool = @(); MinerSet = 1; Tuning = ""; WarmupTimes = @(60, 0); Arguments = " --algo verthash" }
 
-    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "NVIDIA"; Fee = 0.005; MinMemGB = $MinerPools[0].Etchash.DAGSizeGB;      MemReserveGB = 0.41; ExcludePool = @();              MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo etchash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; Fee = 0.005; MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.41; ExcludePool = @();              MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo ethash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; Fee = 0.005; MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.41; ExcludePool = @();              MinerSet = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo ethash" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = "VertHash";     Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 2.0;                                   MemReserveGB = 0;    ExcludePool = @("MiningDutch"); MinerSet = 1; Tuning = " --tweak 2"; WarmupTimes = @(60, 0); Arguments = " --algo verthash" } #https://github.com/sp-hash/TeamBlackMiner/issues/303
+    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "NVIDIA"; Fee = 0.005; MinMemGB = $MinerPools[0].Etchash.DAGSizeGB;      MemReserveGB = 0.41; ExcludePool = @(); MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo etchash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; Fee = 0.005; MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.41; ExcludePool = @(); MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo ethash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; Fee = 0.005; MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.41; ExcludePool = @(); MinerSet = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo ethash" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "NVIDIA"; Fee = 0.01;  MinMemGB = $MinerPools[0].KawPoW.DAGSizeGB;       MemReserveGB = 0;    ExcludePool = @(); MinerSet = 1; Tuning = " --tweak 2"; WarmupTimes = @(60, 0); Arguments = " --algo kawpow" }
+    [PSCustomObject]@{ Algorithm = "VertHash";     Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 2.0;                                   MemReserveGB = 0;    ExcludePool = @(); MinerSet = 1; Tuning = " --tweak 2"; WarmupTimes = @(60, 0); Arguments = " --algo verthash" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 
@@ -51,7 +53,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 If ($_.Algorithm -eq "VertHash" -and -not (Test-Path -Path ".\Bin\$($Name)\VertHash.dat" -ErrorAction SilentlyContinue)) { 
                     If ((Get-Item -Path $Variables.VerthashDatPath).length -eq 1283457024) { 
                         If (Test-Path -Path .\Bin\$($Name) -PathType Container) { 
-                            New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath | Out-Null
+                            [void](New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath)
                         }
                     }
                     Else { 

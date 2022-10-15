@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.2.2.0
-Version date:   09 October 2022
+Version:        4.2.2.1
+Version date:   15 October 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -34,6 +34,7 @@ param(
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
+$PoolVariant = If ($Variables.NiceHashWalletIsInternal) { "NiceHash Internal" } Else { "NiceHash External" }
 $Fee = $PoolConfig.Variant.$PoolVariant.Fee
 $PayoutCurrency = $PoolConfig.Variant.$PoolVariant.PayoutCurrency
 $Wallet = $PoolConfig.Variant.$PoolVariant.Wallets.$PayoutCurrency
@@ -75,7 +76,7 @@ If ($Wallet) {
 
         $Divisor = 100000000
 
-        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor) -FaultDetection $false
+        $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor) -FaultDetection $false
 
         [PSCustomObject]@{ 
             Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Minute_5_Fluctuation), 1)) # Use short timespan to counter price spikes
@@ -86,7 +87,7 @@ If ($Wallet) {
             EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
             Fee                      = [Decimal]$Fee
             Host                     = "$Algorithm.$PoolHost".ToLower()
-            Name                     = [String]$PoolVariant
+            Name                     = [String]$Name
             Pass                     = "x"
             Port                     = 9200
             PortSSL                  = 443

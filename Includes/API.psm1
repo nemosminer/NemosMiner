@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.2.2.0
-Version date:   09 October 2022
+Version:        4.2.2.1
+Version date:   15 October 2022
 #>
 
 Function Initialize-API { 
@@ -80,7 +80,7 @@ Function Start-APIServer {
 
     Stop-APIServer
 
-    $APIVersion = "0.4.9.0"
+    $APIVersion = "0.4.9.1"
 
     If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
 
@@ -136,7 +136,7 @@ Function Start-APIServer {
                 # Determine the requested resource and parse query strings
                 $Path = $Request.Url.LocalPath
 
-                If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM }
+                If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore}
 
                 # Parse any parameters in the URL - $Request.Url.Query looks like "+ ?a=b&c=d&message=Hello%20world"
                 # Decode any url escaped characters in the key and value
@@ -440,8 +440,8 @@ Function Start-APIServer {
                         If ($TempStats) { 
                             If ($null -ne $Parameters.Value) { 
                                 $TempStats | Sort-Object Name | ForEach-Object { $Data += "$($_.Name -replace "_$($Parameters.Type)")`n" }
-                                If ($Parameters.Type -eq "Hashrate") { $Data += "`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)H/s $($Parameters.Type)." }
-                                ElseIf ($Parameters.Type -eq "PowerUsage") { $Data += "`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)W $($Parameters.Type)." }
+                                If ($Parameters.Type -eq "Hashrate") { $Data += "`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)H/s hashrate." }
+                                ElseIf ($Parameters.Type -eq "PowerUsage") { $Data += "`n$($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)W power usage." }
                             }
                             Else { 
                                 $Data = $TempStats | ConvertTo-Json
@@ -997,6 +997,8 @@ Function Start-APIServer {
                     }
                 }
 
+                If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore}
+
                 # If $Data is null, the API will just return whatever data was in the previous request. Instead, show an error
                 # This happens if the script just started and hasn't filled all the properties in yet. 
                 If ($null -eq $Data) { 
@@ -1010,6 +1012,8 @@ Function Start-APIServer {
                 $Response.ContentLength64 = $ResponseBuffer.Length
                 $Response.OutputStream.Write($ResponseBuffer, 0, $ResponseBuffer.Length)
                 $Response.Close()
+
+                If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url) (Size: $($ResponseBuffer.Length))" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore}
 
                 Remove-Variable AlgorithmList, BalanceDataEntries, ContentType, Data, DisabledPoolsCount, EnabledPoolsCount, File, DisplayWorkers, IncludeData, IncludeFile, IncludeRegex, Key, Lines, Message, MinerNames, Miners, Path, PoolConfig, PoolBaseName, PoolName, Pools, Reasons, ResponseBuffer, Stat_Name, StatusCode, TempStats, Value, Values, WatchdogTimer, WatchdogTimers -ErrorAction SilentlyContinue
             }

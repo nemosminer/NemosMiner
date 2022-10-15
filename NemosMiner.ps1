@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.2.2.0
-Version date:   09 October 2022
+Version:        4.2.2.1
+Version date:   15 October 2022
 #>
 
 [CmdletBinding()]
@@ -287,7 +287,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.2.2.0"
+    Version      = [System.Version]"4.2.2.1"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -297,9 +297,9 @@ If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") {
 }
 
 # Create directories
-If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory | Out-Null }
-If (-not (Test-Path -Path ".\Config" -PathType Container)) { New-Item -Path . -Name "Config" -ItemType Directory | Out-Null }
-If (-not (Test-Path -Path ".\Logs" -PathType Container)) { New-Item -Path . -Name "Logs" -ItemType Directory | Out-Null }
+If (-not (Test-Path -Path ".\Cache" -PathType Container)) { [void](New-Item -Path . -Name "Cache" -ItemType Directory) }
+If (-not (Test-Path -Path ".\Config" -PathType Container)) { [void](New-Item -Path . -Name "Config" -ItemType Directory) }
+If (-not (Test-Path -Path ".\Logs" -PathType Container)) { [void](New-Item -Path . -Name "Logs" -ItemType Directory) }
 
 # Expand paths
 $Variables.MainPath = (Split-Path $MyInvocation.MyCommand.Path)
@@ -589,8 +589,28 @@ Function Update-TabControl {
 
     $Mainform.Cursor = [System.Windows.Forms.Cursors]::WaitCursor
 
+    # Keep only 100 lines, more lines impact performance
+    $SelectionLength = $Variables.LabelStatus.SelectionLength
+    $SelectionStart = $Variables.LabelStatus.SelectionStart
+    $TextLength = $Variables.LabelStatus.TextLength
+    $Variables.LabelStatus.Lines = @($Variables.LabelStatus.Lines | Select-Object -Last 100)
+    $Variables.LabelStatus.SelectionStart = $SelectionStart - ($TextLength - $Variables.LabelStatus.TextLength)
+    If ($Variables.LabelStatus.SelectionStart -gt 0) { 
+        $Variables.LabelStatus.SelectionLength = $SelectionLength
+    }
+    Remove-Variable SelectionLength, SelectionStart, TestLength
+
     Switch ($TabControl.SelectedTab.Text) { 
         "Run" { 
+            If ($Variables.LabelStatus.SelectionLength) { 
+                $Variables.LabelStatus.Select()
+            }
+            Else { 
+                $Variables.LabelStatus.SelectionStart = $Variables.LabelStatus.TextLength
+                $Variables.LabelStatus.ScrollToCaret()
+                $Variables.LabelStatus.Refresh()
+            }
+
             $RunningMinersDGV.ClearSelection()
 
             $RunningMinersDGV.DataSource = $Variables.Miners | Where-Object { $_.Status -eq "Running" } | Select-Object @(
@@ -646,11 +666,11 @@ Function Update-TabControl {
                 }
                 $Color
             }
-        
+
             If (Test-Path -Path ".\Data\EarningsChartData.json" -PathType Leaf) { 
-        
+
                 $Datasource = Get-Content -Path ".\Data\EarningsChartData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
-        
+
                 $ChartTitle = New-Object System.Windows.Forms.DataVisualization.Charting.Title
                 $ChartTitle.Text = "Earnings of the past $($DataSource.Labels.Count) active days"
                 $ChartTitle.Font = [System.Drawing.Font]::new("Arial", 10)
@@ -658,7 +678,7 @@ Function Update-TabControl {
                 $EarningsChart.Titles.Clear()
                 $EarningsChart.Titles.Add($ChartTitle)
                 Remove-Variable ChartTitle
-        
+
                 $ChartArea = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
                 $ChartArea.BackColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"#2B3232" 
                 $ChartArea.BackSecondaryColor = [System.Drawing.Color]::FromArgb(255, 180, 180, 180) #"#777E7E"
@@ -678,29 +698,29 @@ Function Update-TabControl {
                 $ChartArea.AxisY.Interval = [Math]::Ceiling(($Datasource.DaySum | Measure-Object -Maximum).Maximum / 4)
                 $ChartArea.AxisY.Title = $Config.Currency
                 $ChartArea.AxisY.ToolTip = "Total Earnings per day"
-        
+
                 $EarningsChart.ChartAreas.Clear()
                 $EarningsChart.ChartAreas.Add($ChartArea)
                 $EarningsChart.Series.Clear()
-        
+
                 $Color = @(255, 255, 255, 255) #"FFFFFF"
                 $EarningsChart.BringToFront()
-        
+
                 $DaySum = @(0) * $DataSource.Labels.Count
                 $ToolTip = $DataSource.Labels | ConvertTo-Json | ConvertFrom-Json
-        
+
                 ForEach ($Pool in $DataSource.Earnings.PSObject.Properties.Name) { 
-        
+
                     $Color = (Get-NextColor -Color $Color -Factors -0, -20, -20, -20)
                     $I = 0
-        
+
                     [void]$EarningsChart.Series.Add($Pool)
                     $EarningsChart.Series[$Pool].ChartArea = "ChartArea"
                     $EarningsChart.Series[$Pool].ChartType = "StackedColumn"
                     $EarningsChart.Series[$Pool].BorderWidth = 3
                     $EarningsChart.Series[$Pool].Legend = $Pool
                     $EarningsChart.Series[$Pool].Color = [System.Drawing.Color]::FromArgb($Color[0], $Color[1], $Color[2], $Color[3])
-        
+
                     $Datasource.Earnings.$Pool | ForEach-Object { 
                         $_ *= $Variables.Rates.BTC.($Config.Currency)
                         $EarningsChart.Series[$Pool].Points.addxy(0, "{0:N$($Variables.Digits)}" -f $_) | Out-Null
@@ -711,7 +731,7 @@ Function Update-TabControl {
                         $I++
                     }
                 }
-        
+
                 $I = 0
                 $ChartArea.AxisX.CustomLabels.Clear()
                 $DataSource.Labels | ForEach-Object { 
@@ -723,9 +743,9 @@ Function Update-TabControl {
                     }
                     $I++
                 }
-        
+
                 $ChartArea.AxisY.Maximum = ($DaySum | Measure-Object -Maximum).Maximum * 1.05
-        
+
                 Remove-Variable ChartArea, Colors, Datasource, DatasourceRaw, Pool
             }
 
@@ -1477,9 +1497,6 @@ Function MainLoop {
 
         # Refresh selected tab
         Update-TabControl
-
-        # Keep only 100 lines, more lines impact performance
-        $Variables.LabelStatus.Lines = @($Variables.LabelStatus.Lines | Select-Object -Last 100)
 
         If ($EditConfigLink.Tag -eq "WebGUI" ) { 
             $EditConfigLink.Text = "Edit configuration in the Web GUI"

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.2.2.0
-Version date:   09 October 2022
+Version:        4.2.2.1
+Version date:   15 October 2022
 #>
 
 # Window handling
@@ -310,21 +310,19 @@ Class Miner {
                 Type              = $this.Type
             } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation
 
-            If ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
-                0..20 | ForEach-Object { 
-                        If ($this.ProcessId = [Int32]((Get-CimInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -eq "$($this.Path) $($this.GetCommandLineParameters())" }).ProcessId)) { 
-                        $this.StatusMessage = "Warming up $($this.Info)"
-                        $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
-                        $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
-                        $this.Hashrates_Live = @($this.Workers | ForEach-Object { [Double]::NaN })
-                        $this.WorkersRunning = $this.Workers
-                        $this.StartDataReader()
-                        Break
-                    }
-                    Start-Sleep -Milliseconds 100
+            0..20 | ForEach-Object { 
+                If ($this.ProcessId = ($this.Process | Get-Job -ErrorAction SilentlyContinue | Receive-Job).ProcessId) { 
+                    $this.StatusMessage = "Warming up $($this.Info)"
+                    $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
+                    $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
+                    $this.Hashrates_Live = @($this.Workers | ForEach-Object { [Double]::NaN })
+                    $this.WorkersRunning = $this.Workers
+                    $this.StartDataReader()
+                    Break
                 }
+                Start-Sleep -Milliseconds 100
             }
-            Else { 
+            If (-not $this.ProcessId) { 
                 $this.Status = [MinerStatus]::Failed
                 $this.StatusMessage = "Failed $($this.Info)"
                 $this.Devices | ForEach-Object { $_.Status = "Failed" }
@@ -894,7 +892,7 @@ Function Get-CommandLineParameters {
         [String]$Arguments
     )
 
-    If (Test-Json $Arguments) { $Arguments = $Arguments | ConvertFrom-Json }
+    If (Test-Json $Arguments) { $Arguments = ($Arguments | ConvertFrom-Json).Arguments }
     Return $Arguments
 }
 
@@ -990,8 +988,21 @@ Function Write-Message {
     Try { 
         # Ignore error when main window gets closed
         If ($Config.LogToScreen -and $Level -in $Config.LogToScreen) { 
-            # Update status text box in legacy GUI
-            If ($Variables.LabelStatus.AppendText) { $Variables.LabelStatus.AppendText("`r`n$Date $($Level.ToUpper()): $Message") }
+            # Update status text box in legacy GUI,scroll to end if no text is selected
+            If ($Variables.LabelStatus.AppendText) { 
+                If ($Variables.LabelStatus.SelectionLength) { 
+                    $SelectionLength = $Variables.LabelStatus.SelectionLength
+                    $SelectionStart = $Variables.LabelStatus.SelectionStart
+                    $Variables.LabelStatus.Lines += "$Date $($Level.ToUpper()): $Message"
+                    $Variables.LabelStatus.SelectionLength = $SelectionLength
+                    $Variables.LabelStatus.SelectionStart = $SelectionStart
+                    $Variables.LabelStatus.ScrollToCaret()
+                    Remove-Variable SelectionLength, SelectionStart
+                }
+                Else { 
+                    $Variables.LabelStatus.AppendText("`r`n$Date $($Level.ToUpper()): $Message")
+                }
+            }
 
             # Write to console
             Switch ($Level) { 
@@ -1649,7 +1660,7 @@ Function Get-Stat {
     }
 
     If (-not (Test-Path -Path "Stats" -PathType Container)) { 
-        New-Item "Stats" -ItemType "directory" -Force | Out-Null
+        [void](New-Item "Stats" -ItemType "directory" -Force)
     }
 
     $Name | ForEach-Object { 
@@ -2017,21 +2028,72 @@ Function Get-CpuId {
     }
 }
 
-Function Get-NvidiaArchitecture {
+Function Get-GPUArchitectureAMD { 
 
     [CmdLetBinding()]
     param(
-        [Parameter(Mandatory = $true)]
-        [String]$Model,
-        [Parameter(Mandatory = $true)]
-        [String]$ComputeCapability = ""
+        [string]$Model,
+        [string]$Architecture = ""
     )
 
+    $Model = $Model -replace "[^A-Z0-9]"
+    $Architecture = $Architecture -replace ":.+$" -replace "[^A-Za-z0-9]+"
+
+    Try { 
+        If ($Script:GPUArchitectureDB_AMD -eq $null) { $Script:GPUArchitectureDB_AMD = Get-Content "Data\GPUArchitectureAMD.json" | ConvertFrom-Json -ErrorAction Ignore }
+
+        ForEach($GPUArchitecture in $Script:GPUArchitectureDB_AMD.PSObject.Properties) { 
+            $Arch_Match = $GPUArchitecture.Value -join "|"
+            If ($Architecture -match $Arch_Match) { 
+                Return $GPUArchitecture.Name
+            }
+        }
+        ForEach($GPUArchitecture in $Script:GPUArchitectureDB_AMD.PSObject.Properties) { 
+            $Arch_Match = $GPUArchitecture.Value -join "|"
+            If ($Model -match $Arch_Match) { 
+                Return $GPUArchitecture.Name
+            }
+        }
+    } 
+    Catch { 
+        If ($Error.Count) { $Error.RemoveAt(0) }
+        Write-Message -Level Warn "Cannot determine architecture for AMD $($Model)/$($Architecture)"
+    }
+    Return $Architecture
+}
+
+Function Get-GPUArchitectureNvidia { 
+
+    [CmdLetBinding()]
+    param(
+        [string]$Model,
+        [string]$ComputeCapability = ""
+    )
+
+    $Model = $Model -replace "[^A-Z0-9]"
     $ComputeCapability = $ComputeCapability -replace "[^\d\.]"
-    If     ($ComputeCapability -in @("8.0", "8.6") -or $Model -match "^RTX30\d{2}" -or $Model -match "^RTXA\d{4}"  -or $Model -match "^AM") {"Ampere"}
-    ElseIf ($ComputeCapability -in @("7.5")        -or $Model -match "^RTX20\d{2}" -or $Model -match "^GTX16\d{2}" -or $Model -match "^TU") {"Turing"}
-    ElseIf ($ComputeCapability -in @("6.0", "6.1") -or $Model -match "^GTX10\d{2}" -or $Model -match "^GTXTitanX"  -or $Model -match "^GP" -or $Model -match "^P" -or $Model -match "^GT1030") {"Pascal"}
-    Else   {"Other"}
+
+    Try { 
+        If ($Script:GPUArchitectureDB_Nvidia -eq $null) { $Script:GPUArchitectureDB_Nvidia = Get-Content "Data\GPUArchitectureNvidia.json" | ConvertFrom-Json -ErrorAction Ignore }
+
+        ForEach ($GPUArchitecture in $Script:GPUArchitectureDB_Nvidia.PSObject.Properties) { 
+            If ($ComputeCapability -in $GPUArchitecture.Value.Compute) { 
+                Return $GPUArchitecture.Name
+            }
+        }
+
+        ForEach ($GPUArchitecture in $Script:GPUArchitectureDB_Nvidia.PSObject.Properties) { 
+            $Model_Match = $GPUArchitecture.Value.Model -join "|"
+            If ($Model -match $Model_Match) {
+                Return $GPUArchitecture.Name
+            }
+        }
+    } 
+    Catch { 
+        If ($Error.Count) { $Error.RemoveAt(0) }
+        Write-Message -Level Warn "Cannot determine architecture for Nvidia $($Model)/$($ComputeCapability)"
+    }
+    Return "Other"
 }
 
 Function Get-Device { 
@@ -2115,7 +2177,7 @@ Function Get-Device {
                             "Intel" { "INTEL" }
                             "NVIDIA" { "NVIDIA" }
                             "AMD" { "AMD" }
-                            Default { $Device_CIM.Manufacturer -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
+                            Default { $Device_CIM.Manufacturer -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce|Radeon|Intel' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
                         }
                     )
                     Memory = $null
@@ -2130,7 +2192,7 @@ Function Get-Device {
                 }
 
                 $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
-                $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor) -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9\.]' -replace '\s+', ' ').Trim()
+                $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor) -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce|Radeon|Intel' -replace '[^ A-Z0-9\.]' -replace '\s+', ' ').Trim()
 
                 If (-not $Type_Vendor_Id.($Device.Type)) { 
                     $Type_Vendor_Id.($Device.Type) = @{ }
@@ -2175,7 +2237,7 @@ Function Get-Device {
                             "Intel" { "INTEL" }
                             "NVIDIA" { "NVIDIA" }
                             "AMD" { "AMD" }
-                            Default { $Device_CIM.AdapterCompatibility -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
+                            Default { $Device_CIM.AdapterCompatibility -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce|Radeon|Intel' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
                         }
                     )
                     Memory = [Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize'))
@@ -2198,7 +2260,7 @@ Function Get-Device {
                 Else { 
                     $Device.Name = "$($Device.Type)#$('{0:D2}' -f $UnsupportedGPUVendorID++)"
                 }
-                $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB" -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^ A-Z0-9\.]' -replace '\s+', ' ').Trim()
+                $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB" -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce|Radeon|Intel' -replace '[^ A-Z0-9\.]' -replace '\s+', ' ').Trim()
 
                 If (-not $Type_Vendor_Id.($Device.Type)) { 
                     $Type_Vendor_Id.($Device.Type) = @{ }
@@ -2235,7 +2297,7 @@ Function Get-Device {
                             Switch -Regex ([String]$Device_OpenCL.Type) { 
                                 "CPU" { "CPU" }
                                 "GPU" { "GPU" }
-                                Default { [String]$Device_OpenCL.Type -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
+                                Default { [String]$Device_OpenCL.Type -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce|Radeon|Intel' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
                             }
                         )
                         Bus    = $(
@@ -2249,7 +2311,7 @@ Function Get-Device {
                                 "Intel" { "INTEL" }
                                 "NVIDIA" { "NVIDIA" }
                                 "AMD" { "AMD" }
-                                Default { [String]$Device_OpenCL.Vendor -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
+                                Default { [String]$Device_OpenCL.Vendor -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce|Radeon|Intel' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
                             }
                         )
                         Memory = [UInt64]$Device_OpenCL.GlobalMemSize
@@ -2272,7 +2334,7 @@ Function Get-Device {
                     Else { 
                         $Device.Name = "$($Device.Type)#$('{0:D2}' -f $UnsupportedGPUVendorID++)"
                     }
-                    $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce' -replace '[^A-Z0-9 ]' -replace '\s+', ' '
+                    $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce|Radeon|Intel' -replace '[^A-Z0-9 ]' -replace '\s+', ' '
 
                     If (-not $Type_Vendor_Id.($Device.Type)) { 
                         $Type_Vendor_Id.($Device.Type) = @{ }
@@ -2332,20 +2394,10 @@ Function Get-Device {
             $Variables.Devices | Where-Object Model -ne "Remote Display Adapter 0GB" | Where-Object Vendor -ne "CitrixSystemsInc" | Where-Object Bus -Is [Int64] | Sort-Object Bus | ForEach-Object { 
                 If ($_.Type -eq "GPU") { 
                     If ($_.Vendor -eq "NVIDIA") { 
-                        $_ | Add-Member "Architecture" (Get-NvidiaArchitecture $_.Model $_.OpenCL.DeviceCapability)
+                        $_ | Add-Member "Architecture" (Get-GPUArchitectureNvidia -Model $_.Model -ComputeCapability $_.OpenCL.DeviceCapability)
                     } 
                     ElseIf ($_.Vendor -eq "AMD") {
-                        $_ | Add-Member "Architecture" $(
-                            Switch -Regex ($_.Reg.InfSection -replace "ati2mtag_") { 
-                                "Lexa.*"      { "CGN4" }
-                                "Ellesmere.*" { "CGN4" }
-                                "Polaris.*"   { "CGN4" }
-                                "Vega.*"      { "CGN5" }
-                                "Navi1.*"     { "RDNA" }
-                                "Navi2.*"     { "RDNA2" }
-                                Default       { "Other" }
-                            }
-                        )
+                        $_ | Add-Member "Architecture" (Get-GPUArchitectureAMD -Model $_.Model -Architecture $_.OpenCL.Architecture)
                     }
                     Else { 
                         $_ | Add-Member "Architecture" "Other"
@@ -2614,7 +2666,7 @@ Function Expand-WebRequest {
     [Environment]::CurrentDirectory = $ExecutionContext.SessionState.Path.CurrentFileSystemLocation
 
     If (-not $Path) { $Path = Join-Path ".\Downloads" ([IO.FileInfo](Split-Path $Uri -Leaf)).BaseName }
-    If (-not (Test-Path -Path ".\Downloads" -PathType Container)) { New-Item "Downloads" -ItemType "directory" | Out-Null }
+    If (-not (Test-Path -Path ".\Downloads" -PathType Container)) { [void](New-Item "Downloads" -ItemType "directory") }
     $FileName = Join-Path ".\Downloads" (Split-Path $Uri -Leaf)
 
     If (Test-Path -Path $FileName -PathType Leaf) { Remove-Item $FileName }
@@ -2861,8 +2913,8 @@ Function Initialize-Autoupdate {
     [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
     Set-Location $Variables.MainPath
-    If (-not (Test-Path -Path ".\AutoUpdate" -PathType Container)) { New-Item -Path . -Name "AutoUpdate" -ItemType Directory | Out-Null }
-    If (-not (Test-Path -Path ".\Logs" -PathType Container)) { New-Item -Path . -Name "Logs" -ItemType Directory | Out-Null }
+    If (-not (Test-Path -Path ".\AutoUpdate" -PathType Container)) { [void](New-Item -Path . -Name "AutoUpdate" -ItemType Directory) }
+    If (-not (Test-Path -Path ".\Logs" -PathType Container)) { [void](New-Item -Path . -Name "Logs" -ItemType Directory) }
 
     $UpdateScriptURL = "https://github.com/Minerx117/miners/releases/download/AutoUpdate/Autoupdate.ps1"
     $UpdateScript = ".\AutoUpdate\AutoUpdate.ps1"
@@ -3028,7 +3080,7 @@ Function Update-ConfigFile {
     # Remove TonWhales config
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "TonWhales" }
 
-    $Config | Add-Member ConfigFileVersion ($Variables.Branding.Version.ToString()) -Force
+    $Config.ConfigFileVersion = $Variables.Branding.Version.ToString()
     Write-Config -ConfigFile $ConfigFile
     "Updated configuration file '$($ConfigFile)' to version $($Variables.Branding.Version.ToString())." | Write-Message -Level Verbose 
     Remove-Variable New_Config_Items

@@ -55,7 +55,8 @@
       });
 
       // set the footer
-      if (version == null) {
+      var version = JSON.parse(sessionStorage.getItem('version'));
+      if (version== null) {
         $.ajax({
           async: false,
           dataType: 'json',
@@ -63,11 +64,11 @@
           url: '/version',
           success: function(result) {
             version = result
-            $('#footer').empty().append(version.join('&nbsp;/&nbsp;') + '&nbsp;/&nbsp;All earnings and profit numbers are estimates based on data provided by the pools APIs&nbsp;/&nbsp&copy; www.nemosminer.com');
-            localStorage.setItem('config', JSON.stringify(config));
+            sessionStorage.setItem('version', JSON.stringify(version));
           }
         });
       }
+      if (version) $('#footer').empty().append(version.join('&nbsp;/&nbsp;') + '&nbsp;/&nbsp;All earnings and profit numbers are estimates based on data provided by the pools APIs&nbsp;/&nbsp&copy; www.nemosminer.com');
     });
   </script>
 <!-- End of page scripts 'foot.html'-->
