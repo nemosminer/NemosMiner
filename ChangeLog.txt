@@ -24,7 +24,7 @@ Fixes:
 - Core / Legacy GUI: Do not scroll messages to end when text is selected
 - Core / Include.psm1: Config file version not saved to config (regeression from 4.2.2.0)
 - Core / Include.psm1: Get-CommandLineParameters broken for FireIce API (regression from 4.2.1.5)
-- Core: Main text window: Invalid running minr information on first cycle (regeression from 4.2.2.0)
+- Core: Main text window: Invalid running miner information on first cycle (regeression from 4.2.2.0)
 - Core: Switching log not updated correctly when switching to/from donation
 
 Miner updates:
