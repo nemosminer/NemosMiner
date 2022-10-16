@@ -1334,6 +1334,8 @@ $MainForm.Add_Load(
 
         If ($Config.StartGUIMinimized) { $MainForm.WindowState = [System.Windows.Forms.FormWindowState]::Minimized }
 
+        $Variables.RefreshNeeded = $true
+
         $Global:TimerUI = New-Object System.Windows.Forms.Timer
         $Global:TimerUI.Add_Tick(
             { 
@@ -1495,7 +1497,7 @@ Function MainLoop {
                 }
                 "f" { 
                     $Variables.ShowPoolFee = -not $Variables.ShowPoolFee
-                    Write-Host "'Pool "; Write-Host "f" -ForegroundColor Cyan -NoNewline; Write-Host "ees' column visibility set to " -NoNewline; If ($Variables.ShowPoolFee) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                    Write-Host "'Pool "-NoNewline; Write-Host "f" -ForegroundColor Cyan -NoNewline; Write-Host "ees' column visibility set to " -NoNewline; If ($Variables.ShowPoolFee) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
                     Start-Sleep -Seconds 1
                     $Variables.RefreshNeeded = $true
                 }
