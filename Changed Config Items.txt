@@ -215,10 +215,13 @@ New Config Items
 # Show miner earning bias column in miner overview
   "ShowEarningBias": true,
 
-# Show miner fee column in miner overview (if fees are available, Property '[Double]Fee')
+# Show miner fee column in miner overview (if fees are available, Property 'Fee')
   "ShowMinerFee": true,
 
-# Show pool fee column in miner overview (if fees are available, Property '[Double]Fee')
+# Show pool column in miner overview
+  "ShowPool": true,
+
+# Show pool fee column in miner overview (if fees are available, Property 'Fee')
   "ShowPoolFee": true,
 
 # Show Power cost column in miner overview (if power price is available, see PowerPricekWh)

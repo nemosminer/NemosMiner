@@ -1,261 +1,261 @@
 {
-  "Currency": {
-    "CLO": {
-      "DAGsize": 4118805632,
-      "CoinName": "Callisto",
-      "Epoch": 363,
-      "Algorithm": "Ethash",
-      "BlockHeight": 10917689
-    },
-    "ERG": {
-      "DAGsize": 2655136050,
-      "CoinName": "Ergo",
-      "Epoch": 425,
-      "Algorithm": "Autolykos2",
-      "BlockHeight": 852585
-    },
-    "ETP": {
-      "DAGsize": 3087003776,
-      "CoinName": "Metaverse",
-      "Epoch": 240,
-      "Algorithm": "Ethash",
-      "BlockHeight": 7217563
-    },
-    "ETHO": {
-      "DAGsize": 3925868416,
-      "CoinName": "Ether1",
-      "Epoch": 340,
-      "Algorithm": "Ethash",
-      "BlockHeight": 10228987
-    },
-    "NEOX": {
-      "DAGsize": 1132461952,
-      "CoinName": "Neoxa",
-      "Epoch": 7,
-      "Algorithm": "KawPoW",
-      "BlockHeight": 213327
-    },
-    "DAE": {
-      "DAGsize": 1149232768,
-      "CoinName": null,
-      "Epoch": 9,
-      "Algorithm": null,
-      "BlockHeight": 292675
-    },
-    "CFX": {
-      "DAGsize": 6090127616,
-      "CoinName": "Conflux",
-      "Epoch": 107,
-      "Algorithm": "Octopus",
-      "BlockHeight": 56439169
-    },
-    "ATH": {
-      "DAGsize": 2785017728,
-      "CoinName": "Atheios",
-      "Epoch": 204,
-      "Algorithm": "Ethash",
-      "BlockHeight": 6126801
-    },
-    "QKC": {
-      "DAGsize": 4177525888,
-      "CoinName": "QuarkChain",
-      "Epoch": 370,
-      "Algorithm": "Ethash",
-      "BlockHeight": 11119945
-    },
-    "*": {
-      "DAGsize": 6090127616,
-      "Epoch": 524,
-      "BlockHeight": 56439169,
-      "CoinName": "*"
-    },
-    "MEWC": {
-      "DAGsize": 1082130304,
-      "CoinName": "MeowCoin",
-      "Epoch": 1,
-      "Algorithm": "KawPoW",
-      "BlockHeight": 55799
-    },
-    "REOSC": {
-      "Epoch": 237,
-      "DAGsize": 3061837696,
-      "BlockHeight": 7114083,
-      "CoinName": "REOSC Ecosystem",
-      "Algorithm": "Ethash"
-    },
-    "PGC": {
-      "DAGsize": 2457861248,
-      "CoinName": "PegasCoin",
-      "Epoch": 165,
-      "Algorithm": "Ethash",
-      "BlockHeight": 4965861
-    },
-    "ERE": {
-      "Epoch": 16,
-      "DAGsize": 1207958912,
-      "BlockHeight": 484111,
-      "CoinName": "Ethercore",
-      "Algorithm": "Ethash"
-    },
-    "ETC": {
-      "DAGsize": 3321887104,
-      "CoinName": "Ethereum Classic",
-      "Epoch": 268,
-      "Algorithm": "EtcHash",
-      "BlockHeight": 16138134
-    },
-    "DBIX": {
-      "Epoch": 57,
-      "DAGsize": 1551892096,
-      "BlockHeight": 1728025,
-      "CoinName": "DubaiCoin",
-      "Algorithm": "Ethash"
-    },
-    "NUKO": {
-      "DAGsize": 3380608384,
-      "CoinName": "Nekonium",
-      "Epoch": 275,
-      "Algorithm": "Ethash",
-      "BlockHeight": 8273226
-    },
-    "EXP": {
-      "DAGsize": 2994731392,
-      "CoinName": "Expanse",
-      "Epoch": 229,
-      "Algorithm": "Ethash",
-      "BlockHeight": 6877393
-    },
-    "RVN": {
-      "DAGsize": 3858755968,
-      "CoinName": "RavenCoin",
-      "Epoch": 332,
-      "Algorithm": "KawPoW",
-      "BlockHeight": 2494918
-    },
-    "NILU": {
-      "DAGsize": 2801794432,
-      "CoinName": "Nilu",
-      "Epoch": 206,
-      "Algorithm": "Ethash",
-      "BlockHeight": 6201510
-    },
-    "EGEM": {
-      "DAGsize": 4294962304,
-      "CoinName": "EtherGem",
-      "Epoch": 384,
-      "Algorithm": "Ethash",
-      "BlockHeight": 11521466
-    },
-    "ESN": {
-      "DAGsize": 2852121472,
-      "CoinName": "EtherSocial",
-      "Epoch": 212,
-      "Algorithm": "Ethash",
-      "BlockHeight": 6373579
-    },
-    "QI": {
-      "DAGsize": 1115684224,
-      "CoinName": null,
-      "Epoch": 5,
-      "Algorithm": null,
-      "BlockHeight": 162829
-    },
-    "UBQ": {
-      "DAGsize": 1879048064,
-      "CoinName": "UBIQ",
-      "Epoch": 96,
-      "Algorithm": "UbqHash",
-      "BlockHeight": 2893868
-    },
-    "ETHF": {
-      "DAGsize": 5469367936,
-      "CoinName": "Ethereumfair",
-      "Epoch": 524,
-      "Algorithm": "Ethash",
-      "BlockHeight": 15729918
-    },
-    "MOAC": {
-      "DAGsize": 3925868416,
-      "CoinName": "Moac",
-      "Epoch": 340,
-      "Algorithm": "Ethash",
-      "BlockHeight": 10200619
-    },
-    "TSF": {
-      "DAGsize": 1795157888,
-      "CoinName": "TransactionServiceFee",
-      "Epoch": 86,
-      "Algorithm": "Ethash",
-      "BlockHeight": 2593787
-    },
-    "ETHW": {
-      "DAGsize": 5469367936,
-      "CoinName": "EthereumPOW",
-      "Epoch": 524,
-      "Algorithm": "Ethash",
-      "BlockHeight": 15730002
-    },
-    "FIRO": {
-      "DAGsize": 4655675264,
-      "CoinName": "Firo",
-      "Epoch": 427,
-      "Algorithm": "FiroPoW",
-      "BlockHeight": 555203
-    },
-    "AKA": {
-      "DAGsize": 3321887104,
-      "CoinName": "Akroma",
-      "Epoch": 268,
-      "Algorithm": "Ethash",
-      "BlockHeight": 8043019
-    }
-  },
   "Algorithm": {
+    "EthashLowMem": {
+      "DAGsize": 1795157888,
+      "Epoch": 86,
+      "CoinName": "TransactionServiceFee",
+      "BlockHeight": 2596035
+    },
     "UbqHash": {
       "DAGsize": 1879048064.0,
       "Epoch": 96.0,
-      "BlockHeight": 2893868.0
-    },
-    "Octopus": {
-      "DAGsize": 6090127616.0,
-      "Epoch": 107.0,
-      "BlockHeight": 56439169.0
-    },
-    "KawPoW": {
-      "DAGsize": 3858755968.0,
-      "Epoch": 332.0,
-      "BlockHeight": 2494918.0
-    },
-    "Ethash": {
-      "DAGsize": 5469367936.0,
-      "Epoch": 524.0,
-      "BlockHeight": 15730002.0
-    },
-    "EtcHash": {
-      "DAGsize": 3321887104.0,
-      "Epoch": 268.0,
-      "BlockHeight": 16138134.0
+      "BlockHeight": 2898035.0
     },
     "FiroPoW": {
       "DAGsize": 4655675264.0,
       "Epoch": 427.0,
-      "BlockHeight": 555203.0
+      "BlockHeight": 555812.0
     },
-    "EthashLowMem": {
-      "DAGsize": 1795157888,
-      "Epoch": 86,
-      "BlockHeight": 2593787,
-      "CoinName": "TransactionServiceFee"
+    "Octopus": {
+      "DAGsize": 6090127616.0,
+      "Epoch": 107.0,
+      "BlockHeight": 56519109.0
+    },
+    "KawPoW": {
+      "DAGsize": 3858755968.0,
+      "Epoch": 332.0,
+      "BlockHeight": 2496493.0
+    },
+    "EtcHash": {
+      "DAGsize": 3330273152.0,
+      "Epoch": 269.0,
+      "BlockHeight": 16145482.0
+    },
+    "Ethash": {
+      "DAGsize": 5469367936.0,
+      "Epoch": 524.0,
+      "BlockHeight": 15737245.0
     },
     "Autolykos2": {
       "DAGsize": 2655136050.0,
-      "Epoch": 425.0,
-      "BlockHeight": 852585.0
+      "Epoch": 426.0,
+      "BlockHeight": 853375.0
+    }
+  },
+  "Currency": {
+    "PGC": {
+      "DAGsize": 2457861248,
+      "Algorithm": "Ethash",
+      "Epoch": 165,
+      "CoinName": "PegasCoin",
+      "BlockHeight": 4968886
+    },
+    "QKC": {
+      "DAGsize": 4177525888,
+      "Algorithm": "Ethash",
+      "Epoch": 370,
+      "CoinName": "QuarkChain",
+      "BlockHeight": 11129347
+    },
+    "DAE": {
+      "DAGsize": 1149232768,
+      "Algorithm": null,
+      "Epoch": 9,
+      "CoinName": null,
+      "BlockHeight": 298774
+    },
+    "ETHO": {
+      "DAGsize": 3934256512,
+      "Algorithm": "Ethash",
+      "Epoch": 341,
+      "CoinName": "Ether1",
+      "BlockHeight": 10236032
+    },
+    "CFX": {
+      "DAGsize": 6090127616,
+      "Algorithm": "Octopus",
+      "Epoch": 107,
+      "CoinName": "Conflux",
+      "BlockHeight": 56519109
+    },
+    "NEOX": {
+      "DAGsize": 1132461952,
+      "Algorithm": "KawPoW",
+      "Epoch": 7,
+      "CoinName": "Neoxa",
+      "BlockHeight": 214909
+    },
+    "UBQ": {
+      "DAGsize": 1879048064,
+      "Algorithm": "UbqHash",
+      "Epoch": 96,
+      "CoinName": "UBIQ",
+      "BlockHeight": 2898035
+    },
+    "EXP": {
+      "DAGsize": 2994731392,
+      "Algorithm": "Ethash",
+      "Epoch": 229,
+      "CoinName": "Expanse",
+      "BlockHeight": 6881745
+    },
+    "ESN": {
+      "DAGsize": 2852121472,
+      "Algorithm": "Ethash",
+      "Epoch": 212,
+      "CoinName": "EtherSocial",
+      "BlockHeight": 6373871
+    },
+    "ETHW": {
+      "DAGsize": 5469367936,
+      "Algorithm": "Ethash",
+      "Epoch": 524,
+      "CoinName": "EthereumPOW",
+      "BlockHeight": 15737245
+    },
+    "MOAC": {
+      "DAGsize": 3925868416,
+      "Algorithm": "Ethash",
+      "Epoch": 340,
+      "CoinName": "Moac",
+      "BlockHeight": 10207724
+    },
+    "FIRO": {
+      "DAGsize": 4655675264,
+      "Algorithm": "FiroPoW",
+      "Epoch": 427,
+      "CoinName": "Firo",
+      "BlockHeight": 555812
+    },
+    "NILU": {
+      "DAGsize": 2801794432,
+      "Algorithm": "Ethash",
+      "Epoch": 206,
+      "CoinName": "Nilu",
+      "BlockHeight": 6201534
+    },
+    "QI": {
+      "DAGsize": 1115684224,
+      "Algorithm": null,
+      "Epoch": 5,
+      "CoinName": null,
+      "BlockHeight": 169767
+    },
+    "REOSC": {
+      "DAGsize": 3061837696,
+      "BlockHeight": 7114083,
+      "Algorithm": "Ethash",
+      "CoinName": "REOSC Ecosystem",
+      "Epoch": 237
+    },
+    "ATH": {
+      "DAGsize": 2785017728,
+      "Algorithm": "Ethash",
+      "Epoch": 204,
+      "CoinName": "Atheios",
+      "BlockHeight": 6129848
+    },
+    "ERG": {
+      "DAGsize": 2655136050,
+      "Algorithm": "Autolykos2",
+      "Epoch": 426,
+      "CoinName": "Ergo",
+      "BlockHeight": 853375
+    },
+    "ERE": {
+      "DAGsize": 1207958912,
+      "BlockHeight": 484111,
+      "Algorithm": "Ethash",
+      "CoinName": "Ethercore",
+      "Epoch": 16
+    },
+    "ETC": {
+      "DAGsize": 3330273152,
+      "Algorithm": "EtcHash",
+      "Epoch": 269,
+      "CoinName": "Ethereum Classic",
+      "BlockHeight": 16145482
+    },
+    "TSF": {
+      "DAGsize": 1795157888,
+      "Algorithm": "Ethash",
+      "BlockHeight": 2596035,
+      "Epoch": 86,
+      "CoinName": "TransactionServiceFee"
+    },
+    "ETHF": {
+      "DAGsize": 5469367936,
+      "Algorithm": "Ethash",
+      "Epoch": 524,
+      "CoinName": "Ethereumfair",
+      "BlockHeight": 15737150
+    },
+    "NUKO": {
+      "DAGsize": 3380608384,
+      "Algorithm": "Ethash",
+      "Epoch": 275,
+      "CoinName": "Nekonium",
+      "BlockHeight": 8273227
+    },
+    "AKA": {
+      "DAGsize": 3321887104,
+      "Algorithm": "Ethash",
+      "Epoch": 268,
+      "CoinName": "Akroma",
+      "BlockHeight": 8049549
+    },
+    "DBIX": {
+      "DAGsize": 1551892096,
+      "BlockHeight": 1728025,
+      "Algorithm": "Ethash",
+      "CoinName": "DubaiCoin",
+      "Epoch": 57
+    },
+    "CLO": {
+      "DAGsize": 4127194496,
+      "Algorithm": "Ethash",
+      "Epoch": 364,
+      "CoinName": "Callisto",
+      "BlockHeight": 10925002
+    },
+    "ETP": {
+      "DAGsize": 3087003776,
+      "Algorithm": "Ethash",
+      "Epoch": 240,
+      "CoinName": "Metaverse",
+      "BlockHeight": 7221259
+    },
+    "MEWC": {
+      "DAGsize": 1082130304,
+      "Algorithm": "KawPoW",
+      "Epoch": 1,
+      "CoinName": "MeowCoin",
+      "BlockHeight": 57376
+    },
+    "RVN": {
+      "DAGsize": 3858755968,
+      "Algorithm": "KawPoW",
+      "Epoch": 332,
+      "CoinName": "RavenCoin",
+      "BlockHeight": 2496493
+    },
+    "*": {
+      "DAGsize": 6090127616,
+      "Epoch": 524,
+      "CoinName": "*",
+      "BlockHeight": 56519109
+    },
+    "EGEM": {
+      "DAGsize": 4294962304,
+      "Algorithm": "Ethash",
+      "Epoch": 384,
+      "CoinName": "EtherGem",
+      "BlockHeight": 11528350
     }
   },
   "Updated": {
-    "https://whattomine.com/coins.json": "2022-10-14T13:39:05.8519932Z",
-    "https://minerstat.com/dag-size-calculator": "2022-10-14T13:39:06.1479553Z",
-    "https://prohashing.com/api/v1/currencies": "2022-10-14T13:39:07.2660264Z"
+    "https://whattomine.com/coins.json": "2022-10-15T16:22:21.0284371Z",
+    "https://minerstat.com/dag-size-calculator": "2022-10-15T16:22:21.2800047Z",
+    "https://prohashing.com/api/v1/currencies": "2022-10-15T16:22:22.449554Z"
   }
 }

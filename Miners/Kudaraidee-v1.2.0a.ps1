@@ -9,17 +9,17 @@ $DeviceEnumerator = @{ AMD = "Type_Index"; NVIDIA = "Type_Vendor_Index" }
 
 # Algorithm parameter values are case sensitive!
 $Algorithms = [PSCustomObject[]]@( 
-    [PSCustomObject]@{ Algorithm = @("Argon2d250");   Type = "AMD"; MinMemGB = 2; Blocksize = 250;   MinerSet = 1; WarmupTimes = @(60, 45); ExcludePool = @(); Arguments = " --algo argon2d250 --use-gpu OpenCL" }
-    [PSCustomObject]@{ Algorithm = @("Argon2d8192");  Type = "AMD"; MinMemGB = 2; Blocksize = 8192;  MinerSet = 0; WarmupTimes = @(60, 45); ExcludePool = @(); Arguments = " --algo argon2d8192 --use-gpu OpenCL" }
-    [PSCustomObject]@{ Algorithm = @("Argon2d500");   Type = "AMD"; MinMemGB = 2; Blocksize = 500;   MinerSet = 0; WarmupTimes = @(60, 45); ExcludePool = @(); Arguments = " --algo argon2d500 --use-gpu OpenCL" }
-    [PSCustomObject]@{ Algorithm = @("Argon2d4096");  Type = "AMD"; MinMemGB = 2; Blocksize = 4096;  MinerSet = 0; WarmupTimes = @(60, 45); ExcludePool = @(); Arguments = " --algo argon2d4096 --use-gpu OpenCL" }
-    [PSCustomObject]@{ Algorithm = @("Argon2d16000"); Type = "AMD"; MinMemGB = 2; Blocksize = 16000; MinerSet = 0; WarmupTimes = @(60, 45); ExcludePool = @(); Arguments = " --algo argon2d16000 --use-gpu OpenCL" }
+    [PSCustomObject]@{ Algorithm = "Argon2d250";   Type = "AMD"; MinMemGB = 2; Blocksize = 250;   MinerSet = 1; WarmupTimes = @(60, 45); ExcludePool = @(); Arguments = " --algo argon2d250 --use-gpu OpenCL" }
+    [PSCustomObject]@{ Algorithm = "Argon2d8192";  Type = "AMD"; MinMemGB = 2; Blocksize = 8192;  MinerSet = 0; WarmupTimes = @(60, 45); ExcludePool = @(); Arguments = " --algo argon2d8192 --use-gpu OpenCL" }
+    [PSCustomObject]@{ Algorithm = "Argon2d500";   Type = "AMD"; MinMemGB = 2; Blocksize = 500;   MinerSet = 0; WarmupTimes = @(60, 45); ExcludePool = @(); Arguments = " --algo argon2d500 --use-gpu OpenCL" }
+    [PSCustomObject]@{ Algorithm = "Argon2d4096";  Type = "AMD"; MinMemGB = 2; Blocksize = 4096;  MinerSet = 0; WarmupTimes = @(60, 45); ExcludePool = @(); Arguments = " --algo argon2d4096 --use-gpu OpenCL" }
+    [PSCustomObject]@{ Algorithm = "Argon2d16000"; Type = "AMD"; MinMemGB = 2; Blocksize = 16000; MinerSet = 0; WarmupTimes = @(60, 45); ExcludePool = @(); Arguments = " --algo argon2d16000 --use-gpu OpenCL" }
 
-    [PSCustomObject]@{ Algorithm = @("Argon2d250");   Type = "NVIDIA"; MinMemGB = 2; Blocksize = 250;   MinerSet = 0; WarmupTimes = @(60, 60); ExcludePool = @(); Arguments = " --algo argon2d250 --use-gpu CUDA" }
-    [PSCustomObject]@{ Algorithm = @("Argon2d8192");  Type = "NVIDIA"; MinMemGB = 2; Blocksize = 8192;  MinerSet = 0; WarmupTimes = @(60, 60); ExcludePool = @(); Arguments = " --algo argon2d8192 --use-gpu CUDA" }
-    [PSCustomObject]@{ Algorithm = @("Argon2d500");   Type = "NVIDIA"; MinMemGB = 2; Blocksize = 500;   MinerSet = 0; WarmupTimes = @(60, 60); ExcludePool = @(); Arguments = " --algo argon2d500 --use-gpu CUDA" }
-    [PSCustomObject]@{ Algorithm = @("Argon2d4096");  Type = "NVIDIA"; MinMemGB = 2; Blocksize = 4096;  MinerSet = 0; WarmupTimes = @(60, 60); ExcludePool = @(); Arguments = " --algo argon2d4096 --use-gpu CUDA" }
-    [PSCustomObject]@{ Algorithm = @("Argon2d16000"); Type = "NVIDIA"; MinMemGB = 2; Blocksize = 16000; MinerSet = 0; WarmupTimes = @(60, 60); ExcludePool = @(); Arguments = " --algo argon2d16000 --use-gpu CUDA" }
+    [PSCustomObject]@{ Algorithm = "Argon2d250";   Type = "NVIDIA"; MinMemGB = 2; Blocksize = 250;   MinerSet = 0; WarmupTimes = @(60, 60); ExcludePool = @(); Arguments = " --algo argon2d250 --use-gpu CUDA" }
+    [PSCustomObject]@{ Algorithm = "Argon2d8192";  Type = "NVIDIA"; MinMemGB = 2; Blocksize = 8192;  MinerSet = 0; WarmupTimes = @(60, 60); ExcludePool = @(); Arguments = " --algo argon2d8192 --use-gpu CUDA" }
+    [PSCustomObject]@{ Algorithm = "Argon2d500";   Type = "NVIDIA"; MinMemGB = 2; Blocksize = 500;   MinerSet = 0; WarmupTimes = @(60, 60); ExcludePool = @(); Arguments = " --algo argon2d500 --use-gpu CUDA" }
+    [PSCustomObject]@{ Algorithm = "Argon2d4096";  Type = "NVIDIA"; MinMemGB = 2; Blocksize = 4096;  MinerSet = 0; WarmupTimes = @(60, 60); ExcludePool = @(); Arguments = " --algo argon2d4096 --use-gpu CUDA" }
+    [PSCustomObject]@{ Algorithm = "Argon2d16000"; Type = "NVIDIA"; MinMemGB = 2; Blocksize = 16000; MinerSet = 0; WarmupTimes = @(60, 60); ExcludePool = @(); Arguments = " --algo argon2d16000 --use-gpu CUDA" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).Host } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] }) { 

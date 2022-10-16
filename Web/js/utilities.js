@@ -113,7 +113,8 @@ function formatTimeSpan(timespan) {
 function formatTimeSince(value) {
   var value = (new Date).getTime() - (new Date(value)).getTime();
   if (value == 0) return '-';
-  return formatTime(value / 1000).trim() + ' ago';
+  if (value < 1000) return 'just now';
+  return formatTime(value / 1000) + ' ago';
 }
 
 function formatTime(seconds) {

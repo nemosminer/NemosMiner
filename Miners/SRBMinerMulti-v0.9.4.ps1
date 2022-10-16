@@ -46,10 +46,6 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Yescrypt";          Fee = @(0.0085); MinMemGB = 1;                                     MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(90, 30); Arguments = " --algorithm yescrypt" }
 )
 
-If ($MinerPools[0].CryptonightUpx.BaseName -ne "ZergPool" -or ($MinerPools[0].CryptonightUpx.PoolPort -and -not $MinerPools[0].CryptonightUpx.PoolPort[1])) { # SSL not working @ ZergPool, https://github.com/doktor83/SRBMiner-Multi/issues/135
-    $Algorithms += [PSCustomObject]@{ Algorithm = @("CryptonightUpx"); Type = "AMD"; Fee = @(0.0085); MinMemGB = 1; MemReserveGB = 0; MinerSet = 1; WarmupTimes = @(60, 30); ExcludePool = @(); Arguments = " --algorithm cryptonight_upx" }
-}
-
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 
 
     $Devices | Select-Object Model -Unique | ForEach-Object { 

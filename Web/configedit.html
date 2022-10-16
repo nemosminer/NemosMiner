@@ -382,6 +382,12 @@
                     <div style="padding-top: 0.5rem" title="Show the 'User' column in the text window&#10;&#10;Can be toggled by pressing 'u' in the text window while waiting for the next cycle">
                       <input type="checkbox" class="toggle-switch" id="ShowUser" name="ShowUser"> Show user column
                     </div>
+                    <div style="padding-top: 0.5rem" title="Show the 'Pool' column in the text window&#10;&#10;Can be toggled by pressing 'p' in the text window while waiting for the next cycle">
+                      <input type="checkbox" class="toggle-switch" id="ShowPool" name="ShowPool"> Show pool column
+                    </div>
+                    <div style="padding-top: 0.5rem" title="Show the 'Pool fee' column in the text window&#10;&#10;Can be toggled by pressing 'f' in the text window while waiting for the next cycle">
+                      <input type="checkbox" class="toggle-switch" id="ShowPoolFee" name="ShowPoolFee"> Show pool fee column
+                    </div>
                     <br>
 
                     <div title="When disabled only the best 5 miners per device are shown&#10;except while not benchmarking or measuring power usage&#10;&#10;Can be toggled by pressing 'v' in the text window while waiting for the next cycle">
@@ -451,6 +457,8 @@
             var regions = [];
 
             $(document).ready(function () {
+              document.body.style.cursor = 'wait';
+
               //Edit config file
               $('#btn-editconfig').click(function () {
                 document.getElementById('btn-editconfig').disabled = true;
@@ -738,7 +746,7 @@
               else document.getElementById('MinerSet').value = 1;
               if (config.ExcludeMinerName) document.getElementById('ExcludeMinerName').value = (config.ExcludeMinerName).toString().trim();
               if (config.Algorithm) document.getElementById('Algorithm').value = (config.Algorithm).toString().trim();
-              //Load default Algorithm list
+              // Load default Algorithm list
               $('#DefaultAlgorithm').click(function () {
                 $.ajax({
                   async: false,
@@ -823,7 +831,6 @@
                 if (document.getElementById('BalancesTrackerPollInterval').value > 1 && document.getElementById('BalancesTrackerPollInterval').value < 9) document.getElementById('BalancesTrackerPollInterval').value = 0;
                 document.getElementById('BalancesTrackerLog').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
                 document.getElementById('BalancesKeepAlive').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
-                document.getElementById('ShowPoolBalances').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
                 document.getElementById('BalancesShowSums').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
                 document.getElementById('BalancesShowAverages').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
                 document.getElementById('BalancesShowInAllCurrencies').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
@@ -847,9 +854,12 @@
               if (config.ShowAccuracy) document.getElementById('ShowAccuracy').checked = true;
               if (config.ShowCoinName) document.getElementById('ShowCoinName').checked = true;
               if (config.ShowCurrency) document.getElementById('ShowCurrency').checked = true;
+              if (config.ShowPool) document.getElementById('ShowPool').checked = true;
+              if (config.ShowPoolFee) document.getElementById('ShowPoolFee').checked = true;
               if (config.ShowUser) document.getElementById('ShowUser').checked = true;
               if (config.ShowAllMiners) document.getElementById('ShowAllMiners').checked = true;
               if (config.ShowPoolBalances) document.getElementById('ShowPoolBalances').checked = true;
+              document.getElementById('ShowPoolBalances').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
 
               // CalculatePowerCost click
               $(document.getElementById('CalculatePowerCost')).click(function (event) {
@@ -893,6 +903,8 @@
               if (config.AutoUpdate) document.getElementById('AutoUpdate').checked = true;
               if (config.ShowChangeLog) document.getElementById('ShowChangeLog').checked = true;
               if (config.BackupOnAutoUpdate) document.getElementById('BackupOnAutoUpdate').checked = true;
+
+              document.body.style.cursor = 'default';
 
               // Error when reading configuration
               if (config && configfile && poolvariants && regions && devices) {
@@ -1288,6 +1300,8 @@
                   config.ShowAccuracy =  document.getElementById('ShowAccuracy').checked;
                   config.ShowCoinName =  document.getElementById('ShowCoinName').checked;
                   config.ShowCurrency =  document.getElementById('ShowCurrency').checked;
+                  config.ShowPool = document.getElementById('ShowPool').checked;
+                  config.ShowPoolFee = document.getElementById('ShowPoolFee').checked;
                   config.ShowUser =  document.getElementById('ShowUser').checked;
                   config.ShowPoolBalances = document.getElementById('ShowPoolBalances').checked;
                   config.ShowAllMiners = document.getElementById('ShowAllMiners').checked;
