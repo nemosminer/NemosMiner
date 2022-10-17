@@ -652,6 +652,80 @@ Function Update-TabControl {
             }
             Else { $LabelRunningMiners.Text = "Waiting for data..." }
         }
+        "All Pools" { 
+            If ($Variables.Pools) { 
+                $PoolsDGV.DataSource = $Variables.Pools | Where-Object Available -EQ $true | Select-Object @(
+                    @{ Name = "Algorithm"; Expression = { $_.Algorithm } }, 
+                    @{ Name = "CoinName"; Expression = { $_.CoinName } }, 
+                    @{ Name = "Currency"; Expression = { $_.Currency } }, 
+                    @{ Name = "BTC/GH/Day`n(Biased)"; Expression = { "{0:f6}" -f $_.Price_Bias / 1GB } }, 
+                    @{ Name = "Accuracy"; Expression = { "{0:p2}" -f $_.Accuracy } }, 
+                    @{ Name = "Pool Name"; Expression = { $_.Name } }, 
+                    @{ Name = "Host"; Expression = { $_.Host } }, 
+                    @{ Name = "Port"; Expression = { $_.Port } }, 
+                    @{ Name = "PortSSL"; Expression = { $_.PortSSL } }, 
+                    @{ Name = "Earnings`nAdjustment`nFactor"; Expression = { $_.EarningsAdjustmentFactor } }, 
+                    @{ Name = "Fee"; Expression = { "{0:p2}" -f $_.Fee } }
+                ) | Sort-Object Algorithm | Out-DataTable
+
+                If ($PoolsDGV.Columns) { 
+                    $PoolsDGV.Columns[0].FillWeight = 100
+                    $PoolsDGV.Columns[1].FillWeight = 90
+                    $PoolsDGV.Columns[2].FillWeight = 60
+                    $PoolsDGV.Columns[3].FillWeight = 90; $PoolsDGV.Columns[3].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[3].HeaderCell.Style.Alignment = "MiddleRight"
+                    $PoolsDGV.Columns[4].FillWeight = 60; $PoolsDGV.Columns[4].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[4].HeaderCell.Style.Alignment = "MiddleRight"
+                    $PoolsDGV.Columns[5].FillWeight = 100
+                    $PoolsDGV.Columns[6].FillWeight = 200
+                    $PoolsDGV.Columns[7].FillWeight = 60; $PoolsDGV.Columns[7].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[7].HeaderCell.Style.Alignment = "MiddleRight"
+                    $PoolsDGV.Columns[8].FillWeight = 60; $PoolsDGV.Columns[8].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[8].HeaderCell.Style.Alignment = "MiddleRight"
+                    $PoolsDGV.Columns[9].FillWeight = 60; $PoolsDGV.Columns[9].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[9].HeaderCell.Style.Alignment = "MiddleRight"
+                    $PoolsDGV.Columns[10].FillWeight = 60; $PoolsDGV.Columns[10].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[10].HeaderCell.Style.Alignment = "MiddleRight"
+                }
+
+                $PoolsDGV.ClearSelection()
+
+                $LabelPools.Text = "Pool data read from stats - Updated $((Get-Date).ToString())"
+            }
+            Else { $LabelPools.Text = "Waiting for data..." }
+        }
+        "All Miners" { 
+            If ($Variables.Miners) { 
+                $SortBy = If ($Variables.CalculatePowerCost -and -not $Config.IgnorePowerCost) { "Profit" } Else {"Earning" }
+                $MinersDGV.DataSource = $Variables.Miners | Where-Object Available -EQ $true | Select-Object @(
+                    @{ Name = "Miner"; Expression = { $_.Name } }, 
+                    @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join '; ' } }, 
+                    @{ Name = "Earning $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }, 
+                    @{ Name = "Power cost $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.PowerCost)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Powercost * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }, 
+                    @{ Name = "Profit $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }, 
+                    @{ Name = "Power usage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else { "$($_.PowerUsage.ToString("N2")) W" } } }, 
+                    @{ Name = "Algorithm(s)"; Expression = { $_.Algorithms -join ' & ' } }, 
+                    @{ Name = "Pool(s)"; Expression = { ($_.Workers.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' } }, 
+                    @{ Name = "Hashrate(s)"; Expression = { (($_.Workers.Hashrate | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "Benchmarking" } }) -join ' & ') -replace '\s+', ' ' } }
+                ) | Sort-Object "$SortBy $($Config.Currency)/day" -Descending | Out-DataTable
+                Remove-Variable SortBy
+
+                If ($MinersDGV.Columns) { 
+                    $MinersDGV.Columns[0].FillWeight = 200
+                    $MinersDGV.Columns[1].FillWeight = 80
+                    $MinersDGV.Columns[2].FillWeight = 55; $MinersDGV.Columns[2].DefaultCellStyle.Alignment = "MiddleRight"; $MinersDGV.Columns[2].HeaderCell.Style.Alignment = "MiddleRight"
+                    $MinersDGV.Columns[3].FillWeight = 55; $MinersDGV.Columns[3].DefaultCellStyle.Alignment = "MiddleRight"; $MinersDGV.Columns[3].HeaderCell.Style.Alignment = "MiddleRight"
+                    $MinersDGV.Columns[4].FillWeight = 55; $MinersDGV.Columns[4].DefaultCellStyle.Alignment = "MiddleRight"; $MinersDGV.Columns[4].HeaderCell.Style.Alignment = "MiddleRight"
+                    $MinersDGV.Columns[5].FillWeight = 55; $MinersDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $MinersDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"
+                    $MinersDGV.Columns[6].FillWeight = 90
+                    $MinersDGV.Columns[7].FillWeight = 125
+                    $MinersDGV.Columns[8].FillWeight = 80; $MinersDGV.Columns[8].DefaultCellStyle.Alignment = "MiddleRight"; $MinersDGV.Columns[8].HeaderCell.Style.Alignment = "MiddleRight"
+                }
+
+                $MinersDGV.Columns[3].Visible = $Variables.CalculatePowerCost
+                $MinersDGV.Columns[4].Visible = $Variables.CalculatePowerCost
+                $MinersDGV.Columns[5].Visible = $Variables.CalculatePowerCost
+
+                $MinersDGV.ClearSelection()
+
+                $LabelMiners.Text = "Miner data read from stats - Updated $((Get-Date).ToString())"
+            }
+            Else { $LabelMiners.Text = "Waiting for data..." }
+        }
         "Earnings" { 
 
             Function Get-NextColor { 
@@ -847,44 +921,6 @@ Function Update-TabControl {
             }
             Else { $LabelWorkers.Text = "Worker Status - no workers" }
         }
-        "Benchmarks" { 
-            If ($Variables.Miners) { 
-                $SortBy = If ($Variables.CalculatePowerCost -and -not $Config.IgnorePowerCost) { "Profit" } Else {"Earning" }
-                $BenchmarksDGV.DataSource = $Variables.Miners | Where-Object Available -EQ $true | Select-Object @(
-                    @{ Name = "Miner"; Expression = { $_.Name } }, 
-                    @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join '; ' } }, 
-                    @{ Name = "Earning $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }, 
-                    @{ Name = "Power cost $($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.PowerCost)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Powercost * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }, 
-                    @{ Name = "Profit $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }, 
-                    @{ Name = "Power usage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else { "$($_.PowerUsage.ToString("N2")) W" } } }, 
-                    @{ Name = "Algorithm(s)"; Expression = { $_.Algorithms -join ' & ' } }, 
-                    @{ Name = "Pool(s)"; Expression = { ($_.Workers.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' } }, 
-                    @{ Name = "Hashrate(s)"; Expression = { (($_.Workers.Hashrate | ForEach-Object { If (-not [Double]::IsNaN($_)) { "$($_ | ConvertTo-Hash)/s" } Else { "Benchmarking" } }) -join ' & ') -replace '\s+', ' ' } }
-                ) | Sort-Object "$SortBy $($Config.Currency)/day" -Descending | Out-DataTable
-                Remove-Variable SortBy
-
-                If ($BenchmarksDGV.Columns) { 
-                    $BenchmarksDGV.Columns[0].FillWeight = 200
-                    $BenchmarksDGV.Columns[1].FillWeight = 80
-                    $BenchmarksDGV.Columns[2].FillWeight = 55; $BenchmarksDGV.Columns[2].DefaultCellStyle.Alignment = "MiddleRight"; $BenchmarksDGV.Columns[2].HeaderCell.Style.Alignment = "MiddleRight"
-                    $BenchmarksDGV.Columns[3].FillWeight = 55; $BenchmarksDGV.Columns[3].DefaultCellStyle.Alignment = "MiddleRight"; $BenchmarksDGV.Columns[3].HeaderCell.Style.Alignment = "MiddleRight"
-                    $BenchmarksDGV.Columns[4].FillWeight = 55; $BenchmarksDGV.Columns[4].DefaultCellStyle.Alignment = "MiddleRight"; $BenchmarksDGV.Columns[4].HeaderCell.Style.Alignment = "MiddleRight"
-                    $BenchmarksDGV.Columns[5].FillWeight = 55; $BenchmarksDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $BenchmarksDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"
-                    $BenchmarksDGV.Columns[6].FillWeight = 90
-                    $BenchmarksDGV.Columns[7].FillWeight = 125
-                    $BenchmarksDGV.Columns[8].FillWeight = 80; $BenchmarksDGV.Columns[8].DefaultCellStyle.Alignment = "MiddleRight"; $BenchmarksDGV.Columns[8].HeaderCell.Style.Alignment = "MiddleRight"
-                }
-
-                $BenchmarksDGV.Columns[3].Visible = $Variables.CalculatePowerCost
-                $BenchmarksDGV.Columns[4].Visible = $Variables.CalculatePowerCost
-                $BenchmarksDGV.Columns[5].Visible = $Variables.CalculatePowerCost
-
-                $BenchmarksDGV.ClearSelection()
-
-                $LabelBenchmarks.Text = "Benchmark data read from stats - Updated $((Get-Date).ToString())"
-            }
-            Else { $LabelBenchmarks.Text = "Waiting for data..." }
-        }
     }
 
     MainForm_Resize
@@ -908,14 +944,16 @@ $MainFormControls = @()
 $Variables.StatusText = "Idle"
 $RunPage = New-Object System.Windows.Forms.TabPage
 $RunPage.Text = "Run"
+$PoolsPage = New-Object System.Windows.Forms.TabPage
+$PoolsPage.Text = "All Pools"
+$MinersPage = New-Object System.Windows.Forms.TabPage
+$MinersPage.Text = "All Miners"
 $EarningsPage = New-Object System.Windows.Forms.TabPage
 $EarningsPage.Text = "Earnings"
 $SwitchingPage = New-Object System.Windows.Forms.TabPage
 $SwitchingPage.Text = "Switching Log"
 $MonitoringPage = New-Object System.Windows.Forms.TabPage
 $MonitoringPage.Text = "Rig Monitor"
-$BenchmarksPage = New-Object System.Windows.Forms.TabPage
-$BenchmarksPage.Text = "Benchmarks"
 
 $LabelCopyright = New-Object System.Windows.Forms.LinkLabel
 $LabelCopyright.Size = New-Object System.Drawing.Size(350, 20)
@@ -941,7 +979,7 @@ $TabControl = New-Object System.Windows.Forms.TabControl
 $TabControl.DataBindings.DefaultDataSourceUpdateMode = 0
 $TabControl.Location = [System.Drawing.Point]::new(10, 91)
 $TabControl.Name = "TabControl"
-$TabControl.Controls.AddRange(@($RunPage, $EarningsPage, $SwitchingPage, $MonitoringPage, $BenchmarksPage))
+$TabControl.Controls.AddRange(@($RunPage, $PoolsPage, $MinersPage, $MonitoringPage, $EarningsPage, $SwitchingPage))
 $TabControl.Add_SelectedIndexChanged(
     { 
         Update-TabControl
@@ -1052,6 +1090,60 @@ $RunningMinersDGV.Add_DataSourceChanged(
     }
 )
 $RunPageControls += $RunningMinersDGV
+
+# Pools page Controls
+$PoolsPageControls = @()
+
+$LabelPools = New-Object System.Windows.Forms.Label
+$LabelPools.AutoSize = $false
+$LabelPools.Width = 450
+$LabelPools.Height = 18
+$LabelPools.Location = [System.Drawing.Point]::new(2, 4)
+$LabelPools.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$PoolsPageControls += $LabelPools
+
+$PoolsDGV = New-Object System.Windows.Forms.DataGridView
+$PoolsDGV.Location = [System.Drawing.Point]::new(2, 22)
+$PoolsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
+$PoolsDGV.AutoSizeColumnsMode = "Fill"
+$PoolsDGV.ColumnHeadersHeightSizeMode = "AutoSize"
+$PoolsDGV.RowHeadersVisible = $false
+$PoolsDGV.ColumnHeadersVisible = $true
+$PoolsDGV.AllowUserToAddRows = $false
+$PoolsDGV.AllowUserToOrderColumns = $true
+$PoolsDGV.AllowUserToResizeColumns = $true
+$PoolsDGV.AllowUserToResizeRows = $false
+$PoolsDGV.ReadOnly = $true
+$PoolsDGV.EnableHeadersVisualStyles = $false
+$PoolsDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
+$PoolsPageControls += $PoolsDGV
+
+# Miner page Controls
+$MinersPageControls = @()
+
+$LabelMiners = New-Object System.Windows.Forms.Label
+$LabelMiners.AutoSize = $false
+$LabelMiners.Width = 450
+$LabelMiners.Height = 18
+$LabelMiners.Location = [System.Drawing.Point]::new(2, 4)
+$LabelMiners.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$MinersPageControls += $LabelMiners
+
+$MinersDGV = New-Object System.Windows.Forms.DataGridView
+$MinersDGV.Location = [System.Drawing.Point]::new(2, 22)
+$MinersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
+$MinersDGV.AutoSizeColumnsMode = "Fill"
+$MinersDGV.ColumnHeadersHeightSizeMode = "AutoSize"
+$MinersDGV.RowHeadersVisible = $false
+$MinersDGV.ColumnHeadersVisible = $true
+$MinersDGV.AllowUserToAddRows = $false
+$MinersDGV.AllowUserToOrderColumns = $true
+$MinersDGV.AllowUserToResizeColumns = $true
+$MinersDGV.AllowUserToResizeRows = $false
+$MinersDGV.ReadOnly = $true
+$MinersDGV.EnableHeadersVisualStyles = $false
+$MinersDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
+$MinersPageControls += $MinersDGV
 
 # Earnings Page Controls
 $EarningsPageControls = @()
@@ -1173,33 +1265,6 @@ $SwitchingDGV.EnableHeadersVisualStyles = $false
 $SwitchingDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
 $SwitchingPageControls += $SwitchingDGV
 
-# Estimations Page Controls
-$BenchmarkingPageControls = @()
-
-$LabelBenchmarks = New-Object System.Windows.Forms.Label
-$LabelBenchmarks.AutoSize = $false
-$LabelBenchmarks.Width = 450
-$LabelBenchmarks.Height = 18
-$LabelBenchmarks.Location = [System.Drawing.Point]::new(2, 4)
-$LabelBenchmarks.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$BenchmarkingPageControls += $LabelBenchmarks
-
-$BenchmarksDGV = New-Object System.Windows.Forms.DataGridView
-$BenchmarksDGV.Location = [System.Drawing.Point]::new(2, 22)
-$BenchmarksDGV.DataBindings.DefaultDataSourceUpdateMode = 0
-$BenchmarksDGV.AutoSizeColumnsMode = "Fill"
-$BenchmarksDGV.ColumnHeadersHeightSizeMode = "AutoSize"
-$BenchmarksDGV.RowHeadersVisible = $false
-$BenchmarksDGV.ColumnHeadersVisible = $true
-$BenchmarksDGV.AllowUserToAddRows = $false
-$BenchmarksDGV.AllowUserToOrderColumns = $true
-$BenchmarksDGV.AllowUserToResizeColumns = $true
-$BenchmarksDGV.AllowUserToResizeRows = $false
-$BenchmarksDGV.ReadOnly = $true
-$BenchmarksDGV.EnableHeadersVisualStyles = $false
-$BenchmarksDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
-$BenchmarkingPageControls += $BenchmarksDGV
-
 # Monitoring Page Controls
 $MonitoringPageControls = @()
 
@@ -1263,9 +1328,10 @@ $ButtonStart.Add_Click(
 
 $MainForm.Controls.AddRange(@($MainFormControls))
 $RunPage.Controls.AddRange(@($RunPageControls))
+$PoolsPage.Controls.AddRange(@($PoolsPageControls))
+$MinersPage.Controls.AddRange(@($MinersPageControls))
 $EarningsPage.Controls.AddRange(@($EarningsPageControls))
 $SwitchingPage.Controls.AddRange(@($SwitchingPageControls))
-$BenchmarksPage.Controls.AddRange(@($BenchmarkingPageControls))
 $MonitoringPage.Controls.AddRange(@($MonitoringPageControls))
 
 Function MainForm_Resize { 
@@ -1279,7 +1345,7 @@ Function MainForm_Resize {
     $ButtonPause.Location = [System.Drawing.Point]::new($MainForm.Width - 225, 7)
     $ButtonStop.Location = [System.Drawing.Point]::new($MainForm.Width - 125, 7)
 
-    $EarningsSummary.Width = $Variables.LabelStatus.Width = $EditConfigLink.Width = $RunningMinersDGV.Width = $EarningsDGV.Width = $SwitchingDGV.Width = $WorkersDGV.Width = $BenchmarksDGV.Width = $TabControl.Width - 13
+    $EarningsSummary.Width = $Variables.LabelStatus.Width = $EditConfigLink.Width = $RunningMinersDGV.Width = $PoolsDGV.Width= $MinersDGV.Width = $EarningsDGV.Width = $SwitchingDGV.Width = $WorkersDGV.Width  = $TabControl.Width - 13
 
     $RunningMinersDGV.Height = $RunningMinersDGV.RowTemplate.Height * $Variables.EnabledDevices.Count + $RunningMinersDGV.ColumnHeadersHeight
     If ($RunningMinersDGV.Height -gt $TabControl.Height / 2) { 
@@ -1311,8 +1377,8 @@ Function MainForm_Resize {
     $LabelEarnings.Location = [System.Drawing.Point]::new(2, ($EarningsChart.Height -3))
     $EarningsDGV.Location = [System.Drawing.Point]::new(2, ($EarningsChart.Height + $LabelEarnings.Height))
 
-    $SwitchingDGV.Height = $BenchmarksDGV.Height = $TabControl.Height - 53
-    
+    $PoolsDGV.Height = $MinersDGV.Height = $SwitchingDGV.Height= $TabControl.Height - 53
+
     $EditConfigLink.Location = [System.Drawing.Point]::new(10, $MainForm.Height - 66)
     $EditConfigLink.Tag = If ($Variables.APIRunspace) { "WebGUI" } Else { "Notepad" }
     $EditConfigLink.BringToFront()
@@ -1472,33 +1538,33 @@ Function MainLoop {
                 "a" { 
                     $Variables.ShowAccuracy = -not $Variables.ShowAccuracy
                     Write-Host "'" -NoNewline; Write-Host "A" -ForegroundColor Cyan -NoNewline; Write-Host "ccuracy' column visibility set to " -NoNewline; If ($Variables.ShowAccuracy) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                    Start-Sleep -Seconds 1
+                    Start-Sleep -Seconds 2
                     $Variables.RefreshNeeded = $true
                 }
                 "b" { 
                     $Variables.ShowPoolBalances = -not $Variables.ShowPoolBalances
                     Write-Host "'Listing Pool " -NoNewline; Write-Host "B" -ForegroundColor Cyan -NoNewline; Write-Host "alances' set to " -NoNewline; If ($Variables.ShowPoolBalances) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                    Start-Sleep -Seconds 1
+                    Start-Sleep -Seconds 2
                     $Variables.RefreshNeeded = $true
                 }
                 "c" { 
                     If ($Variables.CalculatePowerCost) { 
                         $Variables.ShowPowerCost = -not $Variables.ShowPowerCost
                         Write-Host "'Power " -NoNewline; Write-Host "C" -ForegroundColor Cyan -NoNewline; Write-Host "ost' column visibility set to " -NoNewline; If ($Variables.ShowPowerCost) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                        Start-Sleep -Seconds 1
+                        Start-Sleep -Seconds 2
                         $Variables.RefreshNeeded = $true
                     }
                 }
                 "e" { 
                     $Variables.ShowEarning = -not $Variables.ShowEarning
                     Write-Host "'" -NoNewline; Write-Host "E" -ForegroundColor Cyan -NoNewline; Write-Host "arnings' column visibility set to " -NoNewline; If ($Variables.ShowEarning) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                    Start-Sleep -Seconds 1
+                    Start-Sleep -Seconds 2
                     $Variables.RefreshNeeded = $true
                 }
                 "f" { 
                     $Variables.ShowPoolFee = -not $Variables.ShowPoolFee
                     Write-Host "'Pool "-NoNewline; Write-Host "f" -ForegroundColor Cyan -NoNewline; Write-Host "ees' column visibility set to " -NoNewline; If ($Variables.ShowPoolFee) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                    Start-Sleep -Seconds 1
+                    Start-Sleep -Seconds 2
                     $Variables.RefreshNeeded = $true
                 }
                 "h" { 
@@ -1537,20 +1603,20 @@ Function MainLoop {
                 "m" { 
                     $Variables.ShowMinerFee = -not $Variables.ShowMinerFee
                     Write-Host "'" -NoNewline; Write-Host "M" -ForegroundColor Cyan -NoNewline; Write-Host "iner Fees' column visibility set to " -NoNewline; If ($Variables.ShowMinerFee) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                    Start-Sleep -Seconds 1
+                    Start-Sleep -Seconds 2
                     $Variables.RefreshNeeded = $true
                 }
                 "n" { 
                     $Variables.ShowCoinName = -not $Variables.ShowCoinName
                     Write-Host "'Coin" -NoNewline; Write-Host "N" -ForegroundColor Cyan -NoNewline; Write-Host "ame' column visibility set to " -NoNewline; If ($Variables.ShowCoinName) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                    Start-Sleep -Seconds 1
+                    Start-Sleep -Seconds 2
                     $Variables.RefreshNeeded = $true
                 }
                 "p" { 
                     If ($Variables.CalculatePowerCost) { 
                         $Variables.ShowProfitBias = -not $Variables.ShowProfitBias
                         Write-Host "'" -NoNewline; Write-Host "P" -ForegroundColor Cyan -NoNewline; Write-Host "ool name' column visibility set to " -NoNewline; If ($Variables.ShowPool) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                        Start-Sleep -Seconds 1
+                        Start-Sleep -Seconds 2
                         $Variables.RefreshNeeded = $true
                     }
                 }
@@ -1558,7 +1624,7 @@ Function MainLoop {
                     If ($Variables.CalculatePowerCost) { 
                         $Variables.ShowProfitBias = -not $Variables.ShowProfitBias
                         Write-Host "'P" -NoNewline; Write-Host "r" -ForegroundColor Cyan -NoNewline; Write-Host "ofit Bias' column visibility set to " -NoNewline; If ($Variables.ShowProfitBias) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                        Start-Sleep -Seconds 1
+                        Start-Sleep -Seconds 2
                         $Variables.RefreshNeeded = $true
                     }
                 }
@@ -1572,34 +1638,34 @@ Function MainLoop {
                     If ($Variables.CalculatePowerCost) { 
                         $Variables.ShowProfit = -not $Variables.ShowProfit
                         Write-Host "'" -NoNewline; Write-Host "P" -ForegroundColor Cyan -NoNewline; Write-Host "rofit' column visibility set to " -NoNewline; If ($Variables.ShowProfit) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                        Start-Sleep -Seconds 1
+                        Start-Sleep -Seconds 2
                         $Variables.RefreshNeeded = $true
                     }
                 }
                 "u" { 
                     $Variables.ShowUser = -not $Variables.ShowUser
                     Write-Host "'" -NoNewline; Write-Host "U" -ForegroundColor Cyan -NoNewline; Write-Host "ser' column visibility set to " -NoNewline; If ($Variables.ShowUser) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                    Start-Sleep -Seconds 1
+                    Start-Sleep -Seconds 2
                     $Variables.RefreshNeeded = $true
                 }
                 "v" { 
                     $Variables.ShowAllMiners = -not $Variables.ShowAllMiners
                     Write-Host "'Listing All a" -NoNewline; Write-Host "v" -ForegroundColor Cyan -NoNewline; Write-Host "ailable miners' set to " -NoNewline; If ($Variables.ShowAllMiners) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                    Start-Sleep -Seconds 1
+                    Start-Sleep -Seconds 2
                     $Variables.RefreshNeeded = $true
                 }
                 "w" { 
                     If ($Variables.CalculatePowerCost) { 
                         $Variables.ShowPowerUsage = -not $Variables.ShowPowerUsage
                         Write-Host "'Po" -NoNewline; Write-Host "w" -ForegroundColor Cyan -NoNewline; Write-Host "er usage' column visibility set to " -NoNewline; If ($Config.CalculatePowerCost -and $Variables.ShowPowerUsage) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                        Start-Sleep -Seconds 1
+                        Start-Sleep -Seconds 2
                         $Variables.RefreshNeeded = $true
                     }
                 }
                 "y" { 
                     $Variables.ShowCurrency = -not $Variables.ShowCurrency
                     Write-Host "'Currenc" -NoNewline; Write-Host "y" -ForegroundColor Cyan -NoNewline; Write-Host "' column visibilityset to " -NoNewline; If ($Variables.ShowCurrency) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                    Start-Sleep -Seconds 1
+                    Start-Sleep -Seconds 2
                     $Variables.RefreshNeeded = $true
                 }
             }
@@ -1633,14 +1699,18 @@ Function MainLoop {
             $Variables.Balances.Values | ForEach-Object { 
                 If ($_.Currency -eq "BTC" -and $Config.UsemBTC) { $Currency = "mBTC"; $mBTCfactor = 1000 } Else { $Currency = $_.Currency; $mBTCfactor = 1 }
                 Write-Host "$($_.Pool -replace ' Internal$', ' (Internal Wallet)' -replace ' External$', ' (External Wallet)') [$($_.Wallet)]" -ForegroundColor Green
-                Write-Host ("Earnings last 1 hour:   {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth1 * $mBTCfactor), $Currency, ($_.Growth1 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
-                Write-Host ("Earnings last 6 hours:  {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth6 * $mBTCfactor), $Currency, ($_.Growth6 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
-                Write-Host ("Earnings last 24 hours: {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth24 * $mBTCfactor), $Currency, ($_.Growth24 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
-                Write-Host ("Earnings last 7 days:   {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth168 * $mBTCfactor), $Currency, ($_.Growth168 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
-                Write-Host ("Earnings last 30 days:  {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth720 * $mBTCfactor), $Currency, ($_.Growth720 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
-                Write-Host ("≈ average / hour:       {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.AvgHourlyGrowth * $mBTCfactor), $Currency, ($_.AvgHourlyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
-                Write-Host ("≈ average / day:        {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.AvgDailyGrowth * $mBTCfactor), $Currency, ($_.AvgDailyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
-                Write-Host ("≈ average / week:       {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.AvgWeeklyGrowth * $mBTCfactor), $Currency, ($_.AvgWeeklyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
+                If ($Config.BalancesShowSums) { 
+                    Write-Host ("Earnings last 1 hour:   {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth1 * $mBTCfactor), $Currency, ($_.Growth1 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
+                    Write-Host ("Earnings last 6 hours:  {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth6 * $mBTCfactor), $Currency, ($_.Growth6 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
+                    Write-Host ("Earnings last 24 hours: {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth24 * $mBTCfactor), $Currency, ($_.Growth24 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
+                    Write-Host ("Earnings last 7 days:   {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth168 * $mBTCfactor), $Currency, ($_.Growth168 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
+                    Write-Host ("Earnings last 30 days:  {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth720 * $mBTCfactor), $Currency, ($_.Growth720 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
+                }
+                If ($Config.BalancesShowAverages) { 
+                    Write-Host ("≈ average / hour:       {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.AvgHourlyGrowth * $mBTCfactor), $Currency, ($_.AvgHourlyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
+                    Write-Host ("≈ average / day:        {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.AvgDailyGrowth * $mBTCfactor), $Currency, ($_.AvgDailyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
+                    Write-Host ("≈ average / week:       {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.AvgWeeklyGrowth * $mBTCfactor), $Currency, ($_.AvgWeeklyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
+                }
                 Write-Host "Balance:                " -NoNewline; Write-Host ("{0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Balance * $mBTCfactor), $Currency, ($_.Balance * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency) -ForegroundColor Yellow
                 Write-Host "                        $(($_.Balance / $_.PayoutThreshold).ToString('P2')) of $(($_.PayoutThreshold * $mBTCfactor).ToString()) $($Currency) payment threshold"
                 Write-Host "Projected payment date: $(If ($_.ProjectedPayDate -is [DateTime]) { $_.ProjectedPayDate.ToString("G") } Else { $_.ProjectedPayDate })`n"
