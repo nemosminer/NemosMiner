@@ -16,7 +16,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Ethash";        Type = "AMD"; Fee = 0.01;  MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 45); ExcludePool = @();                ExcludeGPUArchitecture = @();        Arguments = " -algo Ethash" } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithm = "EthashLowMem";  Type = "AMD"; Fee = 0.01;  MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 45); ExcludePool = @();                ExcludeGPUArchitecture = @();        Arguments = " -algo Ethash" } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithm = "FiroPoW";       Type = "AMD"; Fee = 0.01;  MinMemGB = $MinerPools[0].FiroPoW.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 45); ExcludePool = @();                ExcludeGPUArchitecture = @();        Arguments = " -algo FiroPow" }
-    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02;  MinMemGB = $MinerPools[0].KawPoW.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(75, 30); ExcludePool = @("MiningPoolHub"); ExcludeGPUArchitecture = @();        Arguments = " -algo KawPow" } # TeamRedMiner-v0.10.4.1 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPoW";        Type = "AMD"; Fee = 0.02;  MinMemGB = $MinerPools[0].KawPoW.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(75, 30); ExcludePool = @("MiningPoolHub"); ExcludeGPUArchitecture = @();        Arguments = " -algo KawPow" } # TeamRedMiner-v0.10.5.1 is fastest
     [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01;  MinMemGB = $MinerPools[0].UbqHash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(75, 45); ExcludePool = @();                ExcludeGPUArchitecture = @();        Arguments = " -algo Ubqhash" } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithm = "VertHash";      Type = "AMD"; Fee = 0.01;  MinMemGB = 3;                                     MemReserveGB = 0;    MinerSet = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(55, 0);  ExcludePool = @();                ExcludeGPUArchitecture = @("RDNA1"); Arguments = " -algo Verthash" } # SSL @ ZergPool is not supported (https://github.com/nanopool/nanominer/issues/363)
 
@@ -45,11 +45,11 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Model -EQ $_.Model
-
         $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-        $Algorithms | Where-Object Type -EQ $_.Type | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePool } | Select-Object | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
+        $Algorithms | Where-Object Type -EQ $_.Type | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePool } | ForEach-Object { 
 
+            $Arguments = $_.Arguments
             $MinMemGB = $_.MinMemGB + $_.MemReserveGB
             $ExcludeGPUArchitecture = $_.ExcludeGPUArchitecture
 
@@ -59,18 +59,18 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
-                $_.Arguments += " -pool1 $($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1)"
-                If (($MinerPools[0].($_.Algorithm).DAGsizeGB -gt 0 -or $_.Algorithm -in @("FiroPoW")) -and $MinerPools[0].($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash")) { $_.Arguments += " -protocol stratum" }
-                ElseIf ($MinerPools[0].($_.Algorithm).BaseName -ne "NiceHash" -and $MinerPools[0].($_.Algorithm).PoolPorts[0] -and $MinerPools[0].($_.Algorithm).PoolPorts[1]) { $_.Arguments += " -pool2 $($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -First 1) -protocol JSON-RPC" } # Non-SSL fallback
-                $_.Arguments += " -wallet $($MinerPools[0].($_.Algorithm).User)"
-                $_.Arguments += " -rigName '$(If ($MinerPools[0].($_.Algorithm).WorkerName) { "$($MinerPools[0].($_.Algorithm).WorkerName)" })'"
-                $_.Arguments += " -rigPassword $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
-                If ($MinerPools[0].($_.Algorithm).WorkerName) { $_.Arguments += " -rigName $($MinerPools[0].($_.Algorithm).WorkerName)" }
-                $_.Arguments += " -mport 0 -webPort $MinerAPIPort -checkForUpdates false -noLog true -watchdog false"
-                $_.Arguments += " -devices $(($AvailableMiner_Devices | Sort-Object Name -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')"
+                $Arguments += " -pool1 $($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1)"
+                If (($MinerPools[0].($_.Algorithm).DAGsizeGB -gt 0 -or $_.Algorithm -in @("FiroPoW")) -and $MinerPools[0].($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash")) { $Arguments += " -protocol stratum" }
+                ElseIf ($MinerPools[0].($_.Algorithm).BaseName -ne "NiceHash" -and $MinerPools[0].($_.Algorithm).PoolPorts[0] -and $MinerPools[0].($_.Algorithm).PoolPorts[1]) { $Arguments += " -pool2 $($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -First 1) -protocol JSON-RPC" } # Non-SSL fallback
+                $Arguments += " -wallet $($MinerPools[0].($_.Algorithm).User)"
+                $Arguments += " -rigName '$(If ($MinerPools[0].($_.Algorithm).WorkerName) { "$($MinerPools[0].($_.Algorithm).WorkerName)" })'"
+                $Arguments += " -rigPassword $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
+                If ($MinerPools[0].($_.Algorithm).WorkerName) { $Arguments += " -rigName $($MinerPools[0].($_.Algorithm).WorkerName)" }
+                $Arguments += " -mport 0 -webPort $MinerAPIPort -checkForUpdates false -noLog true -watchdog false"
+                $Arguments += " -devices $(($AvailableMiner_Devices | Sort-Object Name -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')"
 
                 # Apply tuning parameters
-                If ($Variables.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
+                If ($Variables.UseMinerTweaks -eq $true) { $Arguments += $_.Tuning }
 
                 $PrerequisitePath = ""
                 $PrerequisiteURI = ""
@@ -93,7 +93,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     DeviceNames      = $AvailableMiner_Devices.Name
                     Type             = $AvailableMiner_Devices.Type
                     Path             = $Path
-                    Arguments        = ($_.Arguments -replace "\s+", " ").trim()
+                    Arguments        = ($Arguments -replace "\s+", " ").trim()
                     Algorithms       = @($_.Algorithm)
                     API              = "NanoMiner"
                     Port             = $MinerAPIPort

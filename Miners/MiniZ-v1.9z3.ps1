@@ -48,33 +48,33 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model
-
         $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-        $Algorithms | Where-Object Type -EQ $_.Type | Select-Object | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
+        $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
             $ExcludeGPUArchitecture = $_.ExcludeGPUArchitecture
 
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge ($_.MinMemGB + $_.MemReserveGB) | Where-Object { $_.Architecture -notin $ExcludeGPUArchitecture }) { 
 
+                $Arguments = $_.Arguments
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
                 # Get arguments for available miner devices
-                # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("amd", "dag-fix", "nvidia", "ocX", "par", "pers", "smart-pers") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
+                # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("amd", "dag-fix", "nvidia", "ocX", "par", "pers", "smart-pers") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $_.Arguments += " --url=$(If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "ssl://" } )$($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" })@$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1)"
-                $_.Arguments += " --pass=$($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
-                If ($MinerPools[0].($_.Algorithm).WorkerName) { $_.Arguments += " --worker=$($MinerPools[0].($_.Algorithm).WorkerName)" }
+                $Arguments += " --url=$(If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "ssl://" } )$($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" })@$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1)"
+                $Arguments += " --pass=$($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
+                If ($MinerPools[0].($_.Algorithm).WorkerName) { $Arguments += " --worker=$($MinerPools[0].($_.Algorithm).WorkerName)" }
 
                 # Apply tuning parameters
-                If ($Variables.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
+                If ($Variables.UseMinerTweaks -eq $true) { $Arguments += $_.Tuning }
 
                 [PSCustomObject]@{ 
                     Name            = $Miner_Name
                     DeviceNames    = $AvailableMiner_Devices.Name
                     Type            = $AvailableMiner_Devices.Type
                     Path            = $Path
-                    Arguments       = ("$($_.Arguments) --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int=10 --latency --all-shares --extra --tempunits=C --show-pers --fee-time=60 --telemetry $MinerAPIPort -cd $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:d2}' -f $_ }) -join ' ')" -replace "\s+", " ").trim()
+                    Arguments       = ("$($Arguments) --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int=10 --latency --all-shares --extra --tempunits=C --show-pers --fee-time=60 --telemetry $MinerAPIPort -cd $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:d2}' -f $_ }) -join ' ')" -replace "\s+", " ").trim()
                     Algorithms      = @($_.Algorithm)
                     API             = "MiniZ"
                     Port            = $MinerAPIPort

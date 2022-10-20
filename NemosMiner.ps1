@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.2.2.2
-Version date:   16 October 2022
+Version:        4.2.2.3
+Version date:   20 October 2022
 #>
 
 [CmdletBinding()]
@@ -289,7 +289,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.2.2.2"
+    Version      = [System.Version]"4.2.2.3"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -656,14 +656,14 @@ Function Update-TabControl {
             If ($Variables.Pools) { 
                 $PoolsDGV.DataSource = $Variables.Pools | Where-Object Available -EQ $true | Select-Object @(
                     @{ Name = "Algorithm"; Expression = { $_.Algorithm } }, 
-                    @{ Name = "CoinName"; Expression = { $_.CoinName } }, 
+                    @{ Name = "Coin Name"; Expression = { $_.CoinName } }, 
                     @{ Name = "Currency"; Expression = { $_.Currency } }, 
-                    @{ Name = "BTC/GH/Day`n(Biased)"; Expression = { "{0:f6}" -f $_.Price_Bias / 1GB } }, 
+                    @{ Name = "BTC/GH/Day`n(Biased)"; Expression = { "{0:n15}" -f $_.Price_Bias } }, 
                     @{ Name = "Accuracy"; Expression = { "{0:p2}" -f $_.Accuracy } }, 
                     @{ Name = "Pool Name"; Expression = { $_.Name } }, 
                     @{ Name = "Host"; Expression = { $_.Host } }, 
-                    @{ Name = "Port"; Expression = { $_.Port } }, 
-                    @{ Name = "PortSSL"; Expression = { $_.PortSSL } }, 
+                    @{ Name = "Port"; Expression = { "$(If ($_.Port) { $_.Port } Else { "-" })" } }, 
+                    @{ Name = "PortSSL"; Expression = { "$(If ($_.PortSSL) { $_.PortSSL } Else { "-" })" } }, 
                     @{ Name = "Earnings`nAdjustment`nFactor"; Expression = { $_.EarningsAdjustmentFactor } }, 
                     @{ Name = "Fee"; Expression = { "{0:p2}" -f $_.Fee } }
                 ) | Sort-Object Algorithm | Out-DataTable

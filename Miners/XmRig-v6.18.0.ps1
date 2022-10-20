@@ -117,25 +117,23 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model
-
         $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-        $Algorithms | Where-Object Type -EQ $_.Type | Select-Object | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
+        $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
             $MinMemGB = $_.MinMemGB
 
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or $_.MemoryGB -gt $MinMemGB }) { 
 
-                $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' ' -replace ' '
-
                 $Arguments = $_.Arguments
+                $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' ' -replace ' '
 
                 If ($_.Type -eq "CPU") { $Arguments += " --threads=$($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1)" }
                 Else { $Arguments += " --no-cpu --opencl --opencl-platform $($AvailableMiner_Devices.PlatformId) --opencl-devices=$(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" }
 
                 # Optionally disable dev fee mining, requires change in source code
                 # If ($Config.DisableMinerFee) { 
-                #     $_.Arguments += " --donate-level 0"
+                #     $Arguments += " --donate-level 0"
                 #     $_.Fee = 0
                 # }
 

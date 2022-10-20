@@ -15,7 +15,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "KawPoW";       Type = "AMD"; Fee = 0.02; MinMemGB = $MinerPools[0].KawPoW.DAGSizeGB;       MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinerSet = 1; WarmupTimes = @(45, 15); Arguments = " --algo kawpow --platform 2" } # XmRig-v6.17.0 is almost as fast but has no fee
  
     [PSCustomObject]@{ Algorithm = "BeamV3";       Type = "NVIDIA"; Fee = 0.02; MinMemGB = 3;                                     MemReserveGB = 0;    AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 0; Tuning = " -mt 1"; WarmupTimes = @(30, 0);  Arguments = " --algo beamv3 --platform 1" }
-    [PSCustomObject]@{ Algorithm = "Cuckoo29";     Type = "NVIDIA"; Fee = 0.02; MinMemGB = 5;                                     MemReserveGB = 0;    AdditionalWin10MemGB = 1; MinComputeCapability = 6.0; MinerSet = 1; Tuning = " -mt 1"; WarmupTimes = @(30, 0);  Arguments = " --algo cuckoo_ae --platform 1" } # GMiner-v3.09 is fastest
+    [PSCustomObject]@{ Algorithm = "Cuckoo29";     Type = "NVIDIA"; Fee = 0.02; MinMemGB = 5;                                     MemReserveGB = 0;    AdditionalWin10MemGB = 1; MinComputeCapability = 6.0; MinerSet = 1; Tuning = " -mt 1"; WarmupTimes = @(30, 0);  Arguments = " --algo cuckoo_ae --platform 1" } # GMiner-v3.10 is fastest
     [PSCustomObject]@{ Algorithm = "Autolykos2";   Type = "NVIDIA"; Fee = 0.02; MinMemGB = $MinerPools[0].Autolykos2.DAGSizeGB;   MemReserveGB = 0.42; AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 0; Tuning = " -mt 1"; WarmupTimes = @(30, 0);  Arguments = " --algo ergo --platform 1" }
     [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "NVIDIA"; Fee = 0.01; MinMemGB = $MinerPools[0].Etchash.DAGSizeGB;      MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 1; Tuning = " -mt 1"; WarmupTimes = @(45, 0);  Arguments = " --algo etchash --platform 1 --enable-dag-cache" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; Fee = 0.01; MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.41; AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 1; Tuning = " -mt 1"; WarmupTimes = @(60, 0);  Arguments = " --algo ethash --platform 1 --enable-dag-cache" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
@@ -29,13 +29,11 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model
-
         $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-        $Algorithms | Where-Object Type -EQ $_.Type | Select-Object | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
+        $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
             $MinComputeCapability = $_.MinComputeCapability
-
             $MinMemGB = $_.MinMemGB + $_.MemReserveGB
 
             # Windows 10 requires more memory on some algos
@@ -43,41 +41,42 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $MinMemGB | Where-Object { [Double]$_.OpenCL.ComputeCapability -ge $MinComputeCapability }) { 
 
+                $Arguments = $_.Arguments
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
                 # Get arguments for available miner devices
-                # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
+                # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                 If ($_.Algorithm -match "^Cuck.*|^EtcHash$|^Ethash.*|^KawPoW$") { 
                     If ($MinerPools[0].($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash")) { 
-                        $_.Arguments += " --url nicehash"
+                        $Arguments += " --url nicehash"
                     }
                     Else { 
-                        $_.Arguments += " --url ethproxy"
+                        $Arguments += " --url ethproxy"
                     }
                 }
                 Else { 
-                    $_.Arguments += " --url stratum"
+                    $Arguments += " --url stratum"
                 }
-                $_.Arguments += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "+ssl://" } Else  { "+tcp://" }
-                $_.Arguments += "$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) --user $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" })"
-                $_.Arguments += " --password $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
+                $Arguments += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "+ssl://" } Else  { "+tcp://" }
+                $Arguments += "$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) --user $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" })"
+                $Arguments += " --password $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
 
                 # Optionally disable dev fee mining
                 If ($Config.DisableMinerFee) { 
                     $_.Fee = 0
-                    $_.Arguments += " --fee 0"
+                    $Arguments += " --fee 0"
                 }
 
                 # Apply tuning parameters
-                If ($Variables.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
+                If ($Variables.UseMinerTweaks -eq $true) { $Arguments += $_.Tuning }
 
                 [PSCustomObject]@{ 
                     Name        = $Miner_Name
                     DeviceNames = $AvailableMiner_Devices.Name
                     Type        = $AvailableMiner_Devices.Type
                     Path        = $Path
-                    Arguments   = ("$($_.Arguments) --no-watchdog --api 127.0.0.1:$($MinerAPIPort) --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
+                    Arguments   = ("$($Arguments) --no-watchdog --api 127.0.0.1:$($MinerAPIPort) --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     Algorithms  = @($_.Algorithm)
                     API         = "NBMiner"
                     Port        = $MinerAPIPort

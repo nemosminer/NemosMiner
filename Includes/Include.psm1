@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.2.2.2
-Version date:   16 October 2022
+Version:        4.2.2.3
+Version date:   20 October 2022
 #>
 
 # Window handling
@@ -1559,7 +1559,7 @@ Function Set-Stat {
                     }
                 }
 
-                Remove-Stat -Name $Name
+                [void](Remove-Stat -Name $Name)
                 $Stat = Set-Stat -Name $Name -Value $Value
             }
             Else { 
@@ -1718,7 +1718,7 @@ Function Remove-Stat {
 
     $Name | Sort-Object -Unique | ForEach-Object { 
         Remove-Item -Path "Stats\$_.txt" -Force -Confirm:$false -ErrorAction SilentlyContinue
-        If ($Global:Stats.$_) { $Global:Stats.Remove($_) }
+        $Global:Stats.Remove($_)
     }
 
     Remove-Variable Name -ErrorAction Ignore

@@ -10,8 +10,8 @@ $DeviceEnumerator = "Type_Vendor_Index"
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Autolykos2");           Fee = @(0.02);       MinMemGB = $MinerPools[0].Autolykos2.DAGSizeGB;   MemReserveGB = 0.42; MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(45, 30);  Arguments = " --algo autolykos2 --intensity 25" }
     [PSCustomObject]@{ Algorithms = @("Blake3");               Fee = @(0.01);       MinMemGB = 2;                                     MemReserveGB = 0;    MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(45, 0);   Arguments = " --algo blake3 --intensity 25" }
-    [PSCustomObject]@{ Algorithms = @("EtcHash");              Fee = @(0.01);       MinMemGB = $MinerPools[0].Etchash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " --mt 3"; WarmupTimes = @(60, 15);  Arguments = " --algo etchash --intensity 25" } # GMiner-v3.09 is fastest
-    [PSCustomObject]@{ Algorithms = @("Ethash");               Fee = @(0.01);       MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; Tuning = " --mt 3"; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --intensity 25" } # GMiner-v3.09 is fastest
+    [PSCustomObject]@{ Algorithms = @("EtcHash");              Fee = @(0.01);       MinMemGB = $MinerPools[0].Etchash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 1; Tuning = " --mt 3"; WarmupTimes = @(60, 15);  Arguments = " --algo etchash --intensity 25" } # GMiner-v3.10 is fastest
+    [PSCustomObject]@{ Algorithms = @("Ethash");               Fee = @(0.01);       MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 1; Tuning = " --mt 3"; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --intensity 25" } # GMiner-v3.10 is fastest
     [PSCustomObject]@{ Algorithms = @("EtcHash", "Blake3");    Fee = @(0.01, 0.01); MinMemGB = $MinerPools[0].EtcHash.DAGSizeGB;      MemReserveGB = 0.42; MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(60, 15);  Arguments = " --algo etchash --dual-algo blake3 --lhr-tune -1 --lhr-autotune-interval 1" }
     [PSCustomObject]@{ Algorithms = @("Ethash", "Autolykos2"); Fee = @(0.01, 0.02); MinMemGB = 8;                                     MemReserveGB = 0;    MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --dual-algo autolykos2 --lhr-tune -1 --lhr-autotune-interval 1" }
     [PSCustomObject]@{ Algorithms = @("Ethash", "Blake3");     Fee = @(0.01, 0.01); MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.42; MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --dual-algo blake3 --lhr-tune -1 --lhr-autotune-interval 1" }
@@ -37,47 +37,47 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Model -EQ $_.Model
-
         $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-        $Algorithms | Select-Object | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
+        $Algorithms | ForEach-Object { 
 
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge ($_.MinMemGB + $_.MemReserveGB)) { 
 
+                $Arguments = $_.Arguments
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) + @(If ($_.Algorithms[1]) { "$($_.Algorithms[0])&$($_.Algorithms[1])" }) | Select-Object) -join '-' -replace ' '
 
-                If ($AvailableMiner_Devices | Where-Object MemoryGB -le 2) { $_.Arguments = $_.Arguments -replace " --intensity [0-9\.]+" }
+                If ($AvailableMiner_Devices | Where-Object MemoryGB -le 2) { $Arguments = $Arguments -replace " --intensity [0-9\.]+" }
 
                 # Get arguments for available miner devices
-                # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "dual-algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
+                # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo", "dual-algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $_.Arguments += " --url $(If ($MinerPools[0].($_.Algorithms[0]).PoolPorts[1]) { "stratum+ssl" } Else { If ($MinerPools[0].($_.Algorithms[0]).DAGsizeGB -ne $null -and $MinerPools[0].($_.Algorithms[0]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { "stratum2+tcp" } Else { "stratum+tcp" } })://$($MinerPools[0].($_.Algorithms[0]).Host):$($MinerPools[0].($_.Algorithms[0]).PoolPorts | Select-Object -Last 1)"
-                $_.Arguments += " --user $($MinerPools[0].($_.Algorithms[0]).User)"
-                $_.Arguments += " --pass $($MinerPools[0].($_.Algorithms[0]).Pass)$(If ($MinerPools[0].($_.Algorithms[0]).BaseName -eq "ProHashing" -and $_.Algorithms -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
-                If ($MinerPools[0].($_.Algorithms[0]).WorkerName) { $_.Arguments += " --worker $($MinerPools[0].($_.Algorithms[0]).WorkerName)" }
+                $Arguments += " --url $(If ($MinerPools[0].($_.Algorithms[0]).PoolPorts[1]) { "stratum+ssl" } Else { If ($MinerPools[0].($_.Algorithms[0]).DAGsizeGB -ne $null -and $MinerPools[0].($_.Algorithms[0]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { "stratum2+tcp" } Else { "stratum+tcp" } })://$($MinerPools[0].($_.Algorithms[0]).Host):$($MinerPools[0].($_.Algorithms[0]).PoolPorts | Select-Object -Last 1)"
+                $Arguments += " --user $($MinerPools[0].($_.Algorithms[0]).User)"
+                $Arguments += " --pass $($MinerPools[0].($_.Algorithms[0]).Pass)$(If ($MinerPools[0].($_.Algorithms[0]).BaseName -eq "ProHashing" -and $_.Algorithms -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
+                If ($MinerPools[0].($_.Algorithms[0]).WorkerName) { $Arguments += " --worker $($MinerPools[0].($_.Algorithms[0]).WorkerName)" }
 
                 If ($MinerPools[0].($_.Algorithms[0]).Currency -in @("CLO", "ETC", "ETH", "ETHW", "ETP", "EXP", "MUSIC", "PIRL", "RVN", "TCR", "UBQ", "VBK", "ZCOIN", "ZELS")) { 
-                    $_.Arguments += " --coin $($MinerPools[0].($_.Algorithms[0]).Currency)"
+                    $Arguments += " --coin $($MinerPools[0].($_.Algorithms[0]).Currency)"
                 }
 
                 If ($_.Algorithms[1]) { 
-                    $_.Arguments += " --url2 $(If ($MinerPools[1].($_.Algorithms[1]).PoolPorts[1]) { "stratum+ssl" } Else { If ($MinerPools[1].($_.Algorithms[1]).DAGsizeGB -ne $null -and $MinerPools[1].($_.Algorithms[1]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { "stratum2+tcp" } Else { "stratum+tcp" } })://$($MinerPools[1].($_.Algorithms[1]).Host):$($MinerPools[1].($_.Algorithms[1]).PoolPorts | Select-Object -Last 1)"
-                    $_.Arguments += " --user2 $($MinerPools[1].($_.Algorithms[1]).User)"
-                    $_.Arguments += " --pass2 $($MinerPools[1].($_.Algorithms[1]).Pass)$(If ($MinerPools[1].($_.Algorithms[1]).BaseName -eq "ProHashing" -and $_.Algorithms -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
-                    If ($MinerPools[1].($_.Algorithms[1]).WorkerName) { $_.Arguments += " --worker2 $($MinerPools[1].($_.Algorithms[1]).WorkerName)" }
+                    $Arguments += " --url2 $(If ($MinerPools[1].($_.Algorithms[1]).PoolPorts[1]) { "stratum+ssl" } Else { If ($MinerPools[1].($_.Algorithms[1]).DAGsizeGB -ne $null -and $MinerPools[1].($_.Algorithms[1]).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { "stratum2+tcp" } Else { "stratum+tcp" } })://$($MinerPools[1].($_.Algorithms[1]).Host):$($MinerPools[1].($_.Algorithms[1]).PoolPorts | Select-Object -Last 1)"
+                    $Arguments += " --user2 $($MinerPools[1].($_.Algorithms[1]).User)"
+                    $Arguments += " --pass2 $($MinerPools[1].($_.Algorithms[1]).Pass)$(If ($MinerPools[1].($_.Algorithms[1]).BaseName -eq "ProHashing" -and $_.Algorithms -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
+                    If ($MinerPools[1].($_.Algorithms[1]).WorkerName) { $Arguments += " --worker2 $($MinerPools[1].($_.Algorithms[1]).WorkerName)" }
                 }
 
                 # Apply tuning parameters
-                If ($Variables.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
+                If ($Variables.UseMinerTweaks -eq $true) { $Arguments += $_.Tuning }
 
-                If ($_.Arguments -notmatch "--kernel [0-9]") { $_.WarmupTimes[0] += 15 } # Allow extra seconds for kernel auto tuning
+                If ($Arguments -notmatch "--kernel [0-9]") { $_.WarmupTimes[0] += 15 } # Allow extra seconds for kernel auto tuning
 
                 [PSCustomObject]@{ 
                     Name        = $Miner_Name
                     DeviceNames = $AvailableMiner_Devices.Name
                     Type        = $AvailableMiner_Devices.Type
                     Path        = $Path
-                    Arguments   = ("$($_.Arguments) --no-strict-ssl --no-watchdog --gpu-report-interval 5 --quiet --retry-pause 1 --timeout 50000 --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-read-only --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
+                    Arguments   = ("$($Arguments) --no-strict-ssl --no-watchdog --gpu-report-interval 5 --quiet --retry-pause 1 --timeout 50000 --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-read-only --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     Algorithms  = @($_.Algorithms[0], $_.Algorithms[1] | Select-Object)
                     API         = "Trex"
                     Port        = $MinerAPIPort

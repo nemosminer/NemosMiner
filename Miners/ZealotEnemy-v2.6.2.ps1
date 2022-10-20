@@ -32,21 +32,21 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "X16rv2";     MinMemGB = 3;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo x16rv2 --statsavg 5" }
     [PSCustomObject]@{ Algorithm = "X16s";       MinMemGB = 3;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo x16s --statsavg 5" }
     [PSCustomObject]@{ Algorithm = "X17";        MinMemGB = 2;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(90, 0);  Arguments = " --algo x17 --statsavg 1" }
-    [PSCustomObject]@{ Algorithm = "Xevan";      MinMemGB = 2;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(90, 0);  Arguments = " --algo xevan --intensity 26 --diff-factor 1 --statsavg 1" }
-    )      
+#   [PSCustomObject]@{ Algorithm = "Xevan";      MinMemGB = 2;                               MemReserveGB = 0;    MinerSet = 0; WarmupTimes = @(90, 0);  Arguments = " --algo xevan --intensity 26 --diff-factor 1 --statsavg 1" } # No hashrate in time
+)
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 
 
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Model -EQ $_.Model
-
         $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
         $Algorithms | ForEach-Object { 
 
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge ($_.MinMemGB + $_.MemReserveGB)) { 
 
+                $Arguments = $_.Arguments
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
                 If ($AvailableMiner_Devices | Where-Object MemoryGB -le 2) { $_.Arguments = $_.Arguments -replace " --intensity [0-9\.]+" }

@@ -28,25 +28,25 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
     $Devices | Where-Object Type -in @($Algorithms.Type) | Select-Object Type, Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model
-
         $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-        $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePool } | Where-Object Type -EQ $_.Type | Select-Object | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
+        $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePool } | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge ($_.MinMemGB + $_.MemReserveGB)) { 
 
+                $Arguments = $_.Arguments
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
                 # Get arguments for available miner devices
-                # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "cl-devices", "cuda-devices", "tweak") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
+                # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo", "cl-devices", "cuda-devices", "tweak") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $_.Arguments += " --hostname $($MinerPools[0].($_.Algorithm).Host) --wallet $($MinerPools[0].($_.Algorithm).User)"
-                $_.Arguments += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { " --ssl --ssl-port $($MinerPools[0].($_.Algorithm).PoolPorts[1])" } Else { " --port $($MinerPools[0].($_.Algorithm).PoolPorts[0])"}
-                If ($MinerPools[0].($_.Algorithm).WorkerName) { $_.Arguments += " --worker-name $($MinerPools[0].($_.Algorithm).WorkerName)" }
-                If ($MinerPools[0].($_.Algorithm).Pass) { $_.Arguments += " --server-passwd $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })" }
+                $Arguments += " --hostname $($MinerPools[0].($_.Algorithm).Host) --wallet $($MinerPools[0].($_.Algorithm).User)"
+                $Arguments += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { " --ssl --ssl-port $($MinerPools[0].($_.Algorithm).PoolPorts[1])" } Else { " --port $($MinerPools[0].($_.Algorithm).PoolPorts[0])"}
+                If ($MinerPools[0].($_.Algorithm).WorkerName) { $Arguments += " --worker-name $($MinerPools[0].($_.Algorithm).WorkerName)" }
+                If ($MinerPools[0].($_.Algorithm).Pass) { $Arguments += " --server-passwd $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })" }
                 If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing") {  }
                 # Apply tuning parameters
-                If ($Variables.UseMinerTweaks -eq $true) { $_.Arguments += $_.Tuning }
+                If ($Variables.UseMinerTweaks -eq $true) { $Arguments += $_.Tuning }
 
                 $PrerequisitePath = ""
                 $PrerequisiteURI = ""
@@ -67,7 +67,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     DeviceNames      = $AvailableMiner_Devices.Name
                     Type             = $AvailableMiner_Devices.Type
                     Path             = $Path
-                    Arguments        = ("$($_.Arguments) --api --api-port $MinerAPIPort$($DeviceSelector.($AvailableMiner_Devices.Type)) [$(($AvailableMiner_Devices.($DeviceEnumerator.($AvailableMiner_Devices.Type)) | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')]" -replace "\s+", " ").trim()
+                    Arguments        = ("$($Arguments) --api --api-port $MinerAPIPort$($DeviceSelector.($AvailableMiner_Devices.Type)) [$(($AvailableMiner_Devices.($DeviceEnumerator.($AvailableMiner_Devices.Type)) | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')]" -replace "\s+", " ").trim()
                     Algorithms       = @($_.Algorithm)
                     API              = "TeamBlackMiner"
                     Port             = $MinerAPIPort

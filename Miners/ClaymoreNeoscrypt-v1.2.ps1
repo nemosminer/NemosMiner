@@ -11,7 +11,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Neoscrypt"; MinMemGB = 2; ExcludeGPUArchitecture = @("RDNA"); MinerSet = 0; WarmupTimes = @(45, 0); Arguments = "" }
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 
+If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).Host } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 
 
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 
@@ -19,22 +19,23 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
             $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-            $Algorithms | Select-Object | ConvertTo-Json | ConvertFrom-Json | ForEach-Object { 
+            $Algorithms | ForEach-Object { 
 
                 $ExcludeGPUArchitecture = $_.ExcludeGPUArchitecture
 
                 If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $_.MinMemGB | Where-Object { $_.Architecture -notin $ExcludeGPUArchitecture }) { 
 
+                    $Arguments = $_.Arguments
                     $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
                     # Get arguments for available miner devices
-                    # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
+                    # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                     $Fee = If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { @(2.5) } Else { @(2) }
 
                     # Disable dev fee mining
                     If ($Config.DisableMinerFee) { 
-                        $_.Arguments += " --nofee 1"
+                        $Arguments += " --nofee 1"
                         $Fee = @(0)
                     }
 
@@ -43,7 +44,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                         DeviceNames = $AvailableMiner_Devices.Name
                         Type        = $AvailableMiner_Devices.Type
                         Path        = $Path
-                        Arguments   = ("$($_.Arguments) -pool $(If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) -wal $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).Pass) { " -psw $($MinerPools[0].($_.Algorithm).Pass)" }) -mport -$MinerAPIPort -di $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments   = ("$($Arguments) -pool $(If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) -wal $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).Pass) { " -psw $($MinerPools[0].($_.Algorithm).Pass)" }) -mport -$MinerAPIPort -di $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                         Algorithms  = @($_.Algorithm)
                         API         = "EthMiner"
                         Port        = $MinerAPIPort

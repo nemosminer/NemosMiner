@@ -10,7 +10,25 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
-ChangeLog NemosMiner 4.2.2.2 15.10.2022
+ChangeLog NemosMiner 4.2.2.3 20.10.2022
+=======================================
+
+Enhancements:
+- Legacy GUI: Add tabs for 'All Pools' & 'All Miners'. Removed tab 'Benchmarks' (replaced by 'All Miners')
+- Core / Main text window: Configuration items 'BalancesShowAverages' & 'BalancesShowSums' also apply to main text window
+- Core: Minor speed optimisations 
+
+Fixes:
+- Core: MinDataSamples multiplier not working
+
+Miner changes:
+- GMiner-v3.10
+- SRBMinerMulti-v1.0.1 (Removed, dual algorithms are implemented in latest SRB miner)
+- TeamRedMiner-v0.10.5.1
+- Wildrig-v0.33.3
+
+
+ChangeLog NemosMiner 4.2.2.2 16.10.2022
 =======================================
 
 Enhancements:

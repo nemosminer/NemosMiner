@@ -325,20 +325,20 @@
                     <legend class=h6><b>Balance Tracker Settings</b></legend>
                     <div style="padding-top: 0.3rem" title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;(min=10, max=60, default=15 minutes). Set to 0 to disable the balance tracker.&#10;&#10;Note: If set to 0 it will also disable pool balances summary in the Web GUI dashboard and API"> Poll pools for balances & earnings every
                       <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60 step=1 value=15> minutes
-                    <div style="padding-top: 0.6rem" title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">
-                      <input type="checkbox" class="toggle-switch" id="BalancesTrackerLog" name="BalancesTrackerLog" style="margin-left:20px"> Write balances tracker log
+                    <div style="padding-top: 0.6rem" title="Show 1hr / 6hrs / 24hr / 7 day & 30day pool earning sums&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)&#10;&#10;This setting applies to the main text window and web dashboard.">
+                      <input type="checkbox" class="toggle-switch" id="BalancesShowSums" name="BalancesShowSums" style="margin-left:20px"> Show sums for each pool
+                    </div>
+                    <div style="padding-top: 0.6rem" title="Show 1hr / 24hr & 7day pool earning averages&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)&#10;&#10;This setting applies to the main text window and web dashboard.">
+                      <input type="checkbox" class="toggle-switch" id="BalancesShowAverages" name="BalancesShowAverages" style="margin-left:20px"> Show average earnings for each pool
+                    </div>
+                    <div style="padding-top: 0.6rem" title="Pool balances in web dashboard will be shown in all currencies (main & extra currencies)&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
+                      <input type="checkbox" class="toggle-switch" id="BalancesShowInAllCurrencies" name="BalancesShowInAllCurrencies" style="margin-left:20px"> Show pool balances in dashboard in all currencies
                     </div>
                     <div style="padding-top: 0.6rem" title="Most pools clear pending balances after a longer period of inactivity.&#10;To avoid forfeiting pool balances NemosMiner will enforce mining&#10;at the pool the day before it would clear the balance.&#10;(one cycle only, even if it is not the most profitable pool).&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
                       <input type="checkbox" class="toggle-switch" id="BalancesKeepAlive" name="BalancesKeepAlive" style="margin-left:20px"> Keep pool balances alive
                     </div>
-                    <div style="padding-top: 0.6rem" title="Show 1hr / 6hrs / 24hr / 7 day & 30day pool earning sums in web dashboard&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
-                      <input type="checkbox" class="toggle-switch" id="BalancesShowSums" name="BalancesShowSums" style="margin-left:20px"> Show sums for each pool
-                    </div>
-                    <div style="padding-top: 0.6rem" title="Show 1hr / 24hr & 7day pool earning averages in web dashboard&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
-                      <input type="checkbox" class="toggle-switch" id="BalancesShowAverages" name="BalancesShowAverages" style="margin-left:20px"> Show average earnings for each pool
-                    </div>
-                    <div style="padding-top: 0.6rem" title="Pool balances will be shown in all currencies (main & extra currencies) in web dashboard&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
-                      <input type="checkbox" class="toggle-switch" id="BalancesShowInAllCurrencies" name="BalancesShowInAllCurrencies" style="margin-left:20px"> Show pool balances in all currencies
+                    <div style="padding-top: 0.6rem" title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">
+                      <input type="checkbox" class="toggle-switch" id="BalancesTrackerLog" name="BalancesTrackerLog" style="margin-left:20px"> Write balances tracker log
                     </div>
                   </fieldset>
                 </td>
@@ -829,17 +829,17 @@
                 if (document.getElementById('BalancesTrackerPollInterval').value == 9) document.getElementById('BalancesTrackerPollInterval').value = 0;
                 if (document.getElementById('BalancesTrackerPollInterval').value == 1) document.getElementById('BalancesTrackerPollInterval').value = 10;
                 if (document.getElementById('BalancesTrackerPollInterval').value > 1 && document.getElementById('BalancesTrackerPollInterval').value < 9) document.getElementById('BalancesTrackerPollInterval').value = 0;
-                document.getElementById('BalancesTrackerLog').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
-                document.getElementById('BalancesKeepAlive').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
                 document.getElementById('BalancesShowSums').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
                 document.getElementById('BalancesShowAverages').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
                 document.getElementById('BalancesShowInAllCurrencies').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
+                document.getElementById('BalancesKeepAlive').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
+                document.getElementById('BalancesTrackerLog').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
               });
               if (config.BalancesShowSums) document.getElementById('BalancesShowSums').checked = true;
               if (config.BalancesShowAverages) document.getElementById('BalancesShowAverages').checked = true;
               if (config.BalancesShowInAllCurrencies) document.getElementById('BalancesShowInAllCurrencies').checked = true;
-              if (config.BalancesTrackerLog) document.getElementById('BalancesTrackerLog').checked = true;
               if (config.BalancesKeepAlive) document.getElementById('BalancesKeepAlive').checked = true;
+              if (config.BalancesTrackerLog) document.getElementById('BalancesTrackerLog').checked = true;
               $(document.getElementById('BalancesTrackerPollInterval')).trigger('change');
 
               // Main Text Window Display Settings
@@ -1283,11 +1283,11 @@
 
                   // Balance Tracker Settings
                   config.BalancesTrackerPollInterval = parseInt(document.getElementById('BalancesTrackerPollInterval').value);
-                  config.BalancesTrackerLog = document.getElementById('BalancesTrackerLog').checked;
-                  config.BalancesKeepAlive = document.getElementById('BalancesKeepAlive').checked;
                   config.BalancesShowSums = document.getElementById('BalancesShowSums').checked;
                   config.BalancesShowAverages = document.getElementById('BalancesShowAverages').checked;
                   config.BalancesShowInAllCurrencies = document.getElementById('BalancesShowInAllCurrencies').checked;
+                  config.BalancesKeepAlive = document.getElementById('BalancesKeepAlive').checked;
+                  config.BalancesTrackerLog = document.getElementById('BalancesTrackerLog').checked;
 
                   // Main Text Window Display Settings
                   config.UIStyle = document.getElementById('UIStyle').value;

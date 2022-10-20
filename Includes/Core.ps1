@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.2.2.2
-Version date:   16 October 2022
+Version:        4.2.2.3
+Version date:   20 October 2022
 #>
 
 using module .\Include.psm1
@@ -758,7 +758,7 @@ Do {
                     (Get-ChildItem -Path ".\Miners" -File -Include "*.ps1" -Recurse -ErrorAction SilentlyContinue | Sort-Object | ForEach-Object { 
                         & $_.FullName
                     }) | ForEach-Object { 
-                        $_ | Add-Member MinDataSamples  ([Int]($Config.MinDataSamples * (($_.Algorithm | ForEach-Object { $Config.MinDataSamplesAlgoMultiplier.$_ }), 1 | Measure-Object -Maximum).Maximum))
+                        $_ | Add-Member MinDataSamples  ([Int]($Config.MinDataSamples * (($_.Algorithms | ForEach-Object { $Config.MinDataSamplesAlgoMultiplier.$_ }), 1 | Measure-Object -Maximum).Maximum))
                         $_ | Add-Member ProcessPriority $(If ($_.Type -eq "CPU") { $Config.CPUMinerProcessPriority } Else { $Config.GPUMinerProcessPriority })
                         $_ | Add-Member Workers ([Worker[]]@(ForEach ($Algorithm in $_.Algorithms) { @{ Pool = $AllPools.$Algorithm; Fee = If ($Config.IgnoreMinerFee) { 0 } Else { $_.Fee | Select-Object -Index $_.Algorithms.IndexOf($Algorithm) } } }))
                         $_.PSObject.Properties.Remove("Fee")
@@ -895,12 +895,10 @@ Do {
                         $ProgressPreference = "Ignore"
                         If ((Get-Command "Get-MpComputerStatus") -and (Get-MpComputerStatus)) { 
                             If (Get-Command "Get-NetFirewallRule") { 
-                                If ($MinerFirewallRules = @((Get-NetFirewallApplicationFilter).Program)) { 
-                                    If (Compare-Object $MinerFirewallRules @($Miners | Select-Object -ExpandProperty Path -Unique) | Where-Object SideIndicator -EQ "=>") { 
-                                        Start-Process "pwsh" ("-Command Import-Module NetSecurity; ('$(Compare-Object $MinerFirewallRules @($Miners | Select-Object -ExpandProperty Path -Unique) | Where-Object SideIndicator -EQ '=>' | Select-Object -ExpandProperty InputObject | ConvertTo-Json -Compress)' | ConvertFrom-Json) | ForEach-Object { New-NetFirewallRule -DisplayName (Split-Path `$_ -leaf) -Program `$_ -Description 'Inbound rule added by $($Variables.Branding.ProductLabel) $($Variables.Branding.Version) on $((Get-Date).ToString())' -Group 'Cryptocurrency Miner' }" -replace '"', '\"') -Verb runAs
-                                    }
+                                If ($MissingMinerFirewallRules = Compare-Object @((Get-NetFirewallApplicationFilter).Program) @($Miners | Select-Object -ExpandProperty Path -Unique) | Where-Object SideIndicator -EQ "=>") { 
+                                    Start-Process "pwsh" ("-Command Import-Module NetSecurity; ('$($MissingMinerFirewallRules | Select-Object -ExpandProperty InputObject | ConvertTo-Json -Compress)' | ConvertFrom-Json) | ForEach-Object { New-NetFirewallRule -DisplayName (Split-Path `$_ -leaf) -Program `$_ -Description 'Inbound rule added by $($Variables.Branding.ProductLabel) $($Variables.Branding.Version) on $((Get-Date).ToString())' -Group 'Cryptocurrency Miner' }" -replace '"', '\"') -Verb runAs
                                 }
-                                Remove-Variable MinerFirewallRules -ErrorAction Ignore
+                                Remove-Variable MissingMinerFirewallRules
                             }
                         }
                         $ProgressPreference = $ProgressPreferenceBackup
@@ -1141,6 +1139,8 @@ Do {
         If (-not $Variables.MinersBest_Combo) { 
             $Variables.RefreshNeeded = $true
             Start-Sleep -Seconds $Config.Interval
+            $Variables.Miners | ForEach-Object { $_.Status = [MinerStatus]::Idle; $_.StatusMessage = "" }
+            $Variables.EnabledDevices | ForEach-Object { $_.Status = [MinerStatus]::Idle }
             Remove-Variable Miners
             Write-Message -Level Info "Ending cycle."
             Continue

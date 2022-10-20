@@ -105,6 +105,7 @@
   "NYX": "Neoscrypt",
   "OBTC": "HeavyHash",
   "OCP": "Sha256t",
+  "OCTA": "Ethash",
   "OMEGA": "X11",
   "ONION": "X13",
   "ONX": "Yespower",
