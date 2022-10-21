@@ -231,32 +231,31 @@ Easy configuration, easy start:
       Press key 's' in the console window to switch UIStyle.
 
    In session console the following keys are supported
-
-    a: Toggle Accuracy column visibility
-    b: Toggle Listing Pool balances
-    c: Toggle Power Cost column visibility
-    e: Toggle Earnings column visibility
-    i: Toggle Earning Bias column visibility
-    m: Toggle Miner Fees column visibility
-    n: Toggle CoinName column visibility
-    p: Toggle Pool Fees column visibility
-    r: Toggle Profit Bias column visibility
-    s: Toggle UI Style [full or light]
-    t: Toggle Profit column visibility
-    u: Toggle User column visibility
-    v: Toggle Listing all available miners
-    w: Toggle Power usage column visibility
-    y: Toggle Currency column visibility
  
-   New version notification (Available since version 3.9.9.10)
+      a: Toggle Accuracy column visibility
+      b: Toggle Listing Pool Balances
+      c: Toggle Power Cost column visibility
+      e: Toggle Earnings column visibility
+      f: Toggle Pool fees column visibility
+      i: Toggle Earning Bias column visibility
+      m: Toggle Miner Fees column visibility
+      n: Toggle CoinName column visibility
+      p: Toggle Pool column visibility
+      r: Toggle Profit Bias column visibility
+      s: Toggle UI Style [full or light]
+      t: Toggle Profit column visibility
+      u: Toggle User column visibility
+      v: Toggle Listing all available miners
+      w: Toggle Power usage column visibility
+      y: Toggle Currency column visibility
 
-      NemosMiner will notify new version availability
+   NemosMiner will notify new version availability
 
 ***Requirements***
 
 PowerShell Version 7.x is required:
 
-[Download Installer for version 7.2.6](https://github.com/PowerShell/PowerShell/releases/download/v7.2.6/PowerShell-7.2.6-win-x64.msi)
+[Download Installer for version 7.2.7](https://github.com/PowerShell/PowerShell/releases/download/v7.2.7/PowerShell-7.2.7-win-x64.msi)
 
 **Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file**
 
@@ -268,8 +267,7 @@ When running multiple cards its recommended to increase Virtual Memory. 64GB is 
 
 **Recommended/optimal Windows Nvidia driver**
 
-[recommended/optimal Windows Nvidia driver 512.95](https://us.download.nvidia.com/Windows/512.95/512.95-notebook-win10-win11-64bit-international-dch-whql.exe)
-Newer drivers have issues with 100% LHR unlock.
+[recommended/optimal Windows Nvidia driver 522.25](https://us.download.nvidia.com/Windows/522.25/522.25-desktop-win10-win11-64bit-international-dch-whql.exe)
 If you use older drivers some miners will not be available.
 
 **Recommended/optimal Windows AMD driver**
