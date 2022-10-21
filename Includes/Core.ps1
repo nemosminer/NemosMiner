@@ -585,8 +585,6 @@ Do {
                                 $_.Fee                      = $Pool.Fee
                                 $_.Host                     = $Pool.Host
                                 $_.Pass                     = $Pool.Pass
-                                $_.Port                     = $Pool.Port
-                                $_.PortSSL                  = $Pool.PortSSL
                                 $_.Price                    = $Pool.Price
                                 $_.Price_Bias               = $Pool.Price_Bias
                                 $_.Region                   = $Pool.Region
@@ -596,7 +594,7 @@ Do {
                                 $_.Workers                  = $Pool.Workers
                                 $_.WorkerName               = $Pool.WorkerName
                             }
-                            ElseIf ($Variables.DAGdata.Currency.($_.Currency).BlockHeight) { 
+                            If ($Variables.DAGdata.Currency.($_.Currency).BlockHeight) { 
                                 $_.BlockHeight = $Variables.DAGdata.Currency.($_.Currency).BlockHeight
                                 $_.Epoch       = $Variables.DAGdata.Currency.($_.Currency).Epoch
                                 $_.DAGSizeGB   = $Variables.DAGdata.Currency.($_.Currency).DAGsize / 1GB 
