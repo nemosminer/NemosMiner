@@ -559,7 +559,7 @@ Do {
                     $DeconfiguredPools = @($Pools | Where-Object Name -notin $PoolNames)
                     $Pools = @($Pools | Where-Object Name -in $PoolNames)
 
-                    If ($ComparePools = @(Compare-Object -PassThru @($Variables.NewPools | Select-Object) @($Pools | Select-Object) -Property Name, Algorithm -IncludeEqual)) { 
+                    If ($ComparePools = @(Compare-Object -PassThru @($Variables.NewPools | Select-Object) @($Pools | Select-Object) -Property Name, Algorithm, Port, PortSSL -IncludeEqual)) { 
                         # Find new pools
                         $Variables.AddedPools = @($ComparePools | Where-Object SideIndicator -eq "<=")
                         $Variables.UpdatedPools = @($ComparePools | Where-Object SideIndicator -eq "==")
@@ -576,7 +576,7 @@ Do {
                             $_.Best = $false
                             $_.Reasons = $null
 
-                            If ($Pool = $Variables.UpdatedPools | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Select-Object -First 1) { 
+                            If ($Pool = $Variables.UpdatedPools | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Port -EQ $_.Port | Where-Object PortSSL -EQ $_.PortSSL | Select-Object -First 1) { 
                                 $_.Accuracy                 = $Pool.Accuracy
                                 $_.CoinName                 = $Pool.CoinName
                                 $_.Currency                 = $Pool.Currency
