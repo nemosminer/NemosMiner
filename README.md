@@ -199,7 +199,6 @@ Easy configuration, easy start:
          - MiningDutch
          - MiningPoolHub
          - NiceHash (internal & external wallet)
-         - NLPool
          - ProHashing
          - ZergPool
          - Zpool
