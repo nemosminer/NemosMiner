@@ -54,7 +54,7 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
 
     If (-not $Request) { Return }
 
-    $PoolHost = "prohashing.com"
+    $PoolHost = If ((Get-Date) -lg "2022/11/04" ) { @{ "EU" = "eu.prohashing.com"; "US" = "prohashing.com" } } Else { @{ "EU" = "eu.mining.prohashing.com"; "US" = "us.mining.prohashing.com" }}
 
     $Request.PSObject.Properties.Name | Where-Object { $Request.$_.$PriceField -gt 0 } -ErrorAction Stop | ForEach-Object { 
         $Algorithm = $Request.$_.name
@@ -82,7 +82,7 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
                     Disabled                 = [Boolean]$Stat.Disabled
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                     Fee                      = [Decimal]$Fee
-                    Host                     = "$(If ($Region -eq "EU") { "eu." })$PoolHost"
+                    Host                     = [String]$PoolHost.$Region
                     Name                     = [String]$PoolVariant
                     Pass                     = [String]$Pass
                     Port                     = [UInt16]$Request.$_.port
