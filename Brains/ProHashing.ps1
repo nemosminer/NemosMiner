@@ -29,7 +29,6 @@ using module ..\Includes\Include.psm1
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 
 $BrainName = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig
 
 $AlgoObject = @()
 $APICallFails = 0
@@ -41,7 +40,7 @@ $ProgressPreference = "SilentlyContinue"
 # Fix TLS Version erroring
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
-While ($BrainConfig) { 
+While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) { 
 
     $Duration = Measure-Command { 
         $CurDate = (Get-Date).ToUniversalTime()
@@ -149,6 +148,4 @@ While ($BrainConfig) {
     Do { 
         Start-Sleep -Seconds 3
     } While (($Variables.MiningStatus -eq "Running" -and (-not $Variables.Miners -or $CurDate -gt $Variables.PoolDataCollectedTimeStamp -or (Get-Date).ToUniversalTime().AddSeconds([Int]$Duration.TotalSeconds + 5) -lt $Variables.EndCycleTime)) -or $CurDate.AddSeconds([Int]$Config.Interval) -gt (Get-Date).ToUniversalTime())
-
-    $BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig
 }
