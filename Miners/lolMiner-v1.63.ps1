@@ -2,7 +2,7 @@ using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -in @("AMD", "NVIDIA"))) { Return }
 
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.61/lolMiner_v1.61_Win64.zip"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.63/lolMiner_v1.63_Win64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\lolminer.exe"
 $DeviceEnumerator = "Bus"
