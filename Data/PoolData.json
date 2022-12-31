@@ -234,7 +234,7 @@
       "UseFullTrust": false,
       "UseTransferFile": false
     },
-    "BrainDebug": true,
+    "BrainDebug": false,
     "ExcludeAlgorithm": [],
     "GuaranteedPayoutCurrencies": [
       "BTC",
