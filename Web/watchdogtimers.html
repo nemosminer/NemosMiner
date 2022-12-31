@@ -1,43 +1,47 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 data-navbaractive="navwatchdogtimers">Watchdog Timers</h2>
+            <h2 id="title" data-navbaractive="navwatchdogtimers">Watchdog Timers</h2>
           </div>
           <div id="watchdog" class="alert alert-info" role="alert"></div>
           <div id="toolbar">
-            <button id="btn-removewatchdogs" class="btn btn-warning">Remove all Watchdog Timers</button>
+            <button id="btn-removewatchdogs" class="btn btn-info">Remove all Watchdog Timers</button>
           </div>
           <table id="watchdogtimers" class="table"
-            data-toolbar="#toolbar"
-            data-click-to-select="true"
-            data-cache="true"
-            data-toggle="table"
-            data-icons="icons"
-            data-show-button-text="true"
-            data-show-search-clear-button="true"
-            data-filter-control="true"
-            data-disable-control-when-search="true"
-            data-show-columns="true"
-            data-show-toggle="true"
-            data-detail-view="true"
-            data-show-refresh="true"
             data-auto-refresh="true"
             data-auto-refresh-status="true"
+            data-cache="true"
+            data-click-to-select="true"
+            data-cookie="true"
+            data-cookie-id-table="cs_watchdogtimers"
+            data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
             data-detail-formatter="detailFormatter"
-            data-url="/watchdogtimers"
-            data-sort-order="asc"
-            data-sort-name="DeviceNames"
+            data-detail-view="true"
+            data-disable-control-when-search="true"
+            data-filter-control="true"
             data-header-style="headerStyleAlignTop"
+            data-icons="icons"
+            data-maintain-meta-data="true"
+            data-show-button-text="true"
+            data-show-columns="true"
+            data-show-search-clear-button="true"
+            data-show-refresh="true"
+            data-show-toggle="true"
+            data-sort-name="DeviceNames"
+            data-sort-order="asc"
+            data-toggle="table"
+            data-toolbar="#toolbar"
+            data-url="/watchdogtimers"
             >
             <thead>
               <tr>
-                <th data-field="MinerName" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Miner Name</th>
-                <th data-field="MinerBaseName" data-sortable="true" data-filter-control="select" data-visible="false">Miner Base Name</th>
+                <th data-field="MinerName" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
+                <th data-field="MinerBaseName" data-sortable="true" data-filter-control="select" data-visible="false">Miner</th>
                 <th data-field="MinerVersion" data-sortable="true" data-filter-control="select" data-visible="false">Version</th>
                 <th data-field="Algorithm" data-sortable="true" data-filter-control="select">Algorithm</th>
                 <th data-field="PoolName" data-sortable="true" data-filter-control="select">Pool Name</th>
                 <th data-field="PoolBaseName" data-sortable="true" data-filter-control="select" data-visible="false">Pool Base Name</th>
                 <th data-field="PoolRegion" data-sortable="true" data-filter-control="select">Region</th>
-                <th data-field="DeviceNames" data-sortable="true" data-filter-control="select" data-formatter="formatArrayAsString">Device(s)</th>
+                <th data-field="DeviceNames" data-sortable="true" data-filter-control="select" data-formatter="formatArrayAsSortedString">Device(s)</th>
                 <th data-field="Kicked" data-sortable="true" data-formatter="formatTimeSince">Last Updated</th>
               </tr>
             </thead>
@@ -47,6 +51,7 @@
             var $table = $('#watchdogtimers');
 
             $table.bootstrapTable({
+              autoRefreshInterval: parseInt(Math.max(config.Interval, 30)), // refresh once per interval, at least 30 seconds
               height: $(window).height() - $table.offset().top - 35
             });
 

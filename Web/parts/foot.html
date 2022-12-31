@@ -6,7 +6,22 @@
 
 <!-- Start of page scripts 'foot.html'-->
   <script type='text/javascript'>
+
+    function updateSummary(){
+      // get page header info
+      $.ajax({
+        async: false,
+        dataType: 'json',
+        timeout: 10,
+        url: '/summary',
+        success: function(result) {
+          $('#summary').empty().append(result);
+        }
+      });
+    }
+
     $(document).ready(function () {
+
       // Set the active sidebar item
       $(function() {
         $('#'+$('#title').data('navbaractive')).addClass('active');
@@ -16,47 +31,84 @@
         $command = '/functions/mining/pause';
         $('.modal-body').load($command, function() {
           if (this.outerText) {
-            updateHeader();
             $('.modal-title').text($('#btn-miningpause').text());
             $('#myModal').modal({show:true});
           };
         });
+        updateSummary();
         document.getElementById('btn-miningpause').disabled = true;
-        document.getElementById('btn-miningstart').disabled = true;
-        document.getElementById('btn-miningstop').disabled = true;
+        document.getElementById('btn-miningstart').disabled = false;
+        document.getElementById('btn-miningstop').disabled = false;
       });
 
       $('#btn-miningstart').click(function () {
         $command = '/functions/mining/start';
         $('.modal-body').load($command, function() {
           if (this.outerText) {
-            updateHeader();
             $('.modal-title').text($('#btn-miningstart').text());
             $('#myModal').modal({show:true});
           };
         });
-        document.getElementById('btn-miningpause').disabled = true;
+        updateSummary();
+        document.getElementById('btn-miningpause').disabled = false;
         document.getElementById('btn-miningstart').disabled = true;
-        document.getElementById('btn-miningstop').disabled = true;
+        document.getElementById('btn-miningstop').disabled = false;
       });
 
       $('#btn-miningstop').click(function () {
         $command = '/functions/mining/stop';
         $('.modal-body').load($command, function() {
           if (this.outerText) {
-            updateHeader();
             $('.modal-title').text($('#btn-miningstop').text());
             $('#myModal').modal({show:true});
           };
         });
-        document.getElementById('btn-miningpause').disabled = true;
-        document.getElementById('btn-miningstart').disabled = true;
+        updateSummary();
+        document.getElementById('btn-miningpause').disabled = false;
+        document.getElementById('btn-miningstart').disabled = false;
         document.getElementById('btn-miningstop').disabled = true;
+      });
+
+      updateSummary();
+
+      $.ajax({
+        async: false,
+        dataType: 'json',
+        timeout: 10,
+        url: '/functions/mining/getstatus',
+        success: function(result) {
+          switch (result) {
+            case 'Running': 
+              document.getElementById('btn-miningstart').disabled = true;
+              document.getElementById('btn-miningstart').title = "Mining processes are already running.";
+              document.getElementById('btn-miningpause').disabled = false;
+              document.getElementById('btn-miningpause').title = "Pause mining processes. Background processes remain running.";
+              document.getElementById('btn-miningstop').disabled = false;
+              document.getElementById('btn-miningstop').title = "Stop mining processes. Background processes will also stop.";
+              break;
+            case 'Paused':
+              document.getElementById('btn-miningstart').disabled = false;
+              document.getElementById('btn-miningstart').title ="Start the mining process.";
+              document.getElementById('btn-miningpause').disabled = true;
+              document.getElementById('btn-miningpause').title = "Mining processes are stopped. Background processes remain running.";
+              document.getElementById('btn-miningstop').disabled = false;
+              document.getElementById('btn-miningstop').title = "Stop mining processes. Background processes will also stop.";
+              break;
+            case 'Idle':
+              document.getElementById('btn-miningstart').disabled = false;
+              document.getElementById('btn-miningstart').title ="Start the mining process.";
+              document.getElementById('btn-miningpause').disabled = false;
+              document.getElementById('btn-miningpause').title = "Mining will not start. Background processes will start.";
+              document.getElementById('btn-miningstop').disabled = true;
+              document.getElementById('btn-miningstop').title = "All mining processes are already stopped.";
+              break;
+          }
+        }
       });
 
       // set the footer
       var version = JSON.parse(sessionStorage.getItem('version'));
-      if (version== null) {
+      if (version == null) {
         $.ajax({
           async: false,
           dataType: 'json',
@@ -70,6 +122,13 @@
       }
       if (version) $('#footer').empty().append(version.join('&nbsp;/&nbsp;') + '&nbsp;/&nbsp;All earnings and profit numbers are estimates based on data provided by the pools APIs&nbsp;/&nbsp&copy; www.nemosminer.com');
     });
-  </script>
+
+      // Update data once per interval
+      window.setInterval(function() { 
+        updateSummary();
+        updateData();
+        if (typeof updatePoolBalances === "function") updatePoolBalances();
+      }, config.Interval * 1000);
+</script>
 <!-- End of page scripts 'foot.html'-->
 </html>

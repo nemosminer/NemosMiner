@@ -19,15 +19,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveOn.ps1
-Version:        4.2.2.3
-Version date:   20 October 2022
+Version:        4.2.3.0
+Version date:   31 December 2022
 #>
 
 using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
-    [PSCustomObject]$PoolsConfig,
+    [PSCustomObject]$PoolConfig,
     [String]$PoolVariant,
     [Hashtable]$Variables
 )
@@ -35,7 +35,6 @@ param(
 $ProgressPreference = "SilentlyContinue"
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
 
 If ($PoolConfig.Wallets) { 
 
@@ -52,7 +51,13 @@ If ($PoolConfig.Wallets) {
         $Divisor = [Double]$_.profitPerPower
 
         # Add coin name
-        If ($_.title -and $Currency) { [void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $_.title) }
+        If ($_.title -and $Currency) { 
+            $CoinName = $_.title
+            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $CoinName
+        }
+        Else { 
+            $CoinName = ""
+        }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
 
@@ -60,6 +65,7 @@ If ($PoolConfig.Wallets) {
             Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
             Algorithm                = [String]$Algorithm_Norm
             BaseName                 = [String]$Name
+            CoinName                 = [String]$CoinName
             Currency                 = [String]$Currency
             Disabled                 = [Boolean]$Stat.Disabled
             EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
@@ -67,8 +73,8 @@ If ($PoolConfig.Wallets) {
             Host                     = [String]$_.servers[0].host
             Name                     = [String]$PoolVariant
             Pass                     = "x"
-            Port                     = [UInt16]$_.servers[0].ports[0]
-            PortSSL                  = [UInt16]$_.servers[0].ssl_ports[0]
+            Port                     = If ($PoolConfig.SSL -eq "Always") { 0 } Else { [UInt16]$_.servers[0].ports[0] }
+            PortSSL                  = If ($PoolConfig.SSL -eq "Never") { 0 } Else { [UInt16]$_.servers[0].ssl_ports[0] }
             Price                    = [Double]$Stat.Live
             Region                   = [String]$PoolConfig.Region
             StablePrice              = [Double]$Stat.Week

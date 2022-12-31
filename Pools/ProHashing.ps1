@@ -19,15 +19,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.2.2.3
-Version date:   20 October 2022
+Version:        4.2.3.0
+Version date:   31 December 2022
 #>
 
 using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
-    [PSCustomObject]$PoolsConfig,
+    [PSCustomObject]$PoolConfig,
     [String]$PoolVariant,
     [Hashtable]$Variables
 )
@@ -35,9 +35,9 @@ param(
 $ProgressPreference = "SilentlyContinue"
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
-$PriceField = $Variables.PoolData.$Name.Variant.$PoolVariant.PriceField
-$DivisorMultiplier = $Variables.PoolData.$Name.Variant.$PoolVariant.DivisorMultiplier
+$DivisorMultiplier = $PoolConfig.Variant.$PoolVariant.DivisorMultiplier
+$HostSuffix = "mining.prohashing.com"
+$PriceField = $PoolConfig.Variant.$PoolVariant.PriceField
 $TransferFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Data\BrainData_" + (Get-Item $MyInvocation.MyCommand.Path).BaseName + ".json"
 
 If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) { 
@@ -54,22 +54,24 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
 
     If (-not $Request) { Return }
 
-    $PoolHost = If ((Get-Date) -lt "2022/11/04" ) { @{ "EU" = "eu.prohashing.com"; "US" = "prohashing.com" } } Else { @{ "EU" = "eu.mining.prohashing.com"; "US" = "us.mining.prohashing.com" } }
-
     $Request.PSObject.Properties.Name | Where-Object { $Request.$_.$PriceField -gt 0 } -ErrorAction Stop | ForEach-Object { 
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $Currency = "$($Request.$_.currency)".Trim()
+        $Currency = $Request.$_.currency
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
         $Fee = If ($Currency) { $Request.$_."$($PoolConfig.MiningMode)_fee" } Else { $Request.$_."pps_fee" }
-        $Pass = @("a=$($Algorithm.ToLower())", "n=$($PoolConfig.WorkerName)", "o=$($PoolConfig.UserName)", $(If ($Algorithm_Norm -ne "Ethash" -and $Currency -and $Config.ProHashingMiningMode -eq "PPLNS") { "m=pplns,c=$Currency" }) | Select-Object) -join ','
+        $Pass = "a=$($Algorithm.ToLower()),e=off,n=$($PoolConfig.WorkerName),o=$($PoolConfig.UserName)$(If ($Algorithm_Norm -ne "Ethash" -and $Config.ProHashingMiningMode -eq "PPLNS" -and $Request.$_.CoinName) { ",m=pplns,c=$($Request.$_.CoinName.ToLower())" })"
 
         # Add coin name
-        If ($Request.$_.CoinName -and $Currency) { [void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName) }
+        If ($Request.$_.CoinName -and $Currency) { 
+            $CoinName = $Request.$_.CoinName
+            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $CoinName
+        }
+        Else { 
+            $CoinName = ""
+        }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
-
-        $Regions = If ($Algorithm_Norm -in @("Chia", "Etchash", "Ethash", "EthashLowMem")) { "US" } Else { $PoolConfig.Region }
 
         ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
             If ($Region = $PoolConfig.Region | Where-Object { (Get-Region $_) -eq $Region_Norm }) { 
@@ -78,11 +80,12 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
                     Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
                     Algorithm                = [String]$Algorithm_Norm
                     BaseName                 = [String]$Name
+                    CoinName                 = [String]$CoinName
                     Currency                 = [String]$Currency
                     Disabled                 = [Boolean]$Stat.Disabled
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                     Fee                      = [Decimal]$Fee
-                    Host                     = [String]$PoolHost.$Region
+                    Host                     = "$Region.$HostSuffix"
                     Name                     = [String]$PoolVariant
                     Pass                     = [String]$Pass
                     Port                     = [UInt16]$Request.$_.port

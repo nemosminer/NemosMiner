@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.2.2.3
-Version date:   20 October 2022
+Version:        4.2.3.0
+Version date:   31 December 2022
 #>
 
 Do {
@@ -53,7 +53,6 @@ Do {
         $Earnings = @(Import-Csv $FileName -ErrorAction SilentlyContinue)
         If ($Earnings.Count -gt $PoolData.Count / 2) { Break }
     }
-    Remove-Variable FileName, Now, PoolData -ErrorAction Ignore
 
     If ($Config.BalancesTrackerPollInterval -gt 0) { Write-Message -Level Info "Balances Tracker is running." }
 
@@ -314,7 +313,6 @@ Do {
                 }
             }
         }
-        Remove-Variable AvgHourlyGrowth, AvgDailyGrowth, AvgWeeklyGrowth, BalanceObjects, EarningsObject, Delta, Growth1, Growth6, Growth24, Growth168, Growth720, GrowthToday, HiddenPending, Payout, PayoutThreshold, PayoutThresholdCurrency, PoolBalanceObject, PoolTodayEarning -ErrorAction Ignore
 
         # Always keep pools sorted, even when new pools were added
         $Variables.Balances = [Ordered]@{ }
@@ -328,7 +326,6 @@ Do {
         # Build chart data (used in GUI) for last 30 days
         $PoolChartData = [PSCustomObject]@{ }
         $ChartData = $Earnings | Where-Object Pool -in $PoolsToTrack | Sort-Object Date | Group-Object -Property Date | Select-Object -Last 30 # days
-        Remove-Variable PoolsToTrack
 
         # One dataset per pool
         ($ChartData.Group | Where-Object { $_.DailyEarnings -gt 0 }).Pool | Sort-Object -Unique | ForEach-Object { 
@@ -351,7 +348,6 @@ Do {
             # Use dates for x-axis label
             Earnings = $PoolChartData
         }
-        Remove-Variable Balances, ChartData, PoolChartData, PoolEarnings
 
         $Variables.EarningsChartData | ConvertTo-Json | Out-File -FilePath ".\Data\EarningsChartData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
 
@@ -382,8 +378,9 @@ Do {
         # Sleep until next update (at least 1 minute, maximum 60 minutes)
         While ((Get-Date) -le $Now.AddMinutes((60, (1, [Int]$Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum | Measure-Object -Minimum).Minimum)) { Start-Sleep -Seconds 5 }
 
-        $null = [System.GC]::GetTotalMemory("forcefullcollection")
-
+        [System.GC]::Collect() | Out-Null
+        [System.GC]::WaitForPendingFinalizers() | Out-Null
+        [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
     }
 
     If ($Now) { Write-Message -Level Info "Balances Tracker stopped." }

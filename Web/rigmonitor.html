@@ -1,6 +1,6 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 data-navbaractive="navrigmonitor">Rig Monitor</h2>
+            <h2 id="title" data-navbaractive="navrigmonitor">Rig Monitor</h2>
           </div>
           <div id="settings" class="collapse out" style="transition: max-height 0.2s ease-out;">
             <h3>Monitor Settings</h3>
@@ -33,25 +33,32 @@
               <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#settings">Monitor Settings</button>
             </div>
             <table id="workers" class="table"
-              data-toolbar="#toolbar"
-              data-url="/displayworkers"
-              data-cache="false"
-              data-toggle="table"
-              data-icons="icons"
-              data-show-button-text="true"
-              data-filter-control="true"
-              data-show-search-clear-button="true"
-              data-disable-control-when-search="true"
-              data-show-columns="true"
-              data-show-toggle="true"
+              data-auto-refresh-status="true"
+              data-auto-refresh="true"
+              data-cache="true"
+              data-click-to-select="true"
+              data-cookie="true"
+              data-cookie-id-table="workers"
+              data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
+              data-detail-formatter="detailFormatter"
               data-detail-view="true"
-              data-show-refresh="true"
+              data-disable-control-when-search="true"
+              data-filter-control="true"
+              data-header-style="headerStyleAlignTop"
+              data-icons="icons"
+              data-maintain-meta-data="true"
+              data-reorderable-columns="true"
+              data-response-handler="formatWorker"
               data-sort-name="Worker"
               data-sort-order="asc"
-              data-click-to-select="true"
-              data-detail-formatter="detailFormatter"
-              data-response-handler="formatWorker"
-              data-header-style="headerStyleAlignTop"
+              data-show-button-text="true"
+              data-show-columns="true"
+              data-show-search-clear-button="true"
+              data-show-toggle="true"
+              data-show-refresh="true"
+              data-toggle="table"
+              data-toolbar="#toolbar"
+              data-url="/displayworkers"
               >
               <thead>
                 <tr>
@@ -104,7 +111,7 @@
                 }
               },
 
-              autoRefreshInterval: parseInt(config.Interval / 2), // refresh once per interval
+              autoRefreshInterval: parseInt(Math.max(config.Interval, 30)), // refresh once per interval, at least 30 seconds
               height: $(window).height() - $('#workers').offset().top + 20
             });
 

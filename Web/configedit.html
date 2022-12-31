@@ -1,6 +1,6 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 data-navbaractive="navconfigedit">Edit Configuration</h2>
+            <h2 id="title" data-navbaractive="navconfigedit">Edit Configuration</h2>
           </div>
           <div id="configfilenames" class="alert alert-info" role="alert">&ensp;</div>
           <form id="configuration">
@@ -122,8 +122,8 @@
                     <input type="number" id="IdleSec" name="IdleSec" min=0 max=3600 value=120 step=1 size=4> seconds
                   </div>
                   <div style="padding-top: 0.5rem" title="Start the legacy GUI">
-                    <input type="checkbox" class="toggle-switch" id="StartGUI" name="StartGUI"> Start legacy GUI
-                    <input type="checkbox" class="toggle-switch" id="StartGUIMinimized" name="StartGUIMinimized"> Start legacy GUI minimized
+                    <input type="checkbox" class="toggle-switch" id="LegacyGUI" name="LegacyGUI"> Start legacy GUI
+                    <input type="checkbox" class="toggle-switch" id="LegacyGUIStartMinimized" name="LegacyGUIStartMinimized"> Start legacy GUI minimized
                   </div>
                   <div style="padding-top: 0.7rem" title="Watchdog will monitor pools & miners for frequent failures&#10;and suspend failing pools or miners for some cycles.">
                     <input type="checkbox" class="toggle-switch" id="Watchdog" name="Watchdog"> Activate watchdog (recommended)
@@ -137,19 +137,11 @@
                   <div style="padding-top: 0.3rem" title="Cycle duration&#10;This defines the approximate duration for one cycle.&#10;(min=30, max=3600, default=90 seconds)" for="Interval">Cycle duration
                     <input type="number" id="Interval" name="Interval" min=30 max=3600 step=1 value=90> seconds
                   </div>
-                  <div style="padding-top: 0.3rem" title="Defines the minimum number of data samples to be collected from the miner&#10;while benchmarking before ending the cycle. Smaller numbers will&#10;cause faster benchmarking but the measured data will be less accurate&#10;(min=10, max=100, default=20 samples)" for="MinDataSamples">Minimum
-                    <input type="number" id="MinDataSamples" name="MinDataSamples" min=10 max=100 value=20 step=1 size=4> data samples while benchmarking
+                  <div style="padding-top: 0.3rem" title="Defines the minimum number of data samples to be collected from the miner&#10;while benchmarking before ending the cycle. Smaller numbers will&#10;cause faster benchmarking but the measured data will be less accurate&#10;(min=10, max=100, default=20 samples)" for="MinDataSample">Minimum
+                    <input type="number" id="MinDataSample" name="MinDataSample" min=10 max=100 value=20 step=1 size=4> data samples while benchmarking
                   </div>
-                  <div style="padding-top: 0.3rem" title="Minimum number of full cycles a miner must mine continously&#10;the same algorithm@pool before switching is allowed&#10;&#10;e.g. 3 would force a miner to stick mining the same algorithm@pool&#10;for at least 3 full cycles before switching to another algorithm or pool&#10;(min=1, max=10, default=1 cycles)&#10;&#10;Note: This does not apply when benchmarking" for="MinInterval"> Enforce mining for at least
-                    <input type="number" id="MinInterval" name="MinInterval" min=1 max=10 value=0 step=1 size=2> full cycles before switching
-                  </div>
-                  <div style="padding-top: 0.2rem" title="This setting definines how miners will connect to the pools">
-                    <select id="SSL">
-                      <option value="Never" title="Never use SSL for pool connections">Never use</option>
-                      <option value="Prefer" title="Prefer SSL pool connections">Prefer</option>
-                      <option value="Always" title="Always use SSL for pool connections&#10;Pools that do not support SSL connections are ignored&#10;&#10;Note: This setting might reduce earnings because not all pools & miners support SSL connections">Always use</option>
-                    </select>
-                    <label for="SSL"> SSL for pool connections</label>
+                  <div style="padding-top: 0.3rem" title="Minimum number of full cycles a miner must mine continously&#10;the same algorithm@pool before switching is allowed&#10;&#10;e.g. 3 would force a miner to stick mining the same algorithm@pool&#10;for at least 3 full cycles before switching to another algorithm or pool&#10;(min=1, max=10, default=1 cycles)&#10;&#10;Note: This does not apply when benchmarking" for="MinCycle"> Enforce mining for at least
+                    <input type="number" id="MinCycle" name="MinCycle" min=1 max=10 value=0 step=1 size=2> full cycles before switching
                   </div>
                   <div style="padding-top: 0.2rem" title="Enter Proxy IP address and port&#10;e.g. 192.168.1.1:3128"> Proxy address:port
                     <input type="text" id="Proxy" name="Proxy" maxlength=22 size=30>
@@ -178,21 +170,35 @@
                     </fieldset>
                     <br>
 
+                    <!-- Pool Network Settings -->
+                    <fieldset title="Note: Region is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
+                      <legend class=h6><b>Pool Network Settings</b></legend>
+                      <div style="padding-top: 0.2rem" title="Pools establish fastest network route based on your location&#10;Currently only ZergPool supports this feature.&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
+                        <input type="checkbox" class="toggle-switch" id="UseAnycast" name="UseAnycast"> Use anycast for best network performance and ping times
+                      </div>
+                      <div style="padding-top: 0.5rem" title="This setting definines how miners will connect to the pools">
+                        <select id="SSL">
+                          <option value="Never" title="Never use SSL for pool connections">Never use</option>
+                          <option value="Prefer" title="Prefer SSL pool connections">Prefer</option>
+                          <option value="Always" title="Always use SSL for pool connections&#10;Pools that do not support SSL connections are ignored&#10;&#10;Note: This setting might reduce earnings because not all pools & miners support SSL connections">Always use</option>
+                        </select>
+                        <label for="SSL"> SSL for pool connections</label>
+                      </div>
+                    </fieldset>
+                    <br>
+
                     <!-- Select the Region closest to your Location -->
                     <fieldset title="Note: Region is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
                       <legend class=h6><b>Select the Region closest to your Location</b></legend>
                       <div style="padding-top: 0.1rem; line-height: 125%" id="Regions"></div>
                     </fieldset>
-                    <div style="padding-top: 0.2rem" title="Pools establish fastest network route based on your location&#10;Currently only ZergPool supports this feature.&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
-                      <input type="checkbox" class="toggle-switch" id="UseAnycast" name="UseAnycast"> Use anycast for best network performance and ping times
-                    </div>
-                    <br>
                   </div>
                 </td>
+
                 <td>
                   <!-- Miner and Algorithm Selection -->
                   <legend class=h6><b>Miner and Algorithm Selection</b></legend>
-                  <div style="padding-top: 0.3rem" title="NemosMiner will run separate miner instances per GPU device model.&#10;Recommended for rigs with mixed GPU device models of the same vendor installed, e.g. GTX 1060 & GTX 1070&#10;This will increase profitability&#10;&#10;Note: AMD & NVIDIA cards will always run as separate instances.">
+                  <div style="padding-top: 0.3rem" title="NemosMiner will run separate miner instances per GPU device model.&#10;Recommended for rigs with mixed GPU device models of the same vendor installed, e.g. GTX 1060 & GTX 1070&#10;This will increase profitability&#10;&#10;Note: AMD, Intel & NVIDIA cards will always run as separate instances.">
                     <input type="checkbox" class="toggle-switch" id="MinerInstancePerDeviceModel" name="MinerInstancePerDeviceModel"> Run separate miner instance per GPU device model
                   </div>
                   <div style="padding-top: 0.3rem" title="Select miner set to be used by NemosMiner">Use
@@ -222,17 +228,15 @@
 
                   <!-- Miner Runtime Settings -->
                   <legend title="Miner Runtime Settings" class=h6><b>Miner Runtime Settings</b></legend>
-                  <div style="padding-top: 0.3rem" title="Miners will run as a hidden background task and are not accessible (not recommended)">
-                    <input type="radio" id="MinerWindowStyleHidden" name="MinerWindowStyle" value="Hidden"> Run as hidden background task
-                  </div>
-                  <div style="padding-top: 0.4rem" title="Miner windows are minimized (default), but accessible">
-                    <input type="radio" id="MinerWindowStyleMinimized" name="MinerWindowStyle" value="Minimized"> Run in minimized window
-                  </div>
-                  <div style="padding-top: 0.4rem" title="Miner windows are shown normally on desktop">
-                    <input type="radio" id="MinerWindowStyleNormal" name="MinerWindowStyle" value="Normal"> Run in normal window
-                  </div>
-                  <div style="padding-top: 0.5rem" title="This is helpful to check the miner output for errors">
-                    <input type="checkbox" class="toggle-switch" id="MinerWindowStyleNormalWhenBenchmarking" name="MinerWindowStyleNormalWhenBenchmarking"> Run in normal window while benchmarking
+
+                  <label for="MinerWindowStyle">Run miner</label>
+                  <select name="" id="MinerWindowStyle">
+                    <option value = "hidden" title="Miners will run as a hidden background task and are not accessible (not recommended)">as a hidden background task</option>
+                    <option value = "minimized" title="Miner windows are minimized (default), but accessible">in a minimized window</option>
+                    <option value = "normal" title="Miner windows are shown normally on desktop">in a normal window</option>
+                  </select>
+                  <div title="This is helpful to check the miner output for errors">
+                    <input type="checkbox" class="toggle-switch" id="MinerWindowStyleNormalWhenBenchmarking" name="MinerWindowStyleNormalWhenBenchmarking"> Run miner in a normal window while benchmarking
                   </div>
                   <div style="padding-top: 0.3rem" title="Select the process priority for CPU miners&#10;Higher priorities may lead to fluctuating hashrates with GPU miners">
                     <label for="CPUMinerProcessPriority">Run CPU miners with</label>
@@ -296,7 +300,7 @@
                     <input type="number" step=1 min=0 max=99 value=10 size=3 id="MinWorker" name="MinWorker"> workers at pool
                   </div>
                   <div style="padding-top: 0.3rem" title="Default factor with which NemosMiner multiplies the prices reported by ALL pools.&#10;E.g. If you feel that the effective earnings seen at the pools are 20% lower than what NemosMiner projects&#10;then set Earnings Adjustment Factor to 0.80&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')&#10;(min=0.00, max=10.00, default=1.00)" for="EarningsAdjustmentFactor"> Earnings adjustment factor
-                    <input type="number" id="EarningsAdjustmentFactor" name="EarningsAdjustmentFactor" min=0 max=1 value=10 step=0.01 size=4>
+                    <input type="number" id="EarningsAdjustmentFactor" name="EarningsAdjustmentFactor" min=0 max=10 value=1 step=0.01 size=4>
                   </div>
                   <div style="padding-top: 0.3rem" title="Mark a miner as unavailable if earning is x times higher than the&#10;next best 10% or at least 5 miners with same algorithm&#10;(min=1, max=99, default=5; 1 disables this check)">Unreal miner earning factor
                     <input type="number" step=0.1 min=1 max=99 value=5 size=3 id="UnrealMinerEarningFactor" name="UnrealMinerEarningFactor">
@@ -331,7 +335,10 @@
                     <div style="padding-top: 0.6rem" title="Show 1hr / 24hr & 7day pool earning averages&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)&#10;&#10;This setting applies to the main text window and web dashboard.">
                       <input type="checkbox" class="toggle-switch" id="BalancesShowAverages" name="BalancesShowAverages" style="margin-left:20px"> Show average earnings for each pool
                     </div>
-                    <div style="padding-top: 0.6rem" title="Pool balances in web dashboard will be shown in all currencies (main & extra currencies)&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
+                    <div style="padding-top: 0.6rem" title="Pool balances in web dashboard will be shown in main currency&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
+                      <input type="checkbox" class="toggle-switch" id="BalancesShowInMainCurrency" name="BalancesShowInMainCurrency" style="margin-left:20px"> Show pool balances in dashboard in main currency
+                    </div>
+                    <div style="padding-top: 0.6rem" title="Pool balances in web dashboard will be shown in extra currencies &#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
                       <input type="checkbox" class="toggle-switch" id="BalancesShowInAllCurrencies" name="BalancesShowInAllCurrencies" style="margin-left:20px"> Show pool balances in dashboard in all currencies
                     </div>
                     <div style="padding-top: 0.6rem" title="Most pools clear pending balances after a longer period of inactivity.&#10;To avoid forfeiting pool balances NemosMiner will enforce mining&#10;at the pool the day before it would clear the balance.&#10;(one cycle only, even if it is not the most profitable pool).&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
@@ -597,12 +604,12 @@
               $(document.getElementById('IdleDetection')).click(function (event) {
                 document.getElementById('IdleSec').disabled = !(document.getElementById('IdleDetection').checked);
               });
-              if (config.StartGUI) document.getElementById('StartGUI').checked = true;
-              if (config.StartGUIMinimized) document.getElementById('StartGUIMinimized').checked = true;
-              $(document.getElementById('StartGUI')).change(function (event) {
-                document.getElementById('StartGUIMinimized').disabled = !(document.getElementById('StartGUI').checked);
+              if (config.LegacyGUI) document.getElementById('LegacyGUI').checked = true;
+              if (config.LegacyGUIStartMinimized) document.getElementById('LegacyGUIStartMinimized').checked = true;
+              $(document.getElementById('LegacyGUI')).change(function (event) {
+                document.getElementById('LegacyGUIStartMinimized').disabled = !(document.getElementById('LegacyGUI').checked);
               });
-              $(document.getElementById('StartGUI')).trigger('change');
+              $(document.getElementById('LegacyGUI')).trigger('change');
               if (config.Watchdog) document.getElementById('Watchdog').checked = true;
               if (config.AutoReboot) document.getElementById('AutoReboot').checked = true;
               if (Number.isInteger(config.Donation)) document.getElementById('Donation').value = parseInt(config.Donation);
@@ -613,10 +620,8 @@
                 $('#myModal').modal({ show: true });
               };
               document.getElementById('Interval').value = parseInt(config.Interval);
-              document.getElementById('MinDataSamples').value = parseInt(config.MinDataSamples);
-              document.getElementById('MinInterval').value = parseInt(config.MinInterval);
-              if (config.SSL === 'Never' || config.SSL === 'Prefer' || config.SSL === 'Always') document.getElementById('SSL').value = config.SSL;
-              else document.getElementById('SSL').value = 'Prefer';
+              document.getElementById('MinDataSample').value = parseInt(config.MinDataSample);
+              document.getElementById('MinCycle').value = parseInt(config.MinCycle);
               document.getElementById('Proxy').value = config.Proxy.trim();
               if (config.OpenFirewallPorts) document.getElementById('OpenFirewallPorts').checked = true;
               document.getElementById('DecimalsMax').value = parseInt(config.DecimalsMax);
@@ -718,6 +723,12 @@
                 document.getElementById('ProHashingAPIKey').disabled = !(document.getElementById('pool-prohashing').checked || document.getElementById('pool-prohashing24hr').checked || document.getElementById('pool-prohashingplus').checked);
                 document.getElementById('ProHashingMiningMode').disabled = !(document.getElementById('pool-prohashing').checked || document.getElementById('pool-prohashing24hr').checked || document.getElementById('pool-prohashingplus').checked);
               }
+
+              // Pool Network Settings
+              if (config.UseAnycast) document.getElementById('UseAnycast').checked = true;
+              if (config.SSL === 'Never' || config.SSL === 'Prefer' || config.SSL === 'Always') document.getElementById('SSL').value = config.SSL;
+              else document.getElementById('SSL').value = 'Prefer';
+
               // Select the Region closest to your Location
               // Fill region list
               $.ajax({
@@ -738,7 +749,6 @@
               } catch {
                 document.getElementById(('region-europe').toLowerCase()).checked = true;
               }
-              if (config.UseAnycast) document.getElementById('UseAnycast').checked = true;
 
               // Miner and Algorithm Selection
               if (config.MinerInstancePerDeviceModel) document.getElementById('MinerInstancePerDeviceModel').checked = true;
@@ -753,7 +763,7 @@
                   dataType: 'json',
                   url: '/defaultAlgorithm',
                   success: function (result) {
-                    Algorithm.value = result.join(',');
+                    Algorithm.value = result.sort().join(',');
                   }
                 });
               });
@@ -769,9 +779,10 @@
               });
 
               // Miner Runtime Settings
-              if (config.MinerWindowStyle.toLowerCase() == 'hidden') document.getElementById('MinerWindowStyleHidden').checked = true;
-              if (config.MinerWindowStyle.toLowerCase() == 'minimized') document.getElementById('MinerWindowStyleMinimized').checked = true;
-              if (config.MinerWindowStyle.toLowerCase() == 'normal') document.getElementById('MinerWindowStyleNormal').checked = true;
+              document.getElementById('MinerWindowStyle').value = config.MinerWindowStyle.toLowerCase();
+              // if (config.MinerWindowStyle.toLowerCase() == 'hidden') document.getElementById('MinerWindowStyleHidden').checked = true;
+              // if (config.MinerWindowStyle.toLowerCase() == 'minimized') document.getElementById('MinerWindowStyleMinimized').checked = true;
+              // if (config.MinerWindowStyle.toLowerCase() == 'normal') document.getElementById('MinerWindowStyleNormal').checked = true;
               if (config.MinerWindowStyleNormalWhenBenchmarking) document.getElementById('MinerWindowStyleNormalWhenBenchmarking').checked = true;
               if (parseInt(config.CPUMinerProcessPriority) >= -2 && parseInt(config.CPUMinerProcessPriority) <= 1) document.getElementById('CPUMinerProcessPriority').value = config.CPUMinerProcessPriority;
               else document.getElementById('CPUMinerProcessPriority').value = -2;
@@ -831,12 +842,14 @@
                 if (document.getElementById('BalancesTrackerPollInterval').value > 1 && document.getElementById('BalancesTrackerPollInterval').value < 9) document.getElementById('BalancesTrackerPollInterval').value = 0;
                 document.getElementById('BalancesShowSums').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
                 document.getElementById('BalancesShowAverages').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
+                document.getElementById('BalancesShowInMainCurrency').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
                 document.getElementById('BalancesShowInAllCurrencies').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
                 document.getElementById('BalancesKeepAlive').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
                 document.getElementById('BalancesTrackerLog').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
               });
               if (config.BalancesShowSums) document.getElementById('BalancesShowSums').checked = true;
               if (config.BalancesShowAverages) document.getElementById('BalancesShowAverages').checked = true;
+              if (config.BalancesShowInMainCurrency) document.getElementById('BalancesShowInMainCurrency').checked = true;
               if (config.BalancesShowInAllCurrencies) document.getElementById('BalancesShowInAllCurrencies').checked = true;
               if (config.BalancesKeepAlive) document.getElementById('BalancesKeepAlive').checked = true;
               if (config.BalancesTrackerLog) document.getElementById('BalancesTrackerLog').checked = true;
@@ -1029,12 +1042,12 @@
                     required: true,
                     step: 1
                   },
-                  MinDataSamples: {
+                  MinDataSample: {
                     range: [10, 100],
                     required: true,
                     step: 1
                   },
-                  MinInterval: {
+                  MinCycle: {
                     digits: true,
                     range: [0, 10],
                     required: true,
@@ -1199,16 +1212,14 @@
                   else config.StartupMode = 'Idle';
                   config.IdleDetection = document.getElementById('IdleDetection').checked;
                   config.IdleSec = parseInt(document.getElementById('IdleSec').value);
-                  config.StartGUI = document.getElementById('StartGUI').checked;
-                  config.StartGUIMinimized = document.getElementById('StartGUIMinimized').checked;
+                  config.LegacyGUI = document.getElementById('LegacyGUI').checked;
+                  config.LegacyGUIStartMinimized = document.getElementById('LegacyGUIStartMinimized').checked;
                   config.Watchdog = document.getElementById('Watchdog').checked;
                   config.AutoReboot = document.getElementById('AutoReboot').checked;
                   config.Donation = parseInt(document.getElementById('Donation').value);
                   config.Interval = parseInt(document.getElementById('Interval').value);
-                  config.MinDataSamples = parseInt(document.getElementById('MinDataSamples').value);
-                  config.MinInterval = parseInt(document.getElementById('MinInterval').value);
-                  if (document.getElementById('SSL').value.match('Never|Prefer|Always')) config.SSL = document.getElementById('SSL').value;
-                  else config.SSL = 'Prefer';
+                  config.MinDataSample = parseInt(document.getElementById('MinDataSample').value);
+                  config.MinCycle = parseInt(document.getElementById('MinCycle').value);
                   config.Proxy = document.getElementById('Proxy').value;
                   config.OpenFirewallPorts = document.getElementById('OpenFirewallPorts').checked;
                   config.DecimalsMax = parseInt(document.getElementById('DecimalsMax').value);
@@ -1227,11 +1238,15 @@
                     if (document.getElementById(('pool-' + value.toLowerCase())).checked == true) config.PoolName.push(value);
                   });
 
+                  // Pool Network Settings
+                  config.UseAnycast = document.getElementById('UseAnycast').checked;
+                  if (document.getElementById('SSL').value.match('Never|Prefer|Always')) config.SSL = document.getElementById('SSL').value;
+                  else config.SSL = 'Prefer';
+
                   // Select the region closest to your location
                   $.each(regions, function (key, value) {
                     if (document.getElementById('region-' + value.toLowerCase()).checked == true) config.Region = value;
                   });
-                  config.UseAnycast = document.getElementById('UseAnycast').checked;
 
                   // Miner and Algorithm Selection
                   config.MinerInstancePerDeviceModel = document.getElementById('MinerInstancePerDeviceModel').checked;
@@ -1245,9 +1260,10 @@
                   config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
 
                   // Miner Runtime Settings
-                  if (document.getElementById('MinerWindowStyleHidden').checked) config.MinerWindowStyle = 'hidden';
-                  if (document.getElementById('MinerWindowStyleMinimized').checked) config.MinerWindowStyle = 'minimized';
-                  if (document.getElementById('MinerWindowStyleNormal').checked) config.MinerWindowStyle = 'normal';
+                  config.MinerWindowStyle = document.getElementById('MinerWindowStyle').value;
+                  // if (document.getElementById('MinerWindowStyleHidden').checked) config.MinerWindowStyle = 'hidden';
+                  // if (document.getElementById('MinerWindowStyleMinimized').checked) config.MinerWindowStyle = 'minimized';
+                  // if (document.getElementById('MinerWindowStyleNormal').checked) config.MinerWindowStyle = 'normal';
                   config.MinerWindowStyleNormalWhenBenchmarking = document.getElementById('MinerWindowStyleNormalWhenBenchmarking').checked;
                   config.CPUMinerProcessPriority = parseInt(document.getElementById('CPUMinerProcessPriority').value);
                   config.GPUMinerProcessPriority = parseInt(document.getElementById('GPUMinerProcessPriority').value);
@@ -1285,6 +1301,7 @@
                   config.BalancesTrackerPollInterval = parseInt(document.getElementById('BalancesTrackerPollInterval').value);
                   config.BalancesShowSums = document.getElementById('BalancesShowSums').checked;
                   config.BalancesShowAverages = document.getElementById('BalancesShowAverages').checked;
+                  config.BalancesShowInMainCurrency = document.getElementById('BalancesShowInMainCurrency').checked;
                   config.BalancesShowInAllCurrencies = document.getElementById('BalancesShowInAllCurrencies').checked;
                   config.BalancesKeepAlive = document.getElementById('BalancesKeepAlive').checked;
                   config.BalancesTrackerLog = document.getElementById('BalancesTrackerLog').checked;

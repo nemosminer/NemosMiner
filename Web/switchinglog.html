@@ -1,32 +1,36 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 data-navbaractive="navswitchinglog">Switching Log</h2>
+            <h2 id="title" data-navbaractive="navswitchinglog">Switching Log</h2>
           </div>
           <div class="alert alert-info" role="alert">Lists the executed miners and the command lines used (last 1000 entries).</div>
           <div id="toolbar">
-            <button id="btn-clear-log" class="btn btn-warning">Clear Switching Log</button>
+            <button id="btn-clear-log" class="btn btn-info">Clear Switching Log</button>
           </div>
           <table id="switchinglog" class="table"
-            data-toolbar="#toolbar"
-            data-click-to-select="true"
-            data-cache="false"
-            data-toggle="table"
-            data-icons="icons"
-            data-show-button-text="true"
-            data-show-search-clear-button="true"
-            data-filter-control="true"
-            data-disable-control-when-search="true"
-            data-show-columns="true"
-            data-show-toggle="true"
-            data-show-fullscreen="true"
-            data-detail-view="true"
-            data-show-refresh="true"
-            data-auto-refresh="true"
             data-auto-refresh-status="true"
+            data-auto-refresh="true"
+            data-cache="true"
+            data-click-to-select="true"
+            data-cookie="true"
+            data-cookie-id-table="switchonglog"
+            data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
             data-detail-formatter="detailFormatter"
-            data-response-handler="formatData"
-            data-url="/switchinglog"
+            data-detail-view="true"
+            data-disable-control-when-search="true"
+            data-filter-control="true"
             data-header-style="headerStyleAlignTop"
+            data-icons="icons"
+            data-maintain-meta-data="true"
+            data-response-handler="formatData"
+            data-show-button-text="true"
+            data-show-columns="true"
+            data-show-fullscreen="true"
+            data-show-refresh="true"
+            data-show-search-clear-button="true"
+            data-show-toggle="true"
+            data-toggle="table"
+            data-toolbar="#toolbar"
+            data-url="/switchinglog"
             >
             <thead>
               <tr>
@@ -81,7 +85,7 @@
                   });
                 };
               },
-              autoRefreshInterval: parseInt(config.Interval), // refresh once per interval
+              autoRefreshInterval: parseInt(Math.max(config.Interval, 30)), // refresh once per interval, at least 30 seconds
               height: $(window).height() - $table.offset().top + 5
             });
 

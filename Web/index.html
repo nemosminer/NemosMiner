@@ -1,43 +1,49 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 data-navbaractive="navdashboard">Dashboard</h2>
+            <h2 id="title" data-navbaractive="navdashboard" class="h2">Dashboard</h2>
           </div>
           <div id="toolbar">
             <button id="btn-re-benchmark" class="btn btn-primary" disabled title="The marked miners will re-benchmark&#10;Use this if the recorded hashrate is unreal or to re-enable disabled miners">Re-benchmark</button>
             <button id="btn-re-measure" class="btn btn-primary" disabled title="The marked miners will re-measure power usage&#10;Use this if the recorded power usage is unreal">Re-measure Power Usage</button>
-            <button id="btn-failed" class="btn btn-danger" disabled title="The marked miners will be marked as failed&#10;Use this if the miners fail benchmarking or produce unpredictable results">Mark as failed</button>
-            <button id="btn-disable" class="btn btn-warning" disabled title="The marked miners will be marked as disabled&#10;To re-enable trigger re-benchmarking">Disable</button>
+            <button id="btn-failed" class="btn btn-warning" disabled title="The marked miners will be marked as failed&#10;Use this if the miners fail benchmarking or produce unpredictable results">Mark as failed</button>
+            <button id="btn-disable" class="btn btn-danger" disabled title="The marked miners will be marked as disabled&#10;To re-enable trigger re-benchmarking">Disable</button>
           </div>
           <h3>Launched Miners</h3>
           <table id="miners" class="table"
-            data-toolbar="#toolbar"
-            data-click-to-select="true"
-            data-cache="false"
-            data-toggle="table"
-            data-icons="icons"
-            data-show-button-text="true"
-            data-show-search-clear-button="true"
-            data-filter-control="true"
-            data-disable-control-when-search="true"
-            data-show-columns="true"
-            data-show-toggle="true"
-            data-show-refresh="true"
             data-auto-refresh="true"
             data-auto-refresh-status="true"
-            data-detail-view="true"
+            data-cache="true"
+            data-click-to-select="true"
+            data-cookie="true"
+            data-cookie-id-table="cs_miners"
+            data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
             data-detail-formatter="detailFormatter"
-            data-response-handler="formatMiners"
-            data-url="/miners/best_combo"
-            data-maintain-meta-data="true"
-            data-undefined-text=""
+            data-detail-view="true"
+            data-disable-control-when-search="true"
+            data-filter-control="true"
             data-header-style="headerStyleAlignTop"
+            data-icons="icons"
+            data-maintain-meta-data="true"
+            data-reorderable-columns="true"
+            data-response-handler="formatMiners"
+            data-show-button-text="true"
+            data-show-columns="true"
+            data-show-refresh="true"
+            data-show-search-clear-button="true"
+            data-show-toggle="true"
+            data-toggle="table"
+            data-toolbar="#toolbar"
+            data-undefined-text=""
+            data-url="/miners/best_combo"
             >
             <thead>
               <tr>
                 <th data-switchable="false" data-field="tStatusMessage" data-class="hidden"></th>
                 <th data-field="state" data-checkbox="true"></th>
-                <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
                 <th data-field="tName" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
+                <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">Miner</th>
+                <th data-field="Version" data-sortable="true" data-filter-control="select" data-visible="false">Version</th>
+                <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false" data-filter-strict-search="true">Type</th>
                 <th data-field="tStatusMessage" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Status</th>
                 <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)" data-visible="false">Earning</th>
@@ -78,7 +84,7 @@
           <br>
           <br>
 
-          <div id="balances" style ="display:none">
+          <div id="balances" style="display:none">
             <h3>Balances</h3>
             <div id="balanceboxes" class="card-deck"></div>
             <script id="poolbalance_template" type="text/x-handlebars-template">
@@ -216,11 +222,245 @@
               }
             });
 
-            $('#miners tr th:eq(6)').html('Earning<br>(' + config.Currency + ')');
-            $('#miners tr th:eq(7)').html('Earning Bias<br>(' + config.Currency + ')');
-            $('#miners tr th:eq(8)').html('Power Cost<br>(' + config.Currency + ')');
-            $('#miners tr th:eq(9)').html('Profit<br>(' + config.Currency + ')');
-            $('#miners tr th:eq(10)').html('Profit Bias<br>(' + config.Currency + ')');
+            function updatePoolBalances() {
+              var data_sum = {
+                balances: {},
+                growth1: {},
+                growth6: {},
+                growth24: {},
+                growth168: {},
+                growth720: {},
+              };
+              var totals = {
+                name: "Totals of all pools",
+                growth1: {},
+                growth6: {},
+                growth24: {},
+                growth168: {},
+                growth720: {},
+                allbalances: {},
+                total: true,
+                outdated: false,
+                maincurrency: config.Currency
+              };
+              currencies = [config.Currency].concat(config.ExtraCurrencies)
+
+              if (config.UsemBTC == true) currencies[currencies.indexOf('BTC')] = 'mBTC'
+
+              var rates = {};
+                // get rates
+                $.ajax({
+                  async: false,
+                  dataType: 'json',
+                  timeout: 10,
+                  url: '/rates',
+                  success: function(result) {
+                    rates = result;
+                    sessionStorage.setItem('rates', JSON.stringify(rates));
+
+                  $.ajax({
+                    async: false,
+                    dataType: 'json',
+                    url: '/balances',
+                    success: function(result) {
+                      if (result != null) { 
+                        document.getElementById('balances').style.display = 'block';
+                        $('#balanceboxes').empty();
+
+                        var outdatedicon = '';
+                        var template = Handlebars.compile($('#poolbalance_template').html());
+                        var footer = new RegExp('-.+|=.+');
+
+                        $.each(currencies, function(cindex, currency) {
+                          data_sum['balances'][currency]  = 0;
+                          data_sum['growth1'][currency]   = 0;
+                          data_sum['growth6'][currency]   = 0;
+                          data_sum['growth24'][currency]  = 0;
+                          data_sum['growth168'][currency] = 0;
+                          data_sum['growth720'][currency] = 0;
+                        });
+
+                        $.each(result, function(index, item) {
+                          if (config.UsemBTC && item.Currency == 'BTC') {
+                            var factor = 1000;
+                            var currency = 'mBTC';
+                          } else {
+                            var factor = 1;
+                            var currency = item.Currency;
+                          }
+                          if (config.BalancesShowInAllCurrencies || footer.test(item.Pool)) {
+                            item.Currencies = [currency].concat(currencies);
+                          } else if (config.BalancesShowInMainCurrency || footer.test(item.Pool)) {
+                            item.Currencies = [currency].concat(config.Currency);
+                          } else {
+                            item.Currencies = [currency];
+                          }
+
+                          if (!(footer.test(item.Pool))) {
+
+                            if (rates[item.Currency]) currencyrate = rates[item.Currency][config.Currency] / factor;
+
+                            // MiningDutch payout threshold
+                            if (item.Pool == "MiningDutch" && item.Currency != "BTC" && rates[item.Currency]) {
+                              item.PayoutThresholdCurrency = "BTC";
+                              item.PayoutThreshold = item.PayoutThreshold / rates[item.Currency][item.PayoutThresholdCurrency];
+                            }
+
+                            var data = {
+                              name: item.Pool + ' (' + item.Currency + ')',
+                              uri: item.Uri,
+                              updated: formatDate(item.LastUpdated),
+                              balances: {},
+                              growth1: item.Growth1 * factor,
+                              growth6: item.Growth6 * factor,
+                              growth24: item.Growth24 * factor,
+                              growth168: item.Growth168 * factor,
+                              growth720: item.Growth720 * factor,
+                              avghourlygrowth: item.AvgHourlyGrowth * factor,
+                              avgdailygrowth: item.AvgDailyGrowth * factor,
+                              avgweeklygrowth: item.AvgWeeklyGrowth * factor,
+                              payoutthreshold: item.PayoutThreshold * factor,
+                              rate: currencyrate,
+                              currency: currency,
+                              maincurrency: config.Currency,
+                              percentage: (item.Balance / item.PayoutThreshold * 100).toFixed(2),
+                              paydate: formatDate(item.ProjectedPayDate),
+                              showaverages: config.BalancesShowAverages,
+                              showsums: config.BalancesShowSums,
+                            };
+
+                            // Add warning symbol if data was not updated in last poll, add one minute to ensure completion of balance poll
+                            if ((new Date() - new Date(item.LastUpdated)) / 1000 > parseInt(config.BalancesTrackerPollInterval + 1) * 60) {
+                              outdatedicon = ' &#9888;&#65039;';
+                              data.updated += outdatedicon;
+                            }
+
+                            // Convert balance to other currencies
+                            if (rates[item.Currency]) {
+                              $.each(item.Currencies, function(cindex, currency) {
+                                if (rates[currency]) data['balances'][currency] = item.Balance * rates[item.Currency][currency];
+                              });
+                              data.balanceinmaincurrency = item.Balance * rates[item.Currency][config.Currency];
+                            } else { 
+                              if (config.BalancesShowInAllCurrencies) {
+                                data['balances']['Exchange rates unknown'] = "";
+                              }
+                              data['balances'][item.Currency] = item.Balance;
+                            }
+
+                            // build totals
+                            $.each(currencies, function(cindex, currency) {
+                              if (rates[item.Currency] && rates[currency]) {
+                                data_sum['growth1'][currency]   += item.Growth1 * rates[item.Currency][currency];
+                                data_sum['growth6'][currency]   += item.Growth6 * rates[item.Currency][currency];
+                                data_sum['growth24'][currency]  += item.Growth24 * rates[item.Currency][currency];
+                                data_sum['growth168'][currency] += item.Growth168 * rates[item.Currency][currency];
+                                data_sum['growth720'][currency] += item.Growth720 * rates[item.Currency][currency];
+                                data_sum['balances'][currency]  += item.Balance * rates[item.Currency][currency];
+                              }
+                            });
+
+                            $('#balanceboxes').append(template(data));
+                          }
+                        });
+
+                        if (outdatedicon) {
+                          totals['name'] = totals['name'] + outdatedicon;
+                          totals.outdated = true;
+                        }
+
+                        if (!(config.BalancesShowInAllCurrencies)) currencies = [config.Currency];
+
+                        $.each(currencies, function(cindex, currency) {
+                          if (rates[currency]) {
+                            totals['growth1'][currency]     = data_sum['growth1'][currency];
+                            totals['growth6'][currency]     = data_sum['growth6'][currency];
+                            totals['growth24'][currency]    = data_sum['growth24'][currency];
+                            totals['growth168'][currency]   = data_sum['growth168'][currency];
+                            totals['growth720'][currency]   = data_sum['growth720'][currency];
+                            totals['allbalances'][currency] = data_sum['balances'][currency];
+                          }
+                        });
+
+                        $('#balanceboxes').append(template(totals));
+                      }
+                    }
+                  });
+                }
+              });
+            }
+
+            $('#btn-re-benchmark').click(function () {
+              var $data = $table.bootstrapTable('getSelections');
+              if ($data.length >= 1) {
+                $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
+                if ($data.length >= $querysize) {
+                  alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
+                }
+                else {
+                  $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=Hashrate';
+                  $('.modal-body').load($command, function() {
+                    $('.modal-title').text($('#btn-re-benchmark').text());
+                    $('#myModal').modal({show:true});
+                  });
+                  $('#miners').bootstrapTable('refresh');
+                }
+              }
+            });
+
+            $('#btn-re-measure').click(function () {
+              var $data = $table.bootstrapTable('getSelections');
+              if ($data.length >= 1) {
+                $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
+                if ($data.length >= $querysize) {
+                  alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
+                }
+                else {
+                  $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=PowerUsage';
+                  $('.modal-body').load($command, function() {
+                    $('.modal-title').text($('#btn-re-measure').text());
+                    $('#myModal').modal({show:true});
+                  });
+                  $('#miners').bootstrapTable('refresh');
+                }
+              }
+            });
+
+            $('#btn-failed').click(function () {
+              var $data = $table.bootstrapTable('getSelections');
+              if ($data.length >= 1) {
+                $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
+                if ($data.length >= $querysize) {
+                  alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')')
+                }
+                else {
+                  $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=Hashrate&Value=0';
+                  $('.modal-body').load($command, function() {
+                    $('.modal-title').text($('#btn-failed').text());
+                    $('#myModal').modal({show:true});
+                  });
+                  $('#miners').bootstrapTable('refresh');
+                }
+              }
+            });
+
+            $('#btn-disable').click(function () {
+              var $data = $table.bootstrapTable('getSelections');
+              if ($data.length >= 1) {
+                $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
+                if ($data.length >= $querysize) {
+                  alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')')
+                }
+                else {
+                  $command = '/functions/stat/disable?Miners=' + encodeURIComponent($data);
+                  $('.modal-body').load($command, function() {
+                    $('.modal-title').text($('#btn-disable').text());
+                    $('#myModal').modal({show:true});
+                  });
+                  $('#miners').bootstrapTable('refresh');
+                }
+              }
+            });
 
             $table.bootstrapTable({
               onLoadSuccess: function() {
@@ -247,7 +487,6 @@
                   $table.bootstrapTable('showColumn', 'tSecondaryPoolUser');
                 }
               },
-
               onPostBody: function () {
                 if (config.UseColorForMinerStatus == true ) {
                   $('#miners td:nth-child(2)').each(function () {
@@ -269,265 +508,24 @@
                         break;
                     };
                   });
-                 }
+                }
               },
-
               onAll: function() {
                 document.getElementById('btn-re-benchmark').disabled = !Boolean($table.bootstrapTable('getSelections').length);
                 document.getElementById('btn-re-measure').disabled = !Boolean($table.bootstrapTable('getSelections').length);
                 document.getElementById('btn-failed').disabled = !Boolean($table.bootstrapTable('getSelections').length);
                 document.getElementById('btn-disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
-              },
-
-              autoRefreshInterval: parseInt(config.Interval) // refresh once per interval
+              }
             });
 
-            function updatePoolBalances() {
-              var data_sum = {
-                balances: {},
-                growth1: {},
-                growth6: {},
-                growth24: {},
-                growth168: {},
-                growth720: {},
-              };
-              var totals = {
-                name: "Totals of all pools",
-                growth1: {},
-                growth6: {},
-                growth24: {},
-                growth168: {},
-                growth720: {},
-                allbalances: {},
-                total: true,
-                outdated: false,
-                maincurrency: config.Currency
-              };
-              var rates = {};
+            $('#miners tr th:eq(8)').html('Earning<br>(' + config.Currency + ')');
+            $('#miners tr th:eq(9)').html('Earning Bias<br>(' + config.Currency + ')');
+            $('#miners tr th:eq(10)').html('Power Cost<br>(' + config.Currency + ')');
+            $('#miners tr th:eq(11)').html('Profit<br>(' + config.Currency + ')');
+            $('#miners tr th:eq(12)').html('Profit Bias<br>(' + config.Currency + ')');
 
-              $.ajax({
-                async: false,
-                dataType: 'json',
-                url: '/rates',
-                success: function(result) {
-                  if (result != null) {
-                    rates = result;
+            updatePoolBalances();
 
-                    currencies = [config.Currency].concat(config.ExtraCurrencies)
-
-                    if (config.UsemBTC == true) currencies[currencies.indexOf('BTC')] = 'mBTC'
-
-                    $.ajax({
-                      async: false,
-                      dataType: 'json',
-                      url: '/balances',
-                      success: function(result) {
-                        if (result != null) { 
-                          document.getElementById('balances').style.display = 'block';
-                          $('#balanceboxes').empty();
-
-                          var outdatedicon = '';
-                          var template = Handlebars.compile($('#poolbalance_template').html());
-                          var footer = new RegExp('-.+|=.+');
-
-                          $.each(currencies, function(cindex, currency) {
-                            data_sum['balances'][currency]  = 0;
-                            data_sum['growth1'][currency]   = 0;
-                            data_sum['growth6'][currency]   = 0;
-                            data_sum['growth24'][currency]  = 0;
-                            data_sum['growth168'][currency] = 0;
-                            data_sum['growth720'][currency] = 0;
-                          });
-
-                          $.each(result, function(index, item) {
-                            if (config.UsemBTC && item.Currency == 'BTC') {
-                              var factor = 1000;
-                              var currency = 'mBTC';
-                            } else {
-                              var factor = 1;
-                              var currency = item.Currency;
-                            }
-
-                            if (config.BalancesShowInAllCurrencies || footer.test(item.Pool)) {
-                              item.Currencies = [currency].concat(currencies);
-                            } else { 
-                              item.Currencies = [currency];
-                            }
-
-                            if (!(footer.test(item.Pool))) {
-
-                              if (rates[item.Currency]) currencyrate = rates[item.Currency][config.Currency] / factor;
-
-                              // MiningDutch payout threshold
-                              if (item.Pool == "MiningDutch" && item.Currency != "BTC" && rates[item.Currency]) {
-                                item.PayoutThresholdCurrency = "BTC";
-                                item.PayoutThreshold = item.PayoutThreshold / rates[item.Currency][item.PayoutThresholdCurrency];
-                              }
-
-                              var data = {
-                                name: item.Pool + ' (' + item.Currency + ')',
-                                uri: item.Uri,
-                                updated: formatDate(item.LastUpdated),
-                                balances: {},
-                                growth1: item.Growth1 * factor,
-                                growth6: item.Growth6 * factor,
-                                growth24: item.Growth24 * factor,
-                                growth168: item.Growth168 * factor,
-                                growth720: item.Growth720 * factor,
-                                avghourlygrowth: item.AvgHourlyGrowth * factor,
-                                avgdailygrowth: item.AvgDailyGrowth * factor,
-                                avgweeklygrowth: item.AvgWeeklyGrowth * factor,
-                                payoutthreshold: item.PayoutThreshold * factor,
-                                rate: currencyrate,
-                                currency: currency,
-                                maincurrency: config.Currency,
-                                percentage: (item.Balance / item.PayoutThreshold * 100).toFixed(2),
-                                paydate: formatDate(item.ProjectedPayDate),
-                                showaverages: config.BalancesShowAverages,
-                                showsums: config.BalancesShowSums,
-                              };
-
-                              // Add warning symbol if data was not updated in last poll, add one minute to ensure completion of balance poll
-                              if ((new Date() - new Date(item.LastUpdated)) / 1000 > parseInt(config.BalancesTrackerPollInterval + 1) * 60) {
-                                outdatedicon = ' &#9888;&#65039;';
-                                data.updated += outdatedicon;
-                              }
-
-                              // Convert balance to other currencies
-                              if (rates[item.Currency]) {
-                                $.each(item.Currencies, function(cindex, currency) {
-                                  if (rates[currency]) data['balances'][currency] = item.Balance * rates[item.Currency][currency];
-                                });
-                                data.balanceinmaincurrency = item.Balance * rates[item.Currency][config.Currency];
-                              } else { 
-                                if (config.BalancesShowInAllCurrencies) {
-                                  data['balances']['Exchange rates unknown'] = "";
-                                }
-                                data['balances'][item.Currency] = item.Balance;
-                              }
-
-                              // build totals
-                              $.each(currencies, function(cindex, currency) {
-                                if (rates[item.Currency] && rates[currency]) {
-                                  data_sum['growth1'][currency]   += item.Growth1 * rates[item.Currency][currency];
-                                  data_sum['growth6'][currency]   += item.Growth6 * rates[item.Currency][currency];
-                                  data_sum['growth24'][currency]  += item.Growth24 * rates[item.Currency][currency];
-                                  data_sum['growth168'][currency] += item.Growth168 * rates[item.Currency][currency];
-                                  data_sum['growth720'][currency] += item.Growth720 * rates[item.Currency][currency];
-                                  data_sum['balances'][currency]  += item.Balance * rates[item.Currency][currency];
-                                }
-                              });
-
-                              $('#balanceboxes').append(template(data));
-                            }
-                          });
-
-                          if (outdatedicon) {
-                            totals['name'] = totals['name'] + outdatedicon;
-                            totals.outdated = true;
-                          }
-
-                          if (!(config.BalancesShowInAllCurrencies)) currencies = [config.Currency];
-
-                          $.each(currencies, function(cindex, currency) {
-                            if (rates[currency]) {
-                              totals['growth1'][currency]     = data_sum['growth1'][currency];
-                              totals['growth6'][currency]     = data_sum['growth6'][currency];
-                              totals['growth24'][currency]    = data_sum['growth24'][currency];
-                              totals['growth168'][currency]   = data_sum['growth168'][currency];
-                              totals['growth720'][currency]   = data_sum['growth720'][currency];
-                              totals['allbalances'][currency] = data_sum['balances'][currency];
-                            }
-                          });
-
-                          $('#balanceboxes').append(template(totals));
-                        }
-                      }
-                    });
-                  }
-                }
-              });
-            }
-            
-            $(document).ready(function () {
-              $('#btn-re-benchmark').click(function () {
-                var $data = $table.bootstrapTable('getSelections');
-                if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
-                  if ($data.length >= $querysize) {
-                    alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
-                  }
-                  else {
-                    $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=Hashrate';
-                    $('.modal-body').load($command, function() {
-                      $('.modal-title').text($('#btn-re-benchmark').text());
-                      $('#myModal').modal({show:true});
-                    });
-                    $('#miners').bootstrapTable('refresh');
-                  }
-                }
-              });
-
-              $('#btn-re-measure').click(function () {
-                var $data = $table.bootstrapTable('getSelections');
-                if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
-                  if ($data.length >= $querysize) {
-                    alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
-                  }
-                  else {
-                    $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=PowerUsage';
-                    $('.modal-body').load($command, function() {
-                      $('.modal-title').text($('#btn-re-measure').text());
-                      $('#myModal').modal({show:true});
-                    });
-                    $('#miners').bootstrapTable('refresh');
-                  }
-                }
-              });
-
-              $('#btn-failed').click(function () {
-                var $data = $table.bootstrapTable('getSelections');
-                if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
-                  if ($data.length >= $querysize) {
-                    alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')')
-                  }
-                  else {
-                    $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=Hashrate&Value=0';
-                    $('.modal-body').load($command, function() {
-                      $('.modal-title').text($('#btn-failed').text());
-                      $('#myModal').modal({show:true});
-                    });
-                    $('#miners').bootstrapTable('refresh');
-                  }
-                }
-              });
-
-              $('#btn-disable').click(function () {
-                var $data = $table.bootstrapTable('getSelections');
-                if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
-                  if ($data.length >= $querysize) {
-                    alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')')
-                  }
-                  else {
-                    $command = '/functions/stat/disable?Miners=' + encodeURIComponent($data);
-                    $('.modal-body').load($command, function() {
-                      $('.modal-title').text($('#btn-disable').text());
-                      $('#myModal').modal({show:true});
-                    });
-                    $('#miners').bootstrapTable('refresh');
-                  }
-                }
-              });
-
-              updatePoolBalances();
-
-              window.setInterval(function() { 
-                updatePoolBalances();
-              }, (parseInt(config.Interval) * 1000));
-            });
           </script>
 <!-- End of page scripts 'index.html' -->
 <!--#include file="/parts/foot.html" -->

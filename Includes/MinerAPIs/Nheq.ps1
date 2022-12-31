@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Nheq.ps1
-Version:        4.2.2.3
-Version date:   20 October 2022
+Version:        4.2.3.0
+Version date:   31 December 2022
 #>
 
 class Nheq : Miner { 
@@ -31,12 +31,14 @@ class Nheq : Miner {
         $Response = ""
 
         Try { 
-            $Response = Invoke-TcpRequest -Server "localhost" -Port $this.Port -Request "status" -Timeout $Timeout
+            $Response = Invoke-TcpRequest -Server 127.0.0.1 -Port $this.Port -Request "status" -Timeout $Timeout
             $Data = $Response | ConvertFrom-Json
         }
         Catch { 
             Return $null
         }
+
+        If (-not $Data) { Return $null }
 
         $HashRate = [PSCustomObject]@{ }
         $HashRate_Name = [String]$this.Algorithms[0]

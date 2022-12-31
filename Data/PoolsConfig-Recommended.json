@@ -1,60 +1,49 @@
 {
-  "Blockmasters": {
-    "Algorithm": [
-      "+Argon2dDyn",
-      "+HMQ1725",
-      "+Yescrypt"
-    ]
-  },
   "HiveOn": {
     "Algorithm": [
       "+EtcHash",
-      "+Ethash"
+      "+KawPow"
     ]
   },
   "MiningPoolHub": {
     "Algorithm": [
       "+EtcHash",
-      "+Ethash",
-      "+KawPoW",
+      "+KawPow",
       "+VertHash"
     ]
   },
   "NiceHash": {
     "Algorithm": [
       "+Autolykos2",
-      "+BeamV3",
-      "+Blake2s",
-      "+Cuckatoo31",
-      "+Cuckatoo32",
-      "+Cuckoo29",
       "+Equihash1254",
-      "+EquihashBTG",
-      "+Ethash",
-      "+KawPoW",
-      "+Keccak",
-      "+Lyra2Z",
-      "+Neoscript",
-      "+X16r",
-      "+X16rv2"
+      "+Equihash1445",
+      "+EtcHash",
+      "+EtHash",
+      "+KawPow",
+      "+kHeavyHash",
+      "+Neoscrypt",
+      "+VersusHash"
     ]
   },
-  "NLPool": {
+  "MiningDutch": {
     "Algorithm": [
       "+Allium",
       "+Equihash1445",
       "+Equihash1927",
-      "+YescryptR32"
+      "+Neoscrypt",
+      "+VertHash",
+      "+Yescrypt",
+      "+KawPoW"
     ]
   },
   "ProHashing": {
     "Algorithm": [
+      "+Autolykos2",
       "+Equihash1445",
-      "+EtcHash",
       "+Ethash",
-      "+EthashLowMem",
-      "+KawPoW",
-      "+Lyra2RE2",
+      "+EtcHash",
+      "+GhostRider",
+      "+KawPow",
       "+Neoscrypt"
     ]
   },
@@ -62,27 +51,38 @@
     "Algorithm": [
       "+Allium",
       "+Argon2d16000",
-      "+Argon2dDyn",
       "+CurveHash",
       "+Equihash1254",
       "+Equihash1927",
+      "+EvrProgPow",
+      "+FiroPow",
+      "+HeavyHash",
       "+NeoscryptXaya",
+      "+ProgPowZ",
+      "+SHA256dt",
+      "+SHA512256d",
       "+Skein2",
       "+UbqHash",
-      "+Verthash"
+      "+VertHash",
+      "+YescryptR16"
     ]
   },
   "ZPool": {
     "Algorithm": [
+      "+Anime",
       "+Argon2d16000",
-      "+Argon2dDyn",
+      "+Bitcore",
+      "+C11",
       "+CurveHash",
+      "+GhostRider",
       "+Equihash1254",
-      "+KawPoW",
+      "+KawPow",
       "+NeoscryptXaya",
       "+SHA256csm",
       "+Skein2",
-      "+Verthash"
+      "+Verthash",
+      "+Yescrypt",
+      "+YescryptR16"
     ]
   }
 }

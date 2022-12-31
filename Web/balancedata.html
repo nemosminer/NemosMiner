@@ -1,30 +1,35 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 data-navbaractive="navbalancedata">Balance Data</h2>
+            <h2 id="title" data-navbaractive="navbalancedata">Balance Data</h2>
           </div>
           <div class="alert alert-info" role="alert">This is the balance data for the last 30 days that was collected by the balance tracker.</div>
           <div id="toolbar">
-            <button id="btn-remove-entry" class="btn btn-warning">Remove entry</button>
+            <button id="btn-remove-entry" class="btn btn-info">Remove entry</button>
           </div>
           <table id="balanceobjects" class="table"
-            data-toolbar="#toolbar"
-            data-click-to-select="true"
+            data-auto-refresh="true"
+            data-auto-refresh-status="true"
             data-cache="true"
-            data-toggle="table"
-            data-icons="icons"
-            data-show-button-text="true"
-            data-show-search-clear-button="true"
-            data-filter-control="true"
+            data-click-to-select="true"
+            data-cookie="true"
+            data-cookie-id-table="balanceobjects"
+            data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
+            data-detail-view="false"
             data-disable-control-when-search="true"
+            data-filter-control="true"
+            data-header-style="headerStyleAlignTop"
+            data-icons="icons"
+            data-maintain-meta-data="true"
+            data-reorderable-columns="true"
+            data-show-button-text="true"
             data-show-columns="true"
-            data-show-toggle="false"
             data-show-fullscreen="true"
             data-show-refresh="true"
-            data-auto-refresh="true"
-            data-detail-view="false"
-            data-auto-refresh-status="true"
+            data-show-search-clear-button="true"
+            data-show-toggle="false"
+            data-toggle="table"
+            data-toolbar="#toolbar"
             data-url="/balancedata"
-            data-header-style="headerStyleAlignTop"
             >
             <thead>
               <tr>
@@ -56,7 +61,7 @@
                 }
                 catch {}
               },
-              autoRefreshInterval: parseInt(config.BalancesTrackerPollInterval * 60), // refresh once per balances tracker interval
+              autoRefreshInterval: parseInt(Math.max(config.Interval, 30)), // refresh once per interval, at least 30 seconds
               height: $(window).height() - $('#balanceobjects').offset().top - 20
             });
 

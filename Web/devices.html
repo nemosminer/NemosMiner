@@ -1,6 +1,6 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 data-navbaractive="navdevices">Devices</h2>
+            <h2 id="title" data-navbaractive="navdevices">Devices</h2>
           </div>
           <div class="alert alert-info" role="alert">These are the devices (GPUs and CPUs) detected by NemosMiner. Configuration changes will become active in the next cycle.</div>
           <div id="toolbarenableddevices">
@@ -8,32 +8,36 @@
           </div>
           <h3>Enabled Devices</h3>
           <table id="enableddevices" class="table"
-            data-toolbar="#toolbarenableddevices"
-            data-click-to-select="true"
             data-cache="true"
-            data-toggle="table"
-            data-icons="icons"
-            data-show-button-text="true"
-            data-show-search-clear-button="true"
-            data-filter-control="true"
-            data-disable-control-when-search="true"
-            data-show-columns="true"
-            data-show-toggle="true"
-            data-show-refresh="true"
-            data-detail-view="true"
+            data-cookie="true"
+            data-cookie-id-table="enaleddevices"
+            data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
             data-detail-formatter="detailFormatter"
-            data-url="/devices/enabled"
-            data-maintain-meta-data="true"
-            data-response-handler="formatDevices"
+            data-detail-view="true"
+            data-click-to-select="true"
+            data-disable-control-when-search="true"
+            data-filter-control="true"
             data-header-style="headerStyleAlignTop"
+            data-icons="icons"
+            data-maintain-meta-data="true"
+            data-reorderable-columns="true"
+            data-response-handler="formatDevices"
+            data-show-button-text="true"
+            data-show-columns="true"
+            data-show-refresh="true"
+            data-show-search-clear-button="true"
+            data-show-toggle="true"
+            data-toggle="table"
+            data-toolbar="#toolbarenableddevices"
+            data-url="/devices/enabled"
             >
             <thead>
               <tr>
                 <th data-switchable="false" data-field="Status" data-class="hidden"></th>
                 <th data-field="state" data-checkbox="true"></th>
                 <th data-field="Name" data-sortable="true">Name</th>
-                <th data-field="Vendor" data-sortable="true">Vendor</th>
                 <th data-field="Model" data-sortable="true">Model</th>
+                <th data-field="Vendor" data-sortable="true">Vendor</th>
                 <th data-field="Type" data-sortable="true" data-visible="false">Type</th>
                 <th data-field="Status" data-sortable="true">Status</th>
                 <th data-field="tMemory" data-align="right" data-sortable="true" data-width=3>Memory</th>
@@ -76,31 +80,35 @@
               <button id="btn-enable-device" class="btn btn-success" disabled>Enable Device</button>
           </div>
           <table id="disableddevices" class="table"
-            data-toolbar="#toolbardisableddevices"
-            data-click-to-select="true"
             data-cache="true"
-            data-toggle="table"
-            data-icons="icons"
-            data-show-button-text="true"
-            data-filter-control="true"
-            data-show-search-clear-button="true"
-            data-disable-control-when-search="true"
-            data-show-columns="true"
-            data-show-toggle="true"
-            data-show-refresh="true"
+            data-click-to-select="true"
+            data-cookie="true"
+            data-cookie-id-table="diableddevices"
+            data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
             data-detail-view="true"
             data-detail-formatter="detailFormatter"
-            data-url="/devices/disabled"
-            data-maintain-meta-data="true"
-            data-response-handler="formatDevices"
+            data-disable-control-when-search="true"
+            data-filter-control="true"
             data-header-style="headerStyleAlignTop"
+            data-icons="icons"
+            data-maintain-meta-data="true"
+            data-reorderable-columns="true"
+            data-response-handler="formatDevices"
+            data-show-button-text="true"
+            data-show-columns="true"
+            data-show-refresh="true"
+            data-show-search-clear-button="true"
+            data-show-toggle="true"
+            data-toggle="table"
+            data-toolbar="#toolbardisableddevices"
+            data-url="/devices/disabled"
             >
             <thead>
               <tr>
                 <th data-field="state" data-checkbox="true"></th>
                 <th data-field="Name" data-sortable="true">Name</th>
-                <th data-field="Vendor" data-sortable="true">Vendor</th>
                 <th data-field="Model" data-sortable="true">Model</th>
+                <th data-field="Vendor" data-sortable="true">Vendor</th>
                 <th data-field="Type" data-sortable="true" data-visible="false">Type</th>
                 <th data-field="Status" data-sortable="true">Status</th>
                 <th data-field="tMemory" data-align="right" data-sortable="true" data-width=3>Memory</th>
@@ -141,29 +149,32 @@
           <div id="unsupporteddevices" style="visibility: hidden">
             <h3>Unsupported Devices</h3>
             <table id="unsupporteddevices" class="table"
-              data-click-to-select="true"
               data-cache="true"
-              data-toggle="table"
-              data-icons="icons"
-              data-show-button-text="true"
-              data-show-search-clear-button="true"
-              data-filter-control="true"
-              data-disable-control-when-search="true"
-              data-show-columns="true"
-              data-show-toggle="true"
-              data-show-refresh="true"
-              data-detail-view="true"
+              data-click-to-select="true"
+              data-cookie="true"
+              data-cookie-id-table="unsupporteddevices"
+              data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
               data-detail-formatter="detailFormatter"
-              data-url="/devices/unsupported"
+              data-detail-view="true"
+              data-disable-control-when-search="true"
+              data-filter-control="true"
+              data-icons="icons"
               data-maintain-meta-data="true"
+              data-reorderable-columns="true"
               data-response-handler="formatDevices"
-              data-header-style="headerStyleAlignTop"
+              data-show-button-text="true"
+              data-show-columns="true"
+              data-show-refresh="true"
+              data-show-search-clear-button="true"
+              data-show-toggle="true"
+              data-toggle="table"
+              data-url="/devices/unsupported"
               >
               <thead>
                 <tr>
                   <th data-field="Name" data-sortable="true">Name</th>
-                  <th data-field="Vendor" data-sortable="true">Vendor</th>
                   <th data-field="Model" data-sortable="true">Model</th>
+                  <th data-field="Vendor" data-sortable="true">Vendor</th>
                   <th data-field="Type" data-sortable="true" data-visible="false">Type</th>
                   <th data-field="Status" data-sortable="true">Status</th>
                   <th data-field="tMemory" data-align="right" data-sortable="true" data-width=3>Memory</th>

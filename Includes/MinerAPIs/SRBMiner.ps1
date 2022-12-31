@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           SRBminer.ps1
-Version:        4.2.2.3
-Version date:   20 October 2022
+Version:        4.2.3.0
+Version date:   31 December 2022
 #>
 
 class SRBMiner : Miner { 
@@ -29,7 +29,7 @@ class SRBMiner : Miner {
         $Data = [PSCustomObject]@{ }
         $PowerUsage = [Double]0
 
-        $Request = "http://localhost:$($this.Port)"
+        $Request = "http://127.0.0.1:$($this.Port)"
 
         Try { 
             $Data = Invoke-RestMethod -Uri $Request -TimeoutSec $Timeout
@@ -37,6 +37,8 @@ class SRBMiner : Miner {
         Catch { 
             Return $null
         }
+
+        If (-not $Data) { Return $null }
 
         $Type = If ($Data.total_cpu_workers -gt 0) { "cpu" } Else { "gpu" }
 

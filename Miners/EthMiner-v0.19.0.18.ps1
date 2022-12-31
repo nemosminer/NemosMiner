@@ -1,5 +1,3 @@
-using module ..\Includes\Include.psm1
-
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.Type -eq "NVIDIA" -and $_.CUDAVersion -ge "9.1") } )) { Return }
 
 $Uri = Switch ($Variables.DriverVersion.CUDA) { 
@@ -15,11 +13,11 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 # NVIDIA Enable Hardware-Accelerated GPU Scheduling
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "AMD"; MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.41; ExcludePool = @("ZergPool"); MinerSet = 0.29; WarmupTimes = @(45, 0); Arguments = " --opencl --opencl-devices" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "AMD"; MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.41; ExcludePool = @("ZergPool"); MinerSet = 0.28; WarmupTimes = @(45, 0); Arguments = " --opencl --opencl-devices" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "AMD"; MinMemGB = $MinerPools[0].Ethash.DAGSizeGB+ 0.41;        ExcludePool = @("ZergPool"); MinerSet = 0.29; WarmupTimes = @(45, 0); Arguments = " --opencl --opencl-devices" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "AMD"; MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB + 0.41; ExcludePool = @("ZergPool"); MinerSet = 0.28; WarmupTimes = @(45, 0); Arguments = " --opencl --opencl-devices" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
 
-    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; MinMemGB = $MinerPools[0].Ethash.DAGSizeGB;       MemReserveGB = 0.41; ExcludePool = @("ZergPool"); MinerSet = 0.29; WarmupTimes = @(45, 0); Arguments = " --cuda --cuda-devices" } # PhoenixMiner-v6.2c is fastest but has dev fee
-    [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB; MemReserveGB = 0.41; ExcludePool = @("ZergPool"); MinerSet = 0.28; WarmupTimes = @(45, 0); Arguments = " --cuda --cuda-devices" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; MinMemGB = $MinerPools[0].Ethash.DAGSizeGB + 0.41;      ExcludePool = @("ZergPool"); MinerSet = 0.29; WarmupTimes = @(45, 0); Arguments = " --cuda --cuda-devices" } # PhoenixMiner-v6.2c is fastest but has dev fee
+#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB+ 0.41; ExcludePool = @("ZergPool"); MinerSet = 0.28; WarmupTimes = @(45, 0); Arguments = " --cuda --cuda-devices" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 
@@ -31,7 +29,9 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePool } | Where-Object Type -eq $_.Type | ForEach-Object { 
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge ($_.MinMemGB + $_.MemReserveGB)) { 
+            $MinMemGB = $_.MinMemGB + $_.MemReserveGB
+
+            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $MinMemGB) { 
 
                 $Arguments = $_.Arguments
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
@@ -39,7 +39,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # Get arguments for available miner devices
                 # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @() -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $Pass = "$($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - $_.MemReserveGB)" })"
+                $Pass = "$($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGB - $MinerPools[0].($_.Algorithm).DAGSizeGB))" })"
 
                 $Stratum = If ($MinerPools[0].($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { "stratum2" } Else { "stratum" }
                 $Stratum += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "+ssl" } Else { "+tcp" }
@@ -47,14 +47,14 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 [PSCustomObject]@{ 
                     Name        = $Miner_Name
                     DeviceNames = $AvailableMiner_Devices.Name
-                    Type        = $AvailableMiner_Devices.Type
+                    Type        = ($AvailableMiner_Devices.Type | Select-Object -unique)
                     Path        = $Path
                     Arguments   = (" --pool $($Stratum)://$([System.Web.HttpUtility]::UrlEncode("$($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" })")):$([System.Web.HttpUtility]::UrlEncode($Pass))@$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) --exit --api-port -$MinerAPIPort $($_.Arguments) $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ' ')" -replace "\s+", " ").trim()
                     Algorithms  = @($_.Algorithm)
                     API         = "EthMiner"
                     Port        = $MinerAPIPort
                     URI         = $Uri
-                    MinerUri    = "http://localhost:$($MinerAPIPort)"
+                    MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
                     WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
                 }
             }

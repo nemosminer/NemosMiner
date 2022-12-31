@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.2.2.3
-Version date:   20 October 2022
+Version:        4.2.3.0
+Version date:   31 December 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -46,32 +46,26 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
         $CurDate = (Get-Date).ToUniversalTime()
         $PoolVariant = $Config.PoolName | Where-Object { $_ -match "$($BrainName)*" } 
 
-        If ($BrainConfig.Debug) { Write-Message -Level Debug "Start Brain '$Brainname ($PoolVariant)'." }
+        If ($Config.PoolsConfig.$BrainName.BrainDebug) { Write-Message -Level Debug "Start Brain '$Brainname ($PoolVariant)'." }
 
         Do {
             Try { 
                 $CurrenciesData = Invoke-RestMethod -Uri $BrainConfig.PoolCurrenciesUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout
-                If ($PoolVariant -match "Coins(|Plus)$") { 
-                    $AlgoData = [PSCustomObject]@{ }
-                    $CurrenciesArray = @()
-                    # Add currency and convert to array for easy sorting
-                    ($CurrenciesData | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
-                        $CurrenciesData.$_ | Add-Member -Force @{ Currency = If ($CurrenciesData.$_.Symbol) { $CurrenciesData.$_.Symbol -replace "-.+" } Else { $_ -replace "-.+" } }
-                        $CurrenciesArray += $CurrenciesData.$_
-                    }
-
-                    $CurrenciesArray | Group-Object algo | ForEach-Object { 
-                        $BestCurrency = ($_.Group | Sort-Object estimate_current | Select-Object -First 1)
-                        $BestCurrency | Add-Member coinname ($BestCurrency.name -replace "coin$", "Coin" -replace "hash$", "Hash") -Force
-                        $BestCurrency | Add-Member name $BestCurrency.algo -Force
-                        $BestCurrency.PSObject.Properties.Remove("algo")
-                        $BestCurrency.PSObject.Properties.Remove("symbol")
-                        $AlgoData | Add-Member $BestCurrency.name $BestCurrency
-                    }
-                    Remove-Variable BestCurrency, CurrenciesArray
+                $AlgoData = [PSCustomObject]@{ }
+                $CurrenciesArray = @()
+                # Add currency and convert to array for easy sorting
+                ($CurrenciesData | Get-Member -MemberType NoteProperty).Name | Where-Object { $_ -notlike "*-*" } | ForEach-Object { 
+                    $CurrenciesData.$_ | Add-Member -Force @{ Currency = If ($CurrenciesData.$_.symbol) { $CurrenciesData.$_.symbol } Else { $_ } }
+                    $CurrenciesData.$_ | Add-Member -Force @{ CoinName = If ($CurrenciesData.$_.name) { $CurrenciesData.$_.name } Else { $_ } }
+                    $CurrenciesData.$_.PSObject.Properties.Remove("symbol")
+                    $CurrenciesData.$_.PSObject.Properties.Remove("name")
+                    $CurrenciesArray += $CurrenciesData.$_
                 }
-                Else{ 
-                    $AlgoData = Invoke-RestMethod -Uri $BrainConfig.PoolStatusUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout
+
+                $CurrenciesArray | Group-Object algo | ForEach-Object { 
+                    $BestCurrency = ($_.Group | Sort-Object estimate_current | Select-Object -First 1)
+                    $BestCurrency | Add-Member Coins $_.Group.Count -Force
+                    $AlgoData | Add-Member (Get-Algorithm $BestCurrency.algo) $BestCurrency
                 }
                 $APICallFails = 0
             }
@@ -87,8 +81,15 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
         ForEach ($Algo in (($AlgoData | Get-Member -MemberType NoteProperty).Name)) { 
             If (-not $AlgoData.$Algo.currency) { 
                 $Currencies = @(($CurrenciesData | Get-Member -MemberType NoteProperty).Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo } | ForEach-Object { $CurrenciesData.$_ })
-                $Currency = If ($Currencies.Symbol) { ($Currencies | Sort-Object Estimate)[-1].Symbol } Else { "" }
-                $AlgoData.$Algo | Add-Member @{ Currency = $Currency.Trim() }
+                $Currency = If ($Currencies.Currency) { ($Currencies | Sort-Object Estimate)[-1].Currency } Else { "" }
+            }
+            Else { 
+                $Currency = $AlgoData.$Algo.currency
+            }
+
+            #Add coin name
+            If ($AlgoData.$Algo.CoinName -and $Currency) { 
+                Add-CoinName -Algorithm $Algo -Currency $Currency -CoinName $AlgoData.$Algo.CoinName
             }
 
             $AlgoData.$Algo | Add-Member fees $Config.PoolsConfig.$BrainName.Variant.$PoolVariant.DefaultFee -ErrorAction Ignore
@@ -99,23 +100,17 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
             $AlgoData.$Algo.estimate_current = [math]::max(0, [Double]($AlgoData.$Algo.estimate_current * ( 1 - ($BrainConfig.PoolAPIPerFailPercentPenalty * [math]::max(0, $APICallFails - $BrainConfig.PoolAPIAllowedFailureCount) / 100))))
             $AlgoObject += [PSCustomObject]@{
                 Date                  = $CurDate
-                Name                  = $AlgoData.$Algo.name
+                Name                  = $Algo
                 Port                  = $AlgoData.$Algo.port
-                Coins                 = $AlgoData.$Algo.coins
-                CoinName              = $AlgoData.$Algo.coinname
-                Currency              = $AlgoData.$Algo.Currency
+                Currency              = $Currency
                 Fees                  = $AlgoData.$Algo.fees
-                # Hashrate              = $AlgoData.$Algo.Hashrate
                 Workers               = $AlgoData.$Algo.Workers
                 estimate_current      = $AlgoData.$Algo.estimate_current -as [Double]
                 estimate_last24h      = $AlgoData.$Algo.estimate_last24h
                 actual_last24h_shared = $BasePrice
-                # hashrate_last24h      = $AlgoData.$Algo.hashrate_last24h
                 Last24Drift           = $AlgoData.$Algo.estimate_current - $BasePrice
                 Last24DriftSign       = If (($AlgoData.$Algo.estimate_current - $BasePrice) -ge 0) { "Up" } Else { "Down" }
                 Last24DriftPercent    = If ($BasePrice -gt 0) { ($AlgoData.$Algo.estimate_current - $BasePrice) / $BasePrice } Else { 0 }
-                FirstDate             = $AlgoObject[0].Date
-                TimeSpan              = If ($null -ne $AlgoObject.Date) { (New-TimeSpan -Start ($AlgoObject[0]).Date -End $CurDate).TotalMinutes }
             }
         }
 
@@ -158,30 +153,31 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
 
         $Variables.BrainData | Add-Member $BrainName $AlgoData -Force
 
-        If ($BrainConfig.UseTransferFile -or $BrainConfig.Debug) { 
+        If ($BrainConfig.UseTransferFile -or $Config.PoolsConfig.$BrainName.BrainDebug) { 
             ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Out-File -FilePath $TransferFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
 
         }
-
-        If ($BrainConfig.Debug) { 
-            Write-Message -Level Debug "$(($AlgoObject | ConvertTo-Json -compress).length)"
-            Get-MemoryUsage
-        }
+        Remove-Variable AlgoData, CurrenciesData -ErrorAction Ignore
 
         # Limit to only sample size + 10 minutes min history
         $AlgoObject = @($AlgoObject | Where-Object { $_.Date -ge $CurDate.AddMinutes(-($BrainConfig.SampleSizeMinutes + 10)) })
 
-        Remove-Variable AlgoData, BasePrice, CurAlgoObject, CurrenciesData, Currencies, Currency, SampleSizeHalfts, SampleSizets, GroupAvgSampleSize, GroupAvgSampleSizeHalf, GroupMedSampleSize, GroupMedSampleSizeHalf, GroupMedSampleSizeNoPercent, Name, Penalty, PenaltySampleSizeHalf, PenaltySampleSizeNoPercent, Price -ErrorAction Ignore
+        If ($Config.PoolsConfig.$BrainName.BrainDebug) { 
+            Write-Message -Level Debug ("$PoolVariant AlgoObject size: {0:n0} Bytes" -f ($AlgoObject | ConvertTo-Json -compress).length)
+            Get-MemoryUsage
+        }
     }
 
-    $null = [System.GC]::GetTotalMemory("forcefullcollection")
+    [System.GC]::Collect() | Out-Null
+    [System.GC]::WaitForPendingFinalizers() | Out-Null
+    [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
 
-    If ($BrainConfig.Debug) { 
+    If ($Config.PoolsConfig.$BrainName.BrainDebug) { 
         Get-MemoryUsage
         Write-Message -Level Debug "End Brain '$Brainname' ($($Duration.TotalSeconds) sec.)."
     }
 
     Do { 
         Start-Sleep -Seconds 3
-    } While (($Variables.MiningStatus -eq "Running" -and (-not $Variables.Miners -or $CurDate -gt $Variables.PoolDataCollectedTimeStamp -or (Get-Date).ToUniversalTime().AddSeconds([Int]$Duration.TotalSeconds + 5) -lt $Variables.EndCycleTime)) -or $CurDate.AddSeconds([Int]$Config.Interval) -gt (Get-Date).ToUniversalTime())
+    } While (-not $Variables.Miners -or $CurDate -gt $Variables.PoolDataCollectedTimeStamp -or (Get-Date).ToUniversalTime().AddSeconds([Int]$Duration.TotalSeconds + 5) -lt $Variables.EndCycleTime -or $CurDate.AddSeconds([Int]$Config.Interval) -gt (Get-Date).ToUniversalTime())
 }

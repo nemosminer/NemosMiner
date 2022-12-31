@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Downloader.ps1
-Version:        4.2.2.3
-Version date:   20 October 2022
+Version:        4.2.3.0
+Version date:   31 December 2022
 #>
 
 using module .\Includes\Include.psm1
@@ -40,8 +40,8 @@ $DownloadList | Select-Object | ForEach-Object {
             Write-Message -Level Info "Downloader: Initiated download of '$URI'."
 
             If ($URI -and (Split-Path $URI -Leaf) -eq (Split-Path $Path -Leaf)) { 
-                [void](New-Item (Split-Path $Path) -ItemType "Directory" | Out-Null)
-                Invoke-WebRequest $URI -OutFile $Path -UseBasicParsing -ErrorAction Stop
+                New-Item (Split-Path $Path) -ItemType Directory | Out-Null
+                Invoke-WebRequest $URI -OutFile $Path -ErrorAction Stop
             }
             Else { 
                 Expand-WebRequest $URI $Path -ErrorAction Stop

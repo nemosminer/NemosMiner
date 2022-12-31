@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Trex.ps1
-Version:        4.2.2.3
-Version date:   20 October 2022
+Version:        4.2.3.0
+Version date:   31 December 2022
 #>
 
 class Trex : Miner { 
@@ -28,7 +28,7 @@ class Trex : Miner {
         $Data = [PSCustomObject]@{ }
         $PowerUsage = [Double]0
 
-        $Request = "http://localhost:$($this.Port)/summary"
+        $Request = "http://127.0.0.1:$($this.Port)/summary"
 
         Try { 
             $Data = Invoke-RestMethod -Uri $Request -TimeoutSec $Timeout
@@ -36,6 +36,8 @@ class Trex : Miner {
         Catch { 
             Return $null
         }
+
+        If (-not $Data) { Return $null }
 
         $HashRate = [PSCustomObject]@{ }
         $HashRate_Name = [String]$this.Algorithms[0]

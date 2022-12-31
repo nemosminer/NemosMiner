@@ -10,6 +10,71 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.2.3.0 31.12.2022
+=======================================
+
+Changes:
+- Changed configuration item 'MinDataSamples' to 'MinDataSample'
+- Changed configuration item 'MinDataSamplesAlgoMultiplier' to 'MinDataSampleAlgoMultiplier'
+- Changed configuration item 'MinInterval' to 'MinCycle'
+- Changed configuration item 'StartGUI' to 'LegacyGUI'
+- Changed configuration item 'StartGUIMinimized' to 'LegacyGUIStartMinimized'
+- Moved LegacyGUI code to separate file 'Includes\LegacyGUI.ps1'
+- Web GUI / Configuration Editor: Re-arranged some items
+
+Enhancements:
+- Brains / ProHashing: Reduce number of API calls (Update currencies data only once per hour)
+- Brains / ZPool: Reduce number of API calls (Update currencies data only once per hour)
+- Core: Added 'INTEL' to list of supported GPU types
+- Core: Do no longer clear all pools when anycast, region or SSL configuration changes
+- Core: Pause mining if no internet connection is available
+- Core: Minor code optimisations
+- Core: Mitigate memory leak
+- Core: New configuration items 'BalancesShowInAllCurrencies' & 'BalancesShowInMainCurrency'
+- Core: Optimized order of miners getting benchmarked (run miners with long warmup time first)
+- Core: 'SSL' configuration item can also be set per pool (edit 'PoolsConfig.json')
+- Core / Include.psm1: Optimize 'Write-Message' function
+- Core / Miner APIs: Much faster API query code (use '127.0.0.1' instead of 'localhost')
+- Legacy GUI: Add context menu (right mouse button)
+- Legacy GUI: Make 'Best Pools', 'Unavailable Pools' and 'All Pools' selectable
+- Legacy GUI: Make 'Most Profitable Miners', 'Unavailable Miners' and 'All Miners' selectable
+- Legacy GUI: Renamed tabs for 'All Pools' to 'Pools' & 'All Miners'to 'Miners'
+- Web GUI: Make columns reorderable by drag and drop
+- Web GUI: Use cookies to store show/hidden columns setting
+
+Fixes:
+- Core: Respawn new process on error in main loop when NemosMiner gets started shortly before midnight (donation duration -gt remaining time of the day)
+- Core: Some miners not measuring power usage (only when configuration item 'MinerInstancePerDeviceModel' is true)
+- Include.psm1 / Get-Rate: Invalid time stamp reported when reading from cached 'Rates.json' file.
+- Include.psm1 / Get-Rate: Moved 'Rates.json' file to 'Cache' folder.
+- Include.psm1 / Get-SortedObjects: Keep single valued arrays as array
+- Include.psm1 / Stop-Brain: Remove braindata
+- ProHashing pool: Invalid CoinName in password field
+- Temporary workaround for MiningPoolHub balances not getting updated since mid November (Error in pool API, https://bitcointalk.org/index.php?topic=472510.msg61373285#msg61373285)
+
+Miner changes:
+- CcminerBmw512-v2.2.5 (added required MSVCR120.dll)
+- GMiner-v3.20
+- JayddeeCpu-v3.21.0
+- lolMiner-v1.65a
+- MiniZ-v2.0b
+- NanoMiner-v3.7.6
+- SRBMinerMulti-v1.1.4 (Keep v1.1.3 for dual mining)
+- TeamBlackMiner-v1.77
+- TeamRedMiner-v0.10.7
+- TTMiner-v2022.4.2
+- XmRig-v6.17.1.ps1 (Nvidia)
+- XmRig-v6.18.1.ps1 (AMD & CPU)
+- Wildrig-v0.34.0
+
+Removed miners:
+- CcminerBmw512-v2.2.5 (Algorithm is dead)
+- CcminerMTP-v1.3.2 (Algorithm is dead)
+
+Pool changes:
+- ZergPool: Remove 'ZergPoolCoins' and 'ZergPoolCoinsPlus' option
+
+
 ChangeLog NemosMiner 4.2.2.3 20.10.2022
 =======================================
 
@@ -54,7 +119,7 @@ Enhancements:
 Fixes:
 - AutoUpdate: Remove obsolete stat files from older miner versions
 - Core / Legacy GUI: Do not scroll messages to end when text is selected
-- Core / Include.psm1: Config file version not saved to config (regression from 4.2.2.0)
+- Core / Include.psm1: Configuration file version not saved to configuration (regression from 4.2.2.0)
 - Core / Include.psm1: Get-CommandLineParameters broken for FireIce API (regression from 4.2.1.5)
 - Core: Main text window: Invalid running miner information on first cycle (regression from 4.2.2.0)
 - Core: Switching log not updated correctly when switching to/from donation
@@ -1387,7 +1452,7 @@ Enhancements:
 Fixes:
 - Core: Parsing DAG data from 'https://minerstat.com' failed
 - Web GUI / Miners(Unavailable|Fastest): Show MinerWindow column (Regression from 3.9.9.63)
-- Web GUI / & API: Enable / disable device no longer adds poolsconfiguration to configuration file
+- Web GUI / & API: Enable / disable device no longer adds pools configuration to configuration file
 - WildRig-v0.29.1: Changed download link to NemosMiner repository
 
 Miner updates:

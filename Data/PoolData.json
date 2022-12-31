@@ -1,7 +1,10 @@
 {
   "HiveON": {
+    "Algorithm": [],
     "AutoExchange": false,
     "BalancesKeepAlive": 90, // No expiration communicated by pool, use 90 days just to be sure
+    "ExcludeAlgorithm": [],
+    "ExcludeRegion": [],
     "GuaranteedPayoutCurrencies": [
       "ETC",
       "ETH",
@@ -20,16 +23,17 @@
     "Region": [
       "n/a"
     ],
+    "SSL": "prefer",
     "Variant": {
       "HiveON": {
       }
     }
   },
   "MiningDutch": {
+    "Algorithm": [],
     "AutoExchange": true,
     "BalancesKeepAlive": 180, // https://www.mining-dutch.nl/index.php?page=wallets
     "BrainConfig": {
-      "Debug": false,
       "PoolAPIAllowedFailureCount": 3,
       "PoolAPIPerFailPercentPenalty": 10,
       "PoolAPIRetryInterval": 3,
@@ -41,6 +45,9 @@
       "UseFullTrust": false,
       "UseTransferFile": false
     },
+    "BrainDebug": false,
+    "ExcludeAlgorithm": [],
+    "ExcludeRegion": [],
     "PayoutCurrencies": {
       "AEON": "Aeon",
       "ARRR": "Pirate",
@@ -123,8 +130,17 @@
     }
   },
   "MiningPoolHub": {
+    "Algorithm": [
+      "-Equihash1445", // Pool closed at end of 2022
+      "-Equihash1927", // Pool closed at end of 2022
+      "-Neoscrypt", // Connection issues
+      "-RandomX", // ASIC
+      "-Verthash", // Connection issues
+      "-Yescrypt"
+    ],
     "AutoExchange": true,
     "BalancesKeepAlive": 90, // No expiration communicated by pool
+    "ExcludeAlgorithm": [],
     "Fee": 0.009,
     "GuaranteedPayoutCurrencies": [
       "ADZ",
@@ -173,15 +189,18 @@
     }
   },
   "NiceHash": {
+    "Algorithm": [],
     "AutoExchange": true,
     "BalancesKeepAlive": 180, // Your NiceHash Account may be deactivated due to your inactivity
     "EarningsAdjustmentFactor": 1.0, // NiceHash earnings estimates are always correct
+    "ExcludeAlgorithm": [],
     "GuaranteedPayoutCurrencies": [
       "BTC" // Required here for donation
     ],
     "Region": [
       "n/a (Anycast)"
     ],
+    "SSL": "prefer",
     "Variant": {
       "NiceHash External": {
         "Fee": 0.05,
@@ -200,10 +219,10 @@
     }
   },
   "ProHashing": {
+    "Algorithm": [],
     "AutoExchange": true,
     "BalancesKeepAlive": 90, // The customer has not mined with the pool for 90 days (https://prohashing.com/help/prohashing-legal-information#terms)
     "BrainConfig": {
-      "Debug": false,
       "PoolAPIAllowedFailureCount": 3,
       "PoolAPIPerFailPercentPenalty": 10,
       "PoolAPIRetryInterval": 3,
@@ -215,6 +234,8 @@
       "UseFullTrust": false,
       "UseTransferFile": false
     },
+    "BrainDebug": true,
+    "ExcludeAlgorithm": [],
     "GuaranteedPayoutCurrencies": [
       "BTC",
       "LTC"
@@ -244,10 +265,10 @@
     }
   },
   "ZergPool": {
+    "Algorithm": [],
     "AutoExchange": true,
     "BalancesKeepAlive": 90, // Accounts with no mining activity for 3 months are purged 
     "BrainConfig": {
-      "Debug": false,
       "PoolAPIAllowedFailureCount": 3,
       "PoolAPIPerFailPercentPenalty": 10,
       "PoolAPIRetryInterval": 3,
@@ -259,6 +280,8 @@
       "UseFullTrust": false,
       "UseTransferFile": false
     },
+    "BrainDebug": true,
+    "ExcludeAlgorithm": [],
     "GuaranteedPayoutCurrencies": [
       "BCH",
       "BNB",
@@ -288,6 +311,7 @@
       "eu",
       "na"
     ],
+    "SSL": "prefer",
     "Variant": {
       "ZergPool": {
         "DivisorMultiplier": 1000000,
@@ -299,16 +323,6 @@
         "DivisorMultiplier": 1000000,
         "PriceField": "estimate_last24h"
       },
-      "ZergPoolCoins": {
-        "DefaultFee": 0.5,
-        "DivisorMultiplier": 1000000,
-        "PriceField": "estimate_current"
-      },
-      "ZergPoolCoinsPlus": {
-        "DefaultFee": 0.5,
-        "DivisorMultiplier": 1000000,
-        "PriceField": "Plus_Price"
-      },
       "ZergPoolPlus": {
         "DefaultFee": 0.5,
         "DivisorMultiplier": 1000000,
@@ -317,6 +331,7 @@
     }
   },
   "ZPool": {
+    "Algorithm": [],
     "AutoExchange": true,
     "BalancesKeepAlive": 90, // Inactive accounts are purged after 90 days
     "BrainConfig": {
@@ -332,6 +347,8 @@
       "UseFullTrust": false,
       "UseTransferFile": false
     },
+    "BrainDebug": false,
+    "ExcludeAlgorithm": [],
     "GuaranteedPayoutCurrencies": [
       "BTC",
       "DASH",
@@ -351,6 +368,7 @@
       "na",
       "sea"
     ],
+    "SSL": "prefer",
     "Variant": {
       "ZPool": {
         "DivisorMultiplier": 1000000,

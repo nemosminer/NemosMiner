@@ -1,5 +1,3 @@
-using module ..\Includes\Include.psm1
-
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
 
 $Uri = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/5.0.29/cpuminer-opt-win.zip"
@@ -18,7 +16,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Balloon";       MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo balloon" }
     [PSCustomObject]@{ Algorithm = "Blake2b";       MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo blake2b" }
     [PSCustomObject]@{ Algorithm = "Bmw";           MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo bmw" }
-    [PSCustomObject]@{ Algorithm = "Bmw512";        MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo bmw512" }
+#   [PSCustomObject]@{ Algorithm = "Bmw512";        MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo bmw512" } # ASIC
 #   [PSCustomObject]@{ Algorithm = "C11";           MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo c11" } # ASIC
     [PSCustomObject]@{ Algorithm = "Circcash";      MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo circcash" }
     [PSCustomObject]@{ Algorithm = "CpuPower";      MinerSet = 0; WarmupTimes = @(60, 60); Arguments = " --algo cpupower" }
@@ -40,7 +38,7 @@ $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Lyra2re";       MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo lyra2re" } # ASIC
 #   [PSCustomObject]@{ Algorithm = "Lyra2REv2";     MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo lyra2rev2" } # ASIC
 #   [PSCustomObject]@{ Algorithm = "Lyra2RE3";      MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo lyra2rev3" } # ASIC
-    [PSCustomObject]@{ Algorithm = "Lyra2z";        MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo lyra2z" }
+#   [PSCustomObject]@{ Algorithm = "Lyra2z";        MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo lyra2z" } # ASIC
     [PSCustomObject]@{ Algorithm = "Lyra2z330";     MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo lyra2z330" }
     [PSCustomObject]@{ Algorithm = "Mike";          MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo mike" }
     [PSCustomObject]@{ Algorithm = "Minotaur";      MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo minotaur" }
@@ -79,7 +77,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "YespowerRes";   MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerRes" }
     [PSCustomObject]@{ Algorithm = "YespowerSugar"; MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerSugar" } # SRBMminerMulti is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "YespowerTIDE";  MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerTIDE" }
-    [PSCustomObject]@{ Algorithm = "YespowerUrx";   MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerURX" } # JayddeeCpu-v3.20.1 is faster, SRBMminerMulti is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "YespowerUrx";   MinerSet = 1; WarmupTimes = @(45, 0);  Arguments = " --algo yespowerURX" } # JayddeeCpu-v3.21.0 is faster, SRBMminerMulti is fastest, but has 0.85% miner fee
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 
@@ -104,7 +102,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         [PSCustomObject]@{ 
             Name        = $Miner_Name
             DeviceNames = $AvailableMiner_Devices.Name
-            Type        = $AvailableMiner_Devices.Type
+            Type        = ($AvailableMiner_Devices.Type | Select-Object -unique)
             Path        = $Path
             Arguments   = ("$($Arguments) --url $(If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "stratum+tcps" } Else { "stratum+tcp" })://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) --user $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" }) --pass $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { " --rig-id $($MinerPools[0].($_.Algorithm).WorkerName)" }) --cpu-affinity AAAA --quiet --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
             Algorithms  = @($_.Algorithm)

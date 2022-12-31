@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           EthMiner.ps1
-Version:        4.2.2.3
-Version date:   20 October 2022
+Version:        4.2.3.0
+Version date:   31 December 2022
 #>
 
 class EthMiner : Miner { 
@@ -32,12 +32,14 @@ class EthMiner : Miner {
         $Response = ""
 
         Try { 
-            $Response = Invoke-TcpRequest -Server "localhost" -Port $this.Port -Request $Request -Timeout $Timeout -ErrorAction Stop
+            $Response = Invoke-TcpRequest -Server 127.0.0.1 -Port $this.Port -Request $Request -Timeout $Timeout -ErrorAction Stop
             $Data = $Response | ConvertFrom-Json -ErrorAction Stop
         }
         Catch { 
             Return $null
         }
+
+        If (-not $Data) { Return $null }
 
         $HashRate = [PSCustomObject]@{ }
         $HashRate_Name = [String]$this.Algorithms[0]
@@ -45,7 +47,6 @@ class EthMiner : Miner {
         If ($Data.result[0] -notmatch "^TT-Miner") { 
             If ($HashRate_Name -eq "EtcHash")          { $HashRate_Value *= 1000 }
             ElseIf ($HashRate_Name -eq "Ethash")       { $HashRate_Value *= 1000 }
-            ElseIf ($HashRate_Name -eq "EthashLowMem") { $HashRate_Value *= 1000 }
             ElseIf ($HashRate_Name -eq "UbqHash")      { $HashRate_Value *= 1000 }
         }
         If ($HashRate_Name -eq "Neoscrypt")           { $HashRate_Value *= 1000 }

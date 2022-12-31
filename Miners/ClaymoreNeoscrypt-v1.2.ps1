@@ -1,5 +1,3 @@
-using module ..\Includes\Include.psm1
-
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $Variables.DriverVersion.CIM.AMD -lt "26.20.15011.10003" })) { Return }
 
 $Uri = "https://github.com/Minerx117/miners/releases/download/ClaymoreNeoscrypt/claymore_neoscrypt_1.2.zip"
@@ -11,7 +9,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Neoscrypt"; MinMemGB = 2; ExcludeGPUArchitecture = @("RDNA"); MinerSet = 0; WarmupTimes = @(45, 0); Arguments = "" }
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).Host } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 
+If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] }) { 
 
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 
@@ -42,7 +40,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     [PSCustomObject]@{ 
                         Name        = $Miner_Name
                         DeviceNames = $AvailableMiner_Devices.Name
-                        Type        = $AvailableMiner_Devices.Type
+                        Type        = ($AvailableMiner_Devices.Type | Select-Object -unique)
                         Path        = $Path
                         Arguments   = ("$($Arguments) -pool $(If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) -wal $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).Pass) { " -psw $($MinerPools[0].($_.Algorithm).Pass)" }) -mport -$MinerAPIPort -di $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                         Algorithms  = @($_.Algorithm)

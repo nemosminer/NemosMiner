@@ -1,6 +1,6 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 data-navbaractive="navearningschart">Earnings Chart</h2>
+            <h2 id="title" data-navbaractive="navearningschart">Earnings Chart</h2>
           </div>
           <table class="alert alert-info table" role="alert">
             <tr>
@@ -192,7 +192,7 @@
 
                   for (var pool in earningsdata.Earnings) {
                     var BTCvalue = [];
-                    for (var index in earningsdata.Earnings[pool]) BTCvalue.push(rate * earningsdata.Earnings[pool][index]);
+                    for (var index in earningsdata.Earnings[pool]) BTCvalue.push(btc * earningsdata.Earnings[pool][index]);
                     var earnings = {
                       label: pool.replace('Internal', '(Internal)').replace('External', '(External)'),
                       data: BTCvalue,

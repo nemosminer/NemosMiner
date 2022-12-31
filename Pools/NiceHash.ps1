@@ -19,24 +19,24 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.2.2.3
-Version date:   20 October 2022
+Version:        4.2.3.0
+Version date:   31 December 2022
 #>
 
 using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
-    [PSCustomObject]$PoolsConfig,
+    [PSCustomObject]$PoolConfig,
     [String]$PoolVariant,
     [Hashtable]$Variables
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
 $PoolVariant = If ($Variables.NiceHashWalletIsInternal) { "NiceHash Internal" } Else { "NiceHash External" }
 $Fee = $PoolConfig.Variant.$PoolVariant.Fee
 $PayoutCurrency = $PoolConfig.Variant.$PoolVariant.PayoutCurrency
+$PoolHost = "auto.nicehash.com"
 $Wallet = $PoolConfig.Variant.$PoolVariant.Wallets.$PayoutCurrency
 $User = "$Wallet.$($PoolConfig.WorkerName -replace "^ID=")"
 
@@ -49,8 +49,6 @@ If ($Wallet) {
     Catch { Return }
 
     If (-not $Request) { Return }
-
-    $PoolHost = "auto.nicehash.com"
 
     $Request.miningAlgorithms | Where-Object speed -GT 0 | Where-Object { $_.algodetails.order -gt 0 } | ForEach-Object { 
         $Algorithm = $_.Algorithm
@@ -89,8 +87,8 @@ If ($Wallet) {
             Host                     = "$Algorithm.$PoolHost".ToLower()
             Name                     = [String]$Name
             Pass                     = "x"
-            Port                     = 9200
-            PortSSL                  = 443
+            Port                     = If ($PoolConfig.SSL -eq "Always") { 0 } Else { 9200 }
+            PortSSL                  = If ($PoolConfig.SSL -eq "Never") { 0 } Else { 443 }
             Price                    = [Double]$Stat.Live
             Region                   = [String]$PoolConfig.Region
             StablePrice              = [Double]$Stat.Week

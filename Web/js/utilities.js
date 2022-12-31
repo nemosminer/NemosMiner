@@ -3,11 +3,11 @@ function formatMiners(data) {
   // that is easier to display and manipulate in a table
   $.each(data, function(index, item) {
     // Format miner link
-    if (item.MinerUri) item.tName = '<a href="' + item.MinerUri + '" target ="_blank">' + item.Name + '</a>';
+    if (item.MinerUri && item.Best) item.tName = '<a href="' + item.MinerUri + '" target ="_blank">' + item.Name + '</a>';
     else item.tName = item.Name;
 
     // Format the device(s)
-    if (item.DeviceNames) item.tDevices = item.DeviceNames.toString();
+    if (item.DeviceNames) item.tDevices = formatArrayAsSortedString(item.DeviceNames);
     else item.tDevices = '';
 
     // Format the pool and algorithm data
@@ -90,6 +90,12 @@ function formatMiners(data) {
     // Format status message
     if (item.StatusMessage) item.tStatusMessage = item.StatusMessage.replace(/ \{.+/g, '');
     else item.tStatusMessage = item.tStatus;
+
+    //Format warmup times
+    if (item.WarmupTimes.length > 1) {
+      item.tWarmupTimes0 = item.WarmupTimes[0];
+      item.tWarmupTimes1 = item.WarmupTimes[1];
+    }
   });
   return data;
 }
@@ -179,7 +185,7 @@ function formatDecimals(value) {
 };
 
 function formatDecimalsFromBTC(value) {
-  return formatDecimals(value * rate);
+  return formatDecimals(value * btc);
 };
 
 function formatPrices(value) {
@@ -214,10 +220,10 @@ function formatPorts(value) {
   return value.join(' / ');
 };
 
-function formatArrayAsString(value) {
+function formatArrayAsSortedString(value) {
   if (value === '') return ''
   if (value == null) return '';
-  return value.sort().join('; <br>');
+  return value.sort().join(', ');
 };
 
 function format0DecimalDigits(value) {

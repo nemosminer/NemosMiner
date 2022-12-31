@@ -1,44 +1,49 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 data-navbaractive="navminers">All Miners</h2>
+            <h2 id="title" data-navbaractive="navminers">All Miners</h2>
           </div>
           <div class="alert alert-info" role="alert">These are all miners.<br>Note: NemosMiner will only create miners for algorithms that have at least one available pool.</div>
           <div id="toolbar">
             <button id="btn-re-benchmark" class="btn btn-primary" disabled title="The marked miners will re-benchmark&#10;Use this if the recorded hashrate is unreal or to re-enable disabled miners">Re-benchmark</button>
             <button id="btn-re-measure" class="btn btn-primary" disabled title="The marked miners will re-measure power usage&#10;Use this if the recorded power usage is unreal">Re-measure Power Usage</button>
-            <button id="btn-remove-watchdog" class="btn btn-success" disabled title="Remove the watchdog timers for the marked miners">Remove Watchdog</button>
-            <button id="btn-failed" class="btn btn-danger" disabled title="The marked miners will be marked as failed&#10;Use this if the miners fail benchmarking or produce unpredictable results">Mark as failed</button>
-            <button id="btn-disable" class="btn btn-warning" disabled title="The marked miners will be marked as disabled&#10;To re-enable trigger re-benchmarking">Disable</button>
+            <button id="btn-failed" class="btn btn-warning" disabled title="The marked miners will be marked as failed&#10;Use this if the miners fail benchmarking or produce unpredictable results">Mark as failed</button>
+            <button id="btn-disable" class="btn btn-danger" disabled title="The marked miners will be marked as disabled&#10;To re-enable trigger re-benchmarking">Disable</button>
+            <button id="btn-remove-watchdog" class="btn btn-info" disabled title="Remove the watchdog timers for the marked miners">Remove Watchdog</button>
           </div>
           <table id="miners" class="table"
-            data-toolbar="#toolbar"
-            data-click-to-select="true"
-            data-cache="false"
-            data-toggle="table"
-            data-icons="icons"
-            data-show-button-text="true"
-            data-show-search-clear-button="true"
-            data-filter-control="true"
-            data-disable-control-when-search="true"
-            data-show-columns="true"
-            data-show-toggle="true"
-            data-detail-view="true"
-            data-show-refresh="true"
             data-auto-refresh="true"
             data-auto-refresh-status="true"
+            data-cache="true"
+            data-click-to-select="true"
+            data-cookie="true"
+            data-cookie-id-table="cs_miners"
+            data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
             data-detail-formatter="detailFormatter"
-            data-response-handler="formatMiners"
-            data-url="/miners"
-            data-undefined-text=""
-            data-show-fullscreen="true"
+            data-detail-view="true"
+            data-disable-control-when-search="true"
+            data-filter-control="true"
             data-header-style="headerStyleAlignTop"
+            data-icons="icons"
+            data-maintain-meta-data="true"
+            data-response-handler="formatMiners"
+            data-reorderable-columns="true"
+            data-show-button-text="true"
+            data-show-columns="true"
+            data-show-fullscreen="true"
+            data-show-refresh="true"
+            data-show-search-clear-button="true"
+            data-show-toggle="true"
+            data-toggle="table"
+            data-toolbar="#toolbar"
+            data-undefined-text=""
+            data-url="/miners"
             >
             <thead>
               <tr>
                 <th data-switchable="false" data-field="Status" data-class="hidden"></th>
                 <th data-field="state" data-checkbox="true"></th>
-                <th data-field="Name" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
-                <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">BaseName</th>
+                <th data-field="tName" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
+                <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">Miner</th>
                 <th data-field="Version" data-sortable="true" data-filter-control="select" data-visible="false">Version</th>
                 <th data-field="CommandLine" data-sortable="true" data-filter-control="input" data-visible="false">CommandLine</th>
                 <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
@@ -71,8 +76,9 @@
                 <th data-field="tSecondaryMinerFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Secondary Algorithm Miner Fee</th>
                 <th data-field="API" data-sortable="true" data-filter-control="select" data-visible="false">Miner API</th>
                 <th data-field="Port" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">API Port</th>
-                <th data-field="MinDataSamples" data-sortable="true" data-filter-control="select" data-visible="false">Min. Data Samples</th>
-                <th data-field="WarmupTimes" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">WarmupTimes</th>
+                <th data-field="MinDataSample" data-sortable="true" data-filter-control="select" data-visible="false">Min. Data Samples</th>
+                <th data-field="tWarmupTimes0" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false" data-title-tooltip="Seconds until miner must send first sample&#10;If no sample is received miner will be marked as failed">WarmupTime [0]</th>
+                <th data-field="tWarmupTimes1" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false" data-title-tooltip="Seconds until miner sends stable hashrates&#10;that will count for benchmarking">WarmupTime [1]</th>
                 <th data-field="Updated" data-sortable="true" data-formatter="formatTimeSince" data-width=250 data-visible="false">Updated</th>
                 <th data-field="EnvVars" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Environment Variables</th>
                 <th data-field="Activated" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Activated</th>
@@ -86,6 +92,7 @@
                 <th data-field="Disabled" data-sortable="true" data-filter-control="select" data-visible="false">Disabled</th>
                 <th data-field="Restart" data-sortable="true" data-filter-control="select" data-visible="false">Restart</th>
                 <th data-field="KeepRunning" data-sortable="true" data-filter-control="select" data-visible="false">Keep Running</th>
+                <th data-field="Cycle" data-sortable="true" data-filter-control="select" data-visible="false"># Cycles</th>
                 <th data-field="Prioritize" data-sortable="true" data-filter-control="select" data-visible="false">Prioritize</th>
               </tr>
             </thead>
@@ -135,7 +142,7 @@
                 } catch {}
               },
 
-              autoRefreshInterval: parseInt(config.Interval), // refresh once per interval
+              autoRefreshInterval: parseInt(Math.max(config.Interval, 30)), // refresh once per interval, at least 30 seconds
               height: $(window).height() - $table.offset().top + 26
             });
 

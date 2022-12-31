@@ -19,15 +19,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool.ps1
-Version:        4.2.2.3
-Version date:   20 October 2022
+Version:        4.2.3.0
+Version date:   31 December 2022
 #>
 
 using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
-    [PSCustomObject]$PoolsConfig,
+    [PSCustomObject]$PoolConfig,
     [String]$PoolVariant,
     [Hashtable]$Variables
 )
@@ -35,9 +35,9 @@ param(
 $ProgressPreference = "SilentlyContinue"
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
-$PriceField = $Variables.PoolData.$Name.Variant.$PoolVariant.PriceField
-$DivisorMultiplier = $Variables.PoolData.$Name.Variant.$PoolVariant.DivisorMultiplier
+$PriceField = $PoolConfig.Variant.$PoolVariant.PriceField
+$DivisorMultiplier = $PoolConfig.Variant.$PoolVariant.DivisorMultiplier
+$HostSuffix = "mine.zpool.ca"
 $PayoutCurrency = $PoolConfig.Wallets.Keys | Select-Object -First 1
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
 $TransferFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Data\BrainData_" + (Get-Item $MyInvocation.MyCommand.Path).BaseName + ".json"
@@ -56,8 +56,6 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
 
     If (-not $Request) { Return }
 
-    $HostSuffix = "mine.zpool.ca"
-
     $Request.PSObject.Properties.Name | Where-Object { $Request.$_.$PriceField -gt 0 } | ForEach-Object { 
         $Algorithm = $_
         $Algorithm_Norm = Get-Algorithm $Algorithm
@@ -66,7 +64,15 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
         $Fee = $Request.$_.Fees / 100
 
         # Add coin name
-        If ($Request.$_.CoinName -and $Currency) { [void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName) }
+        If ($Request.$_.CoinName -and $Currency) { 
+            $CoinName = $Request.$_.CoinName 
+            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $CoinName
+        }
+        Else { 
+            $CoinName = ""
+        }
+
+        # If ($Algorithm_Norm -eq "FiroPow") { $Currency = "SCC"; $CoinName = "StakeCube" } # SCC firo variant
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
@@ -77,6 +83,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
                     Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
                     Algorithm                = [String]$Algorithm_Norm
                     BaseName                 = [String]$Name
+                    CoinName                 = [String]$CoinName
                     Currency                 = [String]$Currency
                     Disabled                 = [Boolean]$Stat.Disabled
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
@@ -84,8 +91,8 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
                     Host                     = "$($Algorithm).$($Region).$($HostSuffix)"
                     Name                     = [String]$PoolVariant
                     Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
-                    Port                     = [UInt16]$Request.$_.port
-                    PortSSL                  = [UInt16]("5$([UInt]$Request.$_.port)")
+                    Port                     = If ($PoolConfig.SSL -eq "Always") { 0 } Else { [UInt16]$Request.$_.port }
+                    PortSSL                  = If ($PoolConfig.SSL -eq "Never") { 0 } Else { [UInt16]("5$([UInt]$Request.$_.port)") }
                     Price                    = [Double]$Stat.Live
                     Region                   = [String]$Region_Norm
                     StablePrice              = [Double]$Stat.Week

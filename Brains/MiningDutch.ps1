@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningDutch.ps1
-Version:        4.2.2.3
-Version date:   20 October 2022
+Version:        4.2.3.0
+Version date:   31 December 2022
 #>
 
 using module ..\Includes\Include.psm1
@@ -50,7 +50,7 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
         $CurDate = (Get-Date).ToUniversalTime()
         $PoolVariant = $Config.PoolName | Where-Object { $_ -match "$($BrainName)*" } 
 
-        If ($BrainConfig.Debug) { Write-Message -Level Debug "Start Brain '$Brainname ($PoolVariant)'." }
+        If ($Config.PoolsConfig.$BrainName.BrainDebug) { Write-Message -Level Debug "Start Brain '$Brainname ($PoolVariant)'." }
 
         Do {
             Try { 
@@ -66,7 +66,8 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
 
         ForEach ($Algo in (($AlgoData | Get-Member -MemberType NoteProperty).Name)) { 
             $Currency = If ($Currencies.Symbol) { ($Currencies | Sort-Object Estimate)[-1].Symbol } Else { "" }
-            $AlgoData.$Algo | Add-Member @{ Currency = $Currency.Trim() }
+
+            If ($Currency) { $AlgoData.$Algo | Add-Member @{ Currency = $Currency } -Force } Else { $AlgoData.$Algo.PSObject.Properties.Remove("Currency") }
 
             $AlgoData.$Algo.estimate_last24h = [Double]$AlgoData.$Algo.estimate_last24h
             If ($AlgoData.$Algo.actual_last24h) { $AlgoData.$Algo.actual_last24h = [Double]$AlgoData.$Algo.actual_last24h }
@@ -74,9 +75,9 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
             $AlgoData.$Algo.estimate_current = [math]::max(0, [Double]($AlgoData.$Algo.estimate_current * ( 1 - ($BrainConfig.PoolAPIPerFailPercentPenalty * [math]::max(0, $APICallFails - $BrainConfig.PoolAPIAllowedFailureCount) / 100))))
             $AlgoObject += [PSCustomObject]@{ 
                 Date               = $CurDate
-                Name               = $AlgoData.$Algo.name
+                Name               = $Algo
                 Port               = $AlgoData.$Algo.port
-                coins              = $AlgoData.$Algo.coins
+                Currency           = $Currency
                 Fees               = $AlgoData.$Algo.fees
                 Hashrate           = $AlgoData.$Algo.hashrate
                 Workers            = $AlgoData.$Algo.workers
@@ -87,8 +88,6 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
                 Last24Drift        = $AlgoData.$Algo.estimate_current - $BasePrice
                 Last24DriftSign    = If (($AlgoData.$Algo.estimate_current - $BasePrice) -ge 0) { "Up" } Else { "Down" }
                 Last24DriftPercent = If ($BasePrice -gt 0) { ($AlgoData.$Algo.estimate_current - $BasePrice) / $BasePrice } Else { 0 }
-                FirstDate          = $AlgoObject[0].Date
-                TimeSpan           = If ($null -ne $AlgoObject.Date) { (New-TimeSpan -Start ($AlgoObject[0]).Date -End $CurDate).TotalMinutes }
             }
         }
 
@@ -131,24 +130,30 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
 
         $Variables.BrainData | Add-Member $BrainName $AlgoData -Force
 
-        If ($BrainConfig.UseTransferFile -or $BrainConfig.Debug) { 
+        If ($BrainConfig.UseTransferFile -or $Config.PoolsConfig.$BrainName.BrainDebug) { 
             ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Out-File -FilePath $TransferFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
         }
+        Remove-Variable AlgoData, CurrenciesData -ErrorAction Ignore
 
         # Limit to only sample size + 10 minutes min history
         $AlgoObject = @($AlgoObject | Where-Object { $_.Date -ge $CurDate.AddMinutes(-($BrainConfig.SampleSizeMinutes + 10)) })
 
-        Remove-Variable AlgoData, BasePrice, CurAlgoObject, CurrenciesData, Currencies, Currency, SampleSizeHalfts, SampleSizets, GroupAvgSampleSize, GroupAvgSampleSizeHalf, GroupMedSampleSize, GroupMedSampleSizeHalf, GroupMedSampleSizeNoPercent, Name, Penalty, PenaltySampleSizeHalf, PenaltySampleSizeNoPercent, Price -ErrorAction Ignore
+        If ($Config.PoolsConfig.$BrainName.BrainDebug) { 
+            Write-Message -Level Debug ("$PoolVariant AlgoObject size: {0:n0} Bytes" -f ($AlgoObject | ConvertTo-Json -compress).length)
+            Get-MemoryUsage
+        }
     }
 
-    $null = [System.GC]::GetTotalMemory("forcefullcollection")
+    [System.GC]::Collect() | Out-Null
+    [System.GC]::WaitForPendingFinalizers() | Out-Null
+    [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
 
-    If ($BrainConfig.Debug) { 
+    If ($Config.PoolsConfig.$BrainName.BrainDebug) { 
         Get-MemoryUsage
         Write-Message -Level Debug "End Brain '$Brainname' ($($Duration.TotalSeconds) sec.)."
     }
 
     Do { 
         Start-Sleep -Seconds 3
-    } While (($Variables.MiningStatus -eq "Running" -and (-not $Variables.Miners -or $CurDate -gt $Variables.PoolDataCollectedTimeStamp -or (Get-Date).ToUniversalTime().AddSeconds([Int]$Duration.TotalSeconds + 5) -lt $Variables.EndCycleTime)) -or $CurDate.AddSeconds([Int]$Config.Interval) -gt (Get-Date).ToUniversalTime())
+    } While (-not $Variables.Miners -or $CurDate -gt $Variables.PoolDataCollectedTimeStamp -or (Get-Date).ToUniversalTime().AddSeconds([Int]$Duration.TotalSeconds + 5) -lt $Variables.EndCycleTime -or $CurDate.AddSeconds([Int]$Config.Interval) -gt (Get-Date).ToUniversalTime())
 }

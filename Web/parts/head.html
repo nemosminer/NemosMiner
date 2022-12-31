@@ -1,53 +1,69 @@
 <!doctype html>
 
 <html lang="en">
+
   <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
     <link rel="shortcut icon" type="image/x-icon" href="https://avatars2.githubusercontent.com/u/50767117?s=400&u=659df63c55ea1bafbb5256e6872ba1662950aae8&v=4"/>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/css/bootstrap.min.css" integrity="sha512-T584yQ/tdRR5QwOpfvDfVQUidzfgc2339Lc8uBDtcp/wYu80d7jwBgAxbyMh0a9YM9F8N3tdErpFI8iaGx6x5g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css" integrity="sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
+
+    <link href="https://cdn.jsdelivr.net/gh/akottr/dragtable@master/dragtable.css" rel="stylesheet">
 
     <link rel="stylesheet" href="/css/dashboard.css">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.21.0/bootstrap-table.min.css" integrity="sha512-MkfcmT4F14hakMqtLd5lCuNaXdgeznbYwseYG7zi9pmhkJI8WzRCHpD+JxsPxzMg6kLyeBlIo+/maPjMaTR9cQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.21.2/bootstrap-table.min.css" integrity="sha512-nR/UyMwqN3G7hUXj555TPsmLNyBHbTuJal56HT4p1iYzJ6wdI8CFQfkHe6POuosBt7FC2dsrhBEGM71TCJyxXQ==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.20.2/extensions/filter-control/bootstrap-table-filter-control.min.css" integrity="sha512-WWlwZZ7XNJxOoHOannqUm1OBC7GQ7uVbG28nVkqVDWkFTOn/zl1X+qQU+XlsldkVdfJ3RgzDNlysJLgAoX/nKw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.21.2/extensions/filter-control/bootstrap-table-filter-control.min.css" integrity="sha512-Xki7DdcS/g9kMJo7Ccgz7aG2gbpNgqT6xPGPBsoNIqvoh32tJLs98BtgKgitFX3L/vLdeM7bVltZfR67UC/yJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.js" integrity="sha512-n/4gHW3atM3QqRcbCn6ewmpxcLAHGaDjpEBu4xZd47N0W2oQ+6q7oc3PXstrJYXcbNU1OHdQ1T7pAP+gi5Yu8g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/js/bootstrap.bundle.min.js" integrity="sha512-mULnawDVcCnsk9a4aG1QLZZ6rcce/jSzEGqUkeOLy0b6q0+T6syHrxlsAGH7ZVoqC93Pd0lBqd6WguPWih7VHA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js" integrity="sha512-1/RvZTcCDEUjY/CypiMz+iqqtaoQfAITmNSJY17Myp4Ms5mdxPS5UV7iOfdZoxcGhzFbOm6sntTKJppjvuhg4g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.20.2/bootstrap-table.min.js" integrity="sha512-9KY1w0S1bRPqvsNIxj3XovwFzZ7bOFG8u0K1LByeMVrzYhLu3v7sFRAlwfhBVFsHRiuMc6shv1lRLCTInwqxNg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.20.2/extensions/auto-refresh/bootstrap-table-auto-refresh.min.js" integrity="sha512-SqnTsdJ0fUxdPu8nk3RrspSA10eLTtqNkYCqCRkrWZgqNWeDLUhtDlcJggC+JL9Wi5Nl+1DSFpiPKeH88AaViA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.21.2/bootstrap-table.min.js" integrity="sha512-Pzu+rRJHcBZGogD+WpK3kZVU5aKuL0W3hVYLePrsa1nL9Kdqch3+7tiSkg/ziHJOx5lTtA20w86zw1yGaF6Scw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.20.2/extensions/auto-refresh/bootstrap-table-auto-refresh.min.js" integrity="sha512-SqnTsdJ0fUxdPu8nk3RrspSA10eLTtqNkYCqCRkrWZgqNWeDLUhtDlcJggC+JL9Wi5Nl+1DSFpiPKeH88AaViA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.21.2/extensions/auto-refresh/bootstrap-table-auto-refresh.min.js" integrity="sha512-zJ6lapsCSqpfdulMA/cX7KTCbjmApEafK1az83oxJMpNLeZhZ+AVb4mKR9i43By9RDQOG/KGh9bErU8Ej0Qu/w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.20.0/extensions/cookie/bootstrap-table-cookie.min.js" integrity="sha512-ay+Ss3/UgY/JgsiA6nTsVkD3FwJt6NXBF9+Qo0X/SUiT/gEDbE9xTPaN+41Jhea0kjCUwvIiDHM4tDFsG5Ou9Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.21.2/extensions/cookie/bootstrap-table-cookie.js" integrity="sha512-b94iSJl+KxjNVsybvuPjeySjX1b7Ogdu3IvyTc9Lgbi5RXOmHkFBsTckcY9CsaGfbSG/hJnasGbLKsikBi+ULw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.18.3/extensions/filter-control/bootstrap-table-filter-control.min.js" integrity="sha512-nrE3yoRxAz6j1ZhkE59hXcSKV0cewPN+8ZEXJZnsz2qofCEOwmctecuKrBnWQUj7UA5dOnI+Cam52/AdvB6HKQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- Slow!!! <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.21.2/extensions/filter-control/bootstrap-table-filter-control.min.js" integrity="sha512-xZT1mq1eo6y/dWBJ/J7Lreo31t5xVHxDxFBvMh1tPMbbrC/NK88ZFxR9BeKC+7vXbF4SzTFiAUXShahtEyuwtQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/js/all.min.js" integrity="sha512-naukR7I+Nk6gp7p5TMA4ycgfxaZBJ7MO5iC3Fp6ySQyKFHOGfpkSZkYVWV5R7u7cfAicxanwYQ5D1e17EfJcMA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.4.1/chart.min.js" integrity="sha512-5vwN8yor2fFT9pgPS9p9R7AszYaNn0LkQElTXIsZFCL7ucT8zDCAqlQXDdaqgA1mZP47hdvztBMsIoFxq/FyyQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js" integrity="sha512-RNLkV3d+aLtfcpEyFG8jRbnWHxUqVZozacROI4J2F1sTaDqo1dPQYs01OMi1t1w9Y2FdbSCDSQ2ZVdAC8bzgAg==" crossorigin="anonymous"></script>
 
+    <!-- Earnings chart -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js" integrity="sha512-rstIgDs0xPgmG6RX1Aba4KV5cWJbAMcvRCVmglpam9SoHZiUCyQVDdH2LPlxoHtrv17XWblE/V/PP+Tr04hbtA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/additional-methods.min.js" integrity="sha512-6S5LYNn3ZJCIm0f9L6BCerqFlQ4f5MwNKq+EthDXabtaJvg3TuFLhpno9pcm+5Ynm6jdA9xfpQoMz2fcjVMk9g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Make columns reorderable by drag and drop -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js" integrity="sha512-57oZ/vW8ANMjR/KQ6Be9v/+/h6bq9/l3f0Oc7vn6qMqyhvPd1cvKBRWWpzu0QoneImqr2SkmO4MSqU+RpHom3Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/gh/akottr/dragtable@master/jquery.dragtable.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.21.2/extensions/reorder-columns/bootstrap-table-reorder-columns.min.js" integrity="sha512-8a2/7e7pMDXvTz1fa4SzeGO1laQcCBgzGTiOD64/s6oyHzQoLG+0FLXhldVGvpgkQQ9LefJcsCMgKTO1DrwvBA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script src="/js/utilities.js"></script>
   </head>
 <!-- Start of page scripts 'head.html' -->
   <script type='text/javascript'>
-    var btc = 0;
-    var config = {};
-    var rate = 0;
-    var version = '';
 
     //get stored variables
-    var config = JSON.parse(sessionStorage.getItem('config'));
-    var rate = JSON.parse(sessionStorage.getItem('rate'));
+    var btc = 0;
+    var config = {};
+    var summary = ""
 
-
-    function updateHeader() {
+    function updateData(){ 
       // Get current config
       $.ajax({
         async: false,
@@ -56,80 +72,22 @@
         url: '/config',
         success: function(result) {
           config = result;
-          sessionStorage.setItem('config', JSON.stringify(config));
         }
       });
-
       // get BTC rate for first currency
-      $.ajax({
-        async: false,
-        dataType: 'text',
-        timeout: 10,
-        url: '/btc',
-        success: function(result) {
-          rate = result;
-          sessionStorage.setItem('btc', JSON.stringify(rate));
-        }
-      });
-
-      // get page header info
       $.ajax({
         async: false,
         dataType: 'json',
         timeout: 10,
-        url: '/summary',
+        url: '/btc',
         success: function(result) {
-          $('#summary').empty().append(result);
-          sessionStorage.setItem('summary', JSON.stringify(result));
+          btc = result;
         }
       });
-
-      //Set mining button status
-      if (document.getElementById('btn-miningstart')) {
-        $.ajax({
-          async: false,
-          dataType: 'json',
-          timeout: 10,
-          url: '/functions/mining/getstatus',
-          success: function(result) {
-            switch (result) {
-              case 'Running': 
-                document.getElementById('btn-miningstart').disabled = true;
-                document.getElementById('btn-miningstart').title = "Mining processes are already running.";
-                document.getElementById('btn-miningpause').disabled = false;
-                document.getElementById('btn-miningpause').title = "Pause mining processes. Background processes remain running.";
-                document.getElementById('btn-miningstop').disabled = false;
-                document.getElementById('btn-miningstop').title = "Stop mining processes. Background processes will also stop.";
-                break;
-              case 'Paused':
-                document.getElementById('btn-miningstart').disabled = false;
-                document.getElementById('btn-miningstart').title ="Start the mining process.";
-                document.getElementById('btn-miningpause').disabled = true;
-                document.getElementById('btn-miningpause').title = "Mining processes are stopped. Background processes remain running.";
-                document.getElementById('btn-miningstop').disabled = false;
-                document.getElementById('btn-miningstop').title = "Stop mining processes. Background processes will also stop.";
-                break;
-              case 'Idle':
-                document.getElementById('btn-miningstart').disabled = false;
-                document.getElementById('btn-miningstart').title ="Start the mining process.";
-                document.getElementById('btn-miningpause').disabled = false;
-                document.getElementById('btn-miningpause').title = "Mining will not start. Background processes will start.";
-                document.getElementById('btn-miningstop').disabled = true;
-                document.getElementById('btn-miningstop').title = "All mining processes are already stopped.";
-                break;
-            }
-          }
-        });
-      }
     }
 
-    $(document).ready(function() {
-      // set the values in the header
-      window.setInterval(function() { 
-        updateHeader();
-      }, 10000);
-      updateHeader();
-    });
+    updateData();
+
   </script>
 <!-- End of page scripts 'head.html' -->
   <body>

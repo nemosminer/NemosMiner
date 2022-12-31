@@ -19,15 +19,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.2.2.3
-Version date:   20 October 2022
+Version:        4.2.3.0
+Version date:   31 December 2022
 #>
 
 using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
-    [PSCustomObject]$PoolsConfig,
+    [PSCustomObject]$PoolConfig,
     [String]$PoolVariant,
     [Hashtable]$Variables
 )
@@ -35,7 +35,6 @@ param(
 $ProgressPreference = "SilentlyContinue"
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$PoolConfig = $PoolsConfig.(Get-PoolBaseName $Name)
 
 $Headers = @{ "Cache-Control" = "no-cache" }
 $Useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"
@@ -60,7 +59,13 @@ If ($PoolConfig.UserName) {
             $Port = $Current.port
 
             # Add coin name
-            If ($Current.coin_name -and $Currency) { [void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Current.coin_name) }
+            If ($Current.coin_name -and $Currency) { 
+                $CoinName = (Get-Culture).TextInfo.ToTitleCase($Current.coin_name.ToLower())
+                Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $CoinName
+            }
+            Else { 
+                $CoinName = ""
+            }
 
             $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ($_.profit / $Divisor) -FaultDetection $false
 
@@ -70,10 +75,10 @@ If ($PoolConfig.UserName) {
             # Temp fix for pool API errors
             Switch ($Algorithm_Norm) { 
                 # "Ethash"    { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }) }
-                "KawPoW"    { $Regions = @($PoolConfig.Region | Where-Object { $_ -notin @("europe") }) }
+                # "KawPow"    { $Regions = @($PoolConfig.Region | Where-Object { $_ -notin @("europe") }) }
                 # "Lyra2RE2"  { $Current.host_list = $Current.host }
-                "Neoscrypt" { $Current.host_list = $Current.host }
-                # "Skein"     { $Current.host_list = $Current.host }
+                "Neoscrypt"   { $Current.host_list = $Current.host }
+                "Skein"       { $Current.host_list = $Current.host }
                 "VertHash"    { $Current.host_list = $Current.host; $Port = 20534 }
                 # Default     { $Port = $Current.port }
             }
@@ -87,6 +92,7 @@ If ($PoolConfig.UserName) {
                         Accuracy                 = [Double](1 - $Stat.Week_Fluctuation)
                         Algorithm                = [String]$Algorithm_Norm
                         BaseName                 = [String]$Name
+                        CoinName                 = [String]$CoinName
                         Currency                 = [String]$Currency
                         EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                         Fee                      = $Fee
@@ -129,8 +135,9 @@ If ($PoolConfig.UserName) {
             # Temp fix for pool API errors
             Switch ($Algorithm_Norm) { 
                 # "Ethash"   { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }) }
-                "KawPoW"     { $Regions = @($PoolConfig.Region | Where-Object { $_ -notin @("europe") }) }
-                "Neoscrypt" { $Current.host_list = $Current.host }
+                # "KawPow"     { $Regions = @($PoolConfig.Region | Where-Object { $_ -notin @("europe") }) }
+                "Neoscrypt"  { $Current.all_host_list = $Current.host }
+                "Skein"      { $Current.all_host_list = $Current.host }
                 "VertHash"   { $Port = 20534 }
                 # Default    { $Port = $Current.algo_switch_port }
             }
