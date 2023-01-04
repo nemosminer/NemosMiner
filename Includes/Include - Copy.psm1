@@ -133,7 +133,7 @@ Class Worker {
     [Double]$Hashrate
     [Pool]$Pool
     [TimeSpan]$TotalMiningDuration
-    [DateTime]$Updated = (Get-Date).ToUniversalTime()
+    [DateTime]$Updated
 }
 
 Enum MinerStatus { 
@@ -270,7 +270,7 @@ Class Miner {
 
         Write-Message -Level Info "Starting miner '$($this.Name) $($this.Info)'..."
 
-        If ($this.Arguments -and (Test-Json $this.Arguments)) { $this.CreateConfigFiles() }
+        If (Test-Json $this.Arguments -ErrorAction Ignore) { $this.CreateConfigFiles() }
 
         If ($this.Process) { 
             If ($this.Process | Get-Job) { 
@@ -709,8 +709,9 @@ Function Start-Mining {
         $PowerShell = [PowerShell]::Create()
         $PowerShell.Runspace = $Variables.CoreRunspace
         $PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1") | Out-Null
+        $PowerShell.BeginInvoke() | Out-Null
 
-        $Variables.CoreRunspace | Add-Member -Force @{ Name = "CoreRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = $((Get-Date).ToUniversalTime())  }
+        $Variables.CoreRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
 
         $Variables.Summary = "Mining processes are running."
     }
@@ -728,6 +729,7 @@ Function Stop-Mining {
         $Variables.CoreRunspace.Close()
         If ($Variables.CoreRunspace.PowerShell) { $Variables.CoreRunspace.PowerShell.Dispose() }
         $Variables.CoreRunspace.Dispose()
+        $Variables.Remove("Timer")
         $Variables.Remove("CoreRunspace")
 
         $Variables.Summary = "Mining processes stopped."
@@ -765,8 +767,6 @@ Function Start-Brain {
             $Variables.BrainData = [PSCustomObject]@{ }
         }
 
-        If ($Variables.BrainRunspacePool) { $Variables.BrainRunspacePool.CleanupInterval = New-TimeSpan -Seconds (2 * $Config.Interval) }
-
         # Starts Brains if necessary
         $BrainsStarted = @()
         $Brains | Select-Object | Sort-Object | ForEach-Object { 
@@ -776,7 +776,7 @@ Function Start-Brain {
                     $PowerShell = [PowerShell]::Create()
                     $PowerShell.RunspacePool = $Variables.BrainRunspacePool
                     $PowerShell.AddScript($BrainScript) | Out-Null
-                    $Variables.Brains.$_ = @{ Name = $_; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = $((Get-Date).ToUniversalTime()) }
+                    $Variables.Brains.$_ = @{ Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell }
                     $BrainsStarted += $_
                 }
             }
@@ -888,18 +888,18 @@ Function Initialize-Application {
 Function Get-DefaultAlgorithm { 
 
     If ($PoolsAlgos = Get-Content ".\Data\PoolsConfig-Recommended.json" -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue) { 
-        Return ($PoolsAlgos.PSObject.Properties.Name | Where-Object { $_ -in @(Get-PoolBaseName $Config.PoolName) } | ForEach-Object { $PoolsAlgos.$_.Algorithm }) | Sort-Object -Unique
+        Return ($PoolsAlgos.PSObject.Properties.Name | Where-Object { $_ -in @(Get-PoolBaseName $Config.PoolName) } | ForEach-Object {$PoolsAlgos.$_.Algorithm }) | Sort-Object -Unique
     }
     Return
 }
 
 Function Get-CommandLineParameters { 
     Param(
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true)]
         [String]$Arguments
     )
 
-    If ($Arguments -and (Test-Json $Arguments)) { $Arguments = ($Arguments | ConvertFrom-Json).Arguments }
+    If (Test-Json $Arguments) { $Arguments = ($Arguments | ConvertFrom-Json).Arguments }
     Return $Arguments
 }
 
@@ -1018,10 +1018,9 @@ Function Write-Message {
             # This lets us ensure only one thread is trying to write to the file at a time. 
             $Mutex = New-Object System.Threading.Mutex($false, $Variables.Branding.ProductLabel)
 
-            $LogFile = "$($Variables.MainPath)\Logs\$($Variables.Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd").log"
-
             # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
             If ($Mutex.WaitOne(1000)) { 
+                $LogFile = "$($Variables.MainPath)\Logs\$($Variables.Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd").log"
                 $Message | Out-File -FilePath $LogFile -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
                 $Mutex.ReleaseMutex()
             }
@@ -1144,7 +1143,7 @@ Function Get-RandomDonationPoolsConfig {
     $Variables.DonationRandom = $Variables.DonationData | Get-Random
     $DonationRandomPoolsConfig = [Ordered]@{ }
     (Get-ChildItem .\Pools\*.ps1 -File).BaseName | Sort-Object -Unique | ForEach-Object { 
-        $PoolConfig = $Config.PoolsConfig.$_
+        $PoolConfig = @{ }
         $PoolConfig.EarningsAdjustmentFactor = 1
         $PoolConfig.Region = $Config.PoolsConfig.$_.Region
         $PoolConfig.WorkerName = "$($Variables.Branding.ProductLabel)-$($Variables.Branding.Version.ToString())-donate$($Config.Donation)"
@@ -2131,10 +2130,8 @@ Function Get-Device {
         }
     }
 
-    # If ($Variables.Devices -isnot [Device[]] -or $Refresh) { 
-    #     [Device[]]$Variables.Devices = @()
-    If (-not $Variables.Devices -or $Refresh) { 
-        $Variables.Devices = @()
+    If ($Variables.Devices -isnot [Device[]] -or $Refresh) { 
+        [Device[]]$Variables.Devices = @()
 
         $Id = 0
         $Type_Id = @{ }
@@ -2425,7 +2422,6 @@ Function Get-Device {
 
     $Variables.Devices | ForEach-Object { 
         [Device]$Device = $_
-        $Device = $_
 
         $Device.Bus_Index = @($Variables.Devices.Bus | Sort-Object).IndexOf([Int]$Device.Bus)
         $Device.Bus_Type_Index = @(($Variables.Devices | Where-Object Type -EQ $Device.Type).Bus | Sort-Object).IndexOf([Int]$Device.Bus)
@@ -2879,7 +2875,7 @@ Function Get-PoolBaseName {
         [String[]]$PoolNames
     )
 
-    Return ($PoolNames -replace "24hr$|Coins$|Plus$")
+    Return ($PoolNames -replace "24hr$|Coins$|Coins24hr$|CoinsPlus$|Plus$")
 }
 
 Function Get-NMVersion { 
@@ -3070,13 +3066,6 @@ Function Update-ConfigFile {
     $Config.PoolName = $Config.PoolName -replace "MPH", "MiningPoolHub"
     $Config.PoolName = $Config.PoolName -replace "MPHCoins", "MiningPoolHubCoins"
 
-    # *Coins pool no longer exists
-    $OldPoolName = $Config.PoolName
-    $Config.PoolName = $Config.PoolName
-    $Config.PoolName = $Config.PoolName -replace 'Coins$', '' -replace 'CoinsPlus$', 'Plus'
-    If ($OldPoolName -ne $Config.PoolName) { 
-        Write-Message -Level Info "Pool configuration has changed ($($OldPoolName -join ', ') -> $($Config.PoolName -join ', ')). Please verify your configuration."
-    }
     # Available regions have changed
     If (-not (Get-Region $Config.Region -List)) { 
         $OldRegion = $Config.Region
@@ -3111,7 +3100,7 @@ Function Update-ConfigFile {
 
     $Config.ConfigFileVersion = $Variables.Branding.Version.ToString()
     Write-Config -ConfigFile $ConfigFile
-    Write-Message -Level Verbose "Updated configuration file '$($ConfigFile)' to version $($Variables.Branding.Version.ToString())."
+    "Updated configuration file '$($ConfigFile)' to version $($Variables.Branding.Version.ToString())." | Write-Message -Level Verbose 
 }
 
 Function Get-ObsoleteMinerStats { 
@@ -3155,7 +3144,7 @@ Function Update-DAGData {
                     If ((Get-Algorithm $DAGDataResponse.coins.$_.algorithm) -in @("Autolykos2", "EtcHash", "Ethash", "FiroPow", "KawPow", "Octopus", "ProgPow", "ProgPowZano", "UbqHash")) { 
                         If ($DAGDataResponse.coins.$_.last_block -ge $Variables.DAGdata.Currency.$Currency.BlockHeight) { 
                             $DAGData = Get-DAGdata -BlockHeight $DAGDataResponse.coins.$_.last_block -Currency $Currency
-                            If ($DAGData.Algorithm) { 
+                            If ($DAGData.Algorithm) {     
                                 $Variables.DAGdata.Currency.$Currency = $DAGData
                                 $Variables.DAGdata.Updated.$Url = (Get-Date).ToUniversalTime()
                             }
@@ -3279,7 +3268,7 @@ Function Update-DAGData {
             Epoch       = [Int]($Variables.DAGdata.Currency.Keys | ForEach-Object { $Variables.DAGdata.Currency.$_.Epoch } | Measure-Object -Maximum).Maximum
         }
 
-        $Variables.DAGdata | Get-SortedObject | ConvertTo-Json | Out-File -FilePath ".\Data\DagData.json" -Force -Encoding utf8NoBOM
+        $Variables.DAGdata | ConvertTo-Json | Out-File -FilePath ".\Data\DagData.json" -Force -Encoding utf8NoBOM
     }
 }
 Function Get-DAGsize { 

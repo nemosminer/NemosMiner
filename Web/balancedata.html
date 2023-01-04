@@ -2,7 +2,7 @@
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h2 id="title" data-navbaractive="navbalancedata">Balance Data</h2>
           </div>
-          <div class="alert alert-info" role="alert">This is the balance data for the last 30 days that was collected by the balance tracker.</div>
+          <div class="alert alert-info" role="alert">Balance data collected by the balance tracker (last 30 days).</div>
           <div id="toolbar">
             <button id="btn-remove-entry" class="btn btn-info">Remove entry</button>
           </div>
@@ -52,7 +52,6 @@
 <!-- Start of page scripts 'balalancedata.html' -->
           <script type="text/javascript">
             var $table = $('#balanceobjects');
-            var $querysize = 16000;
 
             $table.bootstrapTable({
               onAll: function() { 
@@ -69,18 +68,15 @@
               $('#btn-remove-entry').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {
-                  $data = JSON.stringify($data.map($element => ({DateTime: $element.DateTime, Pool: $element.Pool, Currency: $element.Currency, Wallet: $element.Wallet})));
-                  if ($data.length >= $querysize) {
-                    alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
-                  }
-                  else {
-                    $command = '/functions/balancedata/remove?Data=' + encodeURIComponent($data);
-                    $('.modal-body').load($command, function() {
-                      $('.modal-title').text($('#btn-remove-entry').text());
-                      $('#myModal').modal({show:true});
-                    });
-                    $table.bootstrapTable('refresh');
-                  }
+                  $('body').css('cursor', 'progress');
+                  $url = '/functions/balancedata/remove';
+                  $payload = {'Data': JSON.stringify($data.map($element => ({DateTime: $element.DateTime, Pool: $element.Pool, Currency: $element.Currency, Wallet: $element.Wallet})))};
+                  $('.modal-body').load($url, $payload, function() {
+                    $('body').css('cursor', 'default');
+                    $('.modal-title').text($('#btn-remove-entry').text());
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
                 }
               });
             });

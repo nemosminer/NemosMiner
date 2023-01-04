@@ -21,7 +21,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "SHA3d";         MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo SHA3d" }
     [PSCustomObject]@{ Algorithm = "ScryptN11";     MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo scrypt(N,1,1)" }
     [PSCustomObject]@{ Algorithm = "ScryptN2";      MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo scrypt --param-n 1048576" }
-    [PSCustomObject]@{ Algorithm = "VertHash";      MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo verthash" }
+    [PSCustomObject]@{ Algorithm = "VertHash";      MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo verthash --data-file ..\.$($Variables.VerthashDatPath)" }
     [PSCustomObject]@{ Algorithm = "YespowerIc";    MinerSet = 0; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "IsotopeC"' }
     [PSCustomObject]@{ Algorithm = "YespowerIots";  MinerSet = 0; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-key "Iots is committed to the development of IOT"' }
     [PSCustomObject]@{ Algorithm = "YespowerLitb";  MinerSet = 0; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "LITBpower: The number of LITB working or available for proof-of-work mini"' }
@@ -37,31 +37,24 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
     $Algorithms | ForEach-Object { 
 
-        $Arguments = $_.Arguments
-        $PrerequisitePath = ""
-        $PrerequisiteURI = ""
+        If ($_.Algorithm -eq "VertHash" -and (Get-Item -Path $Variables.VerthashDatPath).length -ne 1283457024) { 
+            $PrerequisitePath = $Variables.VerthashDatPath
+            $PrerequisiteURI = "https://github.com/Minerx117/miners/releases/download/Verthash.Dat/VertHash.dat"
+        }
+        Else { 
+            $PrerequisitePath = ""
+            $PrerequisiteURI = ""
+        }
 
         # Get arguments for available miner devices
         # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $Devices.$DeviceEnumerator
-
-        If ($_.Algorithm -eq "VertHash" -and -not (Test-Path -Path ".\Bin\$($Name)\VertHash.dat" -ErrorAction SilentlyContinue)) { 
-            If ((Get-Item -Path $Variables.VerthashDatPath).length -eq 1283457024) { 
-                If (Test-Path -Path .\Bin\$($Name) -PathType Container) { 
-                    New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath | Out-Null
-                }
-            }
-            Else { 
-                $PrerequisitePath = $Variables.VerthashDatPath
-                $PrerequisiteURI = "https://github.com/Minerx117/miners/releases/download/Verthash.Dat/VertHash.dat"
-            }
-        }
 
         [PSCustomObject]@{ 
             Name             = $Miner_Name
             DeviceNames      = $AvailableMiner_Devices.Name
             Type             = ($AvailableMiner_Devices.Type | Select-Object -unique)
             Path             = $Path
-            Arguments        = ("$($Arguments) --url $(If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) --user $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" }) --pass $($MinerPools[0].($_.Algorithm).Pass) --hash-meter --stratum-keepalive --quiet --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
+            Arguments        = ("$($_.Arguments) --url $(If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) --user $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" }) --pass $($MinerPools[0].($_.Algorithm).Pass) --hash-meter --stratum-keepalive --quiet --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
             Algorithms       = @($_.Algorithm)
             API              = "Ccminer"
             Port             = $MinerAPIPort

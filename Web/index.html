@@ -46,12 +46,12 @@
                 <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false" data-filter-strict-search="true">Type</th>
                 <th data-field="tStatusMessage" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Status</th>
-                <th data-field="Earning" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)" data-visible="false">Earning</th>
-                <th data-field="Earning_Bias" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning Bias</th>
-                <th data-field="PowerCost" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Power Cost</th>
-                <th data-field="Profit" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)" data-visible="false">Profit</th>
+                <th data-field="Earning" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)" data-visible="false">Earning</th>
+                <th data-field="Earning_Bias" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning Bias</th>
+                <th data-field="PowerCost" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Power Cost</th>
+                <th data-field="Profit" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)" data-visible="false">Profit</th>
                 <th data-field="Profit_Bias" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Profit Bias</th>
-                <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt">Power Usage</th>
+                <th data-field="PowerUsage" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatWatt">Power Usage</th>
                 <th data-field="BeginTime" data-sortable="true" data-visible="false" data-formatter="formatDate">BeginTime</th>
                 <th data-field="tMiningDuration" data-sortable="true">Running Time</th>
                 <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Primary Algorithm</th>
@@ -211,7 +211,7 @@
 <!-- Start of page scripts 'index.html' -->
           <script type="text/javascript">
             var $table = $('#miners');
-            var $querysize = 20000;
+            var currency = config.Currency
 
             Handlebars.registerHelper('formatCurrency', function(value, rate) {
               if (value >= 0) { 
@@ -248,8 +248,8 @@
               if (config.UsemBTC == true) currencies[currencies.indexOf('BTC')] = 'mBTC'
 
               var rates = {};
-                // get rates
-                $.ajax({
+              // get rates
+              $.ajax({
                   async: false,
                   dataType: 'json',
                   timeout: 10,
@@ -393,72 +393,72 @@
             $('#btn-re-benchmark').click(function () {
               var $data = $table.bootstrapTable('getSelections');
               if ($data.length >= 1) {
-                $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
-                if ($data.length >= $querysize) {
-                  alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
-                }
-                else {
-                  $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=Hashrate';
-                  $('.modal-body').load($command, function() {
-                    $('.modal-title').text($('#btn-re-benchmark').text());
-                    $('#myModal').modal({show:true});
-                  });
-                  $('#miners').bootstrapTable('refresh');
-                }
+                $('body').css('cursor', 'progress');
+                $url = '/functions/stat/remove';
+                $payload = {
+                  'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms}))),
+                  'Type' : 'Hashrate'
+                };
+                $('.modal-body').load($url, $payload, function() {
+                  $('.modal-title').text($('#btn-re-benchmark').text());
+                  $('body').css('cursor', 'default');
+                  $('#myModal').modal({show:true});
+                });
+                $('#miners').bootstrapTable('refresh');
               }
             });
 
             $('#btn-re-measure').click(function () {
               var $data = $table.bootstrapTable('getSelections');
               if ($data.length >= 1) {
-                $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
-                if ($data.length >= $querysize) {
-                  alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')');
-                }
-                else {
-                  $command = '/functions/stat/remove?Miners=' + encodeURIComponent($data) + '&Type=PowerUsage';
-                  $('.modal-body').load($command, function() {
-                    $('.modal-title').text($('#btn-re-measure').text());
-                    $('#myModal').modal({show:true});
-                  });
-                  $('#miners').bootstrapTable('refresh');
-                }
+                $('body').css('cursor', 'progress');
+                $url = '/functions/stat/remove';
+                $payload = {
+                  'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms}))),
+                  'Type' : 'Hashrate'
+                };
+                $('.modal-body').load($url, $payload, function() {
+                  $('.modal-title').text($('#btn-re-measure').text());
+                  $('body').css('cursor', 'default');
+                  $('#myModal').modal({show:true});
+                });
+                $('#miners').bootstrapTable('refresh');
               }
             });
 
             $('#btn-failed').click(function () {
               var $data = $table.bootstrapTable('getSelections');
               if ($data.length >= 1) {
-                $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
-                if ($data.length >= $querysize) {
-                  alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')')
-                }
-                else {
-                  $command = '/functions/stat/set?Miners=' + encodeURIComponent($data) + '&Type=Hashrate&Value=0';
-                  $('.modal-body').load($command, function() {
-                    $('.modal-title').text($('#btn-failed').text());
-                    $('#myModal').modal({show:true});
-                  });
-                  $('#miners').bootstrapTable('refresh');
-                }
+                $('body').css('cursor', 'progress');
+                $url = '/functions/stat/set';
+                $payload = {
+                  'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms}))),
+                  'Type': 'Hashrate',
+                  'Value': 0 
+                };
+                $('.modal-body').load($url, $payload, function() {
+                  $('.modal-title').text($('#btn-failed').text());
+                  $('body').css('cursor', 'default');
+                  $('#myModal').modal({show:true});
+                });
+                $('#miners').bootstrapTable('refresh');
               }
             });
 
             $('#btn-disable').click(function () {
               var $data = $table.bootstrapTable('getSelections');
               if ($data.length >= 1) {
-                $data = JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})));
-                if ($data.length >= $querysize) {
-                  alert('Too many objects selected, cannot proceed.\nUnselect some objects and try again.\n\n(Query size: ' + $data.length + ' / ' + $querysize + ')')
-                }
-                else {
-                  $command = '/functions/stat/disable?Miners=' + encodeURIComponent($data);
-                  $('.modal-body').load($command, function() {
-                    $('.modal-title').text($('#btn-disable').text());
-                    $('#myModal').modal({show:true});
-                  });
-                  $('#miners').bootstrapTable('refresh');
-                }
+                $('body').css('cursor', 'progress');
+                $url = '/functions/stat/disable'
+                $payload = {
+                  'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})))
+                };
+                $('.modal-body').load($url, $payload, function() {
+                  $('.modal-title').text($('#btn-disable').text());
+                  $('body').css('cursor', 'default');
+                  $('#myModal').modal({show:true});
+                });
+                $('#miners').bootstrapTable('refresh');
               }
             });
 
@@ -487,6 +487,7 @@
                   $table.bootstrapTable('showColumn', 'tSecondaryPoolUser');
                 }
               },
+
               onPostBody: function () {
                 if (config.UseColorForMinerStatus == true ) {
                   $('#miners td:nth-child(2)').each(function () {
@@ -508,8 +509,15 @@
                         break;
                     };
                   });
-                }
+                };
               },
+
+              onReorderColumn: function() {
+                $(".addlocalcurrency").each(function () {
+                  this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.Currency + ')';
+                });
+              },
+
               onAll: function() {
                 document.getElementById('btn-re-benchmark').disabled = !Boolean($table.bootstrapTable('getSelections').length);
                 document.getElementById('btn-re-measure').disabled = !Boolean($table.bootstrapTable('getSelections').length);
@@ -518,11 +526,11 @@
               }
             });
 
-            $('#miners tr th:eq(8)').html('Earning<br>(' + config.Currency + ')');
-            $('#miners tr th:eq(9)').html('Earning Bias<br>(' + config.Currency + ')');
-            $('#miners tr th:eq(10)').html('Power Cost<br>(' + config.Currency + ')');
-            $('#miners tr th:eq(11)').html('Profit<br>(' + config.Currency + ')');
-            $('#miners tr th:eq(12)').html('Profit Bias<br>(' + config.Currency + ')');
+            $(document).ready(function () {
+              $(".addlocalcurrency").each(function () {
+                this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.Currency + ')';
+              });
+            });
 
             updatePoolBalances();
 

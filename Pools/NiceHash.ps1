@@ -19,20 +19,20 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.2.3.0
-Version date:   31 December 2022
+Version:        4.2.3.1
+Version date:   04 January 2023
 #>
 
 using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
-    [PSCustomObject]$PoolConfig,
     [String]$PoolVariant,
     [Hashtable]$Variables
 )
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
+$PoolConfig = $Variables.PoolsConfig.$Name
 $PoolVariant = If ($Variables.NiceHashWalletIsInternal) { "NiceHash Internal" } Else { "NiceHash External" }
 $Fee = $PoolConfig.Variant.$PoolVariant.Fee
 $PayoutCurrency = $PoolConfig.Variant.$PoolVariant.PayoutCurrency
@@ -41,12 +41,18 @@ $Wallet = $PoolConfig.Variant.$PoolVariant.Wallets.$PayoutCurrency
 $User = "$Wallet.$($PoolConfig.WorkerName -replace "^ID=")"
 
 If ($Wallet) { 
-    Try { 
-        $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $Config.PoolAPITimeout
-        $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $Config.PoolAPITimeout
-        $Request.miningAlgorithms | ForEach-Object { $Algorithm = $_.Algorithms; $_ | Add-Member -Force @{ algodetails = $RequestAlgodetails.miningAlgorithms | Where-Object { $_.Algorithms -eq $Algorithm } } }
-    }
-    Catch { Return }
+
+    Do {
+        Try { 
+            If (-not $Request) { $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec 3 }
+            If (-not $RequestAlgodetails) { $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec 3 }
+            $Request.miningAlgorithms | ForEach-Object { $Algorithm = $_.Algorithms; $_ | Add-Member -Force @{ algodetails = $RequestAlgodetails.miningAlgorithms | Where-Object { $_.Algorithms -eq $Algorithm } } }
+        }
+        Catch { 
+            $APICallFails++
+            Start-Sleep -Seconds ($APICallFails * 3)
+        }
+    } While (-not $Request -and $APICallFails -lt 3)
 
     If (-not $Request) { Return }
 

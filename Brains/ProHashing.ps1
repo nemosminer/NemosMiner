@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.2.3.0
-Version date:   31 December 2022
+Version:        4.2.3.1
+Version date:   04 January 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -40,8 +40,6 @@ $ProgressPreference = "SilentlyContinue"
 # Fix TLS Version erroring
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
-Get-Item "Debug\$($BrainName)*.*" | Remove-Item -Force
-
 While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) { 
 
     $Duration = Measure-Command { 
@@ -54,12 +52,10 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
             Try { 
                 If (-not $AlgoData) { 
                     $AlgoData = (Invoke-RestMethod -Uri $BrainConfig.PoolStatusUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout).data
-                    $AlgoData | ConvertTo-Json > "Debug\$($PoolVariant)_Algodata_$(Get-Date -Format "yyyy-MM-dd_HHmmss").json"
                 }
                 If (-not $CurrenciesData) { 
                     $CurrenciesData = (Invoke-RestMethod -Uri $BrainConfig.PoolCurrenciesUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout).data
                     $CurrenciesDataTimestamp = $CurDate
-                    $CurrenciesData | ConvertTo-Json > "Debug\$($PoolVariant)_CurrenciesData_$(Get-Date -Format "yyyy-MM-dd_HHmmss").json"
                 }
                 $APICallFails = 0
             }
@@ -126,8 +122,6 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
                 $AlgoData.$Name | Add-Member -Force @{ Plus_Price = $Price }
             }
         }
-
-        $AlgoObject | ConvertTo-Json >> "Debug\$($PoolVariant)_AlgoObject_$(Get-Date -Format "yyyy-MM-dd_HHmmss").json"
 
         ($AlgoData | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
             If ([Double]($AlgoData.$_.actual_last24h) -gt 0) { 

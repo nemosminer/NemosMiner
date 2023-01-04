@@ -10,6 +10,36 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.2.3.1 04.01.2023
+=======================================
+
+Enhancements:
+- API: Added support for 'POST' method
+- Core: Mitigate memory leak
+- Web GUI: Miner & pool action buttons not working when a large number of objects was selected
+
+Fixes:
+- Brain / ProHashing: Do not write debug data (Regression from 4.2.3.0)
+- Core / Main text window: 'Profit_Bias' column did not show any values
+- Core / Main text window: Do not truncate columns
+- Core / Main text window: 'Hotkey 'p' did not toggle 'Pool' column visibility'
+- Core: No more switching to less profitable miners when power cost was higher than miner earning (Configuration items CalculatePowerCost": true & "IgnorePowerCost": true)
+- Core: Miners without valid stats had invalid update date
+- Core: Renamed 'ProgPowZ' to 'ProgPowZano'
+- Core: Core dump in Includes/Core.ps1 (Regression from 4.2.2.3 - thanks to Szentigrade)
+- Core / Includes.psm1: Get-EquihashCoinPers: Invalid Equihash pers string
+- TeamBlackMiner: Fix memory requirements for KawPow
+- Web GUI: Renamed 'Most Profitable Miners' to 'Best Miners'
+- Web GUI: Add local currency to correct colum header even when colum order is changed
+
+Miner updates:
+- SRBMinerMulti-v2.0.0
+- TeamBlackMiner-v1.78
+
+Pool changes:
+- MiningPoolHub: Reduce projected earnings by 90% until pool resolves its payout issues, see https://bitcointalk.org/index.php?topic=472510.msg61523969#msg61523969 (Configuration Parameter "EarningsAdjustmentFactor": 0.1 in '.\Data\PoolData.Json')
+
+
 ChangeLog NemosMiner 4.2.3.0 31.12.2022
 =======================================
 

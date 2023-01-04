@@ -18,13 +18,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.2.3.0
-Version date:   31 December 2022
+Version:        4.2.3.1
+Version date:   04 January 2023
 #>
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.4.9.7"
+    $APIVersion = "0.5.0.0"
 
     If ($Variables.APIRunspace.AsyncObject.IsCompleted -eq $true -or $Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
         Stop-APIServer
@@ -102,15 +102,39 @@ Function Start-APIServer {
 
                         If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore}
 
-                        # Parse any parameters in the URL - $Request.Url.Query looks like "+ ?a=b&c=d&message=Hello%20world"
-                        # Decode any url escaped characters in the key and value
-                        $Parameters = @{ }
-                        $Request.Url.Query -replace "\?", "" -split '&' | Foreach-Object { 
-                            $Key, $Value = $_ -split '='
+                        If ($Request.HttpMethod -eq "GET") { 
+                            # Parse any parameters in the URL - $Request.Url.Query looks like "+ ?a=b&c=d&message=Hello%20world"
                             # Decode any url escaped characters in the key and value
-                            $Key = [URI]::UnescapeDataString($Key)
-                            $Value = [URI]::UnescapeDataString($Value)
-                            If ($Key -and $Value) { $Parameters.$Key = $Value }
+                            $Parameters = @{ }
+                            $Request.Url.Query -replace "\?", "" -split "&" | Foreach-Object { 
+                                $Key, $Value = $_ -split "="
+                                # Decode any url escaped characters in the key and value
+                                $Key = [URI]::UnescapeDataString($Key)
+                                $Value = [URI]::UnescapeDataString($Value)
+                                If ($Key -and $Value) { 
+                                    $Parameters.$Key = $Value
+                                    If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss") GET: '$($Key)': '$($Value)'" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore}
+                                }
+                            }
+                        }
+                        ElseIf ($Request.HttpMethod -eq "POST") { 
+                            $Length = $Request.contentlength64
+                            $Buffer = New-object "byte[]" $Length
+
+                            [Void]$Request.inputstream.read($Buffer, 0, $Length)
+                            $Body = [system.text.encoding]::ascii.getstring($Buffer)
+
+                            $Parameters = @{ }
+                            $Body -split "&" | ForEach-Object { 
+                                $Key, $Value = $_ -split "="
+                                # Decode any url escaped characters in the key and value
+                                $Key = [URI]::UnescapeDataString($Key)
+                                $Value = [URI]::UnescapeDataString($Value)
+                                If ($Key -and $Value) { 
+                                    $Parameters.$Key = $Value
+                                    If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss") POST: '$($Key)': '$($Value)'" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore}
+                                }
+                            }
                         }
 
                         # Create a new response and the defaults for associated settings
@@ -127,12 +151,12 @@ Function Start-APIServer {
                             }
                             "/functions/balancedata/remove" { 
                                 If ($Parameters.Data) { 
-                                    $BalanceDataEntries = ($Parameters.Data | ConvertFrom-Json -ErrorAction SilentlyContinue)
-                                    $Variables.BalanceData = @((Compare-Object $Variables.BalanceData $BalanceDataEntries -PassThru -Property DateTime, Pool, Currency, Wallet) | Select-Object -ExcludeProperty SideIndicator)
+                                    $BalanceDataEntries = $Variables.BalanceData
+                                    $Variables.BalanceData = @((Compare-Object $Variables.BalanceData @($Parameters.Data | ConvertFrom-Json -ErrorAction SilentlyContinue) -PassThru -Property DateTime, Pool, Currency, Wallet) | Where-Object SideIndicator -eq "<=" | Select-Object -ExcludeProperty SideIndicator)
                                     $Variables.BalanceData | ConvertTo-Json | Out-File ".\Logs\BalancesTrackerData.json"
-                                    If ($BalanceDataEntries.Count -gt 0) { 
-                                        $Variables.BalanceData | ConvertTo-Json | Out-File ".\Logs\BalancesTrackerData.json"
-                                        $Message = "$($BalanceDataEntries.Count) $(If ($BalanceDataEntries.Count -eq 1) { "balance data entry" } Else { "balance data entries" }) removed."
+                                    $RemovedEntriesCount = $BalanceDataEntries.Count - $Variables.BalanceData.Count
+                                    If ($RemovedEntriesCount-gt 0) { 
+                                        $Message = "$RemovedEntriesCount $(If ($RemovedEntriesCount -eq 1) { "balance data entry" } Else { "balance data entries" }) removed."
                                         Write-Message -Level Verbose "Web GUI: $Message"
                                         $Data = $Message
                                     }
@@ -316,7 +340,7 @@ Function Start-APIServer {
                                     If ($Pools = @($Variables.Pools | Select-Object | Where-Object { $_.Name -in $Names -and $_.Algorithm -in $Algorithms -and $_.Currency -in $Currencies})) { 
                                         $Pools | ForEach-Object { 
                                             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
-                                            $Data += "$($Stat_Name)`n"
+                                            $Data += "$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })@$($_.Name)`n"
                                             Disable-Stat -Name "$($Stat_Name)_Profit"
                                             $_.Disabled = $false
                                             $_.Reasons += "Disabled by user"
@@ -363,7 +387,7 @@ Function Start-APIServer {
                                     If ($Pools = @($Variables.Pools | Select-Object | Where-Object { $_.Name -in $Names -and $_.Algorithm -in $Algorithms -and $_.Currency -in $Currencies})) { 
                                         $Pools | ForEach-Object { 
                                             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
-                                            $Data += "$($Stat_Name)`n"
+                                            $Data += "$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })@$($_.Name)`n"
                                             Enable-Stat -Name "$($Stat_Name)_Profit"
                                             $_.Disabled = $false
                                             $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Disabled by user" } | Sort-Object -Unique)
@@ -731,7 +755,7 @@ Function Start-APIServer {
                                 $Data =  ConvertTo-Json $Variables.EarningsChartData
                                 Break
                             }
-                            "/equihashcoinpers" { 
+                            "/EquihashCoinPers" { 
                                 $Data = Get-Content -Path ".\Data\EquihashCoinPers.json"
                                 Break
                             }
@@ -963,8 +987,6 @@ Function Start-APIServer {
                             }
                         }
 
-                        If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore}
-
                         # If $Data is null, the API will just return whatever data was in the previous request. Instead, show an error
                         # This happens if the script just started and hasn't filled all the properties in yet. 
                         If ($null -eq $Data) { 
@@ -978,8 +1000,6 @@ Function Start-APIServer {
                         $Response.ContentLength64 = $ResponseBuffer.Length
                         $Response.OutputStream.Write($ResponseBuffer, 0, $ResponseBuffer.Length)
                         $Response.Close()
-
-                        If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url) (Size: $($ResponseBuffer.Length))" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore}
                     }
                     # Only gets here if something is wrong and the server couldn't start or stops listening
                     $Server.Stop()
@@ -1017,9 +1037,9 @@ Function Stop-APIServer {
             If ($Variables.APIRunspace.APIServer.IsListening) { $Variables.APIRunspace.APIServer.Stop() }
             $Variables.APIRunspace.APIServer.Close()
         }
-        $Variables.APIRunspace.APIPort = $null
-        $Variables.APIRunspace.Close()
+        If ($Variables.APIRunspace.APIPort) { $Variables.APIRunspace.APIPort = $null }
         If ($Variables.APIRunspace.PowerShell) { $Variables.APIRunspace.PowerShell.Dispose() }
+        $Variables.APIRunspace.Close()
         $Variables.Remove("APIRunspace")
     }
     [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null

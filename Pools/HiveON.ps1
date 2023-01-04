@@ -19,15 +19,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveOn.ps1
-Version:        4.2.3.0
-Version date:   31 December 2022
+Version:        4.2.3.1
+Version date:   04 January 2023
 #>
 
 using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
-    [PSCustomObject]$PoolConfig,
     [String]$PoolVariant,
     [Hashtable]$Variables
 )
@@ -35,13 +34,18 @@ param(
 $ProgressPreference = "SilentlyContinue"
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
+$PoolConfig = $Variables.PoolsConfig.$Name
 
 If ($PoolConfig.Wallets) { 
-
-    Try { 
-        $Request = Invoke-RestMethod -Uri "https://hiveon.net/api/v1/stats/pool" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $Config.PoolAPITimeout 
-    }
-    Catch { Return }
+    Do {
+        Try { 
+            $Request = Invoke-RestMethod -Uri "https://hiveon.net/api/v1/stats/pool" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec 3
+        }
+        Catch { 
+            $APICallFails++
+            Start-Sleep -Seconds ($APICallFails * 3)
+        }
+    } While (-not $Request -and $APICallFails -lt 3)
 
     If (-not $Request) { Return }
 

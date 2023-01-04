@@ -111,7 +111,7 @@ $LegacyGUIControls += $ButtonStop
 $LabelCopyright = New-Object System.Windows.Forms.LinkLabel
 $LabelCopyright.Size = New-Object System.Drawing.Size(350, 20)
 $LabelCopyright.LinkColor = [System.Drawing.Color]::Blue
-$LabelCopyright.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$LabelCopyright.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 9)
 $LabelCopyright.ActiveLinkColor = [System.Drawing.Color]::Blue
 $LabelCopyright.TextAlign = "MiddleRight"
 $LabelCopyright.Text = "Copyright (c) 2018-$((Get-Date).Year) Nemo, MrPlus && UselessGuru"
@@ -119,7 +119,7 @@ $LabelCopyright.Add_Click({ Start-Process "https://github.com/Minerx117/NemosMin
 $LegacyGUIControls += $LabelCopyright
 
 $EditConfigLink = New-Object System.Windows.Forms.LinkLabel
-$EditConfigLink.Size = New-Object System.Drawing.Size(350, 20)
+$EditConfigLink.Size = New-Object System.Drawing.Size(150, 20)
 $EditConfigLink.LinkColor = [System.Drawing.Color]::Blue
 $EditConfigLink.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $EditConfigLink.ActiveLinkColor = [System.Drawing.Color]::Blue
@@ -128,7 +128,7 @@ $EditConfigLink.Add_Click({ If ($EditConfigLink.Tag -eq "WebGUI") { Start-Proces
 $LegacyGUIControls += $EditConfigLink
 
 $TabControl = New-Object System.Windows.Forms.TabControl
-$TabControl.Location = [System.Drawing.Point]::new(14, 94)
+$TabControl.Location = [System.Drawing.Point]::new(10, 91)
 $TabControl.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $TabControl.Name = "TabControl"
 $TabControl.ShowToolTips = $true
@@ -139,7 +139,7 @@ $LegacyGUIForm.Controls.Add($TabControl)
 $LabelMiningStatus = New-Object System.Windows.Forms.Label
 $LabelMiningStatus.AutoSize = $false
 $LabelMiningStatus.Height = 30
-$LabelMiningStatus.Location = [System.Drawing.Point]::new(14, 4)
+$LabelMiningStatus.Location = [System.Drawing.Point]::new(10, 4)
 $LabelMiningStatus.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 12)
 $LabelMiningStatus.TextAlign = "MiddleLeft"
 $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
@@ -153,7 +153,7 @@ $TextBoxSummary.Tag = ""
 $TextBoxSummary.Lines = ""
 $TextBoxSummary.AutoSize = $false
 $TextBoxSummary.Height = 47
-$TextBoxSummary.Location = [System.Drawing.Point]::new(16, 36)
+$TextBoxSummary.Location = [System.Drawing.Point]::new(12, 36)
 $TextBoxSummary.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $TextBoxSummary.TextAlign = "MiddleLeft"
 $TextBoxSummary.BorderStyle = 'None'
@@ -196,13 +196,13 @@ $LabelLaunchedMiners = New-Object System.Windows.Forms.Label
 $LabelLaunchedMiners.AutoSize = $false
 $LabelLaunchedMiners.Width = 450
 $LabelLaunchedMiners.Height = 16
-$LabelLaunchedMiners.Location = [System.Drawing.Point]::new(6, 8)
+$LabelLaunchedMiners.Location = [System.Drawing.Point]::new(2, 4)
 $LabelLaunchedMiners.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $RunPageControls += $LabelLaunchedMiners
 
 $LaunchedMinersDGV = New-Object System.Windows.Forms.DataGridView
 $LaunchedMinersDGV.Name = "LaunchedMinersDGV"
-$LaunchedMinersDGV.Location = [System.Drawing.Point]::new(8, 34)
+$LaunchedMinersDGV.Location = [System.Drawing.Point]::new(2, 28)
 $LaunchedMinersDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
 $LaunchedMinersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $LaunchedMinersDGV.AutoSizeColumnsMode = "Fill"
@@ -222,7 +222,7 @@ $LaunchedMinersDGV.SelectionMode = "FullRowSelect"
 $LaunchedMinersDGV.ContextMenuStrip = $ContextMenuStrip
 $LaunchedMinersDGV.Add_MouseUP(
     { 
-        If ($_.Button -eq [System.Windows.Forms.MouseButtons]::Right) { 
+        If ($_.Button -eq [System.Windows.Forms.MouseButtons]::Right ) { 
             $ContextMenuStrip.Enabled = [Boolean]$This.SelectedRows
             $ContextMenuStripItem5.Visible = $false
             $ContextMenuStripItem1.Text = "Re-Benchmark"
@@ -238,9 +238,11 @@ $LabelSystemLog = New-Object System.Windows.Forms.Label
 $LabelSystemLog.AutoSize = $false
 $LabelSystemLog.Width = 450
 $LabelSystemLog.Height = 16
+# $LabelSystemLog.Location = [System.Drawing.Point]::new(2, ($LabelLaunchedMiners.Height + $LaunchedMinersDGV.Height + 22))
 $LabelSystemLog.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $LabelSystemLog.Text = "System Log"
 $RunPageControls += $LabelSystemLog
+
 
 $Variables.TextBoxSystemLog = New-Object System.Windows.Forms.TextBox
 $Variables.TextBoxSystemLog.MultiLine = $true
@@ -250,7 +252,8 @@ $Variables.TextBoxSystemLog.Text = ""
 $Variables.TextBoxSystemLog.AutoSize = $true
 $Variables.TextBoxSystemLog.ReadOnly = $true
 $Variables.TextBoxSystemLog.MultiLine = $true
-$Variables.TextBoxSystemLog.FlatStyle = 0
+# $Variables.TextBoxSystemLog.Location = [System.Drawing.Point]::new(2, ($LabelLaunchedMiners.Height + $LaunchedMinersDGV.Height + $LabelSystemLog.Height + 28))
+# $Variables.TextBoxSystemLog.Height = ($TabControl.Height - $LabelLaunchedMiners.Height - $LaunchedMinersDGV.Height - $LabelSystemLog.Height - 59)
 $Variables.TextBoxSystemLog.Font = [System.Drawing.Font]::new("Consolas", 10)
 $RunPageControls += $Variables.TextBoxSystemLog
 
@@ -266,13 +269,13 @@ $LabelEarnings = New-Object System.Windows.Forms.Label
 $LabelEarnings.AutoSize = $false
 $LabelEarnings.Width = 450
 $LabelEarnings.Height = 16
-$LabelEarnings.Location = [System.Drawing.Point]::new(8, 146)
+$LabelEarnings.Location = [System.Drawing.Point]::new(2, 146)
 $LabelEarnings.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $EarningsPageControls += $LabelEarnings
 
 $EarningsDGV = New-Object System.Windows.Forms.DataGridView
 $EarningsDGV.Name = "EarningsDGV"
-$EarningsDGV.Location = [System.Drawing.Point]::new(8, 167)
+$EarningsDGV.Location = [System.Drawing.Point]::new(2, 167)
 $EarningsDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
 $EarningsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $EarningsDGV.AutoSizeColumnsMode = "Fill"
@@ -294,30 +297,33 @@ $EarningsPageControls += $EarningsDGV
 $MinersPageControls = @()
 
 $RadioButtonMinersMostProfitable = New-Object System.Windows.Forms.RadioButton
+$RadioButtonMinersMostProfitable.Tag = "/miners/best"
 $RadioButtonMinersMostProfitable.Text = "Most Profitable Miners"
 $RadioButtonMinersMostProfitable.AutoSize = $false
 $RadioButtonMinersMostProfitable.Width = 140
 $RadioButtonMinersMostProfitable.Height = 20
-$RadioButtonMinersMostProfitable.Location = [System.Drawing.Point]::new(0, 8)
+$RadioButtonMinersMostProfitable.Location = [System.Drawing.Point]::new(3, 4)
 $RadioButtonMinersMostProfitable.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
 $RadioButtonMinersMostProfitable.Checked = $true
 $RadioButtonMinersMostProfitable.Add_Click({ Update-TabControl })
 
 $RadioButtonMinersUnavailable = New-Object System.Windows.Forms.RadioButton
+$RadioButtonMinersUnavailable.Tag = "/miners/unavailable"
 $RadioButtonMinersUnavailable.Text = "Unavailable Miners"
 $RadioButtonMinersUnavailable.AutoSize = $false
 $RadioButtonMinersUnavailable.Width = 140
 $RadioButtonMinersUnavailable.Height = 20
-$RadioButtonMinersUnavailable.Location = [System.Drawing.Point]::new(150, 8)
+$RadioButtonMinersUnavailable.Location = [System.Drawing.Point]::new(150, 4)
 $RadioButtonMinersUnavailable.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
 $RadioButtonMinersUnavailable.Add_Click({ Update-TabControl })
 
 $RadioButtonMiners = New-Object System.Windows.Forms.RadioButton
+$RadioButtonMiners.Tag = "/Miners"
 $RadioButtonMiners.Text = "All Miners"
 $RadioButtonMiners.AutoSize = $false
 $RadioButtonMiners.Width = 100
 $RadioButtonMiners.Height = 20
-$RadioButtonMiners.Location = [System.Drawing.Point]::new(280, 8)
+$RadioButtonMiners.Location = [System.Drawing.Point]::new(280, 4)
 $RadioButtonMiners.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
 $RadioButtonMiners.Add_Click({ Update-TabControl })
 
@@ -325,13 +331,13 @@ $LabelMiners = New-Object System.Windows.Forms.Label
 $LabelMiners.AutoSize = $false
 $LabelMiners.Width = 450
 $LabelMiners.Height = 18
-$LabelMiners.Location = [System.Drawing.Point]::new(6, 8)
+$LabelMiners.Location = [System.Drawing.Point]::new(2, 4)
 $LabelMiners.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $MinersPageControls += $LabelMiners
 
 $MinersPanel = New-Object System.Windows.Forms.Panel
 $MinersPanel.Height = 24
-$MinersPanel.Location = [System.Drawing.Point]::new(8, 26)
+$MinersPanel.Location = [System.Drawing.Point]::new(0, 22)
 $MinersPanel.Controls.Add($RadioButtonMiners)
 $MinersPanel.Controls.Add($RadioButtonMinersUnavailable)
 $MinersPanel.Controls.Add($RadioButtonMinersMostProfitable)
@@ -339,7 +345,7 @@ $MinersPageControls += $MinersPanel
 
 $MinersDGV = New-Object System.Windows.Forms.DataGridView
 $MinersDGV.Name = "MinersDGV"
-$MinersDGV.Location = [System.Drawing.Point]::new(8, 60)
+$MinersDGV.Location = [System.Drawing.Point]::new(2, 50)
 $MinersDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
 $MinersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $MinersDGV.AutoSizeColumnsMode = "Fill"
@@ -374,7 +380,7 @@ $RadioButtonPoolsBest.Text = "Best Pools"
 $RadioButtonPoolsBest.AutoSize = $false
 $RadioButtonPoolsBest.Width = 140
 $RadioButtonPoolsBest.Height = 20
-$RadioButtonPoolsBest.Location = [System.Drawing.Point]::new(0, 8)
+$RadioButtonPoolsBest.Location = [System.Drawing.Point]::new(3, 4)
 $RadioButtonPoolsBest.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
 $RadioButtonPoolsBest.Checked = $true
 $RadioButtonPoolsBest.Add_Click({ Update-TabControl })
@@ -385,7 +391,7 @@ $RadioButtonPoolsUnavailable.Text = "Unavailable Pools"
 $RadioButtonPoolsUnavailable.AutoSize = $false
 $RadioButtonPoolsUnavailable.Width = 140
 $RadioButtonPoolsUnavailable.Height = 20
-$RadioButtonPoolsUnavailable.Location = [System.Drawing.Point]::new(106, 8)
+$RadioButtonPoolsUnavailable.Location = [System.Drawing.Point]::new(106, 4)
 $RadioButtonPoolsUnavailable.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
 $RadioButtonPoolsUnavailable.Add_Click({ Update-TabControl })
 
@@ -395,7 +401,7 @@ $RadioButtonPools.Text = "All Pools"
 $RadioButtonPools.AutoSize = $false
 $RadioButtonPools.Width = 100
 $RadioButtonPools.Height = 20
-$RadioButtonPools.Location = [System.Drawing.Point]::new(250, 8)
+$RadioButtonPools.Location = [System.Drawing.Point]::new(250, 4)
 $RadioButtonPools.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
 $RadioButtonPools.Add_Click({ Update-TabControl })
 
@@ -403,13 +409,13 @@ $LabelPools = New-Object System.Windows.Forms.Label
 $LabelPools.AutoSize = $false
 $LabelPools.Width = 450
 $LabelPools.Height = 18
-$LabelPools.Location = [System.Drawing.Point]::new(6, 8)
+$LabelPools.Location = [System.Drawing.Point]::new(2, 4)
 $LabelPools.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $PoolsPageControls += $LabelPools
 
 $PoolsPanel = New-Object System.Windows.Forms.Panel
 $PoolsPanel.Height = 24
-$PoolsPanel.Location = [System.Drawing.Point]::new(8, 26)
+$PoolsPanel.Location = [System.Drawing.Point]::new(0, 22)
 $PoolsPanel.Controls.Add($RadioButtonPools)
 $PoolsPanel.Controls.Add($RadioButtonPoolsUnavailable)
 $PoolsPanel.Controls.Add($RadioButtonPoolsBest)
@@ -417,7 +423,7 @@ $PoolsPageControls += $PoolsPanel
 
 $PoolsDGV = New-Object System.Windows.Forms.DataGridView
 $PoolsDGV.Name = "PoolsDGV"
-$PoolsDGV.Location = [System.Drawing.Point]::new(8, 60)
+$PoolsDGV.Location = [System.Drawing.Point]::new(2, 50)
 $PoolsDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
 $PoolsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $PoolsDGV.AutoSizeColumnsMode = "Fill"
@@ -450,12 +456,12 @@ $LabelWorkers = New-Object System.Windows.Forms.Label
 $LabelWorkers.AutoSize = $false
 $LabelWorkers.Width = 450
 $LabelWorkers.Height = 18
-$LabelWorkers.Location = [System.Drawing.Point]::new(6, 8)
+$LabelWorkers.Location = [System.Drawing.Point]::new(2, 4)
 $LabelWorkers.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $RigMonitorPageControls += $LabelWorkers
 
 $WorkersDGV = New-Object System.Windows.Forms.DataGridView
-$WorkersDGV.Location = [System.Drawing.Point]::new(8, 32)
+$WorkersDGV.Location = [System.Drawing.Point]::new(2, 26)
 $WorkersDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
 $WorkersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $WorkersDGV.AutoSizeColumnsMode = "Fill"
@@ -480,9 +486,9 @@ $CheckShowSwitchingCPU = New-Object System.Windows.Forms.CheckBox
 $CheckShowSwitchingCPU.Tag = "CPU"
 $CheckShowSwitchingCPU.Text = "CPU"
 $CheckShowSwitchingCPU.AutoSize = $false
-$CheckShowSwitchingCPU.Width = 60
+$CheckShowSwitchingCPU.Width = 70
 $CheckShowSwitchingCPU.Height = 20
-$CheckShowSwitchingCPU.Location = [System.Drawing.Point]::new(8, 8)
+$CheckShowSwitchingCPU.Location = [System.Drawing.Point]::new(2, 4)
 $CheckShowSwitchingCPU.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckShowSwitchingCPU.Checked = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "CPU#*")
 $SwitchingPageControls += $CheckShowSwitchingCPU
@@ -492,9 +498,9 @@ $CheckShowSwitchingAMD = New-Object System.Windows.Forms.CheckBox
 $CheckShowSwitchingAMD.Tag = "AMD"
 $CheckShowSwitchingAMD.Text = "AMD"
 $CheckShowSwitchingAMD.AutoSize = $false
-$CheckShowSwitchingAMD.Width = 60
+$CheckShowSwitchingAMD.Width = 70
 $CheckShowSwitchingAMD.Height = 20
-$CheckShowSwitchingAMD.Location = [System.Drawing.Point]::new(78, 8)
+$CheckShowSwitchingAMD.Location = [System.Drawing.Point]::new(72, 4)
 $CheckShowSwitchingAMD.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckShowSwitchingAMD.Checked = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "GPU#*" | Where-Object Vendor -EQ "AMD")
 $SwitchingPageControls += $CheckShowSwitchingAMD
@@ -504,9 +510,9 @@ $CheckShowSwitchingINTEL = New-Object System.Windows.Forms.CheckBox
 $CheckShowSwitchingINTEL.Tag = "INTEL"
 $CheckShowSwitchingINTEL.Text = "INTEL"
 $CheckShowSwitchingINTEL.AutoSize = $false
-$CheckShowSwitchingINTEL.Width = 60
+$CheckShowSwitchingINTEL.Width = 70
 $CheckShowSwitchingINTEL.Height = 20
-$CheckShowSwitchingINTEL.Location = [System.Drawing.Point]::new(148, 8)
+$CheckShowSwitchingINTEL.Location = [System.Drawing.Point]::new(142, 4)
 $CheckShowSwitchingINTEL.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckShowSwitchingINTEL.Checked = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "GPU#*" | Where-Object Vendor -EQ "INTEL")
 $SwitchingPageControls += $CheckShowSwitchingINTEL
@@ -518,7 +524,7 @@ $CheckShowSwitchingNVIDIA.Text = "NVIDIA"
 $CheckShowSwitchingNVIDIA.AutoSize = $false
 $CheckShowSwitchingNVIDIA.Width = 70
 $CheckShowSwitchingNVIDIA.Height = 20
-$CheckShowSwitchingNVIDIA.Location = [System.Drawing.Point]::new(218, 8)
+$CheckShowSwitchingNVIDIA.Location = [System.Drawing.Point]::new(212, 4)
 $CheckShowSwitchingNVIDIA.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckShowSwitchingNVIDIA.Checked = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "GPU#*" | Where-Object Vendor -EQ "NVIDIA")
 $SwitchingPageControls += $CheckShowSwitchingNVIDIA
@@ -550,7 +556,7 @@ Function CheckBoxSwitching_Click {
 
 $SwitchingDGV = New-Object System.Windows.Forms.DataGridView
 $SwitchingDGV.Name = "SwitchingDGV"
-$SwitchingDGV.Location = [System.Drawing.Point]::new(8, 34)
+$SwitchingDGV.Location = [System.Drawing.Point]::new(2, 28)
 $SwitchingDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
 $SwitchingDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $SwitchingDGV.AutoSizeColumnsMode = "Fill"
@@ -589,8 +595,8 @@ Function Update-TabControl {
 
     Switch ($TabControl.SelectedTab.Text) { 
         "Run" { 
-            $ContextMenuStripItem1.Text = "Re-benchmark"
-            $ContextMenuStripItem2.Text = "Re-measure Power Usage"
+            $ContextMenuStripItem1.Text = "Re-Benchmark"
+            $ContextMenuStripItem2.Text = "Re-measure power usage"
             $ContextMenuStripItem3.Text = "Mark as failed"
             $ContextMenuStripItem4.Text = "Disable"
             $ContextMenuStripItem5.Text = "Remove Watchdog"
@@ -774,13 +780,13 @@ Function Update-TabControl {
                     $EarningsDGV.Columns[7].FillWeight = 100
                 }
 
-                $LabelEarnings.Text = "Balances and earnings statistics per pool - Updated $((Get-ChildItem -Path ".\Data\DailyEarnings.csv").LastWriteTime.ToString())"
+                $LabelEarnings.Text = "Earnings statistics per pool - Updated $((Get-ChildItem -Path ".\Data\DailyEarnings.csv").LastWriteTime.ToString())"
             }
             Else { $LabelEarnings.Text = "Waiting for data..." }
         }
         "Miners" { 
-            $ContextMenuStripItem1.Text = "Re-benchmark"
-            $ContextMenuStripItem2.Text = "Re-measure Power Usage"
+            $ContextMenuStripItem1.Text = "Re-Benchmark"
+            $ContextMenuStripItem2.Text = "Re-measure power usage"
             $ContextMenuStripItem3.Text = "Mark as failed"
             $ContextMenuStripItem4.Text = "Disable"
             $ContextMenuStripItem5.Text = "Remove Watchdog"
@@ -973,28 +979,16 @@ $LegacyGUIForm.Add_SizeChanged({ Form_Resize })
 
 Function Form_Resize { 
 
-    $TabControl.Width = $LegacyGUIForm.Width - 44
-    $TabControl.Height = $LegacyGUIForm.Height - 164
+    $TabControl.Width = $LegacyGUIForm.Width - 33
+    $TabControl.Height = $LegacyGUIForm.Height - 159
 
-    $LabelMiningStatus.Width = $LegacyGUIForm.Width - 346
+    $LabelMiningStatus.Width = $LegacyGUIForm.Width - 345
 
-    $ButtonStart.Location = [System.Drawing.Point]::new($LegacyGUIForm.Width - 336, 12)
-    $ButtonPause.Location = [System.Drawing.Point]::new($LegacyGUIForm.Width - 236, 12)
-    $ButtonStop.Location = [System.Drawing.Point]::new($LegacyGUIForm.Width - 136, 12)
+    $ButtonStart.Location = [System.Drawing.Point]::new($LegacyGUIForm.Width - 325, 7)
+    $ButtonPause.Location = [System.Drawing.Point]::new($LegacyGUIForm.Width - 225, 7)
+    $ButtonStop.Location = [System.Drawing.Point]::new($LegacyGUIForm.Width - 125, 7)
 
-    $TextBoxSummary.Width = $Variables.TextBoxSystemLog.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $EarningsDGV.Width = $MinersPanel.Width =  $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $TabControl.Width - 24
-
-    $EarningsDGV.Height = ($EarningsDGV.Rows.Height | Measure-Object -Sum).Sum + $EarningsDGV.ColumnHeadersHeight
-    If ($EarningsDGV.Height -gt $TabControl.Height / 2) { 
-        $EarningsDGV.Height = $TabControl.Height / 2
-        $EarningsDGV.ScrollBars = "Vertical"
-    }
-    Else { 
-        $EarningsDGV.ScrollBars = "None"
-    }
-    $EarningsChart.Height = (($TabControl.Height - $LabelEarnings.Height - $EarningsDGV.Height - 36), 0 | Measure-Object -Maximum).Maximum
-    $LabelEarnings.Location = [System.Drawing.Point]::new(6, ($EarningsChart.Height - 6))
-    $EarningsDGV.Location = [System.Drawing.Point]::new(8, ($EarningsChart.Height + $LabelEarnings.Height))
+    $TextBoxSummary.Width = $Variables.TextBoxSystemLog.Width = $EditConfigLink.Width = $LaunchedMinersDGV.Width = $PoolsDGV.Width= $MinersDGV.Width = $EarningsDGV.Width = $SwitchingDGV.Width = $WorkersDGV.Width  = $TabControl.Width - 13
 
     $LaunchedMinersDGV.Height = $LaunchedMinersDGV.RowTemplate.Height * $Variables.MinersBest_Combo.Count + $LaunchedMinersDGV.ColumnHeadersHeight
     If ($LaunchedMinersDGV.Height -gt $TabControl.Height / 2) { 
@@ -1005,27 +999,42 @@ Function Form_Resize {
         $LaunchedMinersDGV.ScrollBars = "None"
     }
 
-    $LabelSystemLog.Location = [System.Drawing.Point]::new(6, ($LabelLaunchedMiners.Height + $LaunchedMinersDGV.Height + 28))
-    $Variables.TextBoxSystemLog.Location = [System.Drawing.Point]::new(0, ($LabelLaunchedMiners.Height + $LaunchedMinersDGV.Height + $LabelSystemLog.Height + 32))
-    $Variables.TextBoxSystemLog.Height = ($TabControl.Height - $LabelLaunchedMiners.Height - $LaunchedMinersDGV.Height - $LabelSystemLog.Height - 60)
-    $Variables.TextBoxSystemLog.Width = $TabControl.Width - 8
+    $LabelSystemLog.Location = [System.Drawing.Point]::new(2, ($LabelLaunchedMiners.Height + $LaunchedMinersDGV.Height + 22))
+    $Variables.TextBoxSystemLog.Location = [System.Drawing.Point]::new(2, ($LabelLaunchedMiners.Height + $LaunchedMinersDGV.Height + $LabelSystemLog.Height + 28))
+    $Variables.TextBoxSystemLog.Height = ($TabControl.Height - $LabelLaunchedMiners.Height - $LaunchedMinersDGV.Height - $LabelSystemLog.Height - 59)
 
-    $PoolsDGV.Height = $TabControl.Height - $PoolsPanel.Height - 72
+    $PoolsPanel.Width = $TabControl.Width - 12
+    $PoolsDGV.Height = $TabControl.Height - $PoolsPanel.Height - 57
 
-    $MinersDGV.Height = $TabControl.Height - $MinersPanel.Height - 72
+    $MinersPanel.Width = $TabControl.Width - 12
+    $MinersDGV.Height = $TabControl.Height - $MinersPanel.Height - 57
 
-    $WorkersDGV.Height = $TabControl.Height - 68
+    $WorkersDGV.Height = $TabControl.Height - 59
 
-    $SwitchingDGV.Height = $TabControl.Height - 70
+    If ($LegacyGUIForm.Width -gt 722) { 
+        $EarningsChart.Width = ($TabControl.Width - 10)
+    }
 
-    $EditConfigLink.Location = [System.Drawing.Point]::new(12, $LegacyGUIForm.Height - 66)
-    $LabelCopyright.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - 380), $LegacyGUIForm.Height - 66)
+    $EarningsDGV.Height = ($EarningsDGV.Rows.Height | Measure-Object -Sum).Sum + $EarningsDGV.ColumnHeadersHeight
+    If ($EarningsDGV.Height -gt $TabControl.Height / 2) { 
+        $EarningsDGV.Height = $TabControl.Height / 2
+        $EarningsDGV.ScrollBars = "Vertical"
+    }
+    Else { 
+        $EarningsDGV.ScrollBars = "None"
+    }
+    $EarningsChart.Height = (($TabControl.Height - $LabelEarnings.Height - $EarningsDGV.Height - 29), 0 | Measure-Object -Maximum).Maximum
+    $LabelEarnings.Location = [System.Drawing.Point]::new(2, ($EarningsChart.Height - 7))
+    $EarningsDGV.Location = [System.Drawing.Point]::new(2, ($EarningsChart.Height + $LabelEarnings.Height - 2))
+
+    $SwitchingDGV.Height = $TabControl.Height - 59
+
+    $EditConfigLink.Location = [System.Drawing.Point]::new(10, $LegacyGUIForm.Height - 66)
+    $LabelCopyright.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - 375), $LegacyGUIForm.Height - 66)
 }
 
 $LegacyGUIForm.Add_Load(
     { 
-        $LegacyGUIForm.Cursor = [System.Windows.Forms.Cursors]::WaitCursor
-
         If (Test-Path -Path ".\Config\WindowSettings.json" -PathType Leaf) { 
             $WindowSettings = Get-Content -Path ".\Config\WindowSettings.json" | ConvertFrom-Json -AsHashtable
             # Restore window size

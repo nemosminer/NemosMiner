@@ -21,7 +21,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "ProgPowSero";      Type = "AMD"; Fee = @(0.01);   MinMemGB = $MinerPools[0].ProgPowSero.DAGSizeGB + 0.42;  MinerSet = 0; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @("CGN4", "RDNA1"); Arguments = " --amd --pers=sero" }
     [PSCustomObject]@{ Algorithm = "ProgPowVeil";      Type = "AMD"; Fee = @(0.01);   MinMemGB = 8.0;                                          MinerSet = 0; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @("CGN4", "RDNA1"); Arguments = " --amd --pers=veil" }
     [PSCustomObject]@{ Algorithm = "ProgPowVeriblock"; Type = "AMD"; Fee = @(0.01);   MinMemGB = 2.0;                                          MinerSet = 0; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @("CGN4", "RDNA1"); Arguments = " --amd --pers=VeriBlock" }
-    [PSCustomObject]@{ Algorithm = "ProgPowZ   ";      Type = "AMD"; Fee = @(0.01);   MinMemGB = $MinerPools[0].ProgPowZ.DAGSizeGB + 0.42;     MinerSet = 0; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @("CGN4", "RDNA1"); Arguments = " --amd --par=progpowz --pers=zano" }
+    [PSCustomObject]@{ Algorithm = "ProgPowZano";      Type = "AMD"; Fee = @(0.01);   MinMemGB = $MinerPools[0].ProgPowZano.DAGSizeGB + 0.42;  MinerSet = 0; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @("CGN4", "RDNA1"); Arguments = " --amd --pers=zano" }
 
 #   [PSCustomObject]@{ Algorithm = "BeamV3";           Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 4.0;                                          MinerSet = 1; Tuning = " --ocX"; WarmupTimes = @(45, 15); Arguments = " --nvidia --par=beam3 --pers=Beam-Pow" } # Lots of bad shares
     [PSCustomObject]@{ Algorithm = "Equihash1254";     Type = "NVIDIA"; Fee = @(0.02);   MinMemGB = 3.0;                                          MinerSet = 0; Tuning = " --ocX"; WarmupTimes = @(45, 15); Arguments = " --nvidia --par=125,4 --smart-pers" }
@@ -38,7 +38,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "ProgPowSero";      Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = $MinerPools[0].ProgPowSero.DAGSizeGB + 0.42;  MinerSet = 0; Tuning = " --ocX"; WarmupTimes = @(30, 15); Arguments = " --nvidia --pers=sero" }
     [PSCustomObject]@{ Algorithm = "ProgPowVeil";      Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 8.0;                                          MinerSet = 0; Tuning = " --ocX"; WarmupTimes = @(30, 15); Arguments = " --nvidia --pers=veil" }
     [PSCustomObject]@{ Algorithm = "ProgPowVeriblock"; Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = 2.0;                                          MinerSet = 0; Tuning = " --ocX"; WarmupTimes = @(30, 15); Arguments = " --nvidia --pers=VeriBlock" }
-    [PSCustomObject]@{ Algorithm = "ProgPowZ";         Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = $MinerPools[0].ProgPowZ.DAGSizeGB+ 0.42;      MinerSet = 0; Tuning = " --ocX"; WarmupTimes = @(45, 30); Arguments = " --nvidia --par=progpowz --pers=zano" }
+    [PSCustomObject]@{ Algorithm = "ProgPowZano";      Type = "NVIDIA"; Fee = @(0.01);   MinMemGB = $MinerPools[0].ProgPowZano.DAGSizeGB+ 0.42;   MinerSet = 0; Tuning = " --ocX"; WarmupTimes = @(45, 30); Arguments = " --nvidia --pers=zano" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 

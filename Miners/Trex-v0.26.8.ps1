@@ -26,7 +26,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("ProgPowSero");          Fee = @(0.01);       MinMemGB = $MinerPools[0].ProgPowSero.DAGSizeGB + 0.42;  MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(30, 0);   Arguments = " --algo progpow --coin sero" }
     [PSCustomObject]@{ Algorithms = @("ProgPowVeil");          Fee = @(0.01);       MinMemGB = $MinerPools[0].ProgPowVeil.DAGSizeGB + 0.42;  MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(30, 0);   Arguments = " --algo progpow-veil --intensity 24" }
     [PSCustomObject]@{ Algorithms = @("ProgPowVeriblock");     Fee = @(0.01);       MinMemGB = 2;                                            MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(30, 0);   Arguments = " --algo progpow-veriblock" }
-    [PSCustomObject]@{ Algorithms = @("ProgPowZ");             Fee = @(0.01);       MinMemGB = $MinerPools[0].ProgPowZ.DAGSizeGB + 0.42;     MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(30, 0);   Arguments = " --algo progpowz --intensity 25" }
+    [PSCustomObject]@{ Algorithms = @("ProgPowZano");          Fee = @(0.01);       MinMemGB = $MinerPools[0].ProgPowZano.DAGSizeGB + 0.42;  MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(30, 0);   Arguments = " --algo progpowz --intensity 25" }
     [PSCustomObject]@{ Algorithms = @("Tensority");            Fee = @(0.01);       MinMemGB = 2;                                            MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(30, 0);   Arguments = " --algo tensority --intensity 25" }
 )
 

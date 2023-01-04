@@ -36,7 +36,7 @@ $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithms = @("MTP");                        Fee = @(0.025); MinMemGB = 2.0;                                          MinerSet = 0; WarmupTimes = @(45, 45);   ExcludePools = @(@(), @());           ExcludeGPUArchitecture = @();        Arguments = " --algo=mtp" } # Algo is dead
     [PSCustomObject]@{ Algorithms = @("Nimiq");                      Fee = @(0.025); MinMemGB = 4.0;                                          MinerSet = 0; WarmupTimes = @(60, 15);   ExcludePools = @(@(), @());           ExcludeGPUArchitecture = @();        Arguments = " --algo=nimiq" }
     [PSCustomObject]@{ Algorithms = @("Phi2");                       Fee = @(0.03);  MinMemGB = 2.0;                                          MinerSet = 0; WarmupTimes = @(60, 15);   ExcludePools = @(@(), @());           ExcludeGPUArchitecture = @("RDNA1"); Arguments = " --algo=phi2" }
-    [PSCustomObject]@{ Algorithms = @("VertHash");                   Fee = @(0.025); MinMemGB = 4.0;                                          MinerSet = 0; WarmupTimes = @(75, 15);   ExcludePools = @(@(), @());           ExcludeGPUArchitecture = @();        Arguments = " --algo=verthash --verthash_file=..\..\Cache\VertHash.dat" }
+    [PSCustomObject]@{ Algorithms = @("VertHash");                   Fee = @(0.025); MinMemGB = 4.0;                                          MinerSet = 0; WarmupTimes = @(75, 15);   ExcludePools = @(@(), @());           ExcludeGPUArchitecture = @();        Arguments = " --algo=verthash --verthash_file=..\.$($Variables.VerthashDatPath)" }
 #   [PSCustomObject]@{ Algorithms = @("X16r");                       Fee = @(0.025); MinMemGB = 4.0;                                          MinerSet = 0; WarmupTimes = @(60, 15);   ExcludePools = @(@(), @());           ExcludeGPUArchitecture = @("RDNA1"); Arguments = " --algo=x16r" } # ASIC
     [PSCustomObject]@{ Algorithms = @("X16rv2");                     Fee = @(0.025); MinMemGB = 4.0;                                          MinerSet = 0; WarmupTimes = @(60, 15);   ExcludePools = @(@(), @());           ExcludeGPUArchitecture = @("RDNA1"); Arguments = " --algo=x16rv2" }
     [PSCustomObject]@{ Algorithms = @("X16s");                       Fee = @(0.025); MinMemGB = 2.0;                                          MinerSet = 0; WarmupTimes = @(60, 15);   ExcludePools = @(@(), @());           ExcludeGPUArchitecture = @("RDNA1"); Arguments = " --algo=x16s" }
@@ -77,18 +77,13 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
                 If ($_.Algorithms[0] -match "^Et(c)hash.+" -and $AvailableMiner_Devices.Model -notmatch "^Radeon RX [0-9]{3} ") { $_.Fee = @(0.0075) } # Polaris cards 0.75%
 
-                $PrerequisitePath = ""
-                $PrerequisiteURI = ""
-                If ($_.Algorithms[0] -eq "VertHash" -and -not (Test-Path -Path ".\Bin\$($Name)\VertHash.dat" -ErrorAction SilentlyContinue)) { 
-                    If ((Get-Item -Path $Variables.VerthashDatPath).length -eq 1283457024) { 
-                        If (Test-Path -Path .\Bin\$($Name) -PathType Container) { 
-                            New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath | Out-Null
-                        }
-                    }
-                    Else { 
-                        $PrerequisitePath = $Variables.VerthashDatPath
-                        $PrerequisiteURI = "https://github.com/Minerx117/miners/releases/download/Verthash.Dat/VertHash.dat"
-                    }
+                If ($_.Algorithm -eq "VertHash" -and (Get-Item -Path $Variables.VerthashDatPath).length -ne 1283457024) { 
+                    $PrerequisitePath = $Variables.VerthashDatPath
+                    $PrerequisiteURI = "https://github.com/Minerx117/miners/releases/download/Verthash.Dat/VertHash.dat"
+                }
+                Else { 
+                    $PrerequisitePath = ""
+                    $PrerequisiteURI = ""
                 }
 
                 [PSCustomObject]@{ 

@@ -15,7 +15,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "ProgPowEpic";  MinMemGB = $MinerPools[0].ProgPowEpic.DAGSizeGB + 0.62;  MinerSet = 1; WarmupTimes = @(45, 30); ExcludePool = @();             Arguments = " -algo PROGPOW -coin EPIC" }
     [PSCustomObject]@{ Algorithm = "ProgPowSero";  MinMemGB = $MinerPools[0].ProgPowSero.DAGSizeGB + 0.62;  MinerSet = 1; WarmupTimes = @(45, 30); ExcludePool = @();             Arguments = " -algo PROGPOW -coin SERO" }
     [PSCustomObject]@{ Algorithm = "ProgPowVeil";  MinMemGB = $MinerPools[0].ProgPowVeil.DAGSizeGB + 0.62;  MinerSet = 1; WarmupTimes = @(45, 30); ExcludePool = @();             Arguments = " -algo PROGPOW -coin VEIL" }
-    [PSCustomObject]@{ Algorithm = "ProgPowZ";     MinMemGB = $MinerPools[0].ProgPowZ.DAGSizeGB + 0.62;     MinerSet = 1; WarmupTimes = @(60, 30); ExcludePool = @();             Arguments = " -algo PROGPOWZ -coin ZANO" }
+    [PSCustomObject]@{ Algorithm = "ProgPowZano";  MinMemGB = $MinerPools[0].ProgPowZano.DAGSizeGB + 0.62;  MinerSet = 1; WarmupTimes = @(60, 30); ExcludePool = @();             Arguments = " -algo PROGPOWZ -coin ZANO" }
     [PSCustomObject]@{ Algorithm = "UbqHash";      MinMemGB = $MinerPools[0].UbqHash.DAGSizeGB + 0.62;      MinerSet = 0; WarmupTimes = @(45, 30); ExcludePool = @();             Arguments = " -algo UBQHASH -intensity 15" }
 )
 

@@ -67,8 +67,8 @@
               });
 
               $('#btn-removewatchdogs').click(function () {
-                $command = '/functions/watchdogtimers/reset';
-                $('.modal-body').load($command, function() {
+                $url = '/functions/watchdogtimers/reset';
+                $('.modal-body').load($url, function() {
                   $('.modal-title').text($('#btn-removewatchdogs').text());
                   $('#myModal').modal({show:true});
                 });

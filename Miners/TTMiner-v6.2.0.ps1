@@ -14,7 +14,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "ProgPowEpic";  Fee = 0.01; MinMemGB = $MinerPools[0].ProgPowEpic.DAGSizeGB + 0.42;  MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOW -coin EPIC" }
     [PSCustomObject]@{ Algorithm = "ProgPowSero";  Fee = 0.01; MinMemGB = $MinerPools[0].ProgPowSero.DAGSizeGB + 0.42;  MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOW -coin SERO" }
     [PSCustomObject]@{ Algorithm = "ProgPowVeil";  Fee = 0.01; MinMemGB = $MinerPools[0].ProgPowVeil.DAGSizeGB + 0.42;  MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOW -coin VEIL" }
-#   [PSCustomObject]@{ Algorithm = "ProgPowZ";     Fee = 0.01; MinMemGB = $MinerPools[0].ProgPowZ.DAGSizeGB + 0.42;     MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOWZ -coin ZANO" } # Error 'Error(-1): 'Invalid method'
+#   [PSCustomObject]@{ Algorithm = "ProgPowZano";  Fee = 0.01; MinMemGB = $MinerPools[0].ProgPowZano.DAGSizeGB + 0.42;  MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOWZ -coin ZANO" } # Error 'Error(-1): 'Invalid method'
     [PSCustomObject]@{ Algorithm = "UbqHash";      Fee = 0.01; MinMemGB = $MinerPools[0].UbqHash.DAGSizeGB + 0.42;      MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo UBQHASH -intensity 15" }
 )
 

@@ -14,7 +14,7 @@
               </div>
               <div style="padding-top: 0.5rem;" title="Monitoring UserID &#10;must be identical on each monitored mining rig">Monitoring UserID
                 <input style="margin-left: 3px; padding-top: 0.1rem;" type="text" id="MonitoringUser" name="MonitoringUser" pattern="[0-9A-Fa-f\-]{36}" size=36>
-                <button style="margin-bottom: 0.1rem;" id="new-guid" class="btn btn-secondary btn-sm" title="UserID must be identical on each monitored mining rig">Generate new UserID</button>
+                <button type="button" style="margin-bottom: 0.1rem;" id="new-guid" class="btn btn-secondary btn-sm" title="UserID must be identical on each monitored mining rig">Generate new UserID</button>
               </div>
               <div style="padding-top: 0.5rem;" title="Tick to enable reporting rig status to monitoring server">
                 <input type="checkbox" class="toggle-switch" id="ReportToServer" name="ReportToServer">
@@ -116,6 +116,7 @@
             });
 
             $(document).ready(function () {
+              document.body.style.cursor = 'wait';
               // Get config file name
               $.ajax({
                 async: false,
@@ -157,6 +158,8 @@
 
               if (document.getElementById('MonitoringServer').value == '' || document.getElementById('MonitoringUser').value == '' || document.getElementById('ShowWorkerStatus').checked != true) $("#settings").collapse("show");
 
+              document.body.style.cursor = 'default';
+
               // Get new guid
               $('#new-guid').click(function () {
                 document.getElementById('MonitoringUser').value = createUUID();
@@ -177,8 +180,9 @@
                   config.ShowWorkerStatus = document.getElementById('ShowWorkerStatus').checked;
 
                   // Write current config
-                  var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
-                  $('.modal-body').load($command, function() {
+                  var $url = '/functions/config/set'
+                  var $payload = encodeURIComponent(JSON.stringify(config));
+                  $('.modal-body').load($url, $payload, function() {
                     $('.modal-title').text($('#save-button').text());
                     document.body.style.cursor = 'default';
                     $('#myModal').modal({show:true});
