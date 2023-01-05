@@ -142,84 +142,90 @@
               height: $(window).height() - $table.offset().top + 26
             });
 
-            $('#btn-re-benchmark').click(function () {
-              var $data = $table.bootstrapTable('getSelections');
-              if ($data.length >= 1) {
-                $('body').css('cursor', 'progress');
-                $url = '/functions/stat/remove';
-                $payload = {
-                  'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms}))),
-                  'Type' : 'Hashrate'
-                };
-                $('.modal-body').load($url, $payload, function() {
-                  $('.modal-title').text($('#btn-re-benchmark').text());
-                  $('body').css('cursor', 'default');
-                  $('#myModal').modal({show:true});
-                });
-                $('#miners').bootstrapTable('refresh');
-              }
-            });
-
-            $('#btn-re-measure').click(function () {
-              var $data = $table.bootstrapTable('getSelections');
-              if ($data.length >= 1) {
-                $('body').css('cursor', 'progress');
-                $url = '/functions/stat/remove';
-                $payload = {
-                  'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms}))),
-                  'Type' : 'Hashrate'
-                };
-                $('.modal-body').load($url, $payload, function() {
-                  $('.modal-title').text($('#btn-re-measure').text());
-                  $('body').css('cursor', 'default');
-                  $('#myModal').modal({show:true});
-                });
-                $('#miners').bootstrapTable('refresh');
-              }
-            });
-
-            $('#btn-failed').click(function () {
-              var $data = $table.bootstrapTable('getSelections');
-              if ($data.length >= 1) {
-                $('body').css('cursor', 'progress');
-                $url = '/functions/stat/set';
-                $payload = {
-                  'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms}))),
-                  'Type': 'Hashrate',
-                  'Value': 0 
-                };
-                $('.modal-body').load($url, $payload, function() {
-                  $('.modal-title').text($('#btn-failed').text());
-                  $('body').css('cursor', 'default');
-                  $('#myModal').modal({show:true});
-                });
-                $('#miners').bootstrapTable('refresh');
-              }
-            });
-
-            $('#btn-disable').click(function () {
-              var $data = $table.bootstrapTable('getSelections');
-              if ($data.length >= 1) {
-                $('body').css('cursor', 'progress');
-                $url = '/functions/stat/disable';
-                $payload = {
-                  'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})))
-                };
-                $('.modal-body').load($url, $payload, function() {
-                  $('.modal-title').text($('#btn-disable').text());
-                  $('body').css('cursor', 'default');
-                  $('#myModal').modal({show:true});
-                });
-                $('#miners').bootstrapTable('refresh');
-              }
-            });
-
             $(document).ready(function () {
+              $('#btn-re-benchmark').click(function () {
+                var $data = $table.bootstrapTable('getSelections');
+                if ($data.length >= 1) {
+                  $('body').css('cursor', 'progress');
+                  $url = '/functions/stat/remove';
+                  $payload = {
+                    'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms}))),
+                    'Type' : 'Hashrate'
+                  };
+                  $('.modal-body').load($url, $payload, function() {
+                    $('.modal-title').text($('#btn-re-benchmark').text());
+                    $('body').css('cursor', 'default');
+                    $('#myModal').modal({show:true});
+                  });
+                  $('#miners').bootstrapTable('refresh');
+                }
+              });
+
+              $('#btn-re-measure').click(function () {
+                var $data = $table.bootstrapTable('getSelections');
+                if ($data.length >= 1) {
+                  $('body').css('cursor', 'progress');
+                  $url = '/functions/stat/remove';
+                  $payload = {
+                    'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms}))),
+                    'Type' : 'Hashrate'
+                  };
+                  $('.modal-body').load($url, $payload, function() {
+                    $('.modal-title').text($('#btn-re-measure').text());
+                    $('body').css('cursor', 'default');
+                    $('#myModal').modal({show:true});
+                  });
+                  $('#miners').bootstrapTable('refresh');
+                }
+              });
+
+              $('#btn-failed').click(function () {
+                var $data = $table.bootstrapTable('getSelections');
+                if ($data.length >= 1) {
+                  $('body').css('cursor', 'progress');
+                  $url = '/functions/stat/set';
+                  $payload = {
+                    'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms}))),
+                    'Type': 'Hashrate',
+                    'Value': 0 
+                  };
+                  $('.modal-body').load($url, $payload, function() {
+                    $('.modal-title').text($('#btn-failed').text());
+                    $('body').css('cursor', 'default');
+                    $('#myModal').modal({show:true});
+                  });
+                  $('#miners').bootstrapTable('refresh');
+                }
+              });
+
+              $('#btn-disable').click(function () {
+                var $data = $table.bootstrapTable('getSelections');
+                if ($data.length >= 1) {
+                  $('body').css('cursor', 'progress');
+                  $url = '/functions/stat/disable';
+                  $payload = {
+                    'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})))
+                  };
+                  $('.modal-body').load($url, $payload, function() {
+                    $('.modal-title').text($('#btn-disable').text());
+                    $('body').css('cursor', 'default');
+                    $('#myModal').modal({show:true});
+                  });
+                  $('#miners').bootstrapTable('refresh');
+                }
+              });
+
               $(".addlocalcurrency").each(function () {
                 this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.Currency + ')';
               });
             });
 
+            $(window).resize(function () {
+              if (window.RT) clearTimeout(window.RT);
+              window.RT = setTimeout(function() {
+                this.location.reload(false); /* false to get page from cache */
+              }, 200);
+            })
           </script>
 <!-- End of page scripts 'minersmostprofitable.html' -->
 <!--#include file="/parts/foot.html" -->

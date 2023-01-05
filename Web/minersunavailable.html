@@ -222,8 +222,14 @@
                   this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.Currency + ')';
                 });
               });
-
             });
+
+            $(window).resize(function () {
+              if (window.RT) clearTimeout(window.RT);
+              window.RT = setTimeout(function() {
+                this.location.reload(false); /* false to get page from cache */
+              }, 200);
+            })
           </script>
 <!-- End of page scripts 'minersunavailable.html' -->
 <!--#include file="/parts/foot.html" -->
