@@ -5,7 +5,7 @@ NemosMiner monitors mining pools in real-time in order to find the most profitab
 Updated 04 January 2023
 
 
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 This is free software, and you are welcome to redistribute it
 under certain conditions.
@@ -107,7 +107,7 @@ Easy configuration, easy start:
 
       Example for default parameters (13 minutes):
       - NemosMiner was started at 10:00h
-      - First donation cycle starts somewhen beween 10:01h and 23:47h and will then donate for 13 minutes, then mine for you again until the next donation run.
+      - First donation cycle starts somewhen between 10:01h and 23:47h and will then donate for 13 minutes, then mine for you again until the next donation run.
       - After 00:00h the donation start time is randomized again. 
       - When donation start time is reached it will then donate for 13 minutes, then mine for you again until the next donation run.
       All donation time and addresses are recorded in the logs files.
@@ -266,7 +266,7 @@ When running multiple cards its recommended to increase Virtual Memory. 64GB is 
 
 **Recommended/optimal Windows Nvidia driver**
 
-[recommended/optimal Windows Nvidia driver 522.25](https://us.download.nvidia.com/Windows/522.25/522.25-desktop-win10-win11-64bit-international-dch-whql.exe)
+[recommended/optimal Windows Nvidia driver 527.56](https://us.download.nvidia.com/Windows/527.56/527.56-desktop-win10-win11-64bit-international-dch-whql.exe)
 If you use older drivers some miners will not be available.
 
 **Recommended/optimal Windows AMD driver**
