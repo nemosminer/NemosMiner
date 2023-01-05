@@ -1,6 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.Type -eq "NVIDIA"})) { Return }
 
-$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.35.3b/wildrig-multi-windows-0.35.3b.7z"
+$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.36.1b/wildrig-multi-windows-0.36.1b.7z"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\wildrig.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
