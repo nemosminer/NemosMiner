@@ -41,7 +41,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "UbqHash";      Type = "INTEL"; Fee = 0.01;  MinMemGB = $MinerPools[0].UbqHash.DAGSizeGB + 0.42;      MinerSet = 1; WarmupTimes = @(75, 45); ExcludePool = @(); ExcludeGPUArchitecture = @(); Arguments = " -algo Ubqhash" }
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet) { 
+If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts } ) { 
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
