@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HiveOn.ps1
-Version:        4.2.3.1
-Version date:   04 January 2023
+Version:        4.2.3.2
+Version date:   05 January 2023
 #>
 
 using module ..\Includes\Include.psm1

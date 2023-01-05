@@ -10,6 +10,26 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.2.3.2 05.01.2023
+=======================================
+
+Enhancements:
+- Web GUI: Resize tables when window gets resized
+
+Fixes:
+- Algorithm filter in config broken (regression from 4.2.3.1)
+- Balances / HiveOn: Could not get balances
+- Core / APIServer.ps1: Coredump when API port was blocked and then freed
+- ClaymoreDualME-v2.7: Incorrect memory requirement calculation
+- Nanominer-v3.7.6: Coredump when some pools were missing
+- TeamredMiner-v0.10.7: Incorrect miner name for dual algorithm mode
+
+Miner changes:
+- GMiner-v3.22
+- TeamBlackMiner-v1.79
+- Wildrig-v0.36.1b
+
+
 ChangeLog NemosMiner 4.2.3.1 04.01.2023
 =======================================
 

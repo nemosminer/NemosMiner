@@ -226,9 +226,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     $PrerequisiteURI = ""
                 }
 
-                If ($Variables.UseMinerTweaks -and $_.Type -eq "CPU") { 
-                    $Arguments += " --force-msr-tweaks"
-                }
+                If ($_.Type -eq "CPU" -and $Variables.UseMinerTweaks) { $Arguments += " --disable-msr-tweaks" }
 
                 [PSCustomObject]@{ 
                     Name             = $Miner_Name

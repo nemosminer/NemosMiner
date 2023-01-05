@@ -70,6 +70,10 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 If ($MinerPools[0].($_.Algorithm).DAGsizeGB -ne $null -and $MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing") { $Arguments += " --esm 1" }
                 $Arguments += " --gpu-auto-tune 2--gpu-id $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',') --disable-cpu"
 
+                If ($_.Type -eq "CPU" -and -not $Variables.UseMinerTweaks) { 
+                    $Arguments += " --force-msr-tweaks"
+                }
+
                 If ($_.Algorithm -eq "VertHash" -and (Get-Item -Path $Variables.VerthashDatPath).length -ne 1283457024) { 
                     $PrerequisitePath = $Variables.VerthashDatPath
                     $PrerequisiteURI = "https://github.com/Minerx117/miners/releases/download/Verthash.Dat/VertHash.dat"

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.2.3.1
-Version date:   04 January 2023
+Version:        4.2.3.2
+Version date:   05 January 2023
 #>
 
 using module .\Include.psm1
@@ -359,7 +359,7 @@ Do {
                     }
 
                     # Do not save data if stat just got removed (Miner.Activated < 1, set by API)
-                    If ($Miner.Activated -gt 0 -and ($Miner.Benchmark -eq $true -or $Miner.MeasurePowerUsage -eq $true -or -not $Config.SimulateMining)) { 
+                    If ($Miner.Activated -gt 0 -and ($Miner.Benchmark -eq $true -or $Miner.MeasurePowerUsage -eq $true -or -not $Config.DryRun)) { 
                         # We don't want to store hashrates if we have less than $MinDataSample
                         If ($Miner.Data.Count -ge $Miner.MinDataSample -or $Miner.Activated -gt $Variables.WatchdogCount) { 
                             $Miner.StatEnd = (Get-Date).ToUniversalTime()
@@ -548,12 +548,12 @@ Do {
                         }
                         # Algorithms disabled
                         $Pools | Where-Object { "-$($_.Algorithm)" -in $Config.Algorithm } | ForEach-Object { $_.Reasons += "Algorithm disabled (``-$($_.Algorithm)`` in generic config)" }
-                        $Pools | Where-Object { "-$($_.Algorithm)" -in $PoolsConfig.$($_.BaseName).Algorithm } | ForEach-Object { $_.Reasons += "Algorithm disabled (``-$($_.Algorithm)`` in $($_.BaseName) pool config)" }
+                        $Pools | Where-Object { "-$($_.Algorithm)" -in $Variables.PoolsConfig.$($_.BaseName).Algorithm } | ForEach-Object { $_.Reasons += "Algorithm disabled (``-$($_.Algorithm)`` in $($_.BaseName) pool config)" }
                         # Algorithms not enabled
                         If ($Config.Algorithm -like "+*") { $Pools | Where-Object { "+$($_.Algorithm)" -notin $Config.Algorithm } | ForEach-Object { $_.Reasons += "Algorithm not enabled in generic config" } }
-                        $Pools | Where-Object { $PoolsConfig.$($_.BaseName).Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin $PoolsConfig.$($_.BaseName).Algorithm } | ForEach-Object { $_.Reasons += "Algorithm not enabled in $($_.BaseName) pool config" }
+                        $Pools | Where-Object { $Variables.PoolsConfig.$($_.BaseName).Algorithm -like "+*" } | Where-Object { "+$($_.Algorithm)" -notin $Variables.PoolsConfig.$($_.BaseName).Algorithm } | ForEach-Object { $_.Reasons += "Algorithm not enabled in $($_.BaseName) pool config" }
                         # MinWorkers
-                        $Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $PoolsConfig.$($_.BaseName).MinWorker } | ForEach-Object { $_.Reasons += "Not enough workers at pool (MinWorker ``$($PoolsConfig.$($_.BaseName).MinWorker)`` in $($_.BaseName) pool config)" }
+                        $Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $Variables.PoolsConfig.$($_.BaseName).MinWorker } | ForEach-Object { $_.Reasons += "Not enough workers at pool (MinWorker ``$($Variables.PoolsConfig.$($_.BaseName).MinWorker)`` in $($_.BaseName) pool config)" }
                         $Pools | Where-Object { $null -ne $_.Workers -and $_.Workers -lt $Config.MinWorker } | ForEach-Object { $_.Reasons += "Not enough workers at pool (MinWorker ``$($Config.MinWorker)`` in generic config)" }
                         # SSL
                         If ($Config.SSL -eq "Never") { $Pools | Where-Object { $_.PoolPorts[1] } | ForEach-Object { $_.Reasons += "Non-SSL port not available (Config.SSL = 'Never')" } }
@@ -605,7 +605,7 @@ Do {
                             ForEach ($Pool in @($Pools | Where-Object Name -notin $Config.BalancesTrackerIgnorePool | Sort-Object Name -Unique)) { 
 
                                 $PoolName = Get-PoolBaseName $Pool.Name
-                                If ($Variables.PoolsLastEarnings.$PoolName -and $PoolsConfig.$PoolName.BalancesKeepAlive -gt 0 -and ((Get-Date).ToUniversalTime() - $Variables.PoolsLastEarnings.$PoolName).Days -ge ($PoolsConfig.$PoolName.BalancesKeepAlive - 10)) { 
+                                If ($Variables.PoolsLastEarnings.$PoolName -and $Variables.PoolsConfig.$PoolName.BalancesKeepAlive -gt 0 -and ((Get-Date).ToUniversalTime() - $Variables.PoolsLastEarnings.$PoolName).Days -ge ($Variables.PoolsConfig.$PoolName.BalancesKeepAlive - 10)) { 
                                     $Variables.PoolNameToKeepBalancesAlive += $Pool.Name
                                     Write-Message -Level Warn "Pool ($PoolName) prioritized to avoid forfeiting balance (pool would clear balance in 10 days)."
                                 }
@@ -689,29 +689,25 @@ Do {
 
             If ($Miners -and $Variables.PoolsBest) { 
                 $Miners | ForEach-Object { 
-                    $_.KeepRunning = $_.Status -eq [MinerStatus]::Running -and -not ($_.Benchmark -or $_.MeasurePowerUsage -or $Variables.DonationRandom) -and $_.Cycle -lt $Config.MinCycle # Minimum numbers of full cycles not yet reached
-
-                    If (-not $_.KeepRunning) { 
-                        If ($Miner = Compare-Object -PassThru $NewMiners @($_) -Property Name, Algorithms, DeviceNames -ExcludeDifferent | Select-Object) { 
-                            # Update existing miners
-                            If ($_.Restart = ($_.Arguments -ne $Miner.Arguments -and -not $Config.SimulateMining)) { 
-                                $_.Arguments = $Miner.Arguments
-                                $_.DeviceNames = $Miner.DeviceNames
-                                $_.Devices = [Device[]]($Variables.Devices | Where-Object Name -In $Miner.DeviceNames)
-                                $_.Port = $Miner.Port
-                                $_.Workers = $Miner.Workers
-                            }
-                            $_.PrerequisitePath = $Miner.PrerequisitePath
-                            $_.PrerequisiteURI = $Miner.PrerequisiteURI
-                            If (-not $_.CommandLine -or $_.Restart) { $_.CommandLine = $_.GetCommandLine().Replace("$(Convert-Path '.\')\", '') }
-                        }
-                    }
-                    Else { 
+                    If ($_.KeepRunning = $_.Status -eq [MinerStatus]::Running -and -not ($_.Benchmark -or $_.MeasurePowerUsage -or $Variables.DonationRandom) -and $_.Cycle -lt $Config.MinCycle) { # Minimum numbers of full cycles not yet reached
                         $_.Restart = $false
                     }
-
-                    $_.ReadPowerUsage = [Boolean]($_.Devices.ReadPowerUsage -notcontains $false)
-                    $_.Reasons = @()
+                    Else { 
+                        If ($Miner = Compare-Object -PassThru $NewMiners @($_) -Property Name, Algorithms, DeviceNames -ExcludeDifferent | Select-Object) { 
+                            # Update existing miners
+                            If ($_.Restart = $_.Arguments -ne $Miner.Arguments) { 
+                                $_.Arguments = $Miner.Arguments
+                                $_.DeviceNames = $Miner.DeviceNames
+                                $_.Devices = [Device[]]($Variables.Devices | Where-Object Name -in $Miner.DeviceNames)
+                                $_.Port = $Miner.Port
+                                $_.WarmupTimes = $Miner.WarmupTimes
+                                $_.Workers = $Miner.Workers
+                            }
+                            $_.CommandLine = $Miner.GetCommandLine().Replace("$(Convert-Path '.\')\", '')
+                            $_.PrerequisitePath = $Miner.PrerequisitePath
+                            $_.PrerequisiteURI = $Miner.PrerequisiteURI
+                        }
+                    }
                     $_.Refresh($Variables.PowerCostBTCperW, $Variables.CalculatePowerCost) # Needs to be done after ReadPowerUsage evaluation
                     $_.WindowStyle = If ($Config.MinerWindowStyleNormalWhenBenchmarking -and $_.Benchmark) { "normal" } Else { $Config.MinerWindowStyle }
                 }
@@ -735,15 +731,10 @@ Do {
                 }
 
                 $Variables.MinersMissingBinary = @()
-                $Miners | Where-Object { -not $_.Reasons -and -not (Test-Path -Path $_.Path -Type Leaf) } | ForEach-Object { 
-                    $_.Reasons += "Binary missing"
-                    $Variables.MinersMissingBinary += $_
-                }
+                $Miners | Where-Object { -not $_.Reasons -and -not (Test-Path -Path $_.Path -Type Leaf) } | ForEach-Object { $_.Reasons += "Binary missing"; $Variables.MinersMissingBinary += $_ }
+
                 $Variables.MinersMissingPrerequisite = @()
-                $Miners | Where-Object { -not $_.Reasons -and $_.PrerequisitePath } | ForEach-Object { 
-                    $_.Reasons += "Prerequisite missing ($(Split-Path -Path $_.PrerequisitePath -Leaf))"
-                    $Variables.MinersMissingPrerequisite += $_
-                }
+                $Miners | Where-Object { -not $_.Reasons -and $_.PrerequisitePath } | ForEach-Object { $_.Reasons += "Prerequisite missing ($(Split-Path -Path $_.PrerequisitePath -Leaf))"; $Variables.MinersMissingPrerequisite += $_ }
 
                 # Apply watchdog to miners
                 If ($Config.Watchdog) { 
@@ -942,6 +933,7 @@ Do {
 
         # Stop running miners
         ForEach ($Miner in @(@($Miners | Where-Object Info) + @($CompareMiners | Where-Object { $_.Info -and $_.SideIndicator -eq "<=" } <# miner object is gone #>))) { 
+            If ($Miner.Path -eq "C:\Windows\System32\notepad.exe") { $Miner.Restart = $false }
             If ($Miner.Status -eq [MinerStatus]::Failed) { 
                 If ($Miner.ProcessID) {  # Stop miner (may be set as failed in miner.refresh() because of 0 hashrate)
                     $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
@@ -1053,10 +1045,6 @@ Do {
             }
             Else { 
                 $DataCollectInterval = 5
-                If ($Config.SimulateMining) { 
-                    $Miner.Path = "C:\Windows\System32\notepad.exe"
-                    $Miner.Arguments = ""
-                }
             }
 
             If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
@@ -1094,6 +1082,12 @@ Do {
                 If ($Miner.Workers.Pool.DAGsizeGB -and $Variables.MinersBest_Combo.Devices.Type -contains "CPU") { $Miner.WarmupTimes[0] += 15 <# seconds #>}
 
                 $Miner.DataCollectInterval = $DataCollectInterval
+
+                If ($Config.DryRun -and -not ($Miner.Benchmark -or $Miner.MeasurePowerUsage)) { 
+                    $Miner.Path = "C:\Windows\System32\notepad.exe"
+                    $Miner.Arguments = ""
+                }
+
                 $Miner.SetStatus([MinerStatus]::Running)
 
                 # Add watchdog timer
@@ -1189,7 +1183,7 @@ Do {
                     $Miner.SetStatus([MinerStatus]::Failed)
                     $Variables.FailedMiners += $Miner
                 }
-                ElseIf ($Miner.DataReaderJob.HasMoreData -and ($Miner.Benchmark -eq $true -or $Miner.MeasurePowerUsage -eq $true -or -not $Config.SimulateMining)) { 
+                ElseIf ($Miner.DataReaderJob.HasMoreData -and ($Miner.Benchmark -eq $true -or $Miner.MeasurePowerUsage -eq $true -or -not $Config.DryRun)) { 
                     # Set miner priority, some miners reset priority on their own
                     If ($Process = Get-Process | Where-Object Id -EQ $Miner.ProcessId) { $Process.PriorityClass = $Global:PriorityNames.($Miner.ProcessPriority) }
 
@@ -1250,7 +1244,7 @@ Do {
             # - a miner crashed (and no other miners are benchmarking or measuring power usage)
             # - all benchmarking miners have collected enough samples
             # - WarmupTimes[0] is reached (no readout from miner)
-            # - Interval time is overl
+            # - Interval time is over
         }  While (-not $Variables.EndCycleMessage -and $Variables.NewMiningStatus -eq "Running" -and $Variables.IdleRunspace.MiningStatus -ne "Idle" -and ((Get-Date).ToUniversalTime() -le $Variables.EndCycleTime -or $Variables.BenchmarkingOrMeasuringMiners))
 
         # For debug only

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.2.3.1
-Version date:   04 January 2023
+Version:        4.2.3.2
+Version date:   05 January 2023
 #>
 
 # Window handling
@@ -287,6 +287,7 @@ Class Miner {
         If (-not $this.Process) { 
             If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = @() } # When benchmarking clear data on each miner start
             $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.WindowStyle -Priority $this.ProcessPriority -EnvBlock $this.EnvVars -JobName $this.Name -LogFile $this.LogFile
+
             $this.Status = [MinerStatus]::Running
             Write-Message -Level Verbose $this.CommandLine
 
@@ -517,6 +518,7 @@ Class Miner {
         $this.Prioritize = $false
         $this.Profit = [Double]::NaN
         $this.Profit_Bias = [Double]::NaN
+        $this.Reasons = @()
 
         $this.Workers | ForEach-Object { 
             If ($Stat = Get-Stat -Name "$($this.Name)_$($_.Pool.Algorithm)_Hashrate") { 
@@ -563,6 +565,8 @@ Class Miner {
 
         $this.TotalMiningDuration = ($this.Workers.TotalMiningDuration | Measure-Object -Minimum).Minimum
         $this.Updated = ($this.Workers.Updated | Measure-Object -Minimum).Minimum
+
+        $this.ReadPowerUsage = [Boolean]($this.Devices.ReadPowerUsage -notcontains $false)
 
         If ($CalculatePowerCost) { 
             If ($Stat = Get-Stat -Name "$($this.Name)$(If ($this.Workers.Count -eq 1) { "_$($this.Workers.Pool.Algorithm | Select-Object -First 1)" })_PowerUsage") { 
@@ -3250,7 +3254,7 @@ Function Update-DAGData {
             Write-Message -Level Warn "Failed to load DAG data from '$Url'."
         }
     }
-    
+
     If (($Variables.DAGdata.Updated.Values | Sort-Object | Select-Object -Last 1) -gt $Variables.Timer -and $Variables.DAGdata.Currency.Count -gt 1) { 
         #At least one DAG was updated, get maximum DAG size per algorithm
         ForEach ($Algorithm in @($Variables.DAGdata.Currency.Keys | ForEach-Object { $Variables.DAGdata.Currency.$_.Algorithm } | Select-Object)) { 
