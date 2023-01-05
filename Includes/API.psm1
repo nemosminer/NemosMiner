@@ -24,7 +24,7 @@ Version date:   04 January 2023
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.5.0.0"
+    $APIVersion = "0.5.0.1"
 
     If ($Variables.APIRunspace.AsyncObject.IsCompleted -eq $true -or $Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
         Stop-APIServer
@@ -49,7 +49,6 @@ Function Start-APIServer {
 
             # Setup runspace to launch the API webserver in a separate thread
             $Variables.APIRunspace = [RunspaceFactory]::CreateRunspace()
-            $Variables.APIRunspace.CleanupInterval= New-TimeSpan -Seconds (2 * $Config.Interval)
             $Variables.APIRunspace.Open()
             Get-Variable -Scope Global | Where-Object Name -in @("Config", "Stats", "Variables") | ForEach-Object { 
                 Try { 
@@ -57,10 +56,10 @@ Function Start-APIServer {
                 }
                 Catch { }
             }
-
-            $Variables.APIRunspace | Add-Member -Force @{ APIPort = $Config.APIPort }
             $Variables.APIRunspace.SessionStateProxy.SetVariable("APIVersion", $APIVersion)
             $Variables.APIRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath) | Out-Null
+
+            $Variables.APIRunspace | Add-Member -Force @{ APIPort = $Config.APIPort }
 
             $PowerShell = [PowerShell]::Create()
             $PowerShell.Runspace = $Variables.APIRunspace
@@ -1007,7 +1006,6 @@ Function Start-APIServer {
                 }
             ) | Out-Null # End of $APIServer
 
-            $Variables.APIRunspace | Add-Member -Force @{ PowerShell = $PowerShell; Handle = $PowerShell.BeginInvoke(); StartTime = $((Get-Date).ToUniversalTime()) }
             $Variables.APIRunspace | Add-Member -Force @{ Name = ""; PowerShell = $PowerShell; Handle = $PowerShell.BeginInvoke(); StartTime = $((Get-Date).ToUniversalTime()) }
 
             # Wait for API to get ready
