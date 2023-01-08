@@ -29,6 +29,7 @@ Fixes:
 - Legacy GUI: 'Remove Watchdog Timers' not finding any watchdog timers
 - Core / API: Remove watchdog timer does not find any watchdog timers
 - Core / Balance Tracker: Do not collect balances for donation accounts
+- MiniZ-v2.0b: Algo ProgPowZano broken (Thanks to Szentigrade)
 
 Miner updates:
 - GMiner-v3.24
