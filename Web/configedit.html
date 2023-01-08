@@ -205,7 +205,8 @@
                     <select name="" id="MinerSet" width="10">
                       <option title="The best miners chosen by the developers may not be the best miners for you&#10;(Minerset 0)" value=0>only best miner per algorithm and per device</option>
                       <option title="recommended, select to ensure best profitability&#10;(Minerset 1)" value=1>optimal miners (more than one per algorithm and device)</option>
-                      <option title="This will prolongue benchmarking, but may not improve profitability&#10;(Minerset 2)" value=2>all miners (incl. those in UnprofitableAlgorithms.json)</option>
+                      <option title="This will prolongue benchmarking, but may not improve profitability&#10;(Minerset 2)" value=2>most miners (excl. those in UnprofitableAlgorithms.json)</option>
+                      <option title="This will prolongue benchmarking, but will not improve profitability&#10;(Minerset 3) - not recommended" value=3>all miners (incl. those in UnprofitableAlgorithms.json)</option>
                     </select>
                   </div>
                   <div style="padding-top: 0.3rem" title="List of miners to be excluded&#10;Values must be sparated by commas&#10;&#10;To exclude all version of a miner specify the short miner name, e.g. 'PhoenixMiner' (without '-v...')&#10;To exclude a specific miner version use the full miner name (incl. version information)&#10;"> Exclude miners
@@ -752,8 +753,8 @@
 
               // Miner and Algorithm Selection
               if (config.MinerInstancePerDeviceModel) document.getElementById('MinerInstancePerDeviceModel').checked = true;
-              if (parseInt(config.MinerSet) >= 0 && parseInt(config.MinerSet) <= 2) document.getElementById('MinerSet').value = config.MinerSet;
-              else document.getElementById('MinerSet').value = 1;
+              if (parseInt(config.MinerSet) >= 0 && parseInt(config.MinerSet) <= 3) document.getElementById('MinerSet').value = config.MinerSet;
+              else document.getElementById('MinerSet').value = 2;
               if (config.ExcludeMinerName) document.getElementById('ExcludeMinerName').value = (config.ExcludeMinerName).toString().trim();
               if (config.Algorithm) document.getElementById('Algorithm').value = (config.Algorithm).toString().trim();
               // Load default Algorithm list

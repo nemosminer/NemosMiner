@@ -14,19 +14,19 @@ ElseIf ((Compare-Object $AvailableMiner_Devices.CpuFeatures @("aes", "sse42")   
 Else { Return }
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Blake2b";       MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo blake2b" }
-    [PSCustomObject]@{ Algorithm = "HMQ1725";       MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo hmq1725" }
+    [PSCustomObject]@{ Algorithm = "Blake2b";       MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo blake2b" } # FPGA
+    [PSCustomObject]@{ Algorithm = "HMQ1725";       Minerset = 1; WarmupTimes = @(45, 40); Arguments = " --algo hmq1725" }
     [PSCustomObject]@{ Algorithm = "Lyra2z330";     MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo lyra2z330" }
-    [PSCustomObject]@{ Algorithm = "m7m";           MinerSet = 2; WarmupTimes = @(45, 40); Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
-    [PSCustomObject]@{ Algorithm = "SHA3d";         MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo SHA3d" }
-    [PSCustomObject]@{ Algorithm = "ScryptN11";     MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo scrypt(N,1,1)" }
-    [PSCustomObject]@{ Algorithm = "ScryptN2";      MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo scrypt --param-n 1048576" }
+    [PSCustomObject]@{ Algorithm = "m7m";           Minerset = 1; WarmupTimes = @(45, 40); Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
+    [PSCustomObject]@{ Algorithm = "SHA3d";         MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo SHA3d" } # FPGA
+    [PSCustomObject]@{ Algorithm = "ScryptN11";     Minerset = 2; WarmupTimes = @(45, 40); Arguments = " --algo scrypt(N,1,1)" }
+    [PSCustomObject]@{ Algorithm = "ScryptN2";      Minerset = 1; WarmupTimes = @(45, 40); Arguments = " --algo scrypt --param-n 1048576" }
     [PSCustomObject]@{ Algorithm = "VertHash";      MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo verthash --data-file ..\.$($Variables.VerthashDatPath)" }
-    [PSCustomObject]@{ Algorithm = "YespowerIc";    MinerSet = 0; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "IsotopeC"' }
-    [PSCustomObject]@{ Algorithm = "YespowerIots";  MinerSet = 0; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-key "Iots is committed to the development of IOT"' }
-    [PSCustomObject]@{ Algorithm = "YespowerLitb";  MinerSet = 0; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "LITBpower: The number of LITB working or available for proof-of-work mini"' }
-    [PSCustomObject]@{ Algorithm = "YespowerLtncg"; MinerSet = 0; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "LTNCGYES"' }
-    [PSCustomObject]@{ Algorithm = "YespowerSugar"; MinerSet = 0; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "Satoshi Nakamoto 31/Oct/2008 Proof-of-work is essentially one-CPU-one-vote"' } # SRBMminerMulti is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "YespowerIc";    Minerset = 2; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "IsotopeC"' }
+    [PSCustomObject]@{ Algorithm = "YespowerIots";  Minerset = 2; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-key "Iots is committed to the development of IOT"' }
+    [PSCustomObject]@{ Algorithm = "YespowerLitb";  Minerset = 2; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "LITBpower: The number of LITB working or available for proof-of-work mini"' }
+    [PSCustomObject]@{ Algorithm = "YespowerLtncg"; Minerset = 2; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "LTNCGYES"' }
+    [PSCustomObject]@{ Algorithm = "YespowerSugar"; Minerset = 1; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "Satoshi Nakamoto 31/Oct/2008 Proof-of-work is essentially one-CPU-one-vote"' } # SRBMminerMulti is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "YespowerUrx";   MinerSet = 0; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "UraniumX"' } # SRBMminerMulti is fastest, but has 0.85% miner fee
 )
 
@@ -50,18 +50,19 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $Devices.$DeviceEnumerator
 
         [PSCustomObject]@{ 
-            Name             = $Miner_Name
-            DeviceNames      = $AvailableMiner_Devices.Name
-            Type             = ($AvailableMiner_Devices.Type | Select-Object -unique)
-            Path             = $Path
-            Arguments        = ("$($_.Arguments) --url $(If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) --user $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" }) --pass $($MinerPools[0].($_.Algorithm).Pass) --hash-meter --stratum-keepalive --quiet --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
             Algorithms       = @($_.Algorithm)
             API              = "Ccminer"
+            Arguments        = ("$($_.Arguments) --url $(If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) --user $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" }) --pass $($MinerPools[0].($_.Algorithm).Pass) --hash-meter --stratum-keepalive --quiet --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)").trim()
+            DeviceNames      = $AvailableMiner_Devices.Name
+            MinerSet         = $_.MinerSet
+            Name             = $Miner_Name
+            Path             = $Path
             Port             = $MinerAPIPort
-            URI              = $Uri
-            WarmupTimes      = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
             PrerequisitePath = $PrerequisitePath
             PrerequisiteURI  = $PrerequisiteURI
+            Type             = ($AvailableMiner_Devices.Type | Select-Object -Unique)
+            URI              = $Uri
+            WarmupTimes      = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
         }
     }
 }

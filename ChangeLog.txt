@@ -10,6 +10,30 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.2.3.3 08.01.2023
+=======================================
+
+Enhancements:
+- Core & ZergPool brain: Update DAG data from pool information
+- Core: Added 'MinerSet' property to miner class
+- Reworked miner set definitions 
+  0: Benchmark best miner per algorithm and device only
+  1: Benchmark optimal miners (more than one per algorithm and device)
+  2: Benchmark most miners per algorithm and device (except those in the unprofitable algorithms list)
+  3: Benchmark all miners per algorithm and device (even those in the unprofitable algorithms list, not recommended)
+- Web GUI: Added hidden column 'MinerSet' to miner tables
+
+Fixes:
+- API: Remove watchdog timers message reporting wrong number of watchdog timers
+- Web GUI / Unprofitable miners: 'Remove Watchdogtimers' broken
+- Legacy GUI: 'Remove Watchdog Timers' not finding any watchdog timers
+- Core / API: Remove watchdog timer does not find any watchdog timers
+- Core / Balance Tracker: Do not collect balances for donation accounts
+
+Miner updates:
+- GMiner-v3.24
+
+
 ChangeLog NemosMiner 4.2.3.2 05.01.2023
 =======================================
 
@@ -26,6 +50,7 @@ Fixes:
 
 Miner changes:
 - GMiner-v3.22
+- SRBMinerMulti-v2.0.1
 - TeamBlackMiner-v1.79
 - Wildrig-v0.36.1b
 

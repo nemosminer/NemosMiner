@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.2.3.2
-Version date:   05 January 2023
+Version:        4.2.3.3
+Version date:   08 January 2023
 #>
 
 # Window handling
@@ -170,6 +170,7 @@ Class Miner {
     [String]$LogFile
     [Boolean]$MeasurePowerUsage = $false
     [Int]$MinDataSample # for safe hashrate values
+    [Int]$MinerSet
     [String]$MinerUri
     [Bool]$MostProfitable
     [String]$Name
@@ -541,7 +542,7 @@ Class Miner {
         $this.Earning = ($this.Workers.Earning | Measure-Object -Sum).Sum
         $this.Earning_Bias = ($this.Workers.Earning_Bias | Measure-Object -Sum).Sum
 
-        If ($this.Workers[0].Hashrate -EQ 0) { # Allow 0 hashrate on secondary algorithm
+        If ($this.Workers[0].Hashrate -eq 0) { # Allow 0 hashrate on secondary algorithm
             $this.Status = [MinerStatus]::Failed
             $this.Available = $false
             $this.Earning = [Double]::NaN
@@ -1148,7 +1149,7 @@ Function Get-RandomDonationPoolsConfig {
     $Variables.DonationRandom = $Variables.DonationData | Get-Random
     $DonationRandomPoolsConfig = [Ordered]@{ }
     (Get-ChildItem .\Pools\*.ps1 -File).BaseName | Sort-Object -Unique | ForEach-Object { 
-        $PoolConfig = $Config.PoolsConfig.$_
+        $PoolConfig = $Config.PoolsConfig.$_ | ConvertTo-Json -depth 99 -compress | ConvertFrom-Json -AsHashTable
         $PoolConfig.EarningsAdjustmentFactor = 1
         $PoolConfig.Region = $Config.PoolsConfig.$_.Region
         $PoolConfig.WorkerName = "$($Variables.Branding.ProductLabel)-$($Variables.Branding.Version.ToString())-donate$($Config.Donation)"
@@ -3158,7 +3159,7 @@ Function Update-DAGData {
                     If (-not (Get-CoinName -Currency $Currency)) { Add-CoinName -Algorithm (Get-Algorithm $DAGDataResponse.coins.$_.algorithm) -Currency $Currency -CoinName $_ }
                     If ((Get-Algorithm $DAGDataResponse.coins.$_.algorithm) -in @("Autolykos2", "EtcHash", "Ethash", "FiroPow", "KawPow", "Octopus", "ProgPow", "ProgPowZano", "UbqHash")) { 
                         If ($DAGDataResponse.coins.$_.last_block -ge $Variables.DAGdata.Currency.$Currency.BlockHeight) { 
-                            $DAGData = Get-DAGdata -BlockHeight $DAGDataResponse.coins.$_.last_block -Currency $Currency
+                            $DAGData = Get-DAGdata -BlockHeight $DAGDataResponse.coins.$_.last_block -Currency $Currency -EpochReserve 2
                             If ($DAGData.Algorithm) { 
                                 $Variables.DAGdata.Currency.$Currency = $DAGData
                                 $Variables.DAGdata.Updated.$Url = (Get-Date).ToUniversalTime()
@@ -3189,7 +3190,7 @@ Function Update-DAGData {
                     $BlockHeight = [Int]($_ -replace "^<div class='block' title='Current block height of $Currency'>" -replace "</div>")
 
                     If ($BlockHeight -and $Currency) { 
-                        $DAGData = Get-DAGdata -BlockHeight $BlockHeight -Currency $Currency
+                        $DAGData = Get-DAGdata -BlockHeight $BlockHeight -Currency $Currency -EpochReserve 2
                         If ($DAGData.Algorithm) { 
                             $Variables.DAGdata.Currency.$Currency = $DAGData
                             $Variables.DAGdata.Updated.$Url = (Get-Date).ToUniversalTime()
@@ -3216,7 +3217,7 @@ Function Update-DAGData {
             If ($DAGDataResponse.code -eq 200) { 
                 $DAGDataResponse.data.PSObject.Properties.Name | Where-Object { $DAGDataResponse.data.$_.enabled -and $DAGDataResponse.data.$_.height -and ((Get-Algorithm $DAGDataResponse.data.$_.algo) -in @("Autolykos2", "EtcHash", "Ethash", "KawPow", "Octopus", "UbqHash") -or $_ -in @($Variables.DAGdata.Currency.Keys))} | ForEach-Object { 
                     If ($DAGDataResponse.data.$_.height -gt 0 -and $DAGDataResponse.data.$_.height -gt $Variables.DAGdata.Currency.$_.BlockHeight) { 
-                        $DAGData = Get-DAGdata -BlockHeight $DAGDataResponse.data.$_.height -Currency $_
+                        $DAGData = Get-DAGdata -BlockHeight $DAGDataResponse.data.$_.height -Currency $_ -EpochReserve 2
                         If ($DAGData.Algorithm) { 
                             $Variables.DAGdata.Currency.$_ = $DAGData
                             $Variables.DAGdata.Updated.$Url = (Get-Date).ToUniversalTime()
@@ -3242,7 +3243,7 @@ Function Update-DAGData {
             $DAGDataResponse = Invoke-RestMethod -Uri $Url
 
             If ($DAGDataResponse.blockcount -gt 0) { 
-                $Variables.DAGdata.Currency."EVR" = (Get-DAGdata -BlockHeight $DAGDataResponse.blockcount -Currency "EVR")
+                $Variables.DAGdata.Currency."EVR" = (Get-DAGdata -BlockHeight $DAGDataResponse.blockcount -Currency "EVR" -EpochReserve 2)
                 $Variables.DAGdata.Updated.$Url = (Get-Date).ToUniversalTime()
                 Write-Message -Level Info "Loaded DAG data from '$Url'."
             }
@@ -3384,10 +3385,12 @@ Function Get-DAGdata {
         [Parameter(Mandatory = $false)]
         [Double]$Blockheight = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400,
         [Parameter(Mandatory = $false)]
-        [String]$Currency = "ETH"
+        [String]$Currency = "ETH",
+        [Parameter(Mandatory = $false)]
+        [Int16]$EpochReserve = 0
     )
 
-    $Epoch = Get-Epoch -BlockHeight $BlockHeight -Currency $Currency
+    $Epoch = (Get-Epoch -BlockHeight $BlockHeight -Currency $Currency) + $EpochReserve
 
     Return @{ 
         Algorithm   = Get-AlgorithmFromCurrency $Currency

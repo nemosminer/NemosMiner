@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           LegacyGUI.psm1
-Version:        4.2.3.2
-Version date:   05 January 2023
+Version:        4.2.3.3
+Version date:   08 January 2023
 #>
 
 [Void] [System.Reflection.Assembly]::LoadWithPartialName(“System.Windows.Forms”)
@@ -28,8 +28,8 @@ Version date:   05 January 2023
 $LegacyGUIForm = New-Object System.Windows.Forms.Form
 $LegacyGUIForm.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
 
-$LegacyGUIForm.Icon = New-Object System.Drawing.Icon ("..\Data\NM.ICO")
-$LegacyGUIForm.MinimumSize = [System.Drawing.Size]::new(756, 501) # best to keep under 800x600
+$LegacyGUIForm.Icon = New-Object System.Drawing.Icon ("$($Variables.MainPath)\Data\NM.ICO")
+$LegacyGUIForm.MinimumSize = [System.Drawing.Size]::new(800, 600) # best to keep under 800x600
 $LegacyGUIForm.Text = $Variables.Branding.ProductLabel
 $LegacyGUIForm.MaximizeBox = $true
 $LegacyGUIForm.TopMost = $false
@@ -226,7 +226,7 @@ $LaunchedMinersDGV.Add_MouseUP(
             $ContextMenuStrip.Enabled = [Boolean]$This.SelectedRows
             $ContextMenuStripItem5.Visible = $false
             $ContextMenuStripItem1.Text = "Re-Benchmark"
-            $ContextMenuStripItem2.Text = "Re-measure power usage"
+            $ContextMenuStripItem2.Text = "Re-Measure Power Usage"
             $ContextMenuStripItem3.Text = "Mark as failed";
             $ContextMenuStripItem4.Text = "Disable"
         }
@@ -293,22 +293,22 @@ $EarningsPageControls += $EarningsDGV
 # Miner page Controls
 $MinersPageControls = @()
 
-$RadioButtonMinersMostProfitable = New-Object System.Windows.Forms.RadioButton
-$RadioButtonMinersMostProfitable.Text = "Most Profitable Miners"
-$RadioButtonMinersMostProfitable.AutoSize = $false
-$RadioButtonMinersMostProfitable.Width = 140
-$RadioButtonMinersMostProfitable.Height = 20
-$RadioButtonMinersMostProfitable.Location = [System.Drawing.Point]::new(0, 8)
-$RadioButtonMinersMostProfitable.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
-$RadioButtonMinersMostProfitable.Checked = $true
-$RadioButtonMinersMostProfitable.Add_Click({ Update-TabControl })
+$RadioButtonMinersBest = New-Object System.Windows.Forms.RadioButton
+$RadioButtonMinersBest.Text = "Best Miners"
+$RadioButtonMinersBest.AutoSize = $false
+$RadioButtonMinersBest.Width = 140
+$RadioButtonMinersBest.Height = 20
+$RadioButtonMinersBest.Location = [System.Drawing.Point]::new(0, 8)
+$RadioButtonMinersBest.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
+$RadioButtonMinersBest.Checked = $true
+$RadioButtonMinersBest.Add_Click({ Update-TabControl })
 
 $RadioButtonMinersUnavailable = New-Object System.Windows.Forms.RadioButton
 $RadioButtonMinersUnavailable.Text = "Unavailable Miners"
 $RadioButtonMinersUnavailable.AutoSize = $false
 $RadioButtonMinersUnavailable.Width = 140
 $RadioButtonMinersUnavailable.Height = 20
-$RadioButtonMinersUnavailable.Location = [System.Drawing.Point]::new(150, 8)
+$RadioButtonMinersUnavailable.Location = [System.Drawing.Point]::new(105, 8)
 $RadioButtonMinersUnavailable.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
 $RadioButtonMinersUnavailable.Add_Click({ Update-TabControl })
 
@@ -317,7 +317,7 @@ $RadioButtonMiners.Text = "All Miners"
 $RadioButtonMiners.AutoSize = $false
 $RadioButtonMiners.Width = 100
 $RadioButtonMiners.Height = 20
-$RadioButtonMiners.Location = [System.Drawing.Point]::new(280, 8)
+$RadioButtonMiners.Location = [System.Drawing.Point]::new(245, 8)
 $RadioButtonMiners.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
 $RadioButtonMiners.Add_Click({ Update-TabControl })
 
@@ -334,7 +334,7 @@ $MinersPanel.Height = 24
 $MinersPanel.Location = [System.Drawing.Point]::new(8, 26)
 $MinersPanel.Controls.Add($RadioButtonMiners)
 $MinersPanel.Controls.Add($RadioButtonMinersUnavailable)
-$MinersPanel.Controls.Add($RadioButtonMinersMostProfitable)
+$MinersPanel.Controls.Add($RadioButtonMinersBest)
 $MinersPageControls += $MinersPanel
 
 $MinersDGV = New-Object System.Windows.Forms.DataGridView
@@ -385,7 +385,7 @@ $RadioButtonPoolsUnavailable.Text = "Unavailable Pools"
 $RadioButtonPoolsUnavailable.AutoSize = $false
 $RadioButtonPoolsUnavailable.Width = 140
 $RadioButtonPoolsUnavailable.Height = 20
-$RadioButtonPoolsUnavailable.Location = [System.Drawing.Point]::new(106, 8)
+$RadioButtonPoolsUnavailable.Location = [System.Drawing.Point]::new(105, 8)
 $RadioButtonPoolsUnavailable.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
 $RadioButtonPoolsUnavailable.Add_Click({ Update-TabControl })
 
@@ -589,11 +589,11 @@ Function Update-TabControl {
 
     Switch ($TabControl.SelectedTab.Text) { 
         "Run" { 
-            $ContextMenuStripItem1.Text = "Re-benchmark"
-            $ContextMenuStripItem2.Text = "Re-measure Power Usage"
+            $ContextMenuStripItem1.Text = "Re-Benchmark"
+            $ContextMenuStripItem2.Text = "Re-Measure Power Usage"
             $ContextMenuStripItem3.Text = "Mark as failed"
             $ContextMenuStripItem4.Text = "Disable"
-            $ContextMenuStripItem5.Text = "Remove Watchdog"
+            $ContextMenuStripItem5.Text = "Remove Watchdog Timer"
             $ContextMenuStripItem4.Visible = $true
             $ContextMenuStripItem5.Visible = $False
 
@@ -618,8 +618,8 @@ Function Update-TabControl {
                         @{ Name = "Power cost $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.PowerCost)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Powercost * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }
                         @{ Name = "Profit $($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }
                         @{ Name = "Power usage"; Expression = { If (-not $_.MeasurePowerUsage) { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W"} } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } } }
-                        @{ Name = "Pool(s)"; Expression = { ($_.WorkersRunning.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' } }
-                        @{ Name = "Hashrate(s)"; Expression = { If (-not $_.Benchmark) { ($_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" }) -join " & " } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } } }
+                        @{ Name = "Pool(s)"; Expression = { $_.WorkersRunning.Pool.Name -join ' & ' } }
+                        @{ Name = "Hashrate(s)"; Expression = { If (-not $_.Benchmark) { ($_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } } }
                         @{ Name = "Active (hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [math]::floor(((Get-Date).ToUniversalTime() - $_.BeginTime).TotalDays * 24), ((Get-Date).ToUniversalTime() - $_.BeginTime) } }
                         @{ Name = "Total active (hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [math]::floor($_.TotalMiningDuration.TotalDays * 24), $_.TotalMiningDuration } }
                         If ($RadioButtonPoolsUnavailable.checked) { @{ Name = "Reason"; Expression = { $_.Reasons -join ', ' } } }
@@ -779,18 +779,18 @@ Function Update-TabControl {
             Else { $LabelEarnings.Text = "Waiting for data..." }
         }
         "Miners" { 
-            $ContextMenuStripItem1.Text = "Re-benchmark"
-            $ContextMenuStripItem2.Text = "Re-measure Power Usage"
+            $ContextMenuStripItem1.Text = "Re-Benchmark"
+            $ContextMenuStripItem2.Text = "Re-Measure Power Usage"
             $ContextMenuStripItem3.Text = "Mark as failed"
             $ContextMenuStripItem4.Text = "Disable"
-            $ContextMenuStripItem5.Text = "Remove Watchdog"
+            $ContextMenuStripItem5.Text = "Remove Watchdog Timer"
             $ContextMenuStripItem4.Visible = $true
-            $ContextMenuStripItem5.Visible = $RadioButtonMinersUnavailable.Checked
+            $ContextMenuStripItem5.Visible = -not $RadioButtonMinersBest.Checked
 
             If ($Variables.Miners) { 
                 If (-not ($ContextMenuStrip.Visible -and $ContextMenuStrip.Enabled)) { 
 
-                    If ($RadioButtonMinersMostProfitable.checked) { $DataSource = $Variables.MinersMostProfitable }
+                    If ($RadioButtonMinersBest.checked) { $DataSource = $Variables.MinersMostProfitable }
                     ElseIf ($RadioButtonMinersUnavailable.checked) { $DataSource = $Variables.Miners | Where-Object { -not $_.Available } }
                     Else { $DataSource = $Variables.Miners }
 
@@ -804,8 +804,9 @@ Function Update-TabControl {
                         @{ Name = "Power usage"; Expression = { If (-not $_.MeasurePowerUsage) { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W"} } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } } }
                         @{ Name = "Power usage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else { "$($_.PowerUsage.ToString("N2")) W" } } }, 
                         @{ Name = "Algorithm(s)"; Expression = { $_.Algorithms -join ' & ' } }, 
-                        @{ Name = "Pool(s)"; Expression = { ($_.Workers.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' } }, 
-                        @{ Name = "Hashrate(s)"; Expression = { If (-not $_.Benchmark) { ($_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" }) -join " & " } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } } }
+                        @{ Name = "Pool(s)"; Expression = { $_.Workers.Pool.Name -join ' & ' } }, 
+                        # @{ Name = "Pool(s)"; Expression = { ($_.Workers.Pool | ForEach-Object { (@(@($_.Name | Select-Object) + @($_.Coin | Select-Object))) -join '-' }) -join ' & ' } }, 
+                        @{ Name = "Hashrate(s)"; Expression = { If (-not $_.Benchmark) { ($_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } } }
                         If ($RadioButtonMinersUnavailable.checked -or $RadioButtonMiners.checked) { @{ Name = "Reason"; Expression = { $_.Reasons -join ', '} } }
                     ) | Sort-Object "$SortBy $($Config.Currency)/day" -Descending | Out-DataTable
 
@@ -837,7 +838,7 @@ Function Update-TabControl {
             $ContextMenuStripItem1.Text = "Enable Algorithm @ Pool"
             $ContextMenuStripItem2.Text = "Disable Algorithm @ Pool"
             $ContextMenuStripItem3.Text = "Reset Pool Stat Data"
-            $ContextMenuStripItem4.Text = "Remove Watchdog"
+            $ContextMenuStripItem4.Text = "Remove Watchdog Timer"
             $ContextMenuStripItem4.Visible = (-not $RadioButtonPoolsBest.Checked)
             $ContextMenuStripItem5.Visible = $false
 
@@ -914,7 +915,7 @@ Function Update-TabControl {
                     @{ Name = "Estimated Earning/day"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ([Decimal](($_.Data.Earning | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
                     @{ Name = "Estimated Profit/day"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ([Decimal](($_.Data.Profit | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
                     @{ Name = "Miner(s)"; Expression = { $_.data.Name -join $nl } }, 
-                    @{ Name = "Pool(s)"; Expression = { ($_.data | ForEach-Object { $_.Pool -join " & " }) -join $nl } }, 
+                    @{ Name = "Pool(s)"; Expression = { ($_.data | ForEach-Object { $_.Pool -split "," -join " & " }) -join $nl } }, 
                     @{ Name = "Algorithm(s)"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join $nl } }, 
                     @{ Name = "Live Hashrate(s)"; Expression = { ($_.data | ForEach-Object { ($_.CurrentSpeed | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " }) -join $nl } }, 
                     @{ Name = "Benchmark Hashrate(s)"; Expression = { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " }) -join $nl } }
@@ -982,7 +983,7 @@ Function Form_Resize {
     $ButtonPause.Location = [System.Drawing.Point]::new($LegacyGUIForm.Width - 236, 12)
     $ButtonStop.Location = [System.Drawing.Point]::new($LegacyGUIForm.Width - 136, 12)
 
-    $TextBoxSummary.Width = $Variables.TextBoxSystemLog.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $EarningsDGV.Width = $MinersPanel.Width =  $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $TabControl.Width - 24
+    $TextBoxSummary.Width = $Variables.TextBoxSystemLog.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $EarningsDGV.Width = $MinersPanel.Width = $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $TabControl.Width - 24
 
     $EarningsDGV.Height = ($EarningsDGV.Rows.Height | Measure-Object -Sum).Sum + $EarningsDGV.ColumnHeadersHeight
     If ($EarningsDGV.Height -gt $TabControl.Height / 2) { 
@@ -1024,8 +1025,6 @@ Function Form_Resize {
 
 $LegacyGUIForm.Add_Load(
     { 
-        $LegacyGUIForm.Cursor = [System.Windows.Forms.Cursors]::WaitCursor
-
         If (Test-Path -Path ".\Config\WindowSettings.json" -PathType Leaf) { 
             $WindowSettings = Get-Content -Path ".\Config\WindowSettings.json" | ConvertFrom-Json -AsHashtable
             # Restore window size
@@ -1119,14 +1118,14 @@ $ContextMenuStrip.Add_ItemClicked(
                 "Re-Benchmark" { 
                     $This.SourceControl.SelectedRows | ForEach-Object { 
                         If ($This.SourceControl.Name -eq "LaunchedMinersDGV") { 
-                            $SelectedMinerName = $_.Cells[1].Value -split " " | Select-Object -index 0
+                            $SelectedMinerName = $_.Cells[1].Value -split " " | Select-Object -Index 0
                             $SelectedMinerAlgorithms = @(($_.Cells[1].Value -split " {" | Select-Object -Index 1) -split " & " -replace "{", "" -replace "@.+", "")
                         }
                         ElseIf ($This.SourceControl.Name -eq "MinersDGV") { 
                             $SelectedMinerName = $_.Cells[0].Value
                             $SelectedMinerAlgorithms = @($_.Cells[6].Value -split " & ")
                         }
-                        $Variables.Miners | Where-Object { $_.Name -EQ $SelectedMinerName } | Where-Object { [String]$_.Algorithms -eq [String]$SelectedMinerAlgorithms } | ForEach-Object { 
+                        $Variables.Miners | Where-Object Name -EQ $SelectedMinerName | Where-Object { [String]$_.Algorithms -eq [String]$SelectedMinerAlgorithms } | ForEach-Object { 
                             If ($_.Earning -eq 0) { $_.Available = $true }
                             $_.Earning_Accuracy = [Double]::NaN
                             $_.Activated = 0 # To allow 3 attempts
@@ -1156,17 +1155,17 @@ $ContextMenuStrip.Add_ItemClicked(
                         Update-TabControl
                     }
                 }
-                "Re-measure power usage" { 
+                "Re-Measure Power Usage" { 
                     $This.SourceControl.SelectedRows | ForEach-Object { 
                         If ($This.SourceControl.Name -eq "LaunchedMinersDGV") { 
-                            $SelectedMinerName = $_.Cells[1].Value -split " " | Select-Object -index 0
+                            $SelectedMinerName = $_.Cells[1].Value -split " " | Select-Object -Index 0
                             $SelectedMinerAlgorithms = @(($_.Cells[1].Value -split " {" | Select-Object -Index 1) -split " & " -replace "{", "" -replace "@.+", "")
                         }
                         ElseIf ($This.SourceControl.Name -eq "MinersDGV") { 
                             $SelectedMinerName = $_.Cells[0].Value
                             $SelectedMinerAlgorithms = @($_.Cells[6].Value -split " & ")
                         }
-                        $Variables.Miners | Where-Object { $_.Name -EQ $SelectedMinerName } | Where-Object { [String]$_.Algorithms -eq [String]$SelectedMinerAlgorithms } | ForEach-Object { 
+                        $Variables.Miners | Where-Object Name -EQ $SelectedMinerName | Where-Object { [String]$_.Algorithms -eq [String]$SelectedMinerAlgorithms } | ForEach-Object { 
                             If ($_.Earning -eq 0) { $_.Available = $true }
                             If ($Variables.CalculatePowerCost) { 
                                 $_.MeasurePowerUsage = $true
@@ -1190,14 +1189,14 @@ $ContextMenuStrip.Add_ItemClicked(
                 "Mark as failed" { 
                     $This.SourceControl.SelectedRows | ForEach-Object { 
                         If ($This.SourceControl.Name -eq "LaunchedMinersDGV") { 
-                            $SelectedMinerName = $_.Cells[1].Value -split " " | Select-Object -index 0
-                            $SelectedMinerAlgorithms = @(($_.Cells[1].Value -split " {" | Select-Object -index 1) -split " & " -replace "{", "" -replace "@.+", "")
+                            $SelectedMinerName = $_.Cells[1].Value -split " " | Select-Object -Index 0
+                            $SelectedMinerAlgorithms = @(($_.Cells[1].Value -split " {" | Select-Object -Index 1) -split " & " -replace "{", "" -replace "@.+", "")
                         }
                         ElseIf ($This.SourceControl.Name -eq "MinersDGV") { 
                             $SelectedMinerName = $SelectedMiner.Cells[0].Value
                             $SelectedMinerAlgorithms = @($SelectedMiner.Cells[6].Value -split " & ")
                         }
-                        $Variables.Miners | Where-Object { $_.Name -EQ $SelectedMinerName } | Where-Object { [String]$_.Algorithms -eq [String]$SelectedMinerAlgorithms } | ForEach-Object { 
+                        $Variables.Miners | Where-Object Name -EQ $SelectedMinerName | Where-Object { [String]$_.Algorithms -eq [String]$SelectedMinerAlgorithms } | ForEach-Object { 
                             If ($Parameters.Value -le 0 -and $Parameters.Type -eq "Hashrate") { $_.Available = $false; $_.Disabled = $true }
                             $Data += "`n$($_.Name) ($($_.Algorithms -join " & "))"
                             ForEach ($Algorithm in $_.Algorithms) { 
@@ -1225,14 +1224,14 @@ $ContextMenuStrip.Add_ItemClicked(
                 "Disable" { 
                     $This.SourceControl.SelectedRows | ForEach-Object { 
                         If ($This.SourceControl.Name -eq "LaunchedMinersDGV") { 
-                            $SelectedMinerName = $_.Cells[1].Value -split " " | Select-Object -index 0
-                            $SelectedMinerAlgorithms = @(($_.Cells[1].Value -split " {" | Select-Object -index 1) -split " & " -replace "{", "" -replace "@.+", "")
+                            $SelectedMinerName = $_.Cells[1].Value -split " " | Select-Object -Index 0
+                            $SelectedMinerAlgorithms = @(($_.Cells[1].Value -split " {" | Select-Object -Index 1) -split " & " -replace "{", "" -replace "@.+", "")
                         }
                         ElseIf ($This.SourceControl.Name -eq "MinersDGV") { 
                             $SelectedMinerName = $SelectedMiner.Cells[0].Value
                             $SelectedMinerAlgorithms = @($SelectedMiner.Cells[6].Value -split " & ")
                         }
-                        $Variables.Miners | Where-Object { $_.Name -EQ $SelectedMinerName } | Where-Object { [String]$_.Algorithms -eq [String]$SelectedMinerAlgorithms } | ForEach-Object { 
+                        $Variables.Miners | Where-Object Name -eq $SelectedMinerName | Where-Object { [String]$_.Algorithms -eq [String]$SelectedMinerAlgorithms } | ForEach-Object { 
                             $Data += "`n$($_.Name) ($($_.Algorithms -join " & "))"
                             ForEach ($Worker in $_.Workers) { 
                                 Disable-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
@@ -1251,21 +1250,21 @@ $ContextMenuStrip.Add_ItemClicked(
                         Update-TabControl
                     }
                 }
-                "Remove Watchdog" { 
+                "Remove Watchdog Timer" { 
                     $Counter = 0
                     $This.SourceControl.SelectedRows | ForEach-Object { 
                         If ($This.SourceControl.Name -eq "LaunchedMinersDGV") { 
-                            $SelectedMinerName = $_.Cells[1].Value -split " " | Select-Object -index 0
-                            $SelectedMinerAlgorithms = @(($_.Cells[1].Value -split " {" | Select-Object -index 1) -split " & " -replace "{", "" -replace "@.+", "")
+                            $SelectedMinerName = $_.Cells[1].Value -split " " | Select-Object -Index 0
+                            $SelectedMinerAlgorithms = @(($_.Cells[1].Value -split " {" | Select-Object -Index 1) -split " & " -replace "{", "" -replace "@.+", "")
                         }
                         ElseIf ($This.SourceControl.Name -eq "MinersDGV") { 
                             $SelectedMinerName = $_.Cells[0].Value
                             $SelectedMinerAlgorithms = @($_.Cells[6].Value -split " & ")
                         }
                         If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $SelectedMinerName | Where-Object { $_.Algorithm -in $SelectedMinerAlgorithms })) {
+                            # Remove Watchdog timers
+                            $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
                             ForEach ($WatchdogTimer in $WatchdogTimers) { 
-                                # Remove Watchdog timers
-                                $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $Watchdog -notin $WatchdogTimers })
                                 $Data += "`n$($WatchdogTimer.MinerName) {$($WatchdogTimer.Algorithm -join ', ')}"
                                 # Update miner
                                 $Variables.Miners | Where-Object Name -EQ $electedMinerName | Where-Object { [String]$_.Algorithm -eq [String]$SelectedMinerAlgorithms } | ForEach-Object { 
@@ -1275,9 +1274,10 @@ $ContextMenuStrip.Add_ItemClicked(
                             }
                         }
                     }
+                    $Data = $Data | Sort-Object -Unique
                     $ContextMenuStrip.Visible = $false
                     If ($WatchdogTimers) { 
-                        $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
+                        $Message = "$($Data.Count) miner $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
                         Write-Message -Level Verbose "GUI: $Message"
                         $Data += "`n`n$Message"
                     }
@@ -1354,17 +1354,17 @@ $ContextMenuStrip.Add_ItemClicked(
                         Update-TabControl
                     }
                 }
-                "Remove Watchdog" { 
+                "Remove Watchdog Timer" { 
                     $Counter = 0
                     $This.SourceControl.SelectedRows | ForEach-Object { 
                         $SelectedPoolName = $_.Cells[5].Value
                         $SelectedPoolAlgorithm = $_.Cells[0].Value
-                        If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $SelectedPoolName | Where-Object Algorithm -EQ $SelectedPoolAlgorithm )) {
+                        If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object PoolName -EQ $SelectedPoolName | Where-Object Algorithm -EQ $SelectedPoolAlgorithm )) {
+                            # Remove Watchdog timers
+                            $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
                             ForEach ($WatchdogTimer in $WatchdogTimers) { 
-                                # Remove Watchdog timers
-                                $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $Watchdog -notin $WatchdogTimers })
                                 $Data += "`n$($WatchdogTimer.PoolName) {$($WatchdogTimer.Algorithm -join ', ')}"
-                                # Update pool
+                                # Update pools
                                 $Variables.Pools | Where-Object Name -EQ $SelectedPoolName | Where-Object Algorithm -EQ $SelectedPoolAlgorithm | ForEach-Object { 
                                     $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Algorithm@Pool suspended by watchdog" })
                                     $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Pool suspended by watchdog*" })
@@ -1373,9 +1373,10 @@ $ContextMenuStrip.Add_ItemClicked(
                             }
                         }
                     }
+                    $Data = $Data | Sort-Object -Unique
                     $ContextMenuStrip.Visible = $false
                     If ($WatchdogTimers) { 
-                        $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
+                        $Message = "$($Data.Count) pool $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
                         Write-Message -Level Verbose "GUI: $Message"
                         $Data += "`n`n$Message"
                     }

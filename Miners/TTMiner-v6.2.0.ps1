@@ -6,16 +6,16 @@ $Path = ".\Bin\$($Name)\TT-Miner.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.01; MinMemGB = $MinerPools[0].Etchash.DAGSizeGB + 0.42;      MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo ETHASH -coin ETC -intensity 15" } # PhoenixMiner-v6.2c is fastest
-    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.01; MinMemGB = $MinerPools[0].Ethash.DAGSizeGB + 0.42;       MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.2c is fastest
-#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.01; MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB + 0.41; MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.2c is fastest
-    [PSCustomObject]@{ Algorithm = "KawPow";       Fee = 0.01; MinMemGB = $MinerPools[0].KawPow.DAGSizeGB + 0.42;       MinerSet = 1; WarmupTimes = @(60, 30); Arguments = " -algo KAWPOW -intensity 15" } # Trex-v0.26.8 is fastest
-#   [PSCustomObject]@{ Algorithm = "MTP";          Fee = 0.01; MinMemGB = 3;                                            MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo MTP -intensity 21" } # Algo is dead
-    [PSCustomObject]@{ Algorithm = "ProgPowEpic";  Fee = 0.01; MinMemGB = $MinerPools[0].ProgPowEpic.DAGSizeGB + 0.42;  MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOW -coin EPIC" }
-    [PSCustomObject]@{ Algorithm = "ProgPowSero";  Fee = 0.01; MinMemGB = $MinerPools[0].ProgPowSero.DAGSizeGB + 0.42;  MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOW -coin SERO" }
-    [PSCustomObject]@{ Algorithm = "ProgPowVeil";  Fee = 0.01; MinMemGB = $MinerPools[0].ProgPowVeil.DAGSizeGB + 0.42;  MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOW -coin VEIL" }
-#   [PSCustomObject]@{ Algorithm = "ProgPowZano";  Fee = 0.01; MinMemGB = $MinerPools[0].ProgPowZano.DAGSizeGB + 0.42;  MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOWZ -coin ZANO" } # Error 'Error(-1): 'Invalid method'
-    [PSCustomObject]@{ Algorithm = "UbqHash";      Fee = 0.01; MinMemGB = $MinerPools[0].UbqHash.DAGSizeGB + 0.42;      MinerSet = 1; WarmupTimes = @(45, 30); Arguments = " -algo UBQHASH -intensity 15" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";      Fee = 0.01; MinMemGB = $MinerPools[0].Etchash.DAGSizeGB + 0.42;      Minerset = 2; WarmupTimes = @(45, 30); Arguments = " -algo ETHASH -coin ETC -intensity 15" } # PhoenixMiner-v6.2c is fastest
+    [PSCustomObject]@{ Algorithm = "Ethash";       Fee = 0.01; MinMemGB = $MinerPools[0].Ethash.DAGSizeGB + 0.42;       Minerset = 2; WarmupTimes = @(45, 30); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.2c is fastest
+#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; Fee = 0.01; MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB + 0.41; Minerset = 2; WarmupTimes = @(45, 30); Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.2c is fastest
+    [PSCustomObject]@{ Algorithm = "KawPow";       Fee = 0.01; MinMemGB = $MinerPools[0].KawPow.DAGSizeGB + 0.42;       Minerset = 2; WarmupTimes = @(60, 30); Arguments = " -algo KAWPOW -intensity 15" } # Trex-v0.26.8 is fastest
+#   [PSCustomObject]@{ Algorithm = "MTP";          Fee = 0.01; MinMemGB = 3;                                            Minerset = 2; WarmupTimes = @(45, 30); Arguments = " -algo MTP -intensity 21" } # Algorithm is dead
+    [PSCustomObject]@{ Algorithm = "ProgPowEpic";  Fee = 0.01; MinMemGB = $MinerPools[0].ProgPowEpic.DAGSizeGB + 0.42;  Minerset = 2; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOW -coin EPIC" }
+    [PSCustomObject]@{ Algorithm = "ProgPowSero";  Fee = 0.01; MinMemGB = $MinerPools[0].ProgPowSero.DAGSizeGB + 0.42;  Minerset = 2; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOW -coin SERO" }
+    [PSCustomObject]@{ Algorithm = "ProgPowVeil";  Fee = 0.01; MinMemGB = $MinerPools[0].ProgPowVeil.DAGSizeGB + 0.42;  Minerset = 2; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOW -coin VEIL" }
+#   [PSCustomObject]@{ Algorithm = "ProgPowZano";  Fee = 0.01; MinMemGB = $MinerPools[0].ProgPowZano.DAGSizeGB + 0.42;  Minerset = 2; WarmupTimes = @(45, 30); Arguments = " -algo PROGPOWZ -coin ZANO" } # Error 'Error(-1): 'Invalid method'
+    [PSCustomObject]@{ Algorithm = "UbqHash";      Fee = 0.01; MinMemGB = $MinerPools[0].UbqHash.DAGSizeGB + 0.42;      Minerset = 2; WarmupTimes = @(45, 30); Arguments = " -algo UBQHASH -intensity 15" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] }) { 
@@ -46,16 +46,17 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 $Arguments += " -pass $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGB - $MinerPools[0].($_.Algorithm).DAGSizeGB))" })"
 
                 [PSCustomObject]@{ 
-                    Name        = $Miner_Name
-                    DeviceNames = $AvailableMiner_Devices.Name
-                    Type        = ($AvailableMiner_Devices.Type | Select-Object -unique)
-                    Path        = $Path
-                    Arguments   = ("$($Arguments) -PRT 1 -PRS 0 -api-bind 127.0.0.1:$($MinerAPIPort) -device $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     Algorithms  = @($_.Algorithm)
                     API         = "EthMiner"
-                    Port        = $MinerAPIPort
-                    URI         = $Uri
+                    Arguments   = ("$($Arguments) -PRT 1 -PRS 0 -api-bind 127.0.0.1:$($MinerAPIPort) -device $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
+                    DeviceNames = $AvailableMiner_Devices.Name
                     Fee         = $_.Fee
+                    MinerSet    = $_.MinerSet
+                    Name        = $Miner_Name
+                    Path        = $Path
+                    Port        = $MinerAPIPort
+                    Type        = ($AvailableMiner_Devices.Type | Select-Object -Unique)
+                    URI         = $Uri
                     WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
                 }
             }

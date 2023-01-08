@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.2.3.2
-Version date:   05 January 2023
+Version:        4.2.3.3
+Version date:   08 January 2023
 #>
 
 using module .\Include.psm1
@@ -428,12 +428,13 @@ Do {
                             $_.CoinName = Get-CoinName $_.Currency
                             $_.Fee = If ($Config.IgnorePoolFee -or $_.Fee -lt 0 -or $_.Fee -gt 1) { 0 } Else { $_.Fee }
                             $Factor = $_.EarningsAdjustmentFactor * (1 - $_.Fee)
-                            $_.Price = $_.Price * $Factor
+                            $_.Price = *= $Factor
                             $_.Price_Bias = $_.Price * $_.Accuracy
-                            $_.StablePrice = $_.StablePrice * $Factor
+                            $_.StablePrice *= $Factor
                             $NewPools += $_
                         }
                         $NewPoolsJob | Remove-Job
+                        [System.GC]::Collect()
                     }
                     Else { 
                         $Variables.PoolName | ForEach-Object { 
@@ -444,9 +445,9 @@ Do {
                             $_.CoinName = Get-CoinName $_.Currency
                             $_.Fee = If ($Config.IgnorePoolFee -or $_.Fee -lt 0 -or $_.Fee -gt 1) { 0 } Else { $_.Fee }
                             $Factor = $_.EarningsAdjustmentFactor * (1 - $_.Fee)
-                            $_.Price = $_.Price * $Factor
+                            $_.Price *= $Factor
                             $_.Price_Bias = $_.Price * $_.Accuracy
-                            $_.StablePrice = $_.StablePrice * $Factor
+                            $_.StablePrice *= $Factor
                             $NewPools += $_
                         }
                     }
@@ -475,7 +476,7 @@ Do {
 
                         $Variables.PoolsCount = $Pools.Count
 
-                        $ComparePools | ForEach-Object { $_.PSObject.Properties.Remove('SideIndicator') }
+                        $ComparePools | ForEach-Object { $_.PSObject.Properties.Remove("SideIndicator") }
 
                         # Update existing pools
                         $Pools | ForEach-Object { 
@@ -508,7 +509,7 @@ Do {
                                 $_.Epoch       = $Variables.DAGdata.Currency.($_.Currency).Epoch
                                 $_.DAGSizeGB   = $Variables.DAGdata.Currency.($_.Currency).DAGsize / 1GB 
                             }
-                            ElseIf ($_.Algorithm -in $Variables.DAGdata.Algorithm.Keys) { 
+                            ElseIf ($Variables.DAGdata.Algorithm.($_.Algorithm).BlockHeight) {
                                 $_.BlockHeight = $Variables.DAGdata.Algorithm.($_.Algorithm).BlockHeight
                                 $_.Epoch       = $Variables.DAGdata.Algorithm.($_.Algorithm).Epoch
                                 $_.DAGSizeGB   = $Variables.DAGdata.Algorithm.($_.Algorithm).DAGsize / 1GB
@@ -540,7 +541,7 @@ Do {
                         $Pools | Where-Object Price -EQ [Double]::NaN | ForEach-Object { $_.Reasons += "No price data" }
                         # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than second highest price of all other pools with same algorithm; NiceHash & MiningPoolHub are always right
                         If ($Config.UnrealPoolPriceFactor -gt 1 -and ($Pools.BaseName | Sort-Object -Unique).Count -gt 1) { 
-                            $Pools | Where-Object Price_Bias -GT 0 | Group-Object -Property Algorithm | Where-Object { $_.Count -ge 2 } | ForEach-Object { 
+                            $Pools | Where-Object Price_Bias -gt 0 | Group-Object -Property Algorithm | Where-Object { $_.Count -ge 2 } | ForEach-Object { 
                                 If ($PriceThreshold = @($_.Group.Price_Bias | Sort-Object -Unique)[-2] * $Config.UnrealPoolPriceFactor) { 
                                     $_.Group | Where-Object { $_.BaseName -notmatch "NiceHash|MiningPoolHub" } | Where-Object Price_Bias -GT $PriceThreshold | ForEach-Object { $_.Reasons += "Unreal price ($($Config.UnrealPoolPriceFactor)x higher than second highest price)" }
                                 }
@@ -677,10 +678,10 @@ Do {
                         $CompareMiners = Compare-Object -PassThru $Miners $NewMiners -Property Name, Algorithms -IncludeEqual
                         # Properties that need to be set only once and which are not dependent on any config variables
                         $CompareMiners | Where-Object SideIndicator -EQ "=>" | ForEach-Object { 
-                            $_.BaseName = $_.Name -split '-' | Select-Object -index 0
+                            $_.BaseName = $_.Name -split '-' | Select-Object -Index 0
                             $_.Devices  = [Device[]]($Variables.Devices | Where-Object Name -in $_.DeviceNames)
                             $_.Path     = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Path)
-                            $_.Version  = $_.Name -split '-' | Select-Object -index 1
+                            $_.Version  = $_.Name -split '-' | Select-Object -Index 1
                         }
                         $Miners = $CompareMiners | Where-Object SideIndicator -NE "<="
                     }
@@ -700,15 +701,15 @@ Do {
                                 $_.DeviceNames = $Miner.DeviceNames
                                 $_.Devices = [Device[]]($Variables.Devices | Where-Object Name -in $Miner.DeviceNames)
                                 $_.Port = $Miner.Port
-                                $_.WarmupTimes = $Miner.WarmupTimes
                                 $_.Workers = $Miner.Workers
                             }
                             $_.CommandLine = $Miner.GetCommandLine().Replace("$(Convert-Path '.\')\", '')
                             $_.PrerequisitePath = $Miner.PrerequisitePath
                             $_.PrerequisiteURI = $Miner.PrerequisiteURI
+                            $_.WarmupTimes = $Miner.WarmupTimes
                         }
                     }
-                    $_.Refresh($Variables.PowerCostBTCperW, $Variables.CalculatePowerCost) # Needs to be done after ReadPowerUsage evaluation
+                    $_.Refresh($Variables.PowerCostBTCperW, $Variables.CalculatePowerCost)
                     $_.WindowStyle = If ($Config.MinerWindowStyleNormalWhenBenchmarking -and $_.Benchmark) { "normal" } Else { $Config.MinerWindowStyle }
                 }
 
@@ -812,7 +813,8 @@ Do {
                     $Miners | ForEach-Object { $_.$Bias += $SmallestBias }
 
                     # Add running miner bonus
-                    $Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { $_.$Bias *= (1 + $Config.MinerSwitchingThreshold / 100) }
+                    $RunningMinerBonusFactor = (1 + $Config.MinerSwitchingThreshold / 100)
+                    $Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { $_.$Bias *= $RunningMinerBonusFactor}
 
                     # Get best miners per algorithm and device
                     $Variables.MinersMostProfitable = @($Miners | Where-Object Available -EQ $true | Group-Object { [String]$_.DeviceNames }, { [String]$_.Algorithms } | ForEach-Object { $_.Group | Sort-Object -Descending -Property Benchmark, MeasurePowerUsage, KeepRunning, Prioritize, $Bias, Activated, @{ Expression = { $_.WarmupTimes[1] }; Descending = $true }, @{ Expression = { $_.DataCollectInterval }; Descending = $true }, Name, @{ Expression = { [String]($_.Algorithms) }; Descending = $false } | Select-Object -First 1 | ForEach-Object { $_.MostProfitable = $true; $_ } })
@@ -835,7 +837,7 @@ Do {
                     $Variables.MinersBest_Combo = @(($Variables.MinersBest_Combos | Sort-Object -Descending { @($_.Combination | Where-Object { [Double]::IsNaN($_.$Bias) }).Count }, { ($_.Combination | Measure-Object $Bias -Sum).Sum }, { ($_.Combination | Where-Object { $_.$Bias -ne 0 } | Measure-Object).Count } | Select-Object -First 1).Combination)
 
                     # Revert running miner bonus
-                    $Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { $_.$Bias /= (1 + $Config.MinerSwitchingThreshold / 100) }
+                    $Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { $_.$Bias /= $RunningMinerBonusFactor }
 
                     # Hack part 2: reverse temporarily forced positive bias
                     $Miners | ForEach-Object { $_.$Bias -= $SmallestBias }
@@ -1245,7 +1247,7 @@ Do {
             # - all benchmarking miners have collected enough samples
             # - WarmupTimes[0] is reached (no readout from miner)
             # - Interval time is over
-        }  While (-not $Variables.EndCycleMessage -and $Variables.NewMiningStatus -eq "Running" -and $Variables.IdleRunspace.MiningStatus -ne "Idle" -and ((Get-Date).ToUniversalTime() -le $Variables.EndCycleTime -or $Variables.BenchmarkingOrMeasuringMiners))
+        } While (-not $Variables.EndCycleMessage -and $Variables.NewMiningStatus -eq "Running" -and $Variables.IdleRunspace.MiningStatus -ne "Idle" -and ((Get-Date).ToUniversalTime() -le $Variables.EndCycleTime -or $Variables.BenchmarkingOrMeasuringMiners))
 
         # For debug only
         While ($Variables.SuspendCycle) { Start-Sleep -Seconds 10 }

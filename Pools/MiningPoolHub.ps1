@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.2.3.2
-Version date:   05 January 2023
+Version:        4.2.3.3
+Version date:   08 January 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -37,7 +37,7 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PoolConfig = $Variables.PoolsConfig.$Name
 
 $Headers = @{ "Cache-Control" = "no-cache" }
-$Useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"
+# $Useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"
 
 If ($PoolConfig.UserName) { 
     If ($PoolVariant -match "Coins$") { 

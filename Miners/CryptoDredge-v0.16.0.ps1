@@ -10,14 +10,14 @@ $Path = ".\Bin\$($Name)\CryptoDredge.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Allium";    Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @("Other"); Arguments = " --algo allium --intensity 8" } # CryptoDredge v0.26.0 is fastest
-    [PSCustomObject]@{ Algorithm = "Exosis";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo exosis --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Dedal";     Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo dedal --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "HMQ1725";   Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(60, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo hmq1725 --intensity 8" } # CryptoDredge v0.26.0 is fastest
-    [PSCustomObject]@{ Algorithm = "Neoscrypt"; Fee = 0.01; MinMemGB = 2; MinerSet = 1; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo neoscrypt --intensity 6" } # CryptoDredge v0.26.0 is fastest
-    [PSCustomObject]@{ Algorithm = "Phi";       Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo phi --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Phi2";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo phi2 --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Pipe";      Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo pipe --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Allium";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @("Other"); Arguments = " --algo allium --intensity 8" } # FPGA
+    [PSCustomObject]@{ Algorithm = "Exosis";    Fee = 0.01; MinMemGB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo exosis --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Dedal";     Fee = 0.01; MinMemGB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo dedal --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "HMQ1725";   Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo hmq1725 --intensity 8" } # CryptoDredge v0.26.0 is fastest
+    [PSCustomObject]@{ Algorithm = "Neoscrypt"; Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo neoscrypt --intensity 6" } # FPGA
+    [PSCustomObject]@{ Algorithm = "Phi";       Fee = 0.01; MinMemGB = 2; Minerset = 2; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo phi --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Phi2";      Fee = 0.01; MinMemGB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo phi2 --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Pipe";      Fee = 0.01; MinMemGB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo pipe --intensity 8" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] }) { 
@@ -44,16 +44,17 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 $Arguments += " --pass $($MinerPools[0].($_.Algorithm).Pass)"
 
                 [PSCustomObject]@{ 
-                    Name        = $Miner_Name
-                    DeviceNames = $AvailableMiner_Devices.Name
-                    Type        = ($AvailableMiner_Devices.Type | Select-Object -unique)
-                    Path        = $Path
-                    Arguments   = ("$($Arguments) --cpu-priority $($Config.GPUMinerProcessPriority + 2) --no-watchdog --no-crashreport --retries 1 --retry-pause 1 --api-type ccminer-tcp --api-bind=127.0.0.1:$($MinerAPIPort) --device $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     Algorithms  = @($_.Algorithm)
                     API         = "Ccminer"
-                    Port        = $MinerAPIPort
-                    URI         = $Uri
+                    Arguments   = ("$($Arguments) --cpu-priority $($Config.GPUMinerProcessPriority + 2) --no-watchdog --no-crashreport --retries 1 --retry-pause 1 --api-type ccminer-tcp --api-bind=127.0.0.1:$($MinerAPIPort) --device $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
+                    DeviceNames = $AvailableMiner_Devices.Name
                     Fee         = $_.Fee # Dev fee
+                    MinerSet    = $_.MinerSet
+                    Name        = $Miner_Name
+                    Path        = $Path
+                    Port        = $MinerAPIPort
+                    Type        = ($AvailableMiner_Devices.Type | Select-Object -Unique)
+                    URI         = $Uri
                     WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
                 }
             }

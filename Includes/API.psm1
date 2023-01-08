@@ -18,13 +18,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.2.3.2
-Version date:   05 January 2023
+Version:        4.2.3.3
+Version date:   08 January 2023
 #>
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.5.0.1"
+    $APIVersion = "0.5.0.3"
 
     If ($Variables.APIRunspace.AsyncObject.IsCompleted -eq $true -or $Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
         Stop-APIServer
@@ -580,32 +580,33 @@ Function Start-APIServer {
                             }
                             "/functions/watchdogtimers/remove" { 
                                 ForEach ($Miner in ($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
-                                    If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object { $_.Algorithm -eq $Miner.Algorithms })) {
+                                    If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object { $_.Algorithm -in $Miner.Algorithms })) {
                                         # Remove Watchdog timers
                                         $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
-                                        $Data += "$($Miner.MinerName) {$($Miner.Algorithm -join ', ')}`n"
 
                                         # Update miner
-                                        $Variables.Miners | Where-Object Name -EQ $Miner.Name | Where-Object Algorithm -EQ $Miner.Algorithm | ForEach-Object { 
+                                        $Variables.Miners | Where-Object Name -EQ $Miner.Name | Where-Object { [String]$_.Algorithms -eq [String]$Miner.Algorithm } | ForEach-Object { 
+                                            $Data += "$($Miner.Name) {$($Miner.Algorithms -join ', ')}`n"
                                             $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Miner suspended by watchdog *" })
                                             If (-not $_.Reasons) { $_.Available = $true }
                                         }
                                     }
                                 }
                                 ForEach ($Pool in ($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
-                                    If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object PoolName -EQ $Pool.Name | Where-Object { $_.Algorithm -EQ $Pool.Algorithm })) {
+                                    If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object PoolName -EQ $Pool.Name | Where-Object Algorithm -EQ $Pool.Algorithm)) {
                                         # Remove Watchdog timers
                                         $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
-                                        $Data += "$($Pool.MinerName) {$($Pool.Algorithm)}`n"
 
                                         # Update pool
                                         $Variables.Pools | Where-Object Name -EQ $Pool.Name | Where-Object Algorithm -EQ $Pool.Algorithm | ForEach-Object { 
+                                            $Data += "$($Pool.Name) {$($Pool.Algorithm)}`n"
                                             $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Algorithm@Pool suspended by watchdog" })
                                             $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Pool suspended by watchdog*" })
                                             If (-not $_.Reasons) { $_.Available = $true }
                                         }
                                     }
                                 }
+                                $Data = $Data | Sort-Object -Unique
                                 If ($WatchdogTimers) { 
                                     $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
                                     Write-Message -Level Verbose "Web GUI: $Message"
@@ -691,7 +692,7 @@ Function Start-APIServer {
                                 $Data = Get-Content -Path ".\Data\CurrencyAlgorithm.json"
                                 Break
                             }
-                                "/dagdata" { 
+                            "/dagdata" { 
                                 $Data = ConvertTo-Json -Depth 10 ($Variables.DAGdata | Select-Object)
                                 Break
                             }

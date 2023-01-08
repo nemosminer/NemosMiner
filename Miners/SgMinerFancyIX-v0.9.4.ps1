@@ -6,9 +6,9 @@ $Path = ".\Bin\$($Name)\sgminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "0x10";          MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 0); ExcludePool = @();             Arguments = " --scan-time 1 --gpu-threads 1 --worksize 256 --intensity 17 --kernel chainox" }
-    [PSCustomObject]@{ Algorithm = "HeavyHash";     MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 0); ExcludePool = @();             Arguments = " --scan-time 1 --gpu-threads 1 --worksize 256 --intensity 23 --kernel heavyhash" }
-    [PSCustomObject]@{ Algorithm = "Neoscrypt";     MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 0); ExcludePool = @("ProHashing"); Arguments = " --scan-time 1 --gpu-threads 1 --worksize 256 --intensity 17 --kernel neoscrypt" }
+    [PSCustomObject]@{ Algorithm = "0x10";          MinMemGB = 2; Minerset = 2; WarmupTimes = @(60, 0); ExcludePool = @();             Arguments = " --scan-time 1 --gpu-threads 1 --worksize 256 --intensity 17 --kernel chainox" }
+    [PSCustomObject]@{ Algorithm = "HeavyHash";     MinMemGB = 2; Minerset = 1; WarmupTimes = @(60, 0); ExcludePool = @();             Arguments = " --scan-time 1 --gpu-threads 1 --worksize 256 --intensity 23 --kernel heavyhash" } # FPGA
+    [PSCustomObject]@{ Algorithm = "Neoscrypt";     MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 0); ExcludePool = @("ProHashing"); Arguments = " --scan-time 1 --gpu-threads 1 --worksize 256 --intensity 17 --kernel neoscrypt" } # FPGA
     [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 0); ExcludePool = @();             Arguments = " --scan-time 1 --gpu-threads 1 --worksize 256 --intensity 17 --kernel neoscrypt-xaya" }
     [PSCustomObject]@{ Algorithm = "YescryptR16";   MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 0); ExcludePool = @();             Arguments = " --scan-time 1 --gpu-threads 1 --worksize 256 --intensity 20 --pool-nfactor 100 --kernel yescryptr16" }
 )
@@ -31,14 +31,15 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                 [PSCustomObject]@{ 
-                    Name        = $Miner_Name
-                    DeviceNames = $AvailableMiner_Devices.Name
-                    Type        = ($AvailableMiner_Devices.Type | Select-Object -unique)
-                    Path        = $Path
-                    Arguments   = ("$($Arguments) --url stratum+tcp://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts[0]) --user $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" }) --pass $($MinerPools[0].($_.Algorithm).Pass) --api-listen --api-port $MinerAPIPort --gpu-platform $($AvailableMiner_Devices.PlatformId | Sort-Object -Unique) --device $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     Algorithms  = @($_.Algorithm)
                     API         = "Xgminer"
+                    Arguments   = ("$($Arguments) --url stratum+tcp://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts[0]) --user $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" }) --pass $($MinerPools[0].($_.Algorithm).Pass) --api-listen --api-port $MinerAPIPort --gpu-platform $($AvailableMiner_Devices.PlatformId | Sort-Object -Unique) --device $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
+                    DeviceNames = $AvailableMiner_Devices.Name
+                    MinerSet    = $_.MinerSet
+                    Name        = $Miner_Name
+                    Path        = $Path
                     Port        = $MinerAPIPort
+                    Type        = ($AvailableMiner_Devices.Type | Select-Object -Unique)
                     URI         = $Uri
                     WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
                 }

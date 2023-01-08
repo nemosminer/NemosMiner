@@ -6,12 +6,12 @@ $Path = ".\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Lyra2RE3";    MinMemGB = 3; MinerSet = 0; WarmupTimes = @(30, 0); ExcludePool = @("MiningPoolHub"); Arguments = " --algo lyra2v3 --intensity 24" }
-#   [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGB = 3; MinerSet = 0; WarmupTimes = @(30, 0); ExcludePool = @();                Arguments = " --algo lyra2z330 --intensity 13.2" } #only runs on single gpu's
-#   [PSCustomObject]@{ Algorithm = "Yescrypt";    MinMemGB = 2; MinerSet = 1; WarmupTimes = @(30, 0); ExcludePool = @();                Arguments = " --algo yescrypt" } # bad shares, CcminerLyra2z330-v8.21r9 is fastest
+    [PSCustomObject]@{ Algorithm = "Lyra2RE3";    MinMemGB = 3; Minerset = 2; WarmupTimes = @(30, 0); ExcludePool = @("MiningPoolHub"); Arguments = " --algo lyra2v3 --intensity 24" }
+#   [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGB = 3; Minerset = 2; WarmupTimes = @(30, 0); ExcludePool = @();                Arguments = " --algo lyra2z330 --intensity 13.2" } #only runs on single gpu's
+#   [PSCustomObject]@{ Algorithm = "Yescrypt";    MinMemGB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludePool = @();                Arguments = " --algo yescrypt" } # bad shares, CcminerLyra2z330-v8.21r9 is fastest
     [PSCustomObject]@{ Algorithm = "YescryptR16"; MinMemGB = 3; MinerSet = 0; WarmupTimes = @(30, 0); ExcludePool = @();                Arguments = " --algo yescryptr16 --intensity 13.2" }
-#   [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); ExcludePool = @();                Arguments = " --algo yescryptr32 --intensity 12.23" } # Out of memory even with 6GB
-    [PSCustomObject]@{ Algorithm = "YescryptR8";  MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); ExcludePool = @();                Arguments = " --algo yescryptr8 --intensity 13.2" }
+#   [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludePool = @();                Arguments = " --algo yescryptr32 --intensity 12.23" } # Out of memory even with 6GB
+    [PSCustomObject]@{ Algorithm = "YescryptR8";  MinMemGB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludePool = @();                Arguments = " --algo yescryptr8 --intensity 13.2" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] }) { 
@@ -36,14 +36,15 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo", "timeout") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                 [PSCustomObject]@{ 
-                    Name        = $Miner_Name
-                    DeviceNames = $AvailableMiner_Devices.Name
-                    Type        = ($AvailableMiner_Devices.Type | Select-Object -unique)
-                    Path        = $Path
-                    Arguments   = ("$($Arguments) --url stratum+tcp://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts[0]) --user $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" }) --pass $($MinerPools[0].($_.Algorithm).Pass) --statsavg 5 --timeout 50000 --retry-pause 1 --api-bind $MinerAPIPort --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     Algorithms  = @($_.Algorithm)
                     API         = "Ccminer"
+                    Arguments   = ("$($Arguments) --url stratum+tcp://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts[0]) --user $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" }) --pass $($MinerPools[0].($_.Algorithm).Pass) --statsavg 5 --timeout 50000 --retry-pause 1 --api-bind $MinerAPIPort --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
+                    DeviceNames = $AvailableMiner_Devices.Name
+                    MinerSet    = $_.MinerSet
+                    Name        = $Miner_Name
+                    Path        = $Path
                     Port        = $MinerAPIPort
+                    Type        = ($AvailableMiner_Devices.Type | Select-Object -Unique)
                     URI         = $Uri
                     WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
                 }

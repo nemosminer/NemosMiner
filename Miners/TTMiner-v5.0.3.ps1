@@ -6,16 +6,16 @@ $Path = ".\Bin\$($Name)\TT-Miner.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = "Eaglesong";    MinMemGB = 2;                                            MinerSet = 0; WarmupTimes = @(30, 0);  ExcludePool = @();             Arguments = " -algo EAGLESONG" } # ASIC
-#   [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = $MinerPools[0].Ethash.DAGSizeGB + 0.62;       MinerSet = 0; WarmupTimes = @(45, 30); ExcludePool = @();             Arguments = " -algo ETHASH -intensity 15" } # Epoch -gt 384
-#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB + 0.61; MinerSet = 0; WarmupTimes = @(45, 30); ExcludePool = @();             Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-#   [PSCustomObject]@{ Algorithm = "KawPow";       MinMemGB = $MinerPools[0].KawPow.DAGSizeGB + 0.62;       MinerSet = 0; WarmupTimes = @(40, 30); ExcludePool = @("ProHashing"); Arguments = " -algo KAWPOW" } # Does not work on most pools
-    [PSCustomObject]@{ Algorithm = "Lyra2RE3";     MinMemGB = 2;                                            MinerSet = 0; WarmupTimes = @(30, 0);  ExcludePool = @();             Arguments = " -algo LYRA2V3" }
-#   [PSCustomObject]@{ Algorithm = "MTP";          MinMemGB = 3;                                            MinerSet = 0; WarmupTimes = @(30, 0);  ExcludePool = @();             Arguments = " -algo MTP -intensity 21" } # Algo is dead
-    [PSCustomObject]@{ Algorithm = "ProgPowEpic";  MinMemGB = $MinerPools[0].ProgPowEpic.DAGSizeGB + 0.62;  MinerSet = 1; WarmupTimes = @(45, 30); ExcludePool = @();             Arguments = " -algo PROGPOW -coin EPIC" }
-    [PSCustomObject]@{ Algorithm = "ProgPowSero";  MinMemGB = $MinerPools[0].ProgPowSero.DAGSizeGB + 0.62;  MinerSet = 1; WarmupTimes = @(45, 30); ExcludePool = @();             Arguments = " -algo PROGPOW -coin SERO" }
-    [PSCustomObject]@{ Algorithm = "ProgPowVeil";  MinMemGB = $MinerPools[0].ProgPowVeil.DAGSizeGB + 0.62;  MinerSet = 1; WarmupTimes = @(45, 30); ExcludePool = @();             Arguments = " -algo PROGPOW -coin VEIL" }
-    [PSCustomObject]@{ Algorithm = "ProgPowZano";  MinMemGB = $MinerPools[0].ProgPowZano.DAGSizeGB + 0.62;  MinerSet = 1; WarmupTimes = @(60, 30); ExcludePool = @();             Arguments = " -algo PROGPOWZ -coin ZANO" }
+    [PSCustomObject]@{ Algorithm = "Eaglesong";    MinMemGB = 2;                                            Minerset = 3; WarmupTimes = @(30, 0);  ExcludePool = @();             Arguments = " -algo EAGLESONG" } # ASIC
+    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGB = $MinerPools[0].Ethash.DAGSizeGB + 0.62;       Minerset = 2; WarmupTimes = @(45, 30); ExcludePool = @();             Arguments = " -algo ETHASH -intensity 15" }
+#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB + 0.61; Minerset = 2; WarmupTimes = @(45, 30); ExcludePool = @();             Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+#   [PSCustomObject]@{ Algorithm = "KawPow";       MinMemGB = $MinerPools[0].KawPow.DAGSizeGB + 0.62;       Minerset = 2; WarmupTimes = @(40, 30); ExcludePool = @("ProHashing"); Arguments = " -algo KAWPOW" } # Does not work on most pools
+    [PSCustomObject]@{ Algorithm = "Lyra2RE3";     MinMemGB = 2;                                            Minerset = 2; WarmupTimes = @(30, 0);  ExcludePool = @();             Arguments = " -algo LYRA2V3" }
+    [PSCustomObject]@{ Algorithm = "MTP";          MinMemGB = 3;                                            Minerset = 2; WarmupTimes = @(30, 0);  ExcludePool = @();             Arguments = " -algo MTP -intensity 21" } # Algorithm is dead
+    [PSCustomObject]@{ Algorithm = "ProgPowEpic";  MinMemGB = $MinerPools[0].ProgPowEpic.DAGSizeGB + 0.62;  Minerset = 2; WarmupTimes = @(45, 30); ExcludePool = @();             Arguments = " -algo PROGPOW -coin EPIC" }
+    [PSCustomObject]@{ Algorithm = "ProgPowSero";  MinMemGB = $MinerPools[0].ProgPowSero.DAGSizeGB + 0.62;  Minerset = 2; WarmupTimes = @(45, 30); ExcludePool = @();             Arguments = " -algo PROGPOW -coin SERO" }
+    [PSCustomObject]@{ Algorithm = "ProgPowVeil";  MinMemGB = $MinerPools[0].ProgPowVeil.DAGSizeGB + 0.62;  Minerset = 2; WarmupTimes = @(45, 30); ExcludePool = @();             Arguments = " -algo PROGPOW -coin VEIL" }
+    [PSCustomObject]@{ Algorithm = "ProgPowZano";  MinMemGB = $MinerPools[0].ProgPowZano.DAGSizeGB + 0.62;  MinerSet = 0; WarmupTimes = @(60, 30); ExcludePool = @();             Arguments = " -algo PROGPOWZ -coin ZANO" }
     [PSCustomObject]@{ Algorithm = "UbqHash";      MinMemGB = $MinerPools[0].UbqHash.DAGSizeGB + 0.62;      MinerSet = 0; WarmupTimes = @(45, 30); ExcludePool = @();             Arguments = " -algo UBQHASH -intensity 15" }
 )
 
@@ -26,7 +26,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         $Miner_Devices = $Devices | Where-Object Model -EQ $_.Model
         $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-        $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePool } | ForEach-Object { 
+        $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePool } | Where-Object { $_.Algorithm -ne "Ethash" -or $MinerPools[0].Ethash.Epoch -le 384 <# Miner supports Ethash up to epoch 384 #> } | ForEach-Object { 
 
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $_.MinMemGB) { 
 
@@ -48,16 +48,17 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 $Arguments += " -pass $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGB - $MinerPools[0].($_.Algorithm).DAGSizeGB))" })"
 
                 [PSCustomObject]@{ 
-                    Name        = $Miner_Name
-                    DeviceNames = $AvailableMiner_Devices.Name
-                    Type        = ($AvailableMiner_Devices.Type | Select-Object -unique)
-                    Path        = $Path
-                    Arguments   = ("$($Arguments) -PRT 1 -PRS 0 -api-bind 127.0.0.1:$($MinerAPIPort) -device $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     Algorithms  = @($_.Algorithm)
                     API         = "EthMiner"
-                    Port        = $MinerAPIPort
-                    URI         = $Uri
+                    Arguments   = ("$($Arguments) -PRT 1 -PRS 0 -api-bind 127.0.0.1:$($MinerAPIPort) -device $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
+                    DeviceNames = $AvailableMiner_Devices.Name
                     Fee         = $_.Fee
+                    MinerSet    = $_.MinerSet
+                    Name        = $Miner_Name
+                    Path        = $Path
+                    Port        = $MinerAPIPort
+                    Type        = ($AvailableMiner_Devices.Type | Select-Object -Unique)
+                    URI         = $Uri
                     WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
                 }
             }
