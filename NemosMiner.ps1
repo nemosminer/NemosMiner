@@ -2,7 +2,7 @@ using module .\Includes\Include.psm1
 using module .\Includes\API.psm1
 
 <#
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.2.3.3
-Version date:   08 January 2023
+Version:        4.2.3.4
+Version date:   14 January 2023
 #>
 
 [CmdletBinding()]
@@ -291,7 +291,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.2.3.3"
+    Version      = [System.Version]"4.2.3.4"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -600,11 +600,11 @@ Function MainLoop {
 
         $Variables.RestartCycle = $false
 
-        If ($Variables.NewMiningStatus -ne $Variables.MiningStatus) { 
+        If ($Variables.NewMiningStatus -ne $Variables.MiningStatus -or (Compare-Object $Config.PoolName $Variables.PoolName)) { 
 
             Switch ($Variables.NewMiningStatus) { 
                 "Idle" { 
-                    If ($Variables.MiningStatus) { 
+                    If ($Variables.NewMiningStatus -ne $Variables.MiningStatus) { 
                         $Variables.Summary = "'Stop mining' button clicked.<br>Stopping $($Variables.Branding.ProductLabel)..."
                         Write-Host "`n"
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
@@ -618,17 +618,19 @@ Function MainLoop {
                     If ($LegacyGUIform) { 
                         $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) is stopped"
                         $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Red
+                        $LabelMiningSummary.ForeColor = [System.Drawing.Color]::Black
+                        $LabelMiningSummary.Text = "Click the 'Start mining' button to make money."
                         $ButtonPause.Enabled = $true
                         $ButtonStart.Enabled = $true
                         $ButtonStop.Enabled = $false
                     }
 
-                    $Variables.Summary = "$($Variables.Branding.ProductLabel) is idle.<br>Click the 'Start mining' button to make money."
+                    $Variables.Summary = "$($Variables.Branding.ProductLabel) is stopped.<br>Click the 'Start mining' button to make money."
                     Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                     Write-Host "`n"
                 }
                 "Paused" { 
-                    If ($Variables.MiningStatus) { 
+                    If ($Variables.NewMiningStatus -ne $Variables.MiningStatus) { 
                         $Variables.Summary = "'Pause mining' button pressed.<br>Pausing $($Variables.Branding.ProductLabel)..."
                         Write-Host "`n"
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
@@ -636,13 +638,16 @@ Function MainLoop {
                     Stop-Mining
                     Stop-IdleDetection
                     Initialize-Application
+                    Stop-Brain @($Variables.Brains.Keys | Where-Object { $_ -notin (Get-PoolBaseName $Config.PoolName) })
+                    Start-Brain @(Get-PoolBaseName $Config.PoolName)
                     Start-BalancesTracker
-                    Start-Brain @(Get-PoolBaseName $(If ($Variables.NiceHashWalletIsInternal) { $Config.PoolName -replace "NiceHash", "NiceHash Internal" } Else { $Config.PoolName -replace "NiceHash", "NiceHash External" }))
                     Update-MonitoringData | Out-Null
 
                     If ($LegacyGUIform) { 
                         $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) is paused"
                         $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Blue
+                        $LabelMiningSummary.ForeColor = [System.Drawing.Color]::Black
+                        $LabelMiningSummary.Text = "Click the 'Start mining' button to make money."
                         $ButtonPause.Enabled = $false
                         $ButtonStart.Enabled = $true
                         $ButtonStop.Enabled = $true
@@ -653,21 +658,22 @@ Function MainLoop {
                     Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                 }
                 "Running" { 
-                    If ($Variables.MiningStatus) { 
+                    If ($Variables.NewMiningStatus -ne $Variables.MiningStatus) { 
                         $Variables.Summary = "'Start mining' button clicked.<br>Starting $($Variables.Branding.ProductLabel)..."
                         Write-Host "`n"
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                     }
-
-                    Initialize-Application
-                    Start-BalancesTracker
-                    Start-Brain @(Get-PoolBaseName $(If ($Variables.NiceHashWalletIsInternal) { $Config.PoolName -replace "NiceHash", "NiceHash Internal" } Else { $Config.PoolName -replace "NiceHash", "NiceHash External" }))
                     Stop-Mining
+                    Initialize-Application
+                    Start-Brain @(Get-PoolBaseName $Config.PoolName)
+                    Start-BalancesTracker
                     Start-Mining
 
                     If ($LegacyGUIform) { 
                         $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) is running"
                         $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
+                        $LabelMiningSummary.ForeColor = [System.Drawing.Color]::Black
+                        $LabelMiningSummary.Text = "Starting mining processes..."
                         $ButtonPause.Enabled = $true
                         $ButtonStart.Enabled = $false
                         $ButtonStop.Enabled = $true
@@ -833,10 +839,10 @@ Function MainLoop {
         # Refresh selected tab
         Update-TabControl
 
-        $TextBoxSummary.Lines = @(($Variables.Summary -replace "<br>", "`n" -replace "Power Cost", "`nPower Cost" -replace " / ", "/" -replace "&ensp;", " " -replace "   ", "  ") -split "`n")
+        $LabelMiningSummary.Text = $Variables.Summary -replace "<br>", "`n" -replace "Power Cost", "`nPower Cost" -replace " / ", "/" -replace "&ensp;", " " -replace "   ", "  "
 
-        If ([Double]::IsNaN($Variables.MiningEarning)) { $TextBoxSummary.ForeColor = [System.Drawing.Color]::Black }
-        ElseIf ($Variables.MiningProfit -ge 0 -or ($Variables.MiningEarning -ge 0 -and [Double]::IsNaN($Variables.MiningProfit))) { $TextBoxSummary.ForeColor = [System.Drawing.Color]::Green } Else { $TextBoxSummary.ForeColor = [System.Drawing.Color]::Red }
+        If ([Double]::IsNaN($Variables.MiningEarning)) { $LabelMiningSummary.ForeColor = [System.Drawing.Color]::Black }
+        ElseIf ($Variables.MiningProfit -ge 0 -or ($Variables.MiningEarning -ge 0 -and [Double]::IsNaN($Variables.MiningProfit))) { $LabelMiningSummary.ForeColor = [System.Drawing.Color]::Green } Else { $LabelMiningSummary.ForeColor = [System.Drawing.Color]::Red }
 
         If ($Variables.Timer) { Clear-Host }
 
@@ -935,7 +941,7 @@ Function MainLoop {
                 @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
                 @{ Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }
                 @{ Label = "Name"; Expression = { $_.Name } }
-                @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
+                @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameter $_.Arguments)" } }
             )
             $Variables.MinersBest_Combo | Sort-Object DeviceName | Format-Table $Miner_Table -Wrap | Out-Host
         }
@@ -951,7 +957,7 @@ Function MainLoop {
                     @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
                     @{ Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }
                     @{ Label = "Name"; Expression = { $_.Name } }
-                    @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
+                    @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameter $_.Arguments)" } }
                 )
                 $ProcessesIdle | Sort-Object { $_.GetActiveLast } -Descending | Select-Object -First ($MinersDeviceGroup.Count * 3) | Format-Table $Miner_Table -AutoSize | Out-Host
             }
@@ -966,7 +972,7 @@ Function MainLoop {
                     @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
                     @{ Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }
                     @{ Label = "Name"; Expression = { $_.Name } }
-                    @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameters $_.Arguments)" } }
+                    @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameter $_.Arguments)" } }
                 )
                 $ProcessesFailed | Sort-Object { If ($_.Process) { $_.Process.StartTime } Else { [DateTime]0 } } | Format-Table $Miner_Table -Wrap | Out-Host
             }
@@ -1015,7 +1021,7 @@ While ($true) {
         }
     }
     Else {
-        MainLoop
+        [Void](MainLoop)
         Start-Sleep -Milliseconds 100
     }
 }

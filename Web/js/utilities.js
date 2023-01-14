@@ -281,58 +281,58 @@ function format10DecimalDigits(value) {
   return '';
 };
 
-function formatGBDigits0(value) {
-  if (value > 0) return format0DecimalDigits(value) + ' GB';
+function formatGiBDigits0(value) {
+  if (value > 0) return format0DecimalDigits(value) + ' GiB';
   return '';
 };
 
-function formatGBDigits1(value) {
-  if (value > 0) return format1DecimalDigits(value) + ' GB';
+function formatGiBDigits1(value) {
+  if (value > 0) return format1DecimalDigits(value) + ' GiB';
   return '';
 };
 
-function formatGBDigits2(value) {
-  if (value > 0) return format2DecimalDigits(value) + ' GB';
+function formatGiBDigits2(value) {
+  if (value > 0) return format2DecimalDigits(value) + ' GiB';
   return '';
 };
 
-function formatGBDigits3(value) {
-  if (value > 0) return format3DecimalDigits(value) + ' GB';
+function formatGiBDigits3(value) {
+  if (value > 0) return format3DecimalDigits(value) + ' GiB';
   return '';
 };
 
-function formatGBDigits4(value) {
-  if (value > 0) return format4DecimalDigits(value) + ' GB';
+function formatGiBDigits4(value) {
+  if (value > 0) return format4DecimalDigits(value) + ' GiB';
   return '';
 };
 
-function formatGBDigits5(value) {
-  if (value > 0) return format5DecimalDigits(value) + ' GB';
+function formatGiBDigits5(value) {
+  if (value > 0) return format5DecimalDigits(value) + ' GiB';
   return '';
 };
 
-function formatGBDigits6(value) {
-  if (value > 0) return format6DecimalDigits(value) + ' GB';
+function formatGiBDigits6(value) {
+  if (value > 0) return format6DecimalDigits(value) + ' GiB';
   return '';
 };
 
-function formatGBDigits7(value) {
-  if (value > 0) return format7DecimalDigits(value) + ' GB';
+function formatGiBDigits7(value) {
+  if (value > 0) return format7DecimalDigits(value) + ' GiB';
   return '';
 };
 
-function formatGBDigits8(value) {
-  if (value > 0) return format8DecimalDigits(value) + ' GB';
+function formatGiBDigits8(value) {
+  if (value > 0) return format8DecimalDigits(value) + ' GiB';
   return '';
 };
 
-function formatGBDigits9(value) {
-  if (value > 0) return format9DecimalDigits(value) + ' GB';
+function formatGiBDigits9(value) {
+  if (value > 0) return format9DecimalDigits(value) + ' GiB';
   return '';
 };
 
-function formatGBDigits10(value) {
-  if (value > 0) return format10DecimalDigits(value) + ' GB';
+function formatGiBDigits10(value) {
+  if (value > 0) return format10DecimalDigits(value) + ' GiB';
   return '';
 };
 
@@ -350,7 +350,7 @@ function formatBytes(bytes) {
     decimals = 2;
     var k = 1024;
     dm = decimals || 2;
-    sizes = ['Bytes', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    sizes = ['Bytes', 'kiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
     i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   }

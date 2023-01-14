@@ -180,7 +180,7 @@ legend {
 /*
 * Table colors
 */
-.miner-disabled {
+.miner-disabled, .miner-unavailable {
   background-color: rgb(254, 245, 220);
 }
 .miner-failed {

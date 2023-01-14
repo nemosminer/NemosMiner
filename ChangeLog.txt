@@ -10,6 +10,22 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.2.3.4 nn.01.2023
+=======================================
+
+Core:
+- Core: Changed 'GB' to 'GiB' (see https://en.wikipedia.org/wiki/Units_of_information)
+
+Fixes:
+- Web GUI / Dashboard: Local currency not added to column header 'Profit Bias'
+- Core / MiningDutch brain: No data received from pool 'MiningDutchPlus'.
+- Core / Include.psm1: Get-Rate not working for large number of currencies
+
+Miner updates:
+- TTMiner-v2023.1.1
+- Wildrig-v0.36.2b
+
+
 ChangeLog NemosMiner 4.2.3.3 08.01.2023
 =======================================
 

@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,13 +18,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.2.3.3
-Version date:   08 January 2023
+Version:        4.2.3.4
+Version date:   14 January 2023
 #>
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.5.0.3"
+    $APIVersion = "0.5.1.3"
 
     If ($Variables.APIRunspace.AsyncObject.IsCompleted -eq $true -or $Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
         Stop-APIServer
@@ -144,6 +144,62 @@ Function Start-APIServer {
 
                         # Set the proper content type, status code and data for each resource
                         Switch ($Path) { 
+                            "/functions/algorithm/disable" { 
+                                # Disable algorithm@pool in poolsconfig.json
+                                $PoolBaseNames = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).BaseName
+                                $Algorithms = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).Algorithm
+                                If ($Pools = @($Variables.Pools | Where-Object { $_.BaseName -in $PoolBaseNames -and $_.Algorithm -in $Algorithms })) { 
+                                    $PoolsConfig = Get-Content -Path $Config.PoolsConfigFile | ConvertFrom-Json
+                                    ForEach ($Pool in $Pools) { 
+                                        If ($PoolsConfig.($Pool.BaseName).Algorithm -like "-*") { 
+                                            $PoolsConfig.($Pool.BaseName).Algorithm = @($PoolsConfig.($Pool.BaseName).Algorithm += "-$($Pool.Algorithm)" | Sort-Object -Unique)
+                                            $Pool.Reasons = @($Pool.Reasons += "Algorithm disabled (`-$($Pool.Algorithm)` in $($Pool.BaseName) pool config)" | Sort-Object -Unique)
+                                        }
+                                        Else { 
+                                            $PoolsConfig.($Pool.BaseName).Algorithm = @($PoolsConfig.($Pool.BaseName).Algorithm | Where-Object { $_ -ne "+$($Pool.Algorithm)" } | Sort-Object -Unique)
+                                            $Pool.Reasons = @($Pool.Reasons += "Algorithm not enabled in $($Pool.BaseName) pool config" | Sort-Object -Unique)
+                                        }
+                                        $Pool.Available = $false
+                                        $Data += "$($Pool.Algorithm)@$($Pool.BaseName)`n"
+                                    }
+                                    $Message = "$($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" }) disabled."
+                                    Write-Message -Level Verbose "Web GUI: $Message"
+                                    $Data += "`n$Message"
+                                    $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Out-File -FilePath $Variables.PoolsConfigFile -Force -Encoding utf8NoBOM
+                                }
+                                Else { 
+                                    $Data = "No matching stats found."
+                                }
+                                Break
+                            }
+                            "/functions/algorithm/enable" { 
+                                # Enable algorithm@pool in poolsconfig.json
+                                $PoolBaseNames = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).BaseName
+                                $Algorithms = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).Algorithm
+                                If ($Pools = @($Variables.Pools | Where-Object { $_.BaseName -in $PoolBaseNames -and $_.Algorithm -in $Algorithms })) { 
+                                    $PoolsConfig = Get-Content -Path $Config.PoolsConfigFile | ConvertFrom-Json
+                                    ForEach ($Pool in $Pools) { 
+                                        If ($PoolsConfig.($Pool.BaseName).Algorithm -like "+*") { 
+                                            $PoolsConfig.($Pool.BaseName).Algorithm = @($PoolsConfig.($Pool.BaseName).Algorithm += "+$($Pool.Algorithm)" | Sort-Object -Unique)
+                                            $Pool.Reasons = @($Pool.Reasons | Where-Object { $_ -ne "Algorithm not enabled in $($Pool.BaseName) pool config" } | Sort-Object -Unique)
+                                        }
+                                        Else { 
+                                            $PoolsConfig.($Pool.BaseName).Algorithm = @($PoolsConfig.($Pool.BaseName).Algorithm | Where-Object { $_ -ne "-$($Pool.Algorithm)" } | Sort-Object -Unique)
+                                            $Pool.Reasons = @($Pool.Reasons | Where-Object { $_ -ne "Algorithm disabled (`-$($Pool.Algorithm)` in $($Pool.BaseName) pool config)" } | Sort-Object -Unique)
+                                        }
+                                        If (-not $Pool.Reasons) { $Pool.Available = $true }
+                                        $Data += "$($Pool.Algorithm)@$($Pool.BaseName)`n"
+                                    }
+                                    $Message = "$($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" }) enabled."
+                                    Write-Message -Level Verbose "Web GUI: $Message"
+                                    $Data += "`n$Message"
+                                    $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Out-File -FilePath $Variables.PoolsConfigFile -Force -Encoding utf8NoBOM
+                                }
+                                Else { 
+                                    $Data = "No matching stats found."
+                                }
+                                Break
+                            }
                             "/functions/api/stop" { 
                                 Write-Message -Level Verbose "API: API stopped!"
                                 Return
@@ -244,7 +300,7 @@ Function Start-APIServer {
                                         }
                                     }
                                     $Variables.RestartCycle = $true
-        
+
                                     # Set operational values for text window
                                     $Variables.ShowAccuracy = $Config.ShowAccuracy
                                     $Variables.ShowAllMiners = $Config.ShowAllMiners

@@ -6,7 +6,7 @@ $Path = ".\Bin\$($Name)\NeoScryptMiner.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Neoscrypt"; MinMemGB = 2; ExcludeGPUArchitecture = @("RDNA1", "RDNA2", "RDNA3"); Minerset = 2; WarmupTimes = @(45, 0); Arguments = "" } # FPGA
+    [PSCustomObject]@{ Algorithm = "Neoscrypt"; MinMemGiB = 2; ExcludeGPUArchitecture = @("RDNA1", "RDNA2", "RDNA3"); Minerset = 2; WarmupTimes = @(45, 0); Arguments = "" } # FPGA
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] }) { 
@@ -19,7 +19,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
             $Algorithms | ForEach-Object { 
 
-                If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $_.MinMemGB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
+                If ($AvailableMiner_Devices = ($Miner_Devices | Where-Object MemoryGiB -ge $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture)) { 
 
                     $Arguments = $_.Arguments
                     $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '

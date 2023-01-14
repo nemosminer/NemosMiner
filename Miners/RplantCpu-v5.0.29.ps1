@@ -12,9 +12,9 @@ Else { Return }
 
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Avian";         Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo avian" }
-    [PSCustomObject]@{ Algorithm = "Allium";        MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo allium" } # FPGA
+    [PSCustomObject]@{ Algorithm = "Allium";        MinerSet = 3; WarmupTimes = @(30, 10); Arguments = " --algo allium" } # FPGA
     [PSCustomObject]@{ Algorithm = "Anime";         MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo anime" }
-    [PSCustomObject]@{ Algorithm = "Argon2ad";      Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo argon2ad" }
+    [PSCustomObject]@{ Algorithm = "Argon2ad";      Minerset = 3; WarmupTimes = @(30, 15); Arguments = " --algo argon2ad" } # ASIC
     [PSCustomObject]@{ Algorithm = "Argon2d250";    Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo argon2d250" }
     [PSCustomObject]@{ Algorithm = "Argon2d500";    Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo argon2d500" }
     [PSCustomObject]@{ Algorithm = "Argon2d4096";   Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo argon2d4096" }
@@ -23,47 +23,46 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Blake2b";       Minerset = 3; WarmupTimes = @(30, 15); Arguments = " --algo blake2b" } # FPGA
     [PSCustomObject]@{ Algorithm = "Bmw";           Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo bmw" }
     [PSCustomObject]@{ Algorithm = "Bmw512";        MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo bmw512" } # FPGA
-    [PSCustomObject]@{ Algorithm = "C11";           Minerset = 3; WarmupTimes = @(30, 15); Arguments = " --algo c11" } # ASIC
+    [PSCustomObject]@{ Algorithm = "C11";           Minerset = 3; WarmupTimes = @(30, 15); Arguments = " --algo c11" } # GPU
     [PSCustomObject]@{ Algorithm = "Circcash";      Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo circcash" }
-    [PSCustomObject]@{ Algorithm = "CpuPower";      Minerset = 1; WarmupTimes = @(60, 60); Arguments = " --algo cpupower" }
+    [PSCustomObject]@{ Algorithm = "CpuPower";      Minerset = 3; WarmupTimes = @(60, 60); Arguments = " --algo cpupower" } # ASIC
     [PSCustomObject]@{ Algorithm = "CryptoVantaA";  Minerset = 2; WarmupTimes = @(60, 60); Arguments = " --algo cryptovantaa" }
 #   [PSCustomObject]@{ Algorithm = "CurveHash";     Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --algo curvehash" } # reported hashrates too high (https://github.com/rplant8/cpuminer-opt-rplant/issues/21)
 #   [PSCustomObject]@{ Algorithm = "Decred";        Minerset = 3; WarmupTimes = @(60, 60); Arguments = " --algo Decred" } # ASIC, No hashrate in time
-    [PSCustomObject]@{ Algorithm = "DMDGr";         Minerset = 2; WarmupTimes = @(60, 60); Arguments = " --algo dmd-gr" }
+    [PSCustomObject]@{ Algorithm = "DMDGr";         Minerset = 3; WarmupTimes = @(60, 60); Arguments = " --algo dmd-gr" } # ASIC
     [PSCustomObject]@{ Algorithm = "Ghostrider";    MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo gr" }
     [PSCustomObject]@{ Algorithm = "Groestl";       Minerset = 3; WarmupTimes = @(90, 15); Arguments = " --algo groestl" } # ASIC
     [PSCustomObject]@{ Algorithm = "HeavyHash";     MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo heavyhash" } # FPGA
-    [PSCustomObject]@{ Algorithm = "Hex";           Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo hex" }
-    [PSCustomObject]@{ Algorithm = "HMQ1725";       MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo hmq1725" }
+    [PSCustomObject]@{ Algorithm = "Hex";           Minerset = 3; WarmupTimes = @(30, 15); Arguments = " --algo hex" } # GPU
+    [PSCustomObject]@{ Algorithm = "HMQ1725";       MinerSet = 3; WarmupTimes = @(30, 15); Arguments = " --algo hmq1725" } # GPU
     [PSCustomObject]@{ Algorithm = "Hodl";          Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo hodl" }
-    [PSCustomObject]@{ Algorithm = "Jha";           Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --algo jha" }
+    [PSCustomObject]@{ Algorithm = "Jha";           Minerset = 3; WarmupTimes = @(90, 15); Arguments = " --algo jha" } # GPU
     [PSCustomObject]@{ Algorithm = "Keccak";        Minerset = 3; WarmupTimes = @(90, 15); Arguments = " --algo keccak" } # ASIC
-    [PSCustomObject]@{ Algorithm = "KeccakC";       MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo keccakc" } # FPGA
+    [PSCustomObject]@{ Algorithm = "KeccakC";       MinerSet = 3; WarmupTimes = @(90, 15); Arguments = " --algo keccakc" } # FPGA
     [PSCustomObject]@{ Algorithm = "Lbry";          Minerset = 3; WarmupTimes = @(90, 15); Arguments = " --algo lbry" } # ASIC
     [PSCustomObject]@{ Algorithm = "Lyra2h";        Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --algo lyra2h" }
     [PSCustomObject]@{ Algorithm = "Lyra2re";       Minerset = 3; WarmupTimes = @(90, 15); Arguments = " --algo lyra2re" } # ASIC
     [PSCustomObject]@{ Algorithm = "Lyra2REv2";     Minerset = 3; WarmupTimes = @(90, 15); Arguments = " --algo lyra2rev2" } # ASIC
     [PSCustomObject]@{ Algorithm = "Lyra2RE3";      Minerset = 3; WarmupTimes = @(90, 15); Arguments = " --algo lyra2rev3" } # ASIC
     [PSCustomObject]@{ Algorithm = "Lyra2z";        MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo lyra2z" } # FPGA
-    [PSCustomObject]@{ Algorithm = "Lyra2z330";     Minerset = 1; WarmupTimes = @(90, 15); Arguments = " --algo lyra2z330" }
-    [PSCustomObject]@{ Algorithm = "Mike";          MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo mike" }
+    [PSCustomObject]@{ Algorithm = "Lyra2z330";     Minerset = 3; WarmupTimes = @(90, 15); Arguments = " --algo lyra2z330" } # GPU
+    [PSCustomObject]@{ Algorithm = "Mike";          MinerSet = 3; WarmupTimes = @(90, 15); Arguments = " --algo mike" } # GPU
     [PSCustomObject]@{ Algorithm = "Minotaur";      Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --algo minotaur" }
     [PSCustomObject]@{ Algorithm = "MinotaurX";     MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo minotaurx" }
     [PSCustomObject]@{ Algorithm = "MyriadGroestl"; Minerset = 3; WarmupTimes = @(90, 15); Arguments = " --algo myr-gr" } # ASIC
-    [PSCustomObject]@{ Algorithm = "Neoscrypt";     MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --algo neoscrypt" } # FPGA
+    [PSCustomObject]@{ Algorithm = "Neoscrypt";     MinerSet = 3; WarmupTimes = @(90, 15); Arguments = " --algo neoscrypt" } # FPGA
     [PSCustomObject]@{ Algorithm = "Nist5";         Minerset = 3; WarmupTimes = @(90, 15); Arguments = " --algo nist5" } # ASIC
-    [PSCustomObject]@{ Algorithm = "Pentablake";    Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo pentablake" }
-    [PSCustomObject]@{ Algorithm = "Phi2";          Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo phi2" }
-    [PSCustomObject]@{ Algorithm = "Phi5";          Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo phi5" }
+    [PSCustomObject]@{ Algorithm = "Pentablake";    Minerset = 3; WarmupTimes = @(30, 15); Arguments = " --algo pentablake" } # GPU
+    [PSCustomObject]@{ Algorithm = "Phi2";          Minerset = 3; WarmupTimes = @(30, 15); Arguments = " --algo phi2" } # GPU
+    [PSCustomObject]@{ Algorithm = "Phi5";          Minerset = 3; WarmupTimes = @(30, 15); Arguments = " --algo phi5" } # GPU
     [PSCustomObject]@{ Algorithm = "Phi1612";       Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo phi1612" }
-    [PSCustomObject]@{ Algorithm = "Phichox";       Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo phichox" }
-    [PSCustomObject]@{ Algorithm = "Polytimos";     Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo polytimos" }
+    [PSCustomObject]@{ Algorithm = "Phichox";       Minerset = 3; WarmupTimes = @(30, 15); Arguments = " --algo phichox" } # GPU
+    [PSCustomObject]@{ Algorithm = "Polytimos";     Minerset = 3; WarmupTimes = @(30, 15); Arguments = " --algo polytimos" } # GPU
     [PSCustomObject]@{ Algorithm = "Pulsar";        Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo pulsar" }
     [PSCustomObject]@{ Algorithm = "QogeCoin";      Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo qogecoin" }
     [PSCustomObject]@{ Algorithm = "Quark";         Minerset = 3; WarmupTimes = @(30, 15); Arguments = " --algo quark" } # ASIC
     [PSCustomObject]@{ Algorithm = "Qubit";         Minerset = 3; WarmupTimes = @(30, 15); Arguments = " --algo qubit" } # ASIC
-    [PSCustomObject]@{ Algorithm = "Qureno";        Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo qureno" }
-    [PSCustomObject]@{ Algorithm = "Qureno";        Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo qureno" }
+    [PSCustomObject]@{ Algorithm = "Qureno";        Minerset = 3; WarmupTimes = @(30, 15); Arguments = " --algo qureno" } # GPU
 #   [PSCustomObject]@{ Algorithm = "X11";           Minerset = 3; WarmupTimes = @(30, 15); Srguments = " --algo x11" } # ASIC, algorithm not supported
     [PSCustomObject]@{ Algorithm = "X22";           Minerset = 2; WarmupTimes = @(30, 15); Arguments = " --algo x22" } 
     [PSCustomObject]@{ Algorithm = "Yescrypt";      MinerSet = 0; WarmupTimes = @(45, 0);  Arguments = " --algo yescrypt" }

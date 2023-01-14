@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.2.3.3
-Version date:   08 January 2023
+Version:        4.2.3.4
+Version date:   14 January 2023
 #>
 
 # Window handling
@@ -61,7 +61,7 @@ Class Device {
     [Int]$Index = 0
     [Int64]$Memory
     [String]$Model
-    [Double]$MemoryGB
+    [Double]$MemoryGiB
     [String]$Name
     [PSCustomObject]$OpenCL = [PSCustomObject]@{ }
     [Int]$PlatformId = 0
@@ -101,7 +101,7 @@ Class Pool {
     [Nullable[Int64]]$BlockHeight = $null
     [String]$CoinName
     [String]$Currency
-    [Nullable[Double]]$DAGsizeGB = $null
+    [Nullable[Double]]$DAGSizeGiB = $null
     [Boolean]$Disabled = $false
     [Double]$EarningsAdjustmentFactor = 1
     [Nullable[Int]]$Epoch = $null
@@ -141,6 +141,7 @@ Enum MinerStatus {
     Idle
     Failed
     Disabled
+    Unavailable
 }
 
 Class Miner { 
@@ -213,7 +214,7 @@ Class Miner {
     }
 
     [String]GetCommandLineParameters() { 
-        Return (Get-CommandLineParameters $this.Arguments)
+        Return (Get-CommandLineParameter $this.Arguments)
     }
 
     [String]GetCommandLine() { 
@@ -363,12 +364,9 @@ Class Miner {
     }
 
     hidden StopMining() { 
-        If ($this.Status -eq [MinerStatus]::Running) { 
+        If ($this.GetStatus() -eq [MinerStatus]::Running) { 
             $this.StatusMessage = "Stopping miner '$($this.Name) $($this.Info)'..."
             Write-Message -Level Info $this.StatusMessage
-        }
-        Else { 
-            Write-Message -Level Error $this.StatusMessage
         }
 
         # Stop Miner data reader
@@ -743,7 +741,7 @@ Function Stop-Mining {
     $Variables.WatchdogTimers = @()
     $Variables.MiningEarning = $Variables.MiningProfit = $Variables.MiningPowerCost = [Double]::NaN
 
-    # $Variables.RefreshNeeded = $true
+    [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
 }
 
 Function Start-Brain { 
@@ -770,7 +768,7 @@ Function Start-Brain {
             $Variables.BrainData = [PSCustomObject]@{ }
         }
 
-        If ($Variables.BrainRunspacePool) { $Variables.BrainRunspacePool.CleanupInterval = New-TimeSpan -Seconds (2 * $Config.Interval) }
+        If ($Variables.BrainRunspacePool) { $Variables.BrainRunspacePool.CleanupInterval = New-TimeSpan -Seconds (10 * $Config.Interval) }
 
         # Starts Brains if necessary
         $BrainsStarted = @()
@@ -818,11 +816,12 @@ Function Stop-Brain {
         If ($BrainsStopped.Count -gt 0) { Write-Message -Level Info  "Pool Brain Job$(If ($BrainsStopped.Count -gt 1) { "s" }) for '$(($BrainsStopped | Sort-Object) -join ", ")' stopped." }
     }
 
-    If ($Variables.BrainRunspacePool -and -not $Variables.Brains) { 
+    If ($Variables.BrainRunspacePool -and -not $Variables.Brains.Keys.Count) { 
         $Variables.BrainRunspacePool.Close()
         $Variables.BrainRunspacePool.Dispose()
         $Variables.Remove("Brains")
         $Variables.Remove("BrainData")
+        $Variables.Remove("BrainRunspacePool")
 
         [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
     }
@@ -867,8 +866,8 @@ Function Stop-BalancesTracker {
         $Variables.BalancesTrackerRunspace.Close()
         If ($Variables.BalancesTrackerRunspace.PowerShell) { $Variables.BalancesTrackerRunspace.PowerShell.Dispose() }
         $Variables.BalancesTrackerRunspace.Dispose()
-
         $Variables.Remove("BalancesTrackerRunspace")
+
         $Variables.Summary += "<br>Balances Tracker background process stopped."
         Write-Message -Level Info "Balances Tracker background process stopped."
     }
@@ -898,7 +897,7 @@ Function Get-DefaultAlgorithm {
     Return
 }
 
-Function Get-CommandLineParameters { 
+Function Get-CommandLineParameter { 
     Param(
         [Parameter(Mandatory = $false)]
         [String]$Arguments
@@ -924,8 +923,30 @@ Function Get-Rate {
     }
     $Variables.AllCurrencies = @($Variables.AllCurrencies | Where-Object { $_ -replace "mBTC", "BTC" } | Sort-Object -Unique)
     If (-not $Variables.Rates.BTC.($Config.Currency) -or (Compare-Object @($Variables.Rates.PSObject.Properties.Name | Select-Object) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "=>") -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-(3, $Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum))) { 
-        Try {  
-            If ($Rates = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$((@("BTC") + @($Variables.AllCurrencies | Where-Object { $_ -ne "mBTC" }) | Select-Object -Unique) -join ',')&extraParams=$($Variables.Branding.BrandWebSite)" -TimeoutSec 5 -ErrorAction Ignore | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) { 
+        Try { 
+            $Rates = [PSCustomObject]@{ BTC = [PSCustomObject]@{} }
+            $TSymBatches = @()
+            $TSyms = "BTC"
+            $Variables.AllCurrencies | Where-Object { $_ -ne "mBTC" } | Select-Object -Unique | ForEach-Object { 
+                If ($TSyms.Length -lt (100 - $_.length -1)) { 
+                    $TSyms = "$TSyms,$($_)"
+                }
+                Else { 
+                    $TSymBatches += $TSyms
+                    $TSyms = "$_"
+                }
+            }
+            $TSymBatches += $TSyms
+
+            $TSymBatches | ForEach-Object { 
+                (Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$($_)&extraParams=$($Variables.Branding.BrandWebSite)" -TimeoutSec 5 -ErrorAction Ignore).BTC | ForEach-Object { 
+                    $_.PSObject.Properties | ForEach-Object { $Rates.BTC | Add-Member @{ "$($_.Name)" = ($_.Value) } }
+                }
+            }
+
+            $Rates = $Rates | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
+
+            If ($Rates) { 
                 $Currencies = ($Rates.BTC | Get-Member -MemberType NoteProperty).Name
                 $Currencies | Where-Object { $_ -ne "BTC" } | ForEach-Object { 
                     $Currency = $_
@@ -945,10 +966,10 @@ Function Get-Rate {
             If ($RatesCache.PSObject.Properties.Name) { 
                 $Variables.Rates = $RatesCache
                 $Variables.RatesUpdated = "FromFile: $((Get-Item -Path $RatesFileName).CreationTime.ToUniversalTime())"
-                Write-Message -Level Warn "Could not load exchange rates from CryptoCompare. Using cached data from $((Get-Item -Path $RatesFileName).LastWriteTime)."
+                Write-Message -Level Warn "Could not load exchange rates from 'min-api.cryptocompare.com'. Using cached data from $((Get-Item -Path $RatesFileName).LastWriteTime)."
             }
             Else { 
-                Write-Message -Level Warn "Could not load exchange rates from CryptoCompare."
+                Write-Message -Level Warn "Could not load exchange rates from 'min-api.cryptocompare.com'."
             }
         }
     }
@@ -1149,7 +1170,7 @@ Function Get-RandomDonationPoolsConfig {
     $Variables.DonationRandom = $Variables.DonationData | Get-Random
     $DonationRandomPoolsConfig = [Ordered]@{ }
     (Get-ChildItem .\Pools\*.ps1 -File).BaseName | Sort-Object -Unique | ForEach-Object { 
-        $PoolConfig = $Config.PoolsConfig.$_ | ConvertTo-Json -depth 99 -compress | ConvertFrom-Json -AsHashTable
+        $PoolConfig = $Config.PoolsConfig.$_ | ConvertTo-Json -depth 99 -Compress | ConvertFrom-Json -AsHashTable
         $PoolConfig.EarningsAdjustmentFactor = 1
         $PoolConfig.Region = $Config.PoolsConfig.$_.Region
         $PoolConfig.WorkerName = "$($Variables.Branding.ProductLabel)-$($Variables.Branding.Version.ToString())-donate$($Config.Donation)"
@@ -2184,7 +2205,7 @@ Function Get-Device {
                         }
                     )
                     Memory = $null
-                    MemoryGB = $null
+                    MemoryGiB = $null
                 }
 
                 $Device | Add-Member @{ 
@@ -2244,7 +2265,7 @@ Function Get-Device {
                         }
                     )
                     Memory = [Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize'))
-                    MemoryGB = [Double]([Math]::Round([Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize')) / 0.05GB) / 20) # Round to nearest 50MB
+                    MemoryGiB = [Double]([Math]::Round([Math]::Max(([UInt64]$Device_CIM.AdapterRAM), ([uInt64]$Device_Reg.'HardwareInformation.qwMemorySize')) / 0.05GB) / 20) # Round to nearest 50MB
                 }
 
                 $Device | Add-Member @{ 
@@ -2318,7 +2339,7 @@ Function Get-Device {
                             }
                         )
                         Memory = [UInt64]$Device_OpenCL.GlobalMemSize
-                        MemoryGB = [Double]([Math]::Round($Device_OpenCL.GlobalMemSize / 0.05GB) / 20) # Round to nearest 50MB
+                        MemoryGiB = [Double]([Math]::Round($Device_OpenCL.GlobalMemSize / 0.05GB) / 20) # Round to nearest 50MB
                     }
 
                     $Device | Add-Member @{ 
@@ -2959,7 +2980,7 @@ Function Initialize-Autoupdate {
 
 Function Start-LogReader { 
 
-    If ((Test-Path -Path $Config.SnakeTailExe -PathType Leaf) -and (Test-Path -Path $Config.SnakeTailConfig -PathType Leaf)) { 
+    If ((Test-Path -Path $Config.SnakeTailExe -PathType Leaf) -and (Test-Path -Path $Config.LogViewerConfig -PathType Leaf)) { 
         $Variables.SnakeTailConfig = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailConfig)
         $Variables.SnakeTailExe = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.SnakeTailExe)
         If ($SnaketailProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -EQ "$($Variables.SnakeTailExe) $($Variables.SnakeTailConfig)")) { 
@@ -3003,7 +3024,7 @@ Function Update-ConfigFile {
             "Donate" { $Config.Donation = $Config.$_; $Config.Remove($_) }
             "EnableEarningsTrackerLog" { $Config.EnableBalancesLog = $Config.$_; $Config.Remove($_) }
             "EstimateCorrection" { $Config.Remove($_) }
-            "EthashLowMemMinMemGB" { $Config.Remove($_) }
+            "EthashLowMemMinMemGiB" { $Config.Remove($_) }
             "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
             "IdleDetection" { $Config.IdleDetection = $Config.$_; $Config.Remove($_) }
             "IdlePowerUsageW" { $Config.PowerUsageIdleSystemW = $Config.$_; $Config.Remove($_) }
@@ -3024,6 +3045,8 @@ Function Update-ConfigFile {
             "RunningMinerGainPct" { $Config.MinerSwitchingThreshold = $Config.$_; $Config.Remove($_) }
             "ShowMinerWindows" { $Config.MinerWindowStyle = $Config.$_; $Config.Remove($_) }
             "ShowMinerWindowsNormalWhenBenchmarking" { $Config.MinerWindowStyleNormalWhenBenchmarking = $Config.$_; $Config.Remove($_) }
+            "SnakeTailConfig" { $Config.LogViewerConfig = $Config.$_; $Config.Remove($_) }
+            "SnakeTailExe" { $Config.LogViewerExe = $Config.$_; $Config.Remove($_) }
             "SSL" { $Config.Remove($_) }
             "StartGUIMinimized" { $Config.LegacyGUI = $Config.$_; $Config.Remove($_) }
             "StartGUI" { $Config.LegacyGUIStartMinimized = $Config.$_; $Config.Remove($_) }

@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Downloader.ps1
-Version:        4.2.3.3
-Version date:   08 January 2023
+Version:        4.2.3.4
+Version date:   14 January 2023
 #>
 
 using module .\Includes\Include.psm1

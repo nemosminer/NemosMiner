@@ -10,14 +10,14 @@ $Path = ".\Bin\$($Name)\CryptoDredge.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Allium";    Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @("Other"); Arguments = " --algo allium --intensity 8" } # FPGA
-    [PSCustomObject]@{ Algorithm = "Exosis";    Fee = 0.01; MinMemGB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo exosis --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Dedal";     Fee = 0.01; MinMemGB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo dedal --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "HMQ1725";   Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(60, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo hmq1725 --intensity 8" } # CryptoDredge v0.26.0 is fastest
-    [PSCustomObject]@{ Algorithm = "Neoscrypt"; Fee = 0.01; MinMemGB = 2; MinerSet = 0; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo neoscrypt --intensity 6" } # FPGA
-    [PSCustomObject]@{ Algorithm = "Phi";       Fee = 0.01; MinMemGB = 2; Minerset = 2; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo phi --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Phi2";      Fee = 0.01; MinMemGB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo phi2 --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Pipe";      Fee = 0.01; MinMemGB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo pipe --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Allium";    Fee = 0.01; MinMemGiB = 2; MinerSet = 0; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @("Other"); Arguments = " --algo allium --intensity 8" } # FPGA
+    [PSCustomObject]@{ Algorithm = "Exosis";    Fee = 0.01; MinMemGiB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo exosis --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Dedal";     Fee = 0.01; MinMemGiB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo dedal --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "HMQ1725";   Fee = 0.01; MinMemGiB = 2; MinerSet = 0; WarmupTimes = @(60, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo hmq1725 --intensity 8" } # CryptoDredge v0.26.0 is fastest
+    [PSCustomObject]@{ Algorithm = "Neoscrypt"; Fee = 0.01; MinMemGiB = 2; MinerSet = 0; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo neoscrypt --intensity 6" } # FPGA
+    [PSCustomObject]@{ Algorithm = "Phi";       Fee = 0.01; MinMemGiB = 2; Minerset = 2; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo phi --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Phi2";      Fee = 0.01; MinMemGiB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo phi2 --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Pipe";      Fee = 0.01; MinMemGiB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @();        Arguments = " --algo pipe --intensity 8" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] }) { 
@@ -29,9 +29,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Algorithms | ForEach-Object { 
 
-            $ExcludeGPUArchitecture = $_.ExcludeGPUArchitecture
-
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $_.MinMemGB | Where-Object { $_.Architecture -notin $ExcludeGPUArchitecture }) { 
+            If ($AvailableMiner_Devices = ($Miner_Devices | Where-Object MemoryGiB -ge $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture)) { 
 
                 $Arguments = $_.Arguments
                 $Miner_Name = (@($Name) + @($Miner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -eq $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '

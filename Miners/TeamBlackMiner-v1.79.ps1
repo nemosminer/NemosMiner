@@ -11,22 +11,22 @@ $DeviceSelector = @{ AMD = " --cl-devices"; INTEL = " --cl-devices"; NVIDIA = " 
 $DeviceEnumerator = @{ AMD = "Type_Vendor_Id"; INTEL = "Type_Vendor_Index"; NVIDIA = "Type_Vendor_Index" } # Device numeration seems to be mixed up with OpenCL
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "AMD"; Fee = 0.005; MinMemGB = $MinerPools[0].Etchash.DAGSizeGB+ 0.41;       ExcludePool = @(); Minerset = 1; Tuning = ""; WarmupTimes = @(45, 0); Arguments = " --algo etchash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "AMD"; Fee = 0.005; MinMemGB = $MinerPools[0].Ethash.DAGSizeGB+ 0.41;        ExcludePool = @(); Minerset = 1; Tuning = ""; WarmupTimes = @(45, 0); Arguments = " --algo ethash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "AMD"; Fee = 0.005; MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB + 0.41; ExcludePool = @(); Minerset = 2; Tuning = ""; WarmupTimes = @(45, 0); Arguments = " --algo ethash" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = "VertHash";     Type = "AMD"; Fee = 0.01;  MinMemGB = 2.0;                                          ExcludePool = @(); Minerset = 1; Tuning = ""; WarmupTimes = @(60, 0); Arguments = " --algo verthash --verthash-data ..\.$($Variables.VerthashDatPath)" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "AMD"; Fee = 0.005; MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB+ 0.41;       ExcludePool = @(); Minerset = 1; Tuning = ""; WarmupTimes = @(45, 0); Arguments = " --algo etchash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "AMD"; Fee = 0.005; MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB+ 0.41;        ExcludePool = @(); Minerset = 1; Tuning = ""; WarmupTimes = @(45, 0); Arguments = " --algo ethash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "AMD"; Fee = 0.005; MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.41; ExcludePool = @(); Minerset = 2; Tuning = ""; WarmupTimes = @(45, 0); Arguments = " --algo ethash" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "VertHash";     Type = "AMD"; Fee = 0.01;  MinMemGiB = 2.0;                                           ExcludePool = @(); Minerset = 1; Tuning = ""; WarmupTimes = @(60, 0); Arguments = " --algo verthash --verthash-data ..\.$($Variables.VerthashDatPath)" }
 
-    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "INTEL"; Fee = 0.005; MinMemGB = $MinerPools[0].Etchash.DAGSizeGB + 0.41;      ExcludePool = @(); Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo etchash" }
-    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "INTEL"; Fee = 0.005; MinMemGB = $MinerPools[0].Ethash.DAGSizeGB + 0.41;       ExcludePool = @(); Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo ethash" }
-#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "INTEL"; Fee = 0.005; MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB + 0.41; ExcludePool = @(); Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo ethash" }
-    [PSCustomObject]@{ Algorithm = "KawPow";       Type = "INTEL"; Fee = 0.01;  MinMemGB = $MinerPools[0].KawPow.DAGSizeGB + 0.41;       ExcludePool = @(); Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(60, 0); Arguments = " --algo kawpow" }
-    [PSCustomObject]@{ Algorithm = "VertHash";     Type = "INTEL"; Fee = 0.01;  MinMemGB = 2.0;                                          ExcludePool = @(); MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(60, 0); Arguments = " --algo verthash --verthash-data ..\.$($Variables.VerthashDatPath)" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "INTEL"; Fee = 0.005; MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB + 0.41;      ExcludePool = @(); Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo etchash" }
+    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "INTEL"; Fee = 0.005; MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.41;       ExcludePool = @(); Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo ethash" }
+#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "INTEL"; Fee = 0.005; MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.41; ExcludePool = @(); Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo ethash" }
+    [PSCustomObject]@{ Algorithm = "KawPow";       Type = "INTEL"; Fee = 0.01;  MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.41;       ExcludePool = @(); Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(60, 0); Arguments = " --algo kawpow" }
+    [PSCustomObject]@{ Algorithm = "VertHash";     Type = "INTEL"; Fee = 0.01;  MinMemGiB = 2.0;                                           ExcludePool = @(); MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(60, 0); Arguments = " --algo verthash --verthash-data ..\.$($Variables.VerthashDatPath)" }
 
-    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "NVIDIA"; Fee = 0.005; MinMemGB = $MinerPools[0].Etchash.DAGSizeGB + 0.41;      ExcludePool = @(); Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo etchash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; Fee = 0.005; MinMemGB = $MinerPools[0].Ethash.DAGSizeGB + 0.41;       ExcludePool = @(); Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo ethash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; Fee = 0.005; MinMemGB = $MinerPools[0].EthashLowMem.DAGSizeGB + 0.41; ExcludePool = @(); Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo ethash" } # TTMiner-v5.0.3 is fastest
-    [PSCustomObject]@{ Algorithm = "KawPow";       Type = "NVIDIA"; Fee = 0.01;  MinMemGB = $MinerPools[0].KawPow.DAGSizeGB + 0.41;       ExcludePool = @(); Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(60, 0); Arguments = " --algo kawpow" }
-    [PSCustomObject]@{ Algorithm = "VertHash";     Type = "NVIDIA"; Fee = 0.01;  MinMemGB = 2.0;                                          ExcludePool = @(); MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(60, 0); Arguments = " --algo verthash --verthash-data ..\.$($Variables.VerthashDatPath)" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "NVIDIA"; Fee = 0.005; MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB + 0.41;      ExcludePool = @(); Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo etchash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; Fee = 0.005; MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.41;       ExcludePool = @(); Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo ethash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; Fee = 0.005; MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.41; ExcludePool = @(); Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 0); Arguments = " --algo ethash" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPow";       Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.41;       ExcludePool = @(); Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(60, 0); Arguments = " --algo kawpow" }
+    [PSCustomObject]@{ Algorithm = "VertHash";     Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 2.0;                                           ExcludePool = @(); MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(60, 0); Arguments = " --algo verthash --verthash-data ..\.$($Variables.VerthashDatPath)" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 
@@ -38,7 +38,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePool } | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $_.MinMemGB) { 
+            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -ge $_.MinMemGiB) { 
 
                 $Arguments = $_.Arguments
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
@@ -49,7 +49,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 $Arguments += " --hostname $($MinerPools[0].($_.Algorithm).Host) --wallet $($MinerPools[0].($_.Algorithm).User)"
                 $Arguments += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { " --ssl --ssl-verify-none --ssl-port $($MinerPools[0].($_.Algorithm).PoolPorts[1])" } Else { " --port $($MinerPools[0].($_.Algorithm).PoolPorts[0])"}
                 If ($MinerPools[0].($_.Algorithm).WorkerName) { $Arguments += " --worker-name $($MinerPools[0].($_.Algorithm).WorkerName)" }
-                If ($MinerPools[0].($_.Algorithm).Pass) { $Arguments += " --server-passwd $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGB - $MinerPools[0].($_.Algorithm).DAGSizeGB))" })" }
+                If ($MinerPools[0].($_.Algorithm).Pass) { $Arguments += " --server-passwd $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].($_.Algorithm).DAGSizeGiB))" })" }
                 # Apply tuning parameters
                 If ($Variables.UseMinerTweaks -eq $true) { $Arguments += $_.Tuning }
 

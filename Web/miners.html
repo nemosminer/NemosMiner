@@ -119,7 +119,7 @@
 
               onPostBody: function() {
                 if (config.UseColorForMinerStatus == true) {
-                  const enumstatus = ['Running', 'Idle', 'Failed', 'Disabled'];
+                  const enumstatus = ['Running', 'Idle', 'Failed', 'Disabled', 'Unavailable'];
                   $('#miners td:nth-child(2').each(function () {
                     $(this).parent('tr').addClass('miner-' + enumstatus[this.innerText].toLowerCase());
                   });

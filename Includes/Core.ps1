@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 
 NemosMiner is free software: you can redistribute it and/or modify
@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.2.3.3
-Version date:   08 January 2023
+Version:        4.2.3.4
+Version date:   14 January 2023
 #>
 
 using module .\Include.psm1
@@ -60,7 +60,7 @@ Do {
 
         # Always get the latest config
         Read-Config -ConfigFile $Variables.ConfigFile
-        $Variables.PoolsConfig = $Config.PoolsConfig | ConvertTo-Json -depth 99 -compress | ConvertFrom-Json -AsHashTable
+        $Variables.PoolsConfig = $Config.PoolsConfig | ConvertTo-Json -depth 99 -Compress | ConvertFrom-Json -AsHashTable
 
         If ($Config.IdleDetection) { 
             If (-not $Variables.IdleRunspace) { 
@@ -87,7 +87,7 @@ Do {
             Write-Message -Level Info "Started new cycle."
         }
 
-        $Miners = $Variables.Miners # Much faster
+        $Miners = $Variables.Miners.Clone() # Much faster
         If ([String]$Variables.EnabledDevices.Name -ne [String]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName).Name) { 
                 $Variables.EnabledDevices = [Device[]]@($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName).Clone()
         }
@@ -186,6 +186,7 @@ Do {
                         If ($Variables.Brains.Keys) {
                             $Variables.PoolTimeout = $WaitForBrainData = 60
                             $Variables.Summary = "Loading initial pool data from '$($Variables.PoolName -join ', ')'.<br>This may take up to $($WaitForBrainData) seconds..."
+                            $Variables.RefreshNeeded = $true
                             Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                             Do { 
                                 Start-Sleep -Seconds 1
@@ -195,6 +196,7 @@ Do {
                         }
                         Else { 
                             $Variables.Summary = "Loading initial pool data from '$($Variables.PoolName -join ', ')'.<br>This wil take while..."
+                            $Variables.RefreshNeeded = $true
                             Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                         }
                     }
@@ -428,7 +430,7 @@ Do {
                             $_.CoinName = Get-CoinName $_.Currency
                             $_.Fee = If ($Config.IgnorePoolFee -or $_.Fee -lt 0 -or $_.Fee -gt 1) { 0 } Else { $_.Fee }
                             $Factor = $_.EarningsAdjustmentFactor * (1 - $_.Fee)
-                            $_.Price = *= $Factor
+                            $_.Price *= $Factor
                             $_.Price_Bias = $_.Price * $_.Accuracy
                             $_.StablePrice *= $Factor
                             $NewPools += $_
@@ -451,6 +453,7 @@ Do {
                             $NewPools += $_
                         }
                     }
+                    $Variables.NewPools = $NewPools
 
                     If ($PoolNoData = @(Compare-Object @($Variables.PoolName) @($NewPools.Name | Sort-Object -Unique) -PassThru)) { 
                         Write-Message -Level Warn "No data received from pool$(If ($PoolNoData.Count -gt 1) { "s" }) '$($PoolNoData -join ', ')'."
@@ -460,8 +463,7 @@ Do {
                     # Faster shutdown
                     If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.MiningStatus -eq "Idle") { Continue }
 
-                    $Variables.NewPools = $NewPools
-                    $Pools = $Variables.Pools
+                    $Pools = $Variables.Pools.Clone()
 
                     # Remove de-configured pools
                     $DeconfiguredPools = @($Pools | Where-Object Name -notin $Variables.PoolName)
@@ -507,12 +509,12 @@ Do {
                             If ($Variables.DAGdata.Currency.($_.Currency).BlockHeight) { 
                                 $_.BlockHeight = $Variables.DAGdata.Currency.($_.Currency).BlockHeight
                                 $_.Epoch       = $Variables.DAGdata.Currency.($_.Currency).Epoch
-                                $_.DAGSizeGB   = $Variables.DAGdata.Currency.($_.Currency).DAGsize / 1GB 
+                                $_.DAGSizeGiB   = $Variables.DAGdata.Currency.($_.Currency).DAGsize / 1GB 
                             }
-                            ElseIf ($Variables.DAGdata.Algorithm.($_.Algorithm).BlockHeight) {
+                            ElseIf ($Variables.DAGdata.Algorithm.($_.Algorithm).BlockHeight) { 
                                 $_.BlockHeight = $Variables.DAGdata.Algorithm.($_.Algorithm).BlockHeight
                                 $_.Epoch       = $Variables.DAGdata.Algorithm.($_.Algorithm).Epoch
-                                $_.DAGSizeGB   = $Variables.DAGdata.Algorithm.($_.Algorithm).DAGsize / 1GB
+                                $_.DAGSizeGiB   = $Variables.DAGdata.Algorithm.($_.Algorithm).DAGsize / 1GB
                             }
 
                             # Ports[0] = non-SSL, Port[1] = SSL
@@ -757,7 +759,7 @@ Do {
                     }
                 }
 
-                $Miners | Where-Object Reasons | ForEach-Object { $_.Available = $false }
+                $Miners | Where-Object Reasons | ForEach-Object { $_.Available = $false; $_.Status = "Unavailable" }
 
                 $Variables.MinersNeedingBenchmark = @($Miners | Where-Object { $_.Available -eq $true -and  $_.Benchmark -eq $true })
                 $Variables.MinersNeedingPowerUsageMeasurement = @($Miners | Where-Object { $_.Available -eq $true -and $_.MeasurePowerUsage -eq $true })
@@ -1081,7 +1083,7 @@ Do {
                     }
                 }
                 # Add extra time when CPU mining and miner requires DAG creation
-                If ($Miner.Workers.Pool.DAGsizeGB -and $Variables.MinersBest_Combo.Devices.Type -contains "CPU") { $Miner.WarmupTimes[0] += 15 <# seconds #>}
+                If ($Miner.Workers.Pool.DAGSizeGiB -and $Variables.MinersBest_Combo.Devices.Type -contains "CPU") { $Miner.WarmupTimes[0] += 15 <# seconds #>}
 
                 $Miner.DataCollectInterval = $DataCollectInterval
 
@@ -1242,15 +1244,15 @@ Do {
 
             If (-not $Variables.EndCycleMessage -and $Variables.IdleRunspace.MiningStatus -eq "Idle") { $Variables.EndCycleMessage = " (System activity detected)" }
 
+            # For debug only
+            While ($Variables.SuspendCycle) { Start-Sleep -Seconds 10 }
+
             # Exit loop when
             # - a miner crashed (and no other miners are benchmarking or measuring power usage)
             # - all benchmarking miners have collected enough samples
             # - WarmupTimes[0] is reached (no readout from miner)
             # - Interval time is over
         } While (-not $Variables.EndCycleMessage -and $Variables.NewMiningStatus -eq "Running" -and $Variables.IdleRunspace.MiningStatus -ne "Idle" -and ((Get-Date).ToUniversalTime() -le $Variables.EndCycleTime -or $Variables.BenchmarkingOrMeasuringMiners))
-
-        # For debug only
-        While ($Variables.SuspendCycle) { Start-Sleep -Seconds 10 }
 
         [System.GC]::Collect()
 

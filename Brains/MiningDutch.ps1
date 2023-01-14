@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 
 NemosMiner is free software: you can redistribute it and/or modify
@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningDutch.ps1
-Version:        4.2.3.3
-Version date:   08 January 2023
+Version:        4.2.3.4
+Version date:   14 January 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -54,14 +54,16 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
 
         Do {
             Try { 
-                If (-not $AlgoData) { $AlgoData = Invoke-RestMethod -Uri $BrainConfig.PoolstatusUri -Headers $Headers -UserAgent $UserAgent -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout }
+                $AlgoData = Invoke-RestMethod -Uri $BrainConfig.PoolstatusUri -Headers $Headers -UserAgent $UserAgent -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout
                 $APICallFails = 0
             }
             Catch { 
-                $APICallFails++
-                Start-Sleep -Seconds ($APICallFails * $BrainConfig.PoolAPIRetryInterval)
             }
-        } While (-not $AlgoData)
+            If (($AlgoData | Get-Member -MemberType NoteProperty).Name.Count -lt 2) { 
+                $APICallFails++
+                Start-Sleep -Seconds ([Math]::max(300, ($APICallFails * $BrainConfig.PoolAPIRetryInterval)))
+            }
+        } While (($AlgoData | Get-Member -MemberType NoteProperty).Name.Count -lt 2)
 
         ForEach ($Algo in (($AlgoData | Get-Member -MemberType NoteProperty).Name)) { 
             $Currency = If ($Currencies.Symbol) { ($Currencies | Sort-Object Estimate)[-1].Symbol } Else { "" }
@@ -138,7 +140,7 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
         $AlgoObject = @($AlgoObject | Where-Object { $_.Date -ge $CurDate.AddMinutes(-($BrainConfig.SampleSizeMinutes + 10)) })
 
         If ($Config.PoolsConfig.$BrainName.BrainDebug) { 
-            Write-Message -Level Debug ("$PoolVariant AlgoObject size: {0:n0} Bytes" -f ($AlgoObject | ConvertTo-Json -compress).length)
+            Write-Message -Level Debug ("$PoolVariant AlgoObject size: {0:n0} Bytes" -f ($AlgoObject | ConvertTo-Json -Compress).length)
             Get-MemoryUsage
         }
     }

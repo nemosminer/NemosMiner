@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.2.3.3
-Version date:   08 January 2023
+Version:        4.2.3.4
+Version date:   14 January 2023
 #>
 
 Do {
@@ -339,7 +339,7 @@ Do {
             }
         }
 
-        $Variables.EarningsChartData = [PSCustomObject]@{ 
+        $EarningsChartData = [PSCustomObject]@{ 
             Labels = @(
                 $ChartData.Group.Date | Sort-Object -Unique | ForEach-Object { 
                     [DateTime]::parseexact($_, "yyyy-MM-dd", $null).ToShortDateString()
@@ -349,6 +349,7 @@ Do {
             Earnings = $PoolChartData
         }
 
+        $Variables.EarningsChartData = $EarningsChartData 
         $Variables.EarningsChartData | ConvertTo-Json | Out-File -FilePath ".\Data\EarningsChartData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
 
         # At least 31 days are needed for Growth720

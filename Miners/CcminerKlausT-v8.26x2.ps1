@@ -11,17 +11,17 @@ $Path = ".\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "C11";           MinMemGB = 2; Minerset = 1; WarmupTimes = @(60, 0);  Arguments = " --algo c11 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
-    [PSCustomObject]@{ Algorithm = "Keccak";        MinMemGB = 2; Minerset = 3; WarmupTimes = @(60, 0);  Arguments = " --algo keccak --diff-multiplier 2 --intensity 29" } # ASIC
-    [PSCustomObject]@{ Algorithm = "Lyra2RE2";      MinMemGB = 2; Minerset = 3; WarmupTimes = @(60, 0);  Arguments = " --algo lyra2v2" } # ASIC
-    [PSCustomObject]@{ Algorithm = "Neoscrypt";     MinMemGB = 2; Minerset = 1; WarmupTimes = @(60, 0);  Arguments = " --algo neoscrypt --intensity 15.5" } # FPGA
-    [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinMemGB = 2; Minerset = 1; WarmupTimes = @(60, 0);  Arguments = " --algo neoscrypt-xaya --intensity 15.5" } # CryptoDredge-v0.27.0 is fastest
-    [PSCustomObject]@{ Algorithm = "Skein";         MinMemGB = 0; Minerset = 3; WarmupTimes = @(60, 0);  Arguments = " --algo skein" } # FPGA
-    [PSCustomObject]@{ Algorithm = "Veltor";        MinMemGB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo veltor --intensity 23" }
-    [PSCustomObject]@{ Algorithm = "Whirlcoin";     MinMemGB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo whirlcoin" }
-    [PSCustomObject]@{ Algorithm = "Whirlpool";     MinMemGB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo whirlpool" }
-    [PSCustomObject]@{ Algorithm = "X11evo";        MinMemGB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo x11evo --intensity 21" }
-    [PSCustomObject]@{ Algorithm = "X17";           MinMemGB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo x17 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
+    [PSCustomObject]@{ Algorithm = "C11";           MinMemGiB = 2; Minerset = 1; WarmupTimes = @(60, 0);  Arguments = " --algo c11 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
+    [PSCustomObject]@{ Algorithm = "Keccak";        MinMemGiB = 2; Minerset = 3; WarmupTimes = @(60, 0);  Arguments = " --algo keccak --diff-multiplier 2 --intensity 29" } # ASIC
+    [PSCustomObject]@{ Algorithm = "Lyra2RE2";      MinMemGiB = 2; Minerset = 3; WarmupTimes = @(60, 0);  Arguments = " --algo lyra2v2" } # ASIC
+    [PSCustomObject]@{ Algorithm = "Neoscrypt";     MinMemGiB = 2; Minerset = 1; WarmupTimes = @(60, 0);  Arguments = " --algo neoscrypt --intensity 15.5" } # FPGA
+    [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinMemGiB = 2; Minerset = 1; WarmupTimes = @(60, 0);  Arguments = " --algo neoscrypt-xaya --intensity 15.5" } # CryptoDredge-v0.27.0 is fastest
+    [PSCustomObject]@{ Algorithm = "Skein";         MinMemGiB = 0; Minerset = 3; WarmupTimes = @(60, 0);  Arguments = " --algo skein" } # FPGA
+    [PSCustomObject]@{ Algorithm = "Veltor";        MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo veltor --intensity 23" }
+    [PSCustomObject]@{ Algorithm = "Whirlcoin";     MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo whirlcoin" }
+    [PSCustomObject]@{ Algorithm = "Whirlpool";     MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo whirlpool" }
+    [PSCustomObject]@{ Algorithm = "X11evo";        MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo x11evo --intensity 21" }
+    [PSCustomObject]@{ Algorithm = "X17";           MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo x17 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] }) { 
@@ -33,12 +33,12 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Algorithms | ForEach-Object { 
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $_.MinMemGB) { 
+            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -ge $_.MinMemGiB) { 
 
                 $Arguments = $_.Arguments
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
-                If ($AvailableMiner_Devices | Where-Object MemoryGB -le 2) { $Arguments = $Arguments -replace " --intensity [0-9\.]+" }
+                If ($AvailableMiner_Devices | Where-Object MemoryGiB -le 2) { $Arguments = $Arguments -replace " --intensity [0-9\.]+" }
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator

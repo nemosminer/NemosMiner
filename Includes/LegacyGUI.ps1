@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           LegacyGUI.psm1
-Version:        4.2.3.3
-Version date:   08 January 2023
+Version:        4.2.3.4
+Version date:   14 January 2023
 #>
 
 [Void] [System.Reflection.Assembly]::LoadWithPartialName(“System.Windows.Forms”)
@@ -142,28 +142,27 @@ $LabelMiningStatus.Height = 30
 $LabelMiningStatus.Location = [System.Drawing.Point]::new(14, 4)
 $LabelMiningStatus.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 12)
 $LabelMiningStatus.TextAlign = "MiddleLeft"
-$LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
+$LabelMiningStatus.ForeColor = [System.Drawing.Color]::Black
 $LabelMiningStatus.BackColor = [System.Drawing.Color]::Transparent
 $LabelMiningStatus.Visible = $true
 $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
 $LegacyGUIControls += $LabelMiningStatus
 
-$TextBoxSummary = New-Object System.Windows.Forms.TextBox
-$TextBoxSummary.Tag = ""
-$TextBoxSummary.Lines = ""
-$TextBoxSummary.AutoSize = $false
-$TextBoxSummary.Height = 47
-$TextBoxSummary.Location = [System.Drawing.Point]::new(16, 36)
-$TextBoxSummary.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$TextBoxSummary.TextAlign = "MiddleLeft"
-$TextBoxSummary.BorderStyle = 'None'
-$TextBoxSummary.BackColor = [System.Drawing.SystemColors]::Control
-$TextBoxSummary.Visible = $true
-$TextBoxSummary.ReadOnly = $true
-$TextBoxSummary.MultiLine = $true
-$TextBoxSummary.ForeColor = [System.Drawing.Color]::Green
-$TextBoxSummary.BackColor = [System.Drawing.Color]::Transparent
-$LegacyGUIControls += $TextBoxSummary
+$LabelMiningSummary = New-Object System.Windows.Forms.Label
+$LabelMiningSummary.Tag = ""
+$LabelMiningSummary.AutoSize = $false
+$LabelMiningSummary.Height = 47
+$LabelMiningSummary.Location = [System.Drawing.Point]::new(16, 38)
+$LabelMiningSummary.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$LabelMiningSummary.TextAlign = "MiddleLeft"
+$LabelMiningSummary.BorderStyle = 'None'
+$LabelMiningSummary.BackColor = [System.Drawing.SystemColors]::Control
+$LabelMiningSummary.Visible = $true
+$LabelMiningSummary.ReadOnly = $true
+$LabelMiningSummary.MultiLine = $true
+$LabelMiningSummary.ForeColor = [System.Drawing.Color]::Black
+$LabelMiningSummary.BackColor = [System.Drawing.Color]::Transparent
+$LegacyGUIControls += $LabelMiningSummary
 
 # Miner context menu items
 $ContextMenuStrip = New-Object System.Windows.Forms.ContextMenuStrip
@@ -224,11 +223,6 @@ $LaunchedMinersDGV.Add_MouseUP(
     { 
         If ($_.Button -eq [System.Windows.Forms.MouseButtons]::Right) { 
             $ContextMenuStrip.Enabled = [Boolean]$This.SelectedRows
-            $ContextMenuStripItem5.Visible = $false
-            $ContextMenuStripItem1.Text = "Re-Benchmark"
-            $ContextMenuStripItem2.Text = "Re-Measure Power Usage"
-            $ContextMenuStripItem3.Text = "Mark as failed";
-            $ContextMenuStripItem4.Text = "Disable"
         }
     }
 )
@@ -590,12 +584,15 @@ Function Update-TabControl {
     Switch ($TabControl.SelectedTab.Text) { 
         "Run" { 
             $ContextMenuStripItem1.Text = "Re-Benchmark"
+            $ContextMenuStripItem1.Visible = $true
             $ContextMenuStripItem2.Text = "Re-Measure Power Usage"
+            $ContextMenuStripItem2.Visible = $true
             $ContextMenuStripItem3.Text = "Mark as failed"
+            $ContextMenuStripItem3.Visible = $true
             $ContextMenuStripItem4.Text = "Disable"
-            $ContextMenuStripItem5.Text = "Remove Watchdog Timer"
             $ContextMenuStripItem4.Visible = $true
-            $ContextMenuStripItem5.Visible = $False
+            # $ContextMenuStripItem5.Text = "Remove Watchdog Timer"
+            $ContextMenuStripItem5.Visible = $false
 
             If ($Variables.TextBoxSystemLog.SelectionLength) { 
                 $Variables.TextBoxSystemLog.Select()
@@ -780,11 +777,14 @@ Function Update-TabControl {
         }
         "Miners" { 
             $ContextMenuStripItem1.Text = "Re-Benchmark"
+            $ContextMenuStripItem1.Visible = $true
             $ContextMenuStripItem2.Text = "Re-Measure Power Usage"
+            $ContextMenuStripItem2.Visible = $true
             $ContextMenuStripItem3.Text = "Mark as failed"
+            $ContextMenuStripItem3.Visible = $true
             $ContextMenuStripItem4.Text = "Disable"
-            $ContextMenuStripItem5.Text = "Remove Watchdog Timer"
             $ContextMenuStripItem4.Visible = $true
+            $ContextMenuStripItem5.Text = "Remove Watchdog Timer"
             $ContextMenuStripItem5.Visible = -not $RadioButtonMinersBest.Checked
 
             If ($Variables.Miners) { 
@@ -834,10 +834,12 @@ Function Update-TabControl {
             Else { $LabelMiners.Text = "Waiting for data..." }
         }
         "Pools" { 
-            $ContextMenuStripItem5.Visible = $false
-            $ContextMenuStripItem1.Text = "Enable Algorithm @ Pool"
-            $ContextMenuStripItem2.Text = "Disable Algorithm @ Pool"
+            # $ContextMenuStripItem1.Text = "Enable Algorithm @ Pool"
+            $ContextMenuStripItem1.Visible = $false
+            # $ContextMenuStripItem2.Text = "Disable Algorithm @ Pool"
+            $ContextMenuStripItem2.Visible = $false
             $ContextMenuStripItem3.Text = "Reset Pool Stat Data"
+            $ContextMenuStripItem3.Visible = $true
             $ContextMenuStripItem4.Text = "Remove Watchdog Timer"
             $ContextMenuStripItem4.Visible = (-not $RadioButtonPoolsBest.Checked)
             $ContextMenuStripItem5.Visible = $false
@@ -983,7 +985,7 @@ Function Form_Resize {
     $ButtonPause.Location = [System.Drawing.Point]::new($LegacyGUIForm.Width - 236, 12)
     $ButtonStop.Location = [System.Drawing.Point]::new($LegacyGUIForm.Width - 136, 12)
 
-    $TextBoxSummary.Width = $Variables.TextBoxSystemLog.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $EarningsDGV.Width = $MinersPanel.Width = $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $TabControl.Width - 24
+    $LabelMiningSummary.Width = $Variables.TextBoxSystemLog.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $EarningsDGV.Width = $MinersPanel.Width = $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $TabControl.Width - 24
 
     $EarningsDGV.Height = ($EarningsDGV.Rows.Height | Measure-Object -Sum).Sum + $EarningsDGV.ColumnHeadersHeight
     If ($EarningsDGV.Height -gt $TabControl.Height / 2) { 
@@ -1036,43 +1038,21 @@ $LegacyGUIForm.Add_Load(
 
         If ($Config.LegacyGUIStartMinimized) { $LegacyGUIForm.WindowState = [System.Windows.Forms.FormWindowState]::Minimized }
 
-        Switch ($Variables.NewMiningStatus) { 
-            "Idle" { 
-                $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) is stopped"
-                $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Red
-                $ButtonPause.Enabled = $true
-                $ButtonStart.Enabled = $true
-                $ButtonStop.Enabled = $false
-            }
-            "Paused" { 
-                $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) is paused"
-                $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Blue
-                $ButtonPause.Enabled = $false
-                $ButtonStart.Enabled = $true
-                $ButtonStop.Enabled = $true
-            }
-            "Running" { 
-                $LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) is running"
-                $LabelMiningStatus.ForeColor = [System.Drawing.Color]::Green
-                $ButtonPause.Enabled = $true
-                $ButtonStart.Enabled = $false
-                $ButtonStop.Enabled = $true
-            }
-        }
-
         $TimerUI = New-Object System.Windows.Forms.Timer
         $TimerUI.Interval = 250
         $TimerUI.Add_Tick(
             { 
-                If ($Variables.APIRunspace ) { 
-                    $EditConfigLink.Tag = "WebGUI"
-                    $EditConfigLink.Text = "Edit configuration in the Web GUI"
+                If ($Variables.APIRunspace) { 
+                    If ($EditConfigLink.Tag -ne "WebGUI") { 
+                        $EditConfigLink.Tag = "WebGUI"
+                        $EditConfigLink.Text = "Edit configuration in the Web GUI"
+                    }
                 }
-                Else { 
+                ElseIf ($EditConfigLink.Tag -ne "Edit-File") { 
                     $EditConfigLink.Tag = "Edit-File"
                     $EditConfigLink.Text = "Edit configuration file '$($Variables.ConfigFile)' in notepad."
                 }
-                MainLoop
+                [Void](MainLoop)
             }
         )
         $TimerUI.Start()
@@ -1289,49 +1269,49 @@ $ContextMenuStrip.Add_ItemClicked(
         }
         ElseIf ($This.SourceControl.Name -match "PoolsDGV") { 
             Switch ($_.ClickedItem.Text) { 
-                "Enable Algorithm @ Pool" { 
-                    $This.SourceControl.SelectedRows | ForEach-Object { 
-                        $SelectedPoolName = $_.Cells[5].Value
-                        $SelectedPoolAlgorithm = $_.Cells[0].Value
-                        $Variables.Pools | Where-Object Name -EQ $SelectedPoolName | Where-Object Algorithm -EQ $SelectedPoolAlgorithm | ForEach-Object { 
-                            $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
-                            $Data += "`n$($Stat_Name)"
-                            Enable-Stat -Name "$($Stat_Name)_Profit"
-                            $_.Disabled = $false
-                            $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Disabled by user" } | Sort-Object -Unique)
-                            If (-not $_.Reasons) { $_.Available = $true }
-                        }
-                    }
-                    $ContextMenuStrip.Visible = $false
-                    If ($Data) { 
-                        $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "Pool" } Else { "pools" }) enabled."
-                        Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`n`n$Message"
-                        Update-TabControl
-                    }
-                }
-                "Disable Algorithm @ Pool" { 
-                    $This.SourceControl.SelectedRows | ForEach-Object { 
-                        $SelectedPoolName = $_.Cells[5].Value
-                        $SelectedPoolAlgorithm = $_.Cells[0].Value
-                        $Variables.Pools | Where-Object Name -EQ $SelectedPoolName | Where-Object Algorithm -EQ $SelectedPoolAlgorithm | ForEach-Object { 
-                            $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
-                            $Data += "`n$($Stat_Name)"
-                            Disable-Stat -Name "$($Stat_Name)_Profit"
-                            $_.Disabled = $false
-                            $_.Reasons += "Disabled by user"
-                            $_.Reasons = $_.Reasons | Sort-Object -Unique
-                            $_.Available = $false
-                        }
-                    }
-                    $ContextMenuStrip.Visible = $false
-                    If ($Data) { 
-                        $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "Pool" } Else { "pools" }) disabled."
-                        Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`n`n$Message"
-                        Update-TabControl
-                    }
-                }
+                # "Enable Algorithm @ Pool" { 
+                #     $This.SourceControl.SelectedRows | ForEach-Object { 
+                #         $SelectedPoolName = $_.Cells[5].Value
+                #         $SelectedPoolAlgorithm = $_.Cells[0].Value
+                #         $Variables.Pools | Where-Object Name -EQ $SelectedPoolName | Where-Object Algorithm -EQ $SelectedPoolAlgorithm | ForEach-Object { 
+                #             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
+                #             $Data += "`n$($Stat_Name)"
+                #             Enable-Stat -Name "$($Stat_Name)_Profit"
+                #             $_.Disabled = $false
+                #             $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Disabled by user" } | Sort-Object -Unique)
+                #             If (-not $_.Reasons) { $_.Available = $true }
+                #         }
+                #     }
+                #     $ContextMenuStrip.Visible = $false
+                #     If ($Data) { 
+                #         $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "Pool" } Else { "pools" }) enabled."
+                #         Write-Message -Level Verbose "GUI: $Message"
+                #         $Data += "`n`n$Message"
+                #         Update-TabControl
+                #     }
+                # }
+                # "Disable Algorithm @ Pool" { 
+                #     $This.SourceControl.SelectedRows | ForEach-Object { 
+                #         $SelectedPoolName = $_.Cells[5].Value
+                #         $SelectedPoolAlgorithm = $_.Cells[0].Value
+                #         $Variables.Pools | Where-Object Name -EQ $SelectedPoolName | Where-Object Algorithm -EQ $SelectedPoolAlgorithm | ForEach-Object { 
+                #             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
+                #             $Data += "`n$($Stat_Name)"
+                #             Disable-Stat -Name "$($Stat_Name)_Profit"
+                #             $_.Disabled = $false
+                #             $_.Reasons += "Disabled by user"
+                #             $_.Reasons = $_.Reasons | Sort-Object -Unique
+                #             $_.Available = $false
+                #         }
+                #     }
+                #     $ContextMenuStrip.Visible = $false
+                #     If ($Data) { 
+                #         $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "Pool" } Else { "pools" }) disabled."
+                #         Write-Message -Level Verbose "GUI: $Message"
+                #         $Data += "`n`n$Message"
+                #         Update-TabControl
+                #     }
+                # }
                 "Reset Pool Stat Data" { 
                     $This.SourceControl.SelectedRows | ForEach-Object { 
                         $SelectedPoolName = $_.Cells[5].Value

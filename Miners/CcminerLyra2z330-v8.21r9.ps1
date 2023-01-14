@@ -6,11 +6,11 @@ $Path = ".\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGB = 3; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo lyra2z330  --intensity 12.5" } # CcminerLyraYesscrypt-v8.21r18v5 is fastest on single GPU's
-    [PSCustomObject]@{ Algorithm = "Yescrypt";    MinMemGB = 3; MinerSet = 0; WarmupTimes = @(75, 15); Arguments = " --algo yescrypt" }
-    [PSCustomObject]@{ Algorithm = "YescryptR16"; MinMemGB = 3; Minerset = 1; WarmupTimes = @(30, 0);  Arguments = " --algo yescryptr16 --intensity 13.3" } # CcminerLyraYesscrypt-v8.21r18v5 is fastest
-    [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGB = 3; MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algo yescryptr32 --intensity 12.3" } # CcminerLyraYesscrypt-v8.21r18v5 is fastest
-    [PSCustomObject]@{ Algorithm = "YescryptR8";  MinMemGB = 2; Minerset = 2; WarmupTimes = @(30, 0);  Arguments = " --algo yescryptr8" }
+    [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGiB = 3; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo lyra2z330  --intensity 12.5" } # CcminerLyraYesscrypt-v8.21r18v5 is fastest on single GPU's
+    [PSCustomObject]@{ Algorithm = "Yescrypt";    MinMemGiB = 3; MinerSet = 0; WarmupTimes = @(75, 15); Arguments = " --algo yescrypt" }
+    [PSCustomObject]@{ Algorithm = "YescryptR16"; MinMemGiB = 3; Minerset = 1; WarmupTimes = @(30, 0);  Arguments = " --algo yescryptr16 --intensity 13.3" } # CcminerLyraYesscrypt-v8.21r18v5 is fastest
+    [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGiB = 3; MinerSet = 0; WarmupTimes = @(60, 0);  Arguments = " --algo yescryptr32 --intensity 12.3" } # CcminerLyraYesscrypt-v8.21r18v5 is fastest
+    [PSCustomObject]@{ Algorithm = "YescryptR8";  MinMemGiB = 2; Minerset = 2; WarmupTimes = @(30, 0);  Arguments = " --algo yescryptr8" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] }) { 
@@ -22,12 +22,12 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
 
         $Algorithms | ForEach-Object { 
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGB -ge $_.MinMemGB) { 
+            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -ge $_.MinMemGiB) { 
 
                 $Arguments = $_.Arguments
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
 
-                If ($AvailableMiner_Devices | Where-Object MemoryGB -le 2) { $Arguments = $Arguments -replace " --intensity [0-9\.]+" }
+                If ($AvailableMiner_Devices | Where-Object MemoryGiB -le 2) { $Arguments = $Arguments -replace " --intensity [0-9\.]+" }
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo", "timeout") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
