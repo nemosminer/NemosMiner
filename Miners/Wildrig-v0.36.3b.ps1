@@ -1,6 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.Type -eq "NVIDIA"})) { Return }
 
-$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.36.2b/wildrig-multi-windows-0.36.2.7z"
+$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.36.3b/wildrig-multi-windows-0.36.3b.7z"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\wildrig.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -17,7 +17,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Bmw512";           Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            MinerSet = 0; WarmupTimes = @(60, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo bmw512" } # FPGA
     [PSCustomObject]@{ Algorithm = "Bitcore";          Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo bitcore" }
     [PSCustomObject]@{ Algorithm = "C11";              Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(60, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo c11" }
-#   [PSCustomObject]@{ Algorithm = "CurveHash";        Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            MinerSet = 0; WarmupTimes = @(60, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo curvehash" } # Algorithm is broken
+    [PSCustomObject]@{ Algorithm = "CurveHash";        Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            MinerSet = 0; WarmupTimes = @(60, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo curvehash" }
     [PSCustomObject]@{ Algorithm = "Dedal";            Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo dedal" } # CryptoDredge-v0.27.0 is fastest
     [PSCustomObject]@{ Algorithm = "EvrProgPow";       Type = "AMD"; Fee = @(0.01); MinMemGiB = $MinerPools[0].EvrProgPow.DAGSizeGiB + 0.62;  MinerSet = 0; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo evrprogpow" } 
     [PSCustomObject]@{ Algorithm = "Exosis";           Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo exosis" } 
@@ -83,7 +83,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Blake2bGlt";       Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo blake2b-glt --watchdog" }
     [PSCustomObject]@{ Algorithm = "Bmw512";           Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;                                            MinerSet = 0; WarmupTimes = @(60, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo bmw512 --watchdog" } # FPGA
     [PSCustomObject]@{ Algorithm = "C11";              Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 1; WarmupTimes = @(60, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo c11 --watchdog" }
-#   [PSCustomObject]@{ Algorithm = "CurveHash";        Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;                                            MinerSet = 0; WarmupTimes = @(60, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo curvehash --watchdog" } # Algorithm is broken
+    [PSCustomObject]@{ Algorithm = "CurveHash";        Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;                                            MinerSet = 0; WarmupTimes = @(60, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo curvehash --watchdog" }
     [PSCustomObject]@{ Algorithm = "Dedal";            Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo dedal --watchdog" } # CryptoDredge-v0.27.0 is fastest
     [PSCustomObject]@{ Algorithm = "EvrProgPow";       Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = $MinerPools[0].EvrProgPow.DAGSizeGiB + 0.62;  Minerset = 1; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo evrprogpow --watchdog" }
     [PSCustomObject]@{ Algorithm = "Exosis";           Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo exosis --watchdog" }

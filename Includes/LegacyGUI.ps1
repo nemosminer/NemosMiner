@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           LegacyGUI.psm1
-Version:        4.2.3.4
-Version date:   14 January 2023
+Version:        4.2.3.5
+Version date:   22 January 2023
 #>
 
 [Void] [System.Reflection.Assembly]::LoadWithPartialName(“System.Windows.Forms”)
@@ -56,6 +56,9 @@ $RigMonitorPage.ToolTipText = "Consolidated overview of all known mining rigs"
 $SwitchingPage = New-Object System.Windows.Forms.TabPage
 $SwitchingPage.Text = "Switching Log"
 $SwitchingPage.ToolTipText = "List of the previously launched miners"
+$WatchdogTimersPage = New-Object System.Windows.Forms.TabPage
+$WatchdogTimersPage.Text = "Watchdog Timers"
+$WatchdogTimersPage.ToolTipText = "List of all watchdog timers"
 
 $ButtonStart = New-Object System.Windows.Forms.Button
 $ButtonStart.Text = "Start mining"
@@ -108,15 +111,15 @@ $ButtonStop.Add_Click(
 )
 $LegacyGUIControls += $ButtonStop
 
-$LabelCopyright = New-Object System.Windows.Forms.LinkLabel
-$LabelCopyright.Size = New-Object System.Drawing.Size(350, 20)
-$LabelCopyright.LinkColor = [System.Drawing.Color]::Blue
-$LabelCopyright.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$LabelCopyright.ActiveLinkColor = [System.Drawing.Color]::Blue
-$LabelCopyright.TextAlign = "MiddleRight"
-$LabelCopyright.Text = "Copyright (c) 2018-$((Get-Date).Year) Nemo, MrPlus && UselessGuru"
-$LabelCopyright.Add_Click({ Start-Process "https://github.com/Minerx117/NemosMiner/blob/master/LICENSE" })
-$LegacyGUIControls += $LabelCopyright
+$CopyrightLabel = New-Object System.Windows.Forms.LinkLabel
+$CopyrightLabel.Size = New-Object System.Drawing.Size(350, 20)
+$CopyrightLabel.LinkColor = [System.Drawing.Color]::Blue
+$CopyrightLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$CopyrightLabel.ActiveLinkColor = [System.Drawing.Color]::Blue
+$CopyrightLabel.TextAlign = "MiddleRight"
+$CopyrightLabel.Text = "Copyright (c) 2018-$((Get-Date).Year) Nemo, MrPlus && UselessGuru"
+$CopyrightLabel.Add_Click({ Start-Process "https://github.com/Minerx117/NemosMiner/blob/master/LICENSE" })
+$LegacyGUIControls += $CopyrightLabel
 
 $EditConfigLink = New-Object System.Windows.Forms.LinkLabel
 $EditConfigLink.Size = New-Object System.Drawing.Size(350, 20)
@@ -127,42 +130,33 @@ $EditConfigLink.TextAlign = "MiddleLeft"
 $EditConfigLink.Add_Click({ If ($EditConfigLink.Tag -eq "WebGUI") { Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/configedit.html" } Else { Edit-File $Variables.ConfigFile } })
 $LegacyGUIControls += $EditConfigLink
 
-$TabControl = New-Object System.Windows.Forms.TabControl
-$TabControl.Location = [System.Drawing.Point]::new(14, 94)
-$TabControl.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$TabControl.Name = "TabControl"
-$TabControl.ShowToolTips = $true
-$TabControl.Controls.AddRange(@($RunPage, $EarningsPage, $MinersPage, $PoolsPage, $RigMonitorPage, $SwitchingPage))
-$TabControl.Add_SelectedIndexChanged({ Update-TabControl })
-$LegacyGUIForm.Controls.Add($TabControl)
+$MiningStatusLabel = New-Object System.Windows.Forms.Label
+$MiningStatusLabel.AutoSize = $false
+$MiningStatusLabel.Height = 30
+$MiningStatusLabel.Location = [System.Drawing.Point]::new(14, 6)
+$MiningStatusLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 12)
+$MiningStatusLabel.TextAlign = "MiddleLeft"
+$MiningStatusLabel.ForeColor = [System.Drawing.Color]::Black
+$MiningStatusLabel.BackColor = [System.Drawing.Color]::Transparent
+$MiningStatusLabel.Visible = $true
+$MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
+$LegacyGUIControls += $MiningStatusLabel
 
-$LabelMiningStatus = New-Object System.Windows.Forms.Label
-$LabelMiningStatus.AutoSize = $false
-$LabelMiningStatus.Height = 30
-$LabelMiningStatus.Location = [System.Drawing.Point]::new(14, 4)
-$LabelMiningStatus.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 12)
-$LabelMiningStatus.TextAlign = "MiddleLeft"
-$LabelMiningStatus.ForeColor = [System.Drawing.Color]::Black
-$LabelMiningStatus.BackColor = [System.Drawing.Color]::Transparent
-$LabelMiningStatus.Visible = $true
-$LabelMiningStatus.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
-$LegacyGUIControls += $LabelMiningStatus
-
-$LabelMiningSummary = New-Object System.Windows.Forms.Label
-$LabelMiningSummary.Tag = ""
-$LabelMiningSummary.AutoSize = $false
-$LabelMiningSummary.Height = 47
-$LabelMiningSummary.Location = [System.Drawing.Point]::new(16, 38)
-$LabelMiningSummary.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$LabelMiningSummary.TextAlign = "MiddleLeft"
-$LabelMiningSummary.BorderStyle = 'None'
-$LabelMiningSummary.BackColor = [System.Drawing.SystemColors]::Control
-$LabelMiningSummary.Visible = $true
-$LabelMiningSummary.ReadOnly = $true
-$LabelMiningSummary.MultiLine = $true
-$LabelMiningSummary.ForeColor = [System.Drawing.Color]::Black
-$LabelMiningSummary.BackColor = [System.Drawing.Color]::Transparent
-$LegacyGUIControls += $LabelMiningSummary
+$MiningSummaryLabel = New-Object System.Windows.Forms.Label
+$MiningSummaryLabel.Tag = ""
+$MiningSummaryLabel.AutoSize = $false
+$MiningSummaryLabel.Height = 47
+$MiningSummaryLabel.Location = [System.Drawing.Point]::new(16, 42)
+$MiningSummaryLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$MiningSummaryLabel.TextAlign = "MiddleLeft"
+$MiningSummaryLabel.BorderStyle = 'None'
+$MiningSummaryLabel.BackColor = [System.Drawing.SystemColors]::Control
+$MiningSummaryLabel.Visible = $true
+$MiningSummaryLabel.ReadOnly = $true
+$MiningSummaryLabel.MultiLine = $true
+$MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Black
+$MiningSummaryLabel.BackColor = [System.Drawing.Color]::Transparent
+$LegacyGUIControls += $MiningSummaryLabel
 
 # Miner context menu items
 $ContextMenuStrip = New-Object System.Windows.Forms.ContextMenuStrip
@@ -191,13 +185,13 @@ $CheckBoxColumn.Name = "CheckBoxColumn"
 # Run Page Controls
 $RunPageControls = @()
 
-$LabelLaunchedMiners = New-Object System.Windows.Forms.Label
-$LabelLaunchedMiners.AutoSize = $false
-$LabelLaunchedMiners.Width = 450
-$LabelLaunchedMiners.Height = 16
-$LabelLaunchedMiners.Location = [System.Drawing.Point]::new(6, 8)
-$LabelLaunchedMiners.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$RunPageControls += $LabelLaunchedMiners
+$LaunchedMinersLabel = New-Object System.Windows.Forms.Label
+$LaunchedMinersLabel.AutoSize = $false
+$LaunchedMinersLabel.Width = 450
+$LaunchedMinersLabel.Height = 16
+$LaunchedMinersLabel.Location = [System.Drawing.Point]::new(6, 8)
+$LaunchedMinersLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$RunPageControls += $LaunchedMinersLabel
 
 $LaunchedMinersDGV = New-Object System.Windows.Forms.DataGridView
 $LaunchedMinersDGV.Name = "LaunchedMinersDGV"
@@ -228,13 +222,13 @@ $LaunchedMinersDGV.Add_MouseUP(
 )
 $RunPageControls += $LaunchedMinersDGV
 
-$LabelSystemLog = New-Object System.Windows.Forms.Label
-$LabelSystemLog.AutoSize = $false
-$LabelSystemLog.Width = 450
-$LabelSystemLog.Height = 16
-$LabelSystemLog.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$LabelSystemLog.Text = "System Log"
-$RunPageControls += $LabelSystemLog
+$SystemLogLabel = New-Object System.Windows.Forms.Label
+$SystemLogLabel.AutoSize = $false
+$SystemLogLabel.Width = 450
+$SystemLogLabel.Height = 16
+$SystemLogLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$SystemLogLabel.Text = "System Log"
+$RunPageControls += $SystemLogLabel
 
 $Variables.TextBoxSystemLog = New-Object System.Windows.Forms.TextBox
 $Variables.TextBoxSystemLog.MultiLine = $true
@@ -256,13 +250,13 @@ $EarningsChart.BackColor = [System.Drawing.Color]::FromArgb(255, 240, 240, 240) 
 $EarningsChart.Location = [System.Drawing.Point]::new(-10, -5) 
 $EarningsPageControls += $EarningsChart
 
-$LabelEarnings = New-Object System.Windows.Forms.Label
-$LabelEarnings.AutoSize = $false
-$LabelEarnings.Width = 450
-$LabelEarnings.Height = 16
-$LabelEarnings.Location = [System.Drawing.Point]::new(8, 146)
-$LabelEarnings.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$EarningsPageControls += $LabelEarnings
+$EarningsLabel = New-Object System.Windows.Forms.Label
+$EarningsLabel.AutoSize = $false
+$EarningsLabel.Width = 450
+$EarningsLabel.Height = 16
+$EarningsLabel.Location = [System.Drawing.Point]::new(8, 146)
+$EarningsLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$EarningsPageControls += $EarningsLabel
 
 $EarningsDGV = New-Object System.Windows.Forms.DataGridView
 $EarningsDGV.Name = "EarningsDGV"
@@ -315,13 +309,13 @@ $RadioButtonMiners.Location = [System.Drawing.Point]::new(245, 8)
 $RadioButtonMiners.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
 $RadioButtonMiners.Add_Click({ Update-TabControl })
 
-$LabelMiners = New-Object System.Windows.Forms.Label
-$LabelMiners.AutoSize = $false
-$LabelMiners.Width = 450
-$LabelMiners.Height = 18
-$LabelMiners.Location = [System.Drawing.Point]::new(6, 8)
-$LabelMiners.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$MinersPageControls += $LabelMiners
+$MinersLabel = New-Object System.Windows.Forms.Label
+$MinersLabel.AutoSize = $false
+$MinersLabel.Width = 450
+$MinersLabel.Height = 18
+$MinersLabel.Location = [System.Drawing.Point]::new(6, 8)
+$MinersLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$MinersPageControls += $MinersLabel
 
 $MinersPanel = New-Object System.Windows.Forms.Panel
 $MinersPanel.Height = 24
@@ -393,13 +387,13 @@ $RadioButtonPools.Location = [System.Drawing.Point]::new(250, 8)
 $RadioButtonPools.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
 $RadioButtonPools.Add_Click({ Update-TabControl })
 
-$LabelPools = New-Object System.Windows.Forms.Label
-$LabelPools.AutoSize = $false
-$LabelPools.Width = 450
-$LabelPools.Height = 18
-$LabelPools.Location = [System.Drawing.Point]::new(6, 8)
-$LabelPools.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$PoolsPageControls += $LabelPools
+$PoolsLabel = New-Object System.Windows.Forms.Label
+$PoolsLabel.AutoSize = $false
+$PoolsLabel.Width = 450
+$PoolsLabel.Height = 18
+$PoolsLabel.Location = [System.Drawing.Point]::new(6, 8)
+$PoolsLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$PoolsPageControls += $PoolsLabel
 
 $PoolsPanel = New-Object System.Windows.Forms.Panel
 $PoolsPanel.Height = 24
@@ -440,13 +434,13 @@ $PoolsPageControls += $PoolsDGV
 # Monitoring Page Controls
 $RigMonitorPageControls = @()
 
-$LabelWorkers = New-Object System.Windows.Forms.Label
-$LabelWorkers.AutoSize = $false
-$LabelWorkers.Width = 450
-$LabelWorkers.Height = 18
-$LabelWorkers.Location = [System.Drawing.Point]::new(6, 8)
-$LabelWorkers.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$RigMonitorPageControls += $LabelWorkers
+$WorkersLabel = New-Object System.Windows.Forms.Label
+$WorkersLabel.AutoSize = $false
+$WorkersLabel.Width = 450
+$WorkersLabel.Height = 18
+$WorkersLabel.Location = [System.Drawing.Point]::new(6, 8)
+$WorkersLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$RigMonitorPageControls += $WorkersLabel
 
 $WorkersDGV = New-Object System.Windows.Forms.DataGridView
 $WorkersDGV.Location = [System.Drawing.Point]::new(8, 32)
@@ -461,7 +455,7 @@ $WorkersDGV.AllowUserToAddRows = $false
 $WorkersDGV.ColumnHeadersVisible = $true
 $WorkersDGV.AllowUserToOrderColumns = $true
 $WorkersDGV.AllowUserToResizeColumns = $true
-$WorkersDGV.AllowUserToResizeRows = $true
+$WorkersDGV.AllowUserToResizeRows = $false
 $WorkersDGV.ReadOnly = $true
 $WorkersDGV.EnableHeadersVisualStyles = $false
 $WorkersDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
@@ -470,13 +464,41 @@ $RigMonitorPageControls += $WorkersDGV
 # Switching Page Controls
 $SwitchingPageControls = @()
 
+
+$SwitchingLogLabel = New-Object System.Windows.Forms.Label
+$SwitchingLogLabel.AutoSize = $false
+$SwitchingLogLabel.Width = 450
+$SwitchingLogLabel.Height = 18
+$SwitchingLogLabel.Location = [System.Drawing.Point]::new(6, 8)
+$SwitchingLogLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$SwitchingPageControls += $SwitchingLogLabel
+
+$SwitchingLogClearButton = New-Object System.Windows.Forms.Button
+$SwitchingLogClearButton.Text = "Clear Switching Log"
+$SwitchingLogClearButton.Location = [System.Drawing.Point]::new(6, 30)
+$SwitchingLogClearButton.Width = 180
+$SwitchingLogClearButton.Height = 28
+$SwitchingLogClearButton.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$SwitchingLogClearButton.Visible = $true
+$SwitchingLogClearButton.Add_Click(
+    { 
+        Get-ChildItem -Path ".\Logs\switchinglog.csv" -File | Remove-Item -Force
+        $SwitchingDGV.DataSource = $null
+        $Data = "Switching log '.\Logs\switchinglog.csv' cleared."
+        Write-Message -Level Verbose "GUI: $Data"
+        $SwitchingLogClearButton.Enabled = $false
+        [Void][System.Windows.Forms.MessageBox]::Show($Data, "$($Variables.Branding.ProductLabel) $($_.ClickedItem.Text)", [System.Windows.Forms.MessageBoxButtons]::OK)
+    }
+)
+$SwitchingPageControls += $SwitchingLogClearButton
+
 $CheckShowSwitchingCPU = New-Object System.Windows.Forms.CheckBox
 $CheckShowSwitchingCPU.Tag = "CPU"
 $CheckShowSwitchingCPU.Text = "CPU"
 $CheckShowSwitchingCPU.AutoSize = $false
 $CheckShowSwitchingCPU.Width = 60
 $CheckShowSwitchingCPU.Height = 20
-$CheckShowSwitchingCPU.Location = [System.Drawing.Point]::new(8, 8)
+$CheckShowSwitchingCPU.Location = [System.Drawing.Point]::new(248, 34)
 $CheckShowSwitchingCPU.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckShowSwitchingCPU.Checked = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "CPU#*")
 $SwitchingPageControls += $CheckShowSwitchingCPU
@@ -488,7 +510,7 @@ $CheckShowSwitchingAMD.Text = "AMD"
 $CheckShowSwitchingAMD.AutoSize = $false
 $CheckShowSwitchingAMD.Width = 60
 $CheckShowSwitchingAMD.Height = 20
-$CheckShowSwitchingAMD.Location = [System.Drawing.Point]::new(78, 8)
+$CheckShowSwitchingAMD.Location = [System.Drawing.Point]::new(318, 34)
 $CheckShowSwitchingAMD.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckShowSwitchingAMD.Checked = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "GPU#*" | Where-Object Vendor -EQ "AMD")
 $SwitchingPageControls += $CheckShowSwitchingAMD
@@ -498,9 +520,9 @@ $CheckShowSwitchingINTEL = New-Object System.Windows.Forms.CheckBox
 $CheckShowSwitchingINTEL.Tag = "INTEL"
 $CheckShowSwitchingINTEL.Text = "INTEL"
 $CheckShowSwitchingINTEL.AutoSize = $false
-$CheckShowSwitchingINTEL.Width = 60
+$CheckShowSwitchingINTEL.Width = 70
 $CheckShowSwitchingINTEL.Height = 20
-$CheckShowSwitchingINTEL.Location = [System.Drawing.Point]::new(148, 8)
+$CheckShowSwitchingINTEL.Location = [System.Drawing.Point]::new(390, 34)
 $CheckShowSwitchingINTEL.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckShowSwitchingINTEL.Checked = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "GPU#*" | Where-Object Vendor -EQ "INTEL")
 $SwitchingPageControls += $CheckShowSwitchingINTEL
@@ -512,7 +534,7 @@ $CheckShowSwitchingNVIDIA.Text = "NVIDIA"
 $CheckShowSwitchingNVIDIA.AutoSize = $false
 $CheckShowSwitchingNVIDIA.Width = 70
 $CheckShowSwitchingNVIDIA.Height = 20
-$CheckShowSwitchingNVIDIA.Location = [System.Drawing.Point]::new(218, 8)
+$CheckShowSwitchingNVIDIA.Location = [System.Drawing.Point]::new(464, 34)
 $CheckShowSwitchingNVIDIA.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CheckShowSwitchingNVIDIA.Checked = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "GPU#*" | Where-Object Vendor -EQ "NVIDIA")
 $SwitchingPageControls += $CheckShowSwitchingNVIDIA
@@ -522,7 +544,7 @@ Function CheckBoxSwitching_Click {
     $SwitchingDisplayTypes = @()
     $SwitchingPageControls | ForEach-Object { If ($_.Checked) { $SwitchingDisplayTypes += $_.Tag } }
     If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { 
-        $SwitchingDGV.DataSource = Get-Content ".\Logs\SwitchingLog.csv" | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 1000 | ForEach-Object { $_.Datetime = (Get-Date $_.DateTime).ToString("G"); $_ } | Select-Object @("DateTime", "Action", "Name", "Pools", "Algorithms", "Accounts", "Duration", "DeviceNames", "Type") | Out-DataTable
+        $SwitchingDGV.DataSource = Get-Content ".\Logs\SwitchingLog.csv" | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 1000 | ForEach-Object { $_.Datetime = (Get-Date $_.DateTime).ToString("G"); $_ } | Select-Object @("DateTime", "Action", "Name", "Pools", "Algorithms", "Accounts", "Cycle", "Duration", "DeviceNames", "Type") | Out-DataTable
         If ($SwitchingDGV.Columns) { 
             $SwitchingDGV.Columns[0].FillWeight = 80
             $SwitchingDGV.Columns[1].FillWeight = 50
@@ -530,23 +552,28 @@ Function CheckBoxSwitching_Click {
             $SwitchingDGV.Columns[3].FillWeight = 90
             $SwitchingDGV.Columns[4].FillWeight = 65
             $SwitchingDGV.Columns[5].FillWeight = 80
-        }
-        If ($SwitchingDGV.Columns[8]) { 
-            $SwitchingDGV.Columns[0].HeaderText = "Date & Time"
-            $SwitchingDGV.Columns[6].HeaderText = "Running Time"
-            $SwitchingDGV.Columns[6].FillWeight = 50
+            $SwitchingDGV.Columns[6].FillWeight = 30
+            $SwitchingDGV.Columns[6].HeaderText = "Cycles"
             $SwitchingDGV.Columns[7].FillWeight = 55
-            $SwitchingDGV.Columns[8].FillWeight = 50
+            $SwitchingDGV.Columns[8].HeaderText = "Device(s)"
+            $SwitchingDGV.Columns[9].FillWeight = 50
         }
         $SwitchingDGV.ClearSelection()
+
+        $SwitchingLogLabel.Text = "Switching Log - Updated $((Get-ChildItem -Path ".\Logs\SwitchingLog.csv").LastWriteTime.ToString())"
     }
+    Else { $SwitchingLogLabel.Text = "Switching Log - no data" }
+
+    $SwitchingLogClearButton.Enabled = $SwitchingDGV.Columns
 }
+$WatchdogTimersPageControls += $WatchdogTimersRemoveButton
 
 $SwitchingDGV = New-Object System.Windows.Forms.DataGridView
 $SwitchingDGV.Name = "SwitchingDGV"
-$SwitchingDGV.Location = [System.Drawing.Point]::new(8, 34)
+$SwitchingDGV.Location = [System.Drawing.Point]::new(8, 62)
 $SwitchingDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
 $SwitchingDGV.DataBindings.DefaultDataSourceUpdateMode = 0
+$SwitchingDGV.ColumnHeadersHeightSizeMode = "AutoSize"
 $SwitchingDGV.AutoSizeColumnsMode = "Fill"
 $SwitchingDGV.RowHeadersVisible = $false
 $SwitchingDGV.ColumnHeadersVisible = $true
@@ -559,6 +586,55 @@ $SwitchingDGV.EnableHeadersVisualStyles = $false
 $SwitchingDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
 $SwitchingPageControls += $SwitchingDGV
 
+# Watchdog Page Controls
+$WatchdogTimersPageControls = @()
+
+$WatchdogTimersLabel = New-Object System.Windows.Forms.Label
+$WatchdogTimersLabel.AutoSize = $false
+$WatchdogTimersLabel.Width = 450
+$WatchdogTimersLabel.Height = 18
+$WatchdogTimersLabel.Location = [System.Drawing.Point]::new(6, 8)
+$WatchdogTimersLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$WatchdogTimersPageControls += $WatchdogTimersLabel
+
+$WatchdogTimersRemoveButton = New-Object System.Windows.Forms.Button
+$WatchdogTimersRemoveButton.Text = "Remove all Watchdog Timers"
+$WatchdogTimersRemoveButton.Location = [System.Drawing.Point]::new(6, 30)
+$WatchdogTimersRemoveButton.Width = 220
+$WatchdogTimersRemoveButton.Height = 28
+$WatchdogTimersRemoveButton.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$WatchdogTimersRemoveButton.Visible = $true
+$WatchdogTimersRemoveButton.Add_Click(
+    { 
+        $Variables.WatchDogTimers = @()
+        $WatchdogTimersDGV.DataSource = $null
+        $Variables.Miners | ForEach-Object { $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Miner suspended by watchdog *" }); $_ } | Where-Object { -not $_.Reasons } | ForEach-Object { $_.Available = $true }
+        $Variables.Pools | ForEach-Object { $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "*Pool suspended by watchdog" }); $_ } | Where-Object { -not $_.Reasons } | ForEach-Object { $_.Available = $true }
+        Write-Message -Level Verbose "GUI: All watchdog timers reset."
+        $WatchdogTimersRemoveButton.Enabled = $false
+        [Void][System.Windows.Forms.MessageBox]::Show("Watchdog timers will be recreated in next cycle.", "$($Variables.Branding.ProductLabel) $($_.ClickedItem.Text)", [System.Windows.Forms.MessageBoxButtons]::OK)
+    }
+)
+$WatchdogTimersPageControls += $WatchdogTimersRemoveButton
+
+$WatchdogTimersDGV = New-Object System.Windows.Forms.DataGridView
+$WatchdogTimersDGV.Name = "WatchdogTimersDGV"
+$WatchdogTimersDGV.Location = [System.Drawing.Point]::new(8, 62)
+$WatchdogTimersDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
+$WatchdogTimersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
+$WatchdogTimersDGV.AutoSizeColumnsMode = "Fill"
+$WatchdogTimersDGV.ColumnHeadersHeightSizeMode = "AutoSize"
+$WatchdogTimersDGV.RowHeadersVisible = $false
+$WatchdogTimersDGV.ColumnHeadersVisible = $true
+$WatchdogTimersDGV.AllowUserToAddRows = $false
+$WatchdogTimersDGV.AllowUserToOrderColumns = $true
+$WatchdogTimersDGV.AllowUserToResizeColumns = $true
+$WatchdogTimersDGV.AllowUserToResizeRows = $false
+$WatchdogTimersDGV.ReadOnly = $true
+$WatchdogTimersDGV.EnableHeadersVisualStyles = $false
+$WatchdogTimersDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
+$WatchdogTimersPageControls += $WatchdogTimersDGV
+
 $LegacyGUIForm.Controls.AddRange(@($LegacyGUIControls))
 $RunPage.Controls.AddRange(@($RunPageControls))
 $EarningsPage.Controls.AddRange(@($EarningsPageControls))
@@ -566,6 +642,16 @@ $MinersPage.Controls.AddRange(@($MinersPageControls))
 $PoolsPage.Controls.AddRange(@($PoolsPageControls))
 $RigMonitorPage.Controls.AddRange(@($RigMonitorPageControls))
 $SwitchingPage.Controls.AddRange(@($SwitchingPageControls))
+$WatchdogTimersPage.Controls.AddRange(@($WatchdogTimersPageControls))
+
+$TabControl = New-Object System.Windows.Forms.TabControl
+$TabControl.Location = [System.Drawing.Point]::new(14, 100)
+$TabControl.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$TabControl.Name = "TabControl"
+$TabControl.ShowToolTips = $true
+$TabControl.Controls.AddRange(@($RunPage, $EarningsPage, $MinersPage, $PoolsPage, $RigMonitorPage, $SwitchingPage, $WatchdogTimersPage))
+$TabControl.Add_SelectedIndexChanged({ Update-TabControl })
+$LegacyGUIForm.Controls.Add($TabControl)
 
 Function Update-TabControl { 
 
@@ -642,12 +728,12 @@ Function Update-TabControl {
 
                     $LaunchedMinersDGV.ClearSelection()
 
-                    $LabelLaunchedMiners.Text = "Launched Miners - Updated $((Get-Date).ToString())"
+                    $LaunchedMinersLabel.Text = "Launched Miners - Updated $((Get-Date).ToString())"
                     Form_Resize # To fully show lauched miners gridview
                 }
             }
             Else { 
-                $LabelLaunchedMiners.Text = "Waiting for data..."
+                $LaunchedMinersLabel.Text = "Waiting for data..."
             }
         }
         "Earnings" { 
@@ -771,9 +857,9 @@ Function Update-TabControl {
                     $EarningsDGV.Columns[7].FillWeight = 100
                 }
 
-                $LabelEarnings.Text = "Balances and earnings statistics per pool - Updated $((Get-ChildItem -Path ".\Data\DailyEarnings.csv").LastWriteTime.ToString())"
+                $EarningsLabel.Text = "Balances and earnings statistics per pool - Updated $((Get-ChildItem -Path ".\Data\DailyEarnings.csv").LastWriteTime.ToString())"
             }
-            Else { $LabelEarnings.Text = "Waiting for data..." }
+            Else { $EarningsLabel.Text = "Waiting for data..." }
         }
         "Miners" { 
             $ContextMenuStripItem1.Text = "Re-Benchmark"
@@ -828,10 +914,10 @@ Function Update-TabControl {
 
                     $MinersDGV.ClearSelection()
 
-                    $LabelMiners.Text = "Miner data read from stats - Updated $((Get-Date).ToString())"
+                    $MinersLabel.Text = "Miner data read from stats - Updated $((Get-Date).ToString())"
                 }
             }
-            Else { $LabelMiners.Text = "Waiting for data..." }
+            Else { $MinersLabel.Text = "Waiting for data..." }
         }
         "Pools" { 
             # $ContextMenuStripItem1.Text = "Enable Algorithm @ Pool"
@@ -883,11 +969,11 @@ Function Update-TabControl {
 
                     $PoolsDGV.ClearSelection()
 
-                    $LabelPools.Text = "Pool data read from stats - Updated $((Get-Date).ToString())"
+                    $PoolsLabel.Text = "Pool data read from stats - Updated $((Get-Date).ToString())"
                 }
             }
             Else { 
-                $LabelPools.Text = "Waiting for data..."
+                $PoolsLabel.Text = "Waiting for data..."
             }
         }
         "Rig Monitor" { 
@@ -895,23 +981,11 @@ Function Update-TabControl {
             Read-MonitoringData | Out-Null
 
             If ($Variables.Workers) { 
-                $Variables.Workers | ForEach-Object { 
-                    $TimeSinceLastReport = New-TimeSpan -Start $_.date -End (Get-Date)
-                    # Show friendly time since last report in seconds, minutes, hours and days
-                    $TimeSinceLastReportText = ""
-                    If ($TimeSinceLastReport.Days -ge 1) { $TimeSinceLastReportText += " {0:n0} day$(If ($TimeSinceLastReport.Days -ne 1) { "s" })" -f $TimeSinceLastReport.Days }
-                    If ($TimeSinceLastReport.Hours -ge 1) { $TimeSinceLastReportText += " {0:n0} hour$(If ($TimeSinceLastReport.Hours -ne 1) { "s" })" -f $TimeSinceLastReport.Hours }
-                    If ($TimeSinceLastReport.Minutes -ge 1) { $TimeSinceLastReportText += " {0:n0} minute$(If ($TimeSinceLastReport.Minutes -ne 1) { "s" })" -f $TimeSinceLastReport.Minutes }
-                    If ($TimeSinceLastReport.Seconds -ge 1) { $TimeSinceLastReportText += " {0:n0} second$(If ($TimeSinceLastReport.Seconds -ne 1) { "s" })" -f $TimeSinceLastReport.Seconds }
-                    If ($TimeSinceLastReportText) { $_ | Add-Member -Force @{ TimeSinceLastReportText = "$($TimeSinceLastReportText.trim()) ago" } }
-                    Else  { $_ | Add-Member -Force @{ TimeSinceLastReportText = "just now" } }
-                }
-
                 $nl = "`n" # Must use variable, cannot join with '`n' directly
                 $WorkersDGV.DataSource = $Variables.Workers | Select-Object @(
                     @{ Name = "Worker"; Expression = { $_.worker } }, 
                     @{ Name = "Status"; Expression = { $_.status } }, 
-                    @{ Name = "Last seen"; Expression = { $_.TimeSinceLastReportText } }, 
+                    @{ Name = "Last seen"; Expression = { (Get-TimeSince $_.date) } }, 
                     @{ Name = "Version"; Expression = { $_.version } }, 
                     @{ Name = "Currency"; Expression = { [String]$Config.Currency } }, 
                     @{ Name = "Estimated Earning/day"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ([Decimal](($_.Data.Earning | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
@@ -950,11 +1024,12 @@ Function Update-TabControl {
 
                 $WorkersDGV.ClearSelection()
 
-                $LabelWorkers.Text = "Worker Status - Updated $($Variables.WorkersLastUpdated.ToString())"
+                $WorkersLabel.Text = "Worker Status - Updated $($Variables.WorkersLastUpdated.ToString())"
             }
-            Else { $LabelWorkers.Text = "Worker Status - no workers" }
+            Else { $WorkersLabel.Text = "Worker Status - no workers" }
         }
         "Switching Log" { 
+
             $CheckShowSwitchingCPU.Enabled = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "CPU#*")
             $CheckShowSwitchingAMD.Enabled = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "GPU#*" | Where-Object Vendor -EQ "AMD")
             $CheckShowSwitchingINTEL.Enabled = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "GPU#*" | Where-Object Vendor -EQ "INTEL")
@@ -967,6 +1042,35 @@ Function Update-TabControl {
 
             CheckBoxSwitching_Click
         }
+        "Watchdog Timers" { 
+
+            $WatchdogTimersRemoveButton.Enabled = $Variables.WatchdogTimers
+
+            If ($Variables.WatchdogTimers) { 
+                $WatchdogTimersDGV.DataSource = $Variables.WatchdogTimers | Select-Object @(
+                    @{ Name = "Name"; Expression = { $_.MinerName } }, 
+                    @{ Name = "Algorithms"; Expression = { $_.Algorithm } }, 
+                    @{ Name = "Pool Name"; Expression = { $_.PoolName } }, 
+                    @{ Name = "Region"; Expression = { $_.PoolRegion } }, 
+                    @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join ', '} }, 
+                    @{ Name = "Last Updated"; Expression = { (Get-TimeSince $_.kicked.ToLocalTime()) } }
+                ) | Sort-Object "DeviceNames" | Out-DataTable
+
+                If ($WatchdogTimersDGV.Columns) { 
+                    $WatchdogTimersDGV.Columns[0].FillWeight = 120
+                    $WatchdogTimersDGV.Columns[1].FillWeight = 100
+                    $WatchdogTimersDGV.Columns[2].FillWeight = 100
+                    $WatchdogTimersDGV.Columns[3].FillWeight = 60
+                    $WatchdogTimersDGV.Columns[4].FillWeight = 100
+                    $WatchdogTimersDGV.Columns[5].FillWeight = 100
+                }
+
+                $WatchdogTimersDGV.ClearSelection()
+
+                $WatchdogTimersLabel.Text = "Watchdog Timers - Updated $((Get-Date).ToString())"
+            }
+            Else { $WatchdogTimersLabel.Text = "Watchdog Timers - no data" }
+        }
     }
 
     $LegacyGUIForm.Cursor = [System.Windows.Forms.Cursors]::Normal
@@ -977,15 +1081,15 @@ $LegacyGUIForm.Add_SizeChanged({ Form_Resize })
 Function Form_Resize { 
 
     $TabControl.Width = $LegacyGUIForm.Width - 44
-    $TabControl.Height = $LegacyGUIForm.Height - 164
+    $TabControl.Height = $LegacyGUIForm.Height - 168
 
-    $LabelMiningStatus.Width = $LegacyGUIForm.Width - 346
+    $MiningStatusLabel.Width = $LegacyGUIForm.Width - 346
 
     $ButtonStart.Location = [System.Drawing.Point]::new($LegacyGUIForm.Width - 336, 12)
     $ButtonPause.Location = [System.Drawing.Point]::new($LegacyGUIForm.Width - 236, 12)
     $ButtonStop.Location = [System.Drawing.Point]::new($LegacyGUIForm.Width - 136, 12)
 
-    $LabelMiningSummary.Width = $Variables.TextBoxSystemLog.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $EarningsDGV.Width = $MinersPanel.Width = $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $TabControl.Width - 24
+    $MiningSummaryLabel.Width = $Variables.TextBoxSystemLog.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $EarningsDGV.Width = $MinersPanel.Width = $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $WatchdogTimersDGV.Width = $TabControl.Width - 24
 
     $EarningsDGV.Height = ($EarningsDGV.Rows.Height | Measure-Object -Sum).Sum + $EarningsDGV.ColumnHeadersHeight
     If ($EarningsDGV.Height -gt $TabControl.Height / 2) { 
@@ -995,9 +1099,9 @@ Function Form_Resize {
     Else { 
         $EarningsDGV.ScrollBars = "None"
     }
-    $EarningsChart.Height = (($TabControl.Height - $LabelEarnings.Height - $EarningsDGV.Height - 36), 0 | Measure-Object -Maximum).Maximum
-    $LabelEarnings.Location = [System.Drawing.Point]::new(6, ($EarningsChart.Height - 6))
-    $EarningsDGV.Location = [System.Drawing.Point]::new(8, ($EarningsChart.Height + $LabelEarnings.Height))
+    $EarningsChart.Height = (($TabControl.Height - $EarningsLabel.Height - $EarningsDGV.Height - 36), 0 | Measure-Object -Maximum).Maximum
+    $EarningsLabel.Location = [System.Drawing.Point]::new(6, ($EarningsChart.Height - 6))
+    $EarningsDGV.Location = [System.Drawing.Point]::new(8, ($EarningsChart.Height + $EarningsLabel.Height))
 
     $LaunchedMinersDGV.Height = $LaunchedMinersDGV.RowTemplate.Height * $Variables.MinersBest_Combo.Count + $LaunchedMinersDGV.ColumnHeadersHeight
     If ($LaunchedMinersDGV.Height -gt $TabControl.Height / 2) { 
@@ -1008,9 +1112,9 @@ Function Form_Resize {
         $LaunchedMinersDGV.ScrollBars = "None"
     }
 
-    $LabelSystemLog.Location = [System.Drawing.Point]::new(6, ($LabelLaunchedMiners.Height + $LaunchedMinersDGV.Height + 28))
-    $Variables.TextBoxSystemLog.Location = [System.Drawing.Point]::new(0, ($LabelLaunchedMiners.Height + $LaunchedMinersDGV.Height + $LabelSystemLog.Height + 32))
-    $Variables.TextBoxSystemLog.Height = ($TabControl.Height - $LabelLaunchedMiners.Height - $LaunchedMinersDGV.Height - $LabelSystemLog.Height - 60)
+    $SystemLogLabel.Location = [System.Drawing.Point]::new(6, ($LaunchedMinersLabel.Height + $LaunchedMinersDGV.Height + 28))
+    $Variables.TextBoxSystemLog.Location = [System.Drawing.Point]::new(0, ($LaunchedMinersLabel.Height + $LaunchedMinersDGV.Height + $SystemLogLabel.Height + 32))
+    $Variables.TextBoxSystemLog.Height = ($TabControl.Height - $LaunchedMinersLabel.Height - $LaunchedMinersDGV.Height - $SystemLogLabel.Height - 60)
     $Variables.TextBoxSystemLog.Width = $TabControl.Width - 8
 
     $PoolsDGV.Height = $TabControl.Height - $PoolsPanel.Height - 72
@@ -1019,10 +1123,12 @@ Function Form_Resize {
 
     $WorkersDGV.Height = $TabControl.Height - 68
 
-    $SwitchingDGV.Height = $TabControl.Height - 70
+    $SwitchingDGV.Height = $TabControl.Height - 98
+
+    $WatchdogTimersDGV.Height = $TabControl.Height - 98
 
     $EditConfigLink.Location = [System.Drawing.Point]::new(12, $LegacyGUIForm.Height - 66)
-    $LabelCopyright.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - 380), $LegacyGUIForm.Height - 66)
+    $CopyrightLabel.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - 380), $LegacyGUIForm.Height - 66)
 }
 
 $LegacyGUIForm.Add_Load(
@@ -1130,6 +1236,7 @@ $ContextMenuStrip.Add_ItemClicked(
                     }
                     $ContextMenuStrip.Visible = $false
                     If ($Data) { 
+                        $Data = $Data | Sort-Object -Unique
                         Write-Message -Level Verbose "GUI: Re-benchmark triggered for $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
                         $Data += "`n`n$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-benchmark."
                         Update-TabControl
@@ -1161,6 +1268,7 @@ $ContextMenuStrip.Add_ItemClicked(
                     }
                     $ContextMenuStrip.Visible = $false
                     If ($Data) { 
+                        $Data = $Data | Sort-Object -Unique
                         Write-Message -Level Verbose "GUI: Re-measure power usage triggered for $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
                         $Data += "`n`n$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-measure power usage."
                         Update-TabControl
@@ -1196,6 +1304,7 @@ $ContextMenuStrip.Add_ItemClicked(
                     }
                     $ContextMenuStrip.Visible = $false
                     If ($Data) { 
+                        $Data = $Data | Sort-Object -Unique
                         Write-Message -Level Verbose "GUI: Marked $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" }) as failed."
                         $Data += "`n`n$(If ($Data.Count -eq 1) { "The miner is" } Else { "$($Data.Count) miners are " }) marked as failed."
                         Update-TabControl
@@ -1225,12 +1334,16 @@ $ContextMenuStrip.Add_ItemClicked(
                     }
                     $ContextMenuStrip.Visible = $false
                     If ($Data) { 
+                        $Data = $Data | Sort-Object -Unique
                         Write-Message -Level Verbose "GUI: Disabled $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
                         $Data += "`n`n$(If ($Data.Count -eq 1) { "The miner is" } Else { "$($Data.Count) miners are " }) disabled."
                         Update-TabControl
                     }
                 }
                 "Remove Watchdog Timer" { 
+                    If ($This.SourceControl.Name -match "LaunchedMinersDGV|MinersDGV|WatchdogTimersDGV") { 
+
+                    }
                     $Counter = 0
                     $This.SourceControl.SelectedRows | ForEach-Object { 
                         If ($This.SourceControl.Name -eq "LaunchedMinersDGV") { 
@@ -1254,9 +1367,9 @@ $ContextMenuStrip.Add_ItemClicked(
                             }
                         }
                     }
-                    $Data = $Data | Sort-Object -Unique
                     $ContextMenuStrip.Visible = $false
                     If ($WatchdogTimers) { 
+                        $Data = $Data | Sort-Object -Unique
                         $Message = "$($Data.Count) miner $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
                         Write-Message -Level Verbose "GUI: $Message"
                         $Data += "`n`n$Message"
@@ -1328,7 +1441,8 @@ $ContextMenuStrip.Add_ItemClicked(
                     }
                     $ContextMenuStrip.Visible = $false
                     If ($Data) { 
-                        $Message = "Reset pool stats for $($Data.Count) $(If ($Data.Count -eq 1) { "pool" } Else { "pools" })."
+                        $Data = $Data | Sort-Object -Unique
+                        $Message = "Pool stats for $($Data.Count) $(If ($Data.Count -eq 1) { "pool" } Else { "pools" }) reset."
                         Write-Message -Level Verbose "GUI: $Message"
                         $Data += "`n`n$Message"
                         Update-TabControl
@@ -1353,10 +1467,10 @@ $ContextMenuStrip.Add_ItemClicked(
                             }
                         }
                     }
-                    $Data = $Data | Sort-Object -Unique
                     $ContextMenuStrip.Visible = $false
                     If ($WatchdogTimers) { 
-                        $Message = "$($Data.Count) pool $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
+                        $Data = $Data | Sort-Object -Unique
+                        $Message = "$($Data.Count) miner $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
                         Write-Message -Level Verbose "GUI: $Message"
                         $Data += "`n`n$Message"
                     }
@@ -1367,6 +1481,6 @@ $ContextMenuStrip.Add_ItemClicked(
             }
         }
 
-        If ($Data.Count -ge 1) { [Void] [System.Windows.Forms.MessageBox]::Show([String]$Data, "$($Variables.Branding.ProductLabel) $($_.ClickedItem.Text)", [System.Windows.Forms.MessageBoxButtons]::OK) }
+        If ($Data.Count -ge 1) { [Void][System.Windows.Forms.MessageBox]::Show([String]$Data, "$($Variables.Branding.ProductLabel) $($_.ClickedItem.Text)", [System.Windows.Forms.MessageBoxButtons]::OK) }
     }
 )

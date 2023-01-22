@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           demo.psm1
-Version:        4.2.3.4
+Version:        4.2.3.5
 Version date:   20 October 2022
 #>
 

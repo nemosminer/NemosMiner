@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.2.3.4
-Version date:   14 January 2023
+Version:        4.2.3.5
+Version date:   22 January 2023
 #>
 
 using module .\Include.psm1
@@ -38,10 +38,10 @@ Do {
         $Variables.LogFile = "$($Variables.MainPath)\Logs\$($Variables.Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd").log"
 
         # Internet connection check
-        If (Get-NetRoute | Where-Object DestinationPrefix -eq "0.0.0.0/0") { 
+        Try { 
             $Variables.MyIP = (Get-NetIPAddress -InterfaceIndex (Get-NetRoute | Where-Object DestinationPrefix -eq "0.0.0.0/0" | Get-NetIPInterface | Where-Object ConnectionState -eq "Connected").ifIndex -AddressFamily IPV4).IPAddress
         }
-        Else { 
+        Catch { 
             $Variables.MyIP = $null
             Write-Message -Level Error "No internet connection - will retry in 60 seconds..."
             #Stop all running miners
@@ -221,6 +221,9 @@ Do {
 
                 # Faster shutdown
                 If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.MiningStatus -eq "Idle") { Continue }
+
+                # For debug only
+                While ($Variables.SuspendCycle) { Start-Sleep -Seconds 1 }
 
                 # Load currency exchange rates from min-api.cryptocompare.com
                 Get-Rate | Out-Null
@@ -419,6 +422,12 @@ Do {
                     Write-Message -Level Error "Error loading list of unprofitable algorithms. File '.\Data\UnprofitableAlgorithms.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file. Please restore it from your original download."
                     $Variables.UnprofitableAlgorithms = $null
                 }
+
+                # Faster shutdown
+                If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.MiningStatus -eq "Idle") { Continue }
+
+                # For debug only
+                While ($Variables.SuspendCycle) { Start-Sleep -Seconds 1 }
 
                 # Collect pool data
                 $NewPools = [Pool[]]@()
@@ -647,6 +656,9 @@ Do {
             # Faster shutdown
             If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.MiningStatus -eq "Idle") { Continue }
 
+            # For debug only
+            While ($Variables.SuspendCycle) { Start-Sleep -Seconds 1 }
+
             # Get new miners
             If ($Variables.PoolsBest) { 
                 $AllPools = [PSCustomObject]@{ }
@@ -714,6 +726,12 @@ Do {
                     $_.Refresh($Variables.PowerCostBTCperW, $Variables.CalculatePowerCost)
                     $_.WindowStyle = If ($Config.MinerWindowStyleNormalWhenBenchmarking -and $_.Benchmark) { "normal" } Else { $Config.MinerWindowStyle }
                 }
+
+                # Faster shutdown
+                If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.MiningStatus -eq "Idle") { Continue }
+
+                # For debug only
+                While ($Variables.SuspendCycle) { Start-Sleep -Seconds 1 }
 
                 # Filter miners
                 $Miners | Where-Object Disabled -EQ $true | ForEach-Object { $_.Reasons += "Disabled by user" }
@@ -819,8 +837,8 @@ Do {
                     $Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { $_.$Bias *= $RunningMinerBonusFactor}
 
                     # Get best miners per algorithm and device
-                    $Variables.MinersMostProfitable = @($Miners | Where-Object Available -EQ $true | Group-Object { [String]$_.DeviceNames }, { [String]$_.Algorithms } | ForEach-Object { $_.Group | Sort-Object -Descending -Property Benchmark, MeasurePowerUsage, KeepRunning, Prioritize, $Bias, Activated, @{ Expression = { $_.WarmupTimes[1] }; Descending = $true }, @{ Expression = { $_.DataCollectInterval }; Descending = $true }, Name, @{ Expression = { [String]($_.Algorithms) }; Descending = $false } | Select-Object -First 1 | ForEach-Object { $_.MostProfitable = $true; $_ } })
-                    $Variables.MinersBest = @($Variables.MinersMostProfitable | Group-Object { [String]$_.DeviceNames } | ForEach-Object { $_.Group | Sort-Object -Descending -Property Benchmark, MeasurePowerUsage, KeepRunning, Prioritize, $Bias, Activated, @{ Expression = { $_.WarmupTimes[1] }; Descending = $true }, @{ Expression = { $_.DataCollectInterval }; Descending = $true }, Name | Select-Object -First 1 })
+                    $Variables.MinersMostProfitable = @($Miners | Where-Object Available -EQ $true | Group-Object { [String]$_.DeviceNames }, { [String]$_.Algorithms } | ForEach-Object { $_.Group | Sort-Object -Descending -Property Benchmark, MeasurePowerUsage, KeepRunning, Prioritize, $Bias, Activated, @{ Expression = { $_.WarmupTimes[1] + $_.DataCollectInterval }; Descending = $true }, Name, @{ Expression = { [String]($_.Algorithms) }; Descending = $false } | Select-Object -First 1 | ForEach-Object { $_.MostProfitable = $true; $_ } })
+                    $Variables.MinersBest = @($Variables.MinersMostProfitable | Group-Object { [String]$_.DeviceNames } | ForEach-Object { $_.Group | Sort-Object -Descending -Property Benchmark, MeasurePowerUsage, KeepRunning, Prioritize, $Bias, Activated, @{ Expression = { $_.WarmupTimes[1] + $_.DataCollectInterval }; Descending = $true }, Name | Select-Object -First 1 })
                     $Variables.Miners_Device_Combos = @(Get-Combination @($Variables.MinersBest | Select-Object DeviceNames -Unique) | Where-Object { (Compare-Object ($_.Combination | Select-Object -ExpandProperty DeviceNames -Unique) ($_.Combination | Select-Object -ExpandProperty DeviceNames) | Measure-Object).Count -eq 0 })
 
                     # Get most best miner combination i.e. AMD+NVIDIA+CPU
@@ -976,10 +994,11 @@ Do {
             Start-Sleep -MilliSeconds 500
             $Loops ++
             If ($Loops -gt 100) { 
-                $Message = "Error stopping miner."
+                $Message = "Cannot stop all miners graciously."
                 If ($Config.AutoReboot) { 
                     Write-Message -Level Error "$Message Restarting computer in 30 seconds..."
                     shutdown.exe /r /t 30 /c "$($Variables.Branding.ProductLabel) detected stuck miner$(If ($StuckMinerProcessIDs.Count -gt 1) { "s" }) and will reboot the computer in 30 seconds."
+                    Start-Sleep -Seconds 60
                 }
                 Else { 
                     Write-Message -Level Error $Message
@@ -1028,6 +1047,9 @@ Do {
 
         # Faster shutdown
         If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.MiningStatus -eq "Idle") { Continue }
+
+        # For debug only
+        While ($Variables.SuspendCycle) { Start-Sleep -Seconds 1 }
 
         # Optional delay to avoid blue screens
         Start-Sleep -Seconds $Config.Delay
@@ -1145,20 +1167,21 @@ Do {
         Get-Job -State "Stopped" -ErrorAction Ignore | Receive-Job -ErrorAction Ignore | Out-Null
         Get-Job -State "Stopped" -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
 
-        $Variables.RunningMiners = @($Variables.MinersBest_Combo | Sort-Object -Descending Benchmark, MeasurePowerUsage)
-        $Variables.FailedMiners = @()
-
-        $Variables.EndCycleMessage = ""
-        Write-Message -Level Info "Collecting miner data while waiting for next cycle..."
-        $Variables.RefreshNeeded = $true
-
         If ($Variables.CycleStarts.Count -eq 1) { 
             # Ensure a full cycle on first loop
             $Variables.EndCycleTime = (Get-Date).ToUniversalTime().AddSeconds($Config.Interval)
         }
 
+        $Variables.RunningMiners = @($Variables.MinersBest_Combo | Sort-Object -Descending Benchmark, MeasurePowerUsage)
+        $Variables.FailedMiners = @()
+
+        $Variables.EndCycleMessage = ""
+
         $Variables.RefreshTimestamp = (Get-Date).ToUniversalTime()
         $Variables.StatusText = "Waiting $($Variables.TimeToSleep) seconds... | Next refresh: $((Get-Date).AddSeconds($Variables.TimeToSleep).ToString('g'))"
+        $Variables.RefreshNeeded = $true
+
+        Write-Message -Level Info "Collecting miner data while waiting for next cycle..."
 
         Do { 
 
@@ -1207,17 +1230,18 @@ Do {
                             Write-Message -Level Verbose "$($Miner.Name) data sample retrieved [$(($Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { "$($_): $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Config.BadShareRatioThreshold) { " / Shares Total: $($Sample.Shares.$_[2]), Rejected: $($Sample.Shares.$_[1])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power usage: $($Sample.PowerUsage.ToString("N2"))W" })] ($($Miner.Data.Count) Sample$(If ($Miner.Data.Count -ne 1) { "s" }))."
                         }
                     }
-                    ElseIf ((Get-Date) -gt $Miner.Process.PSBeginTime.AddSeconds($Miner.WarmupTimes[0])) { 
-                        # We must have data samples by now
-                        If (($Miner.Data | Select-Object -Last 1).Date -lt $Miner.BeginTime) { 
+                    ElseIf ((Get-Date).ToUniversalTime() -gt $Miner.BeginTime.AddSeconds($Miner.WarmupTimes[0])) { 
+                        # We must some hash speed by now, cannot rely on data samples, these might have been discarded while benchmarking
+                        If (-not $Miner.Hashrates_Live) { 
                             # Stop miner, it has not provided first sample on time
                             $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' has not provided first data sample in $($Miner.WarmupTimes[0]) seconds."
                             $Miner.SetStatus([MinerStatus]::Failed)
                             $Variables.FailedMiners += $Miner
                             Break
                         }
-                        ElseIf (($Miner.Data | Select-Object -Last 1).Date.AddSeconds((($Miner.DataCollectInterval * 3.5), 10 | Measure-Object -Maximum).Maximum) -lt (Get-Date).ToUniversalTime()) { 
+                        If ($Miner.Data -and ($Miner.Data | Select-Object -Last 1).Date.AddSeconds((($Miner.DataCollectInterval * 3.5), 10 | Measure-Object -Maximum).Maximum) -lt (Get-Date).ToUniversalTime()) { 
                             # Miner stuck - no sample received in last few data collect intervals
+                            $Miner.GetMinerData()
                             $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' has not updated data for more than $((($Miner.DataCollectInterval * 3.5), 10 | Measure-Object -Maximum).Maximum) seconds."
                             $Miner.SetStatus([MinerStatus]::Failed)
                             $Variables.FailedMiners += $Miner
@@ -1245,7 +1269,7 @@ Do {
             If (-not $Variables.EndCycleMessage -and $Variables.IdleRunspace.MiningStatus -eq "Idle") { $Variables.EndCycleMessage = " (System activity detected)" }
 
             # For debug only
-            While ($Variables.SuspendCycle) { Start-Sleep -Seconds 10 }
+            While ($Variables.SuspendCycle) { Start-Sleep -Seconds 1 }
 
             # Exit loop when
             # - a miner crashed (and no other miners are benchmarking or measuring power usage)

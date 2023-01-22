@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           include.ps1
 Version:        4.2.3.5
-Version date:   22 January 2023
+Version date:   14 January 2023
 #>
 
 # Window handling
@@ -246,7 +246,7 @@ Class Miner {
             }
         }
         # Start Miner data reader
-        $this | Add-Member -Force @{ DataReaderJob = Start-Job -Name "$($this.Name)_DataReader" -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithms, DataCollectInterval, Devices, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore) }
+        $this | Add-Member -Force @{ DataReaderJob = Start-ThreadJob -Name "$($this.Name)_DataReader" -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithms, DataCollectInterval, Devices, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore) }
     }
 
     hidden StopDataReader() { 
@@ -302,7 +302,6 @@ Class Miner {
                 Algorithms        = $this.Workers.Pool.Algorithm -join "; "
                 Benchmark         = $this.Benchmark
                 CommandLine       = $this.CommandLine
-                Cycle             = ""
                 DeviceNames       = $this.DeviceNames -join "; "
                 Duration          = ""
                 Earning           = $this.Earning
@@ -405,7 +404,6 @@ Class Miner {
             Algorithms        = $this.WorkersRunning.Pool.Algorithm -join "; "
             Benchmark         = $this.Benchmark
             CommandLine       = ""
-            Cycle             = $this.Cycle
             DeviceNames       = $this.DeviceNames -join "; "
             Duration          = "{0:hh\:mm\:ss}" -f ($this.EndTime - $this.BeginTime)
             Earning           = $this.Earning
@@ -921,21 +919,21 @@ Function Get-CommandLineParameter {
 Function Get-Rate { 
     # Read exchange rates from min-api.cryptocompare.com, use stored data as fallback
 
-    $CryptoCompareAPIKeyParam = "&api_key=af9b92255132dac6d1560c6eb1e04067d9fc0fb4c6630df00fb1d055bf858352"
-
     $RatesFileName = "Cache\Rates.json"
     $RatesCache = Get-Content -Path $RatesFileName -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue
 
-    If (-not $RatesCache.Values) { $RatesCache = [PSCustomObject]@{ } }
-    $RatesValues = $RatesCache.Values
-    $AllCurrencies = $RatesCache.Currencies
-
     $Variables.BalancesCurrencies = @($Variables.Balances.Keys | ForEach-Object { $Variables.Balances.$_.Currency } | Sort-Object -Unique)
-    $Variables.AllCurrencies = @(@($Config.Currency) + @($Config.Wallets.PSObject.Properties.Name) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies) | Where-Object { $_ -replace "mBTC", "BTC" } | Sort-Object -Unique)
 
-    If (-not $Variables.Rates.BTC.($Config.Currency) -or (Compare-Object @($AllCurrencies | Select-Object) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "=>") -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-(3, $Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum))) { 
+    If (-not $Variables.AllCurrencies -and $RatesCache.PSObject.Properties.Name) { 
+        $Variables.AllCurrencies = @($RatesCache.PSObject.Properties.Name)
+    }
+    Else { 
+        $Variables.AllCurrencies = @(@($Config.Currency) + @($Config.Wallets.PSObject.Properties.Name) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies) | Sort-Object -Unique)
+    }
+    $Variables.AllCurrencies = @($Variables.AllCurrencies | Where-Object { $_ -replace "mBTC", "BTC" } | Sort-Object -Unique)
+    If (-not $Variables.Rates.BTC.($Config.Currency) -or (Compare-Object @($Variables.Rates.PSObject.Properties.Name | Select-Object) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "=>") -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-(3, $Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum))) { 
         Try { 
-            $RatesValues = [PSCustomObject]@{ BTC = [PSCustomObject]@{} }
+            $Rates = [PSCustomObject]@{ BTC = [PSCustomObject]@{} }
             $TSymBatches = @()
             $TSyms = "BTC"
             $Variables.AllCurrencies | Where-Object { $_ -ne "mBTC" } | Select-Object -Unique | ForEach-Object { 
@@ -950,37 +948,34 @@ Function Get-Rate {
             $TSymBatches += $TSyms
 
             $TSymBatches | ForEach-Object { 
-                (Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$($_)$($CryptoCompareAPIKeyParam)&extraParams=$($Variables.Branding.BrandWebSite) Version $($Variables.Branding.Version)" -TimeoutSec 5 -ErrorAction Ignore).BTC | ForEach-Object { 
-                    $_.PSObject.Properties | ForEach-Object { $RatesValues.BTC | Add-Member @{ "$($_.Name)" = ($_.Value) } }
+                (Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$($_)&extraParams=$($Variables.Branding.BrandWebSite)" -TimeoutSec 5 -ErrorAction Ignore).BTC | ForEach-Object { 
+                    $_.PSObject.Properties | ForEach-Object { $Rates.BTC | Add-Member @{ "$($_.Name)" = ($_.Value) } }
                 }
             }
 
-            # $RatesValues = $RatesValues | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
+            $Rates = $Rates | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
 
-            If ($RatesValues) { 
-                $Currencies = ($RatesValues.BTC | Get-Member -MemberType NoteProperty).Name
+            If ($Rates) { 
+                $Currencies = ($Rates.BTC | Get-Member -MemberType NoteProperty).Name
                 $Currencies | Where-Object { $_ -ne "BTC" } | ForEach-Object { 
                     $Currency = $_
-                    # $RatesValues | Add-Member $Currency ($RatesValues.BTC | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json)
-                    $RatesValues | Add-Member $Currency ($RatesValues.BTC.PSObject.Copy())
-                    ($RatesValues.$Currency | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
-                        $RatesValues.$Currency | Add-Member $_ ([Double]$RatesValues.BTC.$_ / $RatesValues.BTC.$Currency) -Force
+                    # $Rates | Add-Member $Currency ($Rates.BTC | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json)
+                    $Rates | Add-Member $Currency ($Rates.BTC.PSObject.Copy())
+                    ($Rates.$Currency | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
+                        $Rates.$Currency | Add-Member $_ ([Double]$Rates.BTC.$_ / $Rates.BTC.$Currency) -Force
                     }
                 }
                 Write-Message -Level Info "Loaded currency exchange rates from 'min-api.cryptocompare.com'.$(If ($MissingCurrencies = Compare-Object $Currencies $Variables.AllCurrencies -PassThru) { " API does not provide rates for '$($MissingCurrencies -join ', ')'." })"
-                $Variables.Rates = $RatesValues
+                $Rates | ConvertTo-Json -Depth 5 | Out-File -FilePath $RatesFileName -Encoding utf8NoBOM -Force -ErrorAction SilentlyContinue
+                $Variables.Rates = $Rates
                 $Variables.RatesUpdated = (Get-Date).ToUniversalTime()
-
-                $RatesCache | Add-Member @{ Currencies = $Variables.AllCurrencies } -Force
-                $RatesCache | Add-Member @{ Values = $RatesValues } -Force
-                $RatesCache | ConvertTo-Json -Depth 5 | Out-File -FilePath $RatesFileName -Encoding utf8NoBOM -Force -ErrorAction SilentlyContinue
             }
         }
         Catch { 
-            If ($RatesValuesCache.PSObject.Properties.Name) { 
-                $Variables.Rates = $RatesValuesCache
-                $Variables.RatesUpdated = "FromFile: $((Get-Item -Path $RatesValuesFileName).CreationTime.ToUniversalTime())"
-                Write-Message -Level Warn "Could not load exchange rates from 'min-api.cryptocompare.com'. Using cached data from $((Get-Item -Path $RatesValuesFileName).LastWriteTime)."
+            If ($RatesCache.PSObject.Properties.Name) { 
+                $Variables.Rates = $RatesCache
+                $Variables.RatesUpdated = "FromFile: $((Get-Item -Path $RatesFileName).CreationTime.ToUniversalTime())"
+                Write-Message -Level Warn "Could not load exchange rates from 'min-api.cryptocompare.com'. Using cached data from $((Get-Item -Path $RatesFileName).LastWriteTime)."
             }
             Else { 
                 Write-Message -Level Warn "Could not load exchange rates from 'min-api.cryptocompare.com'."
@@ -1002,7 +997,7 @@ Function Get-Rate {
         }
         ($Variables.Rates | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
             $Currency = $_
-            ($RatesValues | Get-Member -MemberType NoteProperty).Name | Where-Object { $_ -in $Currencies } | ForEach-Object { 
+            ($Rates | Get-Member -MemberType NoteProperty).Name | Where-Object { $_ -in $Currencies } | ForEach-Object { 
                 $mCurrency = "m$($_)"
                 $Variables.Rates.$Currency | Add-Member $mCurrency ([Double]$Variables.Rates.$Currency.$_ * 1000)
             }
@@ -1035,9 +1030,9 @@ Function Write-Message {
     $Message = "$Date $($Level.ToUpper()): $Message"
 
     Try { 
-        # Ignore error when legacy GUI gets closed
-        If ($Level -in $Config.LogToScreen) { 
-            # Update status text box in legacy GUI, scroll to end if no text is selected
+        # Ignore error when main window gets closed
+        If ($Config.LogToScreen -and $Level -in $Config.LogToScreen) { 
+            # Update status text box in legacy GUI,scroll to end if no text is selected
             If ($Variables.TextBoxSystemLog.AppendText) { 
                 If ($Variables.TextBoxSystemLog.SelectionLength) { 
                     $SelectionLength = $Variables.TextBoxSystemLog.SelectionLength
@@ -1053,7 +1048,7 @@ Function Write-Message {
             }
         }
 
-        If ($Level -in $Config.LogToFile) { 
+        If ($Config.LogToFile -and $Level -in $Config.LogToFile) { 
             # Get mutex. Mutexes are shared across all threads and processes. 
             # This lets us ensure only one thread is trying to write to the file at a time. 
             $Mutex = New-Object System.Threading.Mutex($false, $Variables.Branding.ProductLabel)

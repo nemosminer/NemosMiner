@@ -6,12 +6,12 @@ $Path = ".\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Lyra2RE3";    MinMemGiB = 3; Minerset = 2; WarmupTimes = @(30, 0); ExcludePool = @(); Arguments = " --algo lyra2v3 --intensity 24" }
-#   [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGiB = 3; Minerset = 2; WarmupTimes = @(30, 0); ExcludePool = @(); Arguments = " --algo lyra2z330 --intensity 13.2" } #only runs on single gpu's
-#   [PSCustomObject]@{ Algorithm = "Yescrypt";    MinMemGiB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludePool = @(); Arguments = " --algo yescrypt" } # bad shares, CcminerLyra2z330-v8.21r9 is fastest
-    [PSCustomObject]@{ Algorithm = "YescryptR16"; MinMemGiB = 3; MinerSet = 0; WarmupTimes = @(30, 0); ExcludePool = @(); Arguments = " --algo yescryptr16 --intensity 13.2" }
-#   [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGiB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludePool = @(); Arguments = " --algo yescryptr32 --intensity 12.23" } # Out of memory even with 6GB
-    [PSCustomObject]@{ Algorithm = "YescryptR8";  MinMemGiB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludePool = @(); Arguments = " --algo yescryptr8 --intensity 13.2" }
+    [PSCustomObject]@{ Algorithm = "Lyra2RE3";    MinMemGiB = 3; Minerset = 2; WarmupTimes = @(30, 0); ExcludePool = @();        Arguments = " --algo lyra2v3 --intensity 24" }
+#   [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGiB = 3; Minerset = 2; WarmupTimes = @(30, 0); ExcludePool = @();        Arguments = " --algo lyra2z330 --intensity 13.2" } #only runs on single gpu's
+#   [PSCustomObject]@{ Algorithm = "Yescrypt";    MinMemGiB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludePool = @();        Arguments = " --algo yescrypt" } # bad shares, CcminerLyra2z330-v8.21r9 is fastest
+    [PSCustomObject]@{ Algorithm = "YescryptR16"; MinMemGiB = 3; MinerSet = 0; WarmupTimes = @(30, 0); ExcludePool = @("Zpool"); Arguments = " --algo yescryptr16 --intensity 13.2" } # ZPool: Too many stale shares
+#   [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGiB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludePool = @();        Arguments = " --algo yescryptr32" } # Cuda error in func 'yescrypt_setTarget' at line 1296 : invalid device symbol.
+    [PSCustomObject]@{ Algorithm = "YescryptR8";  MinMemGiB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludePool = @();        Arguments = " --algo yescryptr8 --intensity 13.2" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] }) { 

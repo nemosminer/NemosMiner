@@ -10,7 +10,29 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
-ChangeLog NemosMiner 4.2.3.4 nn.01.2023
+ChangeLog NemosMiner 4.2.3.5 22.01.2023
+=======================================
+
+Fixes:
+- Core: Better detection for stuck miners, less false errors 'Miner [...] has not provided first data sample in [...] seconds'
+- Core: Respawning core when internet connection gets lost
+- Web GUI: Dashboard: Cookies not working for 'Launched miners'
+
+Improvements:
+- Core: Add core cycle watchdog to restart stuck core after 10x $Interval
+- Core: Reduce number of API calls to CryptoCompare.com
+- Core / Main text window: Add hotkey '<Ctrl><Alt>-P' to suspend main loop (useful for debugging)
+- Legacy GUI: Added 'Watchdog Timers' page
+- Core, Legacy & Web GUI: Add 'Cycles' column to miner tables
+
+Miner updates:
+- GMiner-v3.27
+- SRBMinerMulti-v2.0.2
+- TeamBlackMiner-v1.80
+- Wildrig-v0.36.3b
+
+
+ChangeLog NemosMiner 4.2.3.4 14.01.2023
 =======================================
 
 Core:

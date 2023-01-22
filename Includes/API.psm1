@@ -18,13 +18,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.2.3.4
-Version date:   14 January 2023
+Version:        4.2.3.5
+Version date:   22 January 2023
 #>
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.5.1.3"
+    $APIVersion = "0.5.1.4"
 
     If ($Variables.APIRunspace.AsyncObject.IsCompleted -eq $true -or $Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
         Stop-APIServer
@@ -623,6 +623,7 @@ Function Start-APIServer {
                             "/functions/switchinglog/clear" { 
                                 Get-ChildItem -Path ".\Logs\switchinglog.csv" -File | Remove-Item -Force
                                 $Data = "Switching log '.\Logs\switchinglog.csv' cleared."
+                                Write-Message -Level Verbose "Web GUI: $Data"
                                 Break
                             }
                             "/functions/variables/get" { 
@@ -772,29 +773,6 @@ Function Start-APIServer {
                                 $Data = ConvertTo-Json -Depth 10 (Get-DefaultAlgorithm)
                                 Break
                             }
-                            "/displayworkers" { 
-                                If ($Config.ShowWorkerStatus -and $Config.MonitoringUser -and $Config.MonitoringServer -and $Variables.WorkersLastUpdated -lt (Get-Date).AddSeconds(-30)) { 
-                                    Read-MonitoringData
-                                }
-                                $Workers = [System.Collections.ArrayList]@(
-                                    $Variables.Workers | Select-Object @(
-                                        @{ Name = "Algorithm"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join "<br/>" } }, 
-                                        @{ Name = "Benchmark Hashrate"; Expression = { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { If ([Double]$_ -gt 0) { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " } Else { "-" } }) -join " & " }) -join "<br>" } }, 
-                                        @{ Name = "Currency"; Expression = { $_.Data.Currency | Select-Object -Unique } }, 
-                                        @{ Name = "EstimatedEarning"; Expression = { [Decimal](($_.Data.Earning | Measure-Object -Sum).Sum * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
-                                        @{ Name = "EstimatedProfit"; Expression = { [Decimal]($_.Profit * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
-                                        @{ Name = "LastSeen"; Expression = { "$($_.date)" } }, 
-                                        @{ Name = "Live Hashrate"; Expression = { ($_.data | ForEach-Object { ($_.CurrentSpeed | ForEach-Object { If ([Double]$_ -gt 0) { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " } Else { "-" } }) -join " & " }) -join "<br>" } }, 
-                                        @{ Name = "Miner"; Expression = { $_.data.name -join '<br/>'} }, 
-                                        @{ Name = "Pool"; Expression = { ($_.data | ForEach-Object { ($_.Pool -split "," | ForEach-Object { $_ -replace "Internal$", " (Internal)" -replace "External", " (External)" }) -join " & "}) -join "<br/>" } }, 
-                                        @{ Name = "Status"; Expression = { $_.status } }, 
-                                        @{ Name = "Version"; Expression = { $_.version } }, 
-                                        @{ Name = "Worker"; Expression = { $_.worker } }
-                                    ) | Sort-Object "Worker Name"
-                                )
-                                $Data = ConvertTo-Json @($Workers | Select-Object)
-                                Break
-                            }
                             "/donationdata" { 
                                 $Data =  ConvertTo-Json $Variables.DonationData
                                 Break
@@ -811,7 +789,7 @@ Function Start-APIServer {
                                 $Data =  ConvertTo-Json $Variables.EarningsChartData
                                 Break
                             }
-                            "/EquihashCoinPers" { 
+                            "/equihashcoinpers" { 
                                 $Data = Get-Content -Path ".\Data\EquihashCoinPers.json"
                                 Break
                             }
@@ -979,6 +957,10 @@ Function Start-APIServer {
                                 $Data = ConvertTo-Json -Depth 10 @($Variables.UnprofitableAlgorithms | Select-Object)
                                 Break
                             }
+                            "/version" { 
+                                $Data = ConvertTo-Json @("$($Variables.Branding.ProductLabel) Version: $($Variables.Branding.Version)", "API Version: $($Variables.APIVersion)", "PWSH Version: $($PSVersionTable.PSVersion.ToString())")
+                                Break
+                            }
                             "/watchdogtimers" { 
                                 $Data = ConvertTo-Json -Depth 10 @($Variables.WatchdogTimers | Select-Object)
                                 Break
@@ -991,8 +973,27 @@ Function Start-APIServer {
                                 $Data = $Variables.WatchdogReset
                                 Break
                             }
-                            "/version" { 
-                                $Data = ConvertTo-Json @("$($Variables.Branding.ProductLabel) Version: $($Variables.Branding.Version)", "API Version: $($Variables.APIVersion)", "PWSH Version: $($PSVersionTable.PSVersion.ToString())")
+                            "workers" { 
+                                If ($Config.ShowWorkerStatus -and $Config.MonitoringUser -and $Config.MonitoringServer -and $Variables.WorkersLastUpdated -lt (Get-Date).AddSeconds(-30)) { 
+                                    Read-MonitoringData
+                                }
+                                $Workers = [System.Collections.ArrayList]@(
+                                    $Variables.Workers | Select-Object @(
+                                        @{ Name = "Algorithm"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join "<br/>" } }, 
+                                        @{ Name = "Benchmark Hashrate"; Expression = { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { If ([Double]$_ -gt 0) { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " } Else { "-" } }) -join " & " }) -join "<br>" } }, 
+                                        @{ Name = "Currency"; Expression = { $_.Data.Currency | Select-Object -Unique } }, 
+                                        @{ Name = "EstimatedEarning"; Expression = { [Decimal](($_.Data.Earning | Measure-Object -Sum).Sum * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
+                                        @{ Name = "EstimatedProfit"; Expression = { [Decimal]($_.Profit * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
+                                        @{ Name = "LastSeen"; Expression = { "$($_.date)" } }, 
+                                        @{ Name = "Live Hashrate"; Expression = { ($_.data | ForEach-Object { ($_.CurrentSpeed | ForEach-Object { If ([Double]$_ -gt 0) { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " } Else { "-" } }) -join " & " }) -join "<br>" } }, 
+                                        @{ Name = "Miner"; Expression = { $_.data.name -join '<br/>'} }, 
+                                        @{ Name = "Pool"; Expression = { ($_.data | ForEach-Object { ($_.Pool -split "," | ForEach-Object { $_ -replace "Internal$", " (Internal)" -replace "External", " (External)" }) -join " & "}) -join "<br/>" } }, 
+                                        @{ Name = "Status"; Expression = { $_.status } }, 
+                                        @{ Name = "Version"; Expression = { $_.version } }, 
+                                        @{ Name = "Worker"; Expression = { $_.worker } }
+                                    ) | Sort-Object "Worker Name"
+                                )
+                                $Data = ConvertTo-Json @($Workers | Select-Object)
                                 Break
                             }
                             Default { 
