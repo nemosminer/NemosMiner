@@ -920,8 +920,7 @@ Function Get-CommandLineParameter {
 
 Function Get-Rate { 
     # Read exchange rates from min-api.cryptocompare.com, use stored data as fallback
-
-    $CryptoCompareAPIKeyParam = "&api_key=af9b92255132dac6d1560c6eb1e04067d9fc0fb4c6630df00fb1d055bf858352"
+    $CryptoCompareAPIKeyParam = $Config.CryptoCompareAPIKeyParam
 
     $RatesFileName = "Cache\Rates.json"
     $RatesCache = Get-Content -Path $RatesFileName -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue
@@ -3099,7 +3098,7 @@ Function Update-ConfigFile {
             "WaitForMinerData" { $Config.Remove($_) }
             "WarmupTime" { $Config.Remove($_) }
             "WebGUIUseColor" { $Config.UseColorForMinerStatus = $Config.$_; $Config.Remove($_) }
-            Default { If ($_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("PoolsConfig"))) { $Config.Remove($_) } } # Remove unsupported config item
+            Default { If ($_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("CryptoCompareAPIKeyParam") + @("DryRun") + @("PoolsConfig"))) { $Config.Remove($_) } } # Remove unsupported config items
         }
     }
 
