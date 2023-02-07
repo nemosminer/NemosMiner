@@ -119,6 +119,12 @@ New Config Items
     "Debug"
   ],
 
+# # Path to external log viewer config file
+  "LogViewerConfig": ".\Utils\NemosMiner_LogReader.xml",
+
+# Path to optional external log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
+  "LogViewerExe": ".\Utils\SnakeTail.exe",
+
 # Use only pools with price accuracy greater than the configured value. Allowed values: 0.0 - 1.0 (0% - 100%)
   "MinAccuracy": 0.5,
 
@@ -242,9 +248,6 @@ New Config Items
 # Show pool user name column in miner overview
   "ShowUser": $true,
 
-# Path to optional external log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
-  "SnakeTailExe": ".\Utils\SnakeTail.exe",
-
 # If true NemosMiner will start legacy GUI
   "StartGUI": false,
 
@@ -253,6 +256,9 @@ New Config Items
 
 # SSL pool connections: One of three values: 'Prefer' (use where available), 'Never' or 'Always' (pools that do not allow SSL are ignored)
   "SSL": "Prefer",
+
+# If $true NemosMiner will allow SSL/TLS connections with self signed certificates (this is a security issue)
+  "SSLAllowSelfSignedCertificate": $false,
 
 # One of 'Idle', 'Paused' or 'Running'. This is the same as the buttons in the Web GUI
   "StartupMode": false,

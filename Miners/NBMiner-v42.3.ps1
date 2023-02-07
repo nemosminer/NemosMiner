@@ -13,7 +13,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "KawPow";       Type = "AMD"; Fee = 0.02; MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.41;       AdditionalWin10MemGB = 0; Minerset = 2; WarmupTimes = @(45, 15); Arguments = " --algo kawpow --platform 2" } # XmRig-v6.17.0 is almost as fast but has no fee
  
     [PSCustomObject]@{ Algorithm = "BeamV3";       Type = "NVIDIA"; Fee = 0.02; MinMemGiB = 3;                                             AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; MinerSet = 0; Tuning = " -mt 1"; WarmupTimes = @(30, 0);  Arguments = " --algo beamv3 --platform 1" }
-    [PSCustomObject]@{ Algorithm = "Cuckoo29";     Type = "NVIDIA"; Fee = 0.02; MinMemGiB = 5;                                             AdditionalWin10MemGB = 1; MinComputeCapability = 6.0; Minerset = 1; Tuning = " -mt 1"; WarmupTimes = @(30, 0);  Arguments = " --algo cuckoo_ae --platform 1" } # GMiner-v3.22 is fastest
+    [PSCustomObject]@{ Algorithm = "Cuckoo29";     Type = "NVIDIA"; Fee = 0.02; MinMemGiB = 5;                                             AdditionalWin10MemGB = 1; MinComputeCapability = 6.0; Minerset = 1; Tuning = " -mt 1"; WarmupTimes = @(30, 0);  Arguments = " --algo cuckoo_ae --platform 1" } # GMiner-v3.28 is fastest
     [PSCustomObject]@{ Algorithm = "Autolykos2";   Type = "NVIDIA"; Fee = 0.02; MinMemGiB = $MinerPools[0].Autolykos2.DAGSizeGiB + 0.42;   AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; Minerset = 1; Tuning = " -mt 1"; WarmupTimes = @(30, 0);  Arguments = " --algo ergo --platform 1" }
     [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "NVIDIA"; Fee = 0.01; MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB + 0.41;      AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; Minerset = 2; Tuning = " -mt 1"; WarmupTimes = @(45, 0);  Arguments = " --algo etchash --platform 1 --enable-dag-cache" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; Fee = 0.01; MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.41;       AdditionalWin10MemGB = 0; MinComputeCapability = 6.0; Minerset = 2; Tuning = " -mt 1"; WarmupTimes = @(60, 0);  Arguments = " --algo ethash --platform 1 --enable-dag-cache" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
@@ -45,16 +45,11 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                If ($_.Algorithm -match "^Cuck.*|^EtcHash$|^Ethash.*|^KawPow$") { 
-                    If ($MinerPools[0].($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash")) { 
-                        $Arguments += " --url nicehash"
-                    }
-                    Else { 
-                        $Arguments += " --url ethproxy"
-                    }
-                }
-                Else { 
-                    $Arguments += " --url stratum"
+                $Arguments += Switch ($MinerPools[0].($_.Algorithm).Protocol) { 
+                    "ethproxy"     { " --url ethproxy"}
+                    "ethstratum"   { " --url stratum" }
+                    "ethstratumnh" { " --url nicehash" }
+                    Default        { " --url stratum" }
                 }
                 $Arguments += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "+ssl://" } Else  { "+tcp://" }
                 $Arguments += "$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) --user $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" })"
@@ -67,7 +62,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 }
 
                 # Apply tuning parameters
-                If ($Variables.UseMinerTweaks -eq $true) { $Arguments += $_.Tuning }
+                If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
 
                 [PSCustomObject]@{ 
                     Algorithms  = @($_.Algorithm)

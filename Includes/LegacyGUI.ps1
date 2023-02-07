@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           LegacyGUI.psm1
-Version:        4.2.3.5
-Version date:   23 January 2023
+Version:        4.3.0.0
+Version date:   06 February 2023
 #>
 
 [Void] [System.Reflection.Assembly]::LoadWithPartialName(“System.Windows.Forms”)
@@ -152,8 +152,6 @@ $MiningSummaryLabel.TextAlign = "MiddleLeft"
 $MiningSummaryLabel.BorderStyle = 'None'
 $MiningSummaryLabel.BackColor = [System.Drawing.SystemColors]::Control
 $MiningSummaryLabel.Visible = $true
-$MiningSummaryLabel.ReadOnly = $true
-$MiningSummaryLabel.MultiLine = $true
 $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Black
 $MiningSummaryLabel.BackColor = [System.Drawing.Color]::Transparent
 $LegacyGUIControls += $MiningSummaryLabel
@@ -187,7 +185,7 @@ $RunPageControls = @()
 
 $LaunchedMinersLabel = New-Object System.Windows.Forms.Label
 $LaunchedMinersLabel.AutoSize = $false
-$LaunchedMinersLabel.Width = 450
+$LaunchedMinersLabel.Width = 600
 $LaunchedMinersLabel.Height = 16
 $LaunchedMinersLabel.Location = [System.Drawing.Point]::new(6, 8)
 $LaunchedMinersLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -224,7 +222,7 @@ $RunPageControls += $LaunchedMinersDGV
 
 $SystemLogLabel = New-Object System.Windows.Forms.Label
 $SystemLogLabel.AutoSize = $false
-$SystemLogLabel.Width = 450
+$SystemLogLabel.Width = 600
 $SystemLogLabel.Height = 16
 $SystemLogLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $SystemLogLabel.Text = "System Log"
@@ -238,7 +236,6 @@ $Variables.TextBoxSystemLog.Text = ""
 $Variables.TextBoxSystemLog.AutoSize = $true
 $Variables.TextBoxSystemLog.ReadOnly = $true
 $Variables.TextBoxSystemLog.MultiLine = $true
-$Variables.TextBoxSystemLog.FlatStyle = 0
 $Variables.TextBoxSystemLog.Font = [System.Drawing.Font]::new("Consolas", 10)
 $RunPageControls += $Variables.TextBoxSystemLog
 
@@ -252,7 +249,7 @@ $EarningsPageControls += $EarningsChart
 
 $EarningsLabel = New-Object System.Windows.Forms.Label
 $EarningsLabel.AutoSize = $false
-$EarningsLabel.Width = 450
+$EarningsLabel.Width = 600
 $EarningsLabel.Height = 16
 $EarningsLabel.Location = [System.Drawing.Point]::new(8, 146)
 $EarningsLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -311,7 +308,7 @@ $RadioButtonMiners.Add_Click({ Update-TabControl })
 
 $MinersLabel = New-Object System.Windows.Forms.Label
 $MinersLabel.AutoSize = $false
-$MinersLabel.Width = 450
+$MinersLabel.Width = 600
 $MinersLabel.Height = 18
 $MinersLabel.Location = [System.Drawing.Point]::new(6, 8)
 $MinersLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -389,7 +386,7 @@ $RadioButtonPools.Add_Click({ Update-TabControl })
 
 $PoolsLabel = New-Object System.Windows.Forms.Label
 $PoolsLabel.AutoSize = $false
-$PoolsLabel.Width = 450
+$PoolsLabel.Width = 600
 $PoolsLabel.Height = 18
 $PoolsLabel.Location = [System.Drawing.Point]::new(6, 8)
 $PoolsLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -436,7 +433,7 @@ $RigMonitorPageControls = @()
 
 $WorkersLabel = New-Object System.Windows.Forms.Label
 $WorkersLabel.AutoSize = $false
-$WorkersLabel.Width = 450
+$WorkersLabel.Width = 600
 $WorkersLabel.Height = 18
 $WorkersLabel.Location = [System.Drawing.Point]::new(6, 8)
 $WorkersLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -467,7 +464,7 @@ $SwitchingPageControls = @()
 
 $SwitchingLogLabel = New-Object System.Windows.Forms.Label
 $SwitchingLogLabel.AutoSize = $false
-$SwitchingLogLabel.Width = 450
+$SwitchingLogLabel.Width = 600
 $SwitchingLogLabel.Height = 18
 $SwitchingLogLabel.Location = [System.Drawing.Point]::new(6, 8)
 $SwitchingLogLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -591,7 +588,7 @@ $WatchdogTimersPageControls = @()
 
 $WatchdogTimersLabel = New-Object System.Windows.Forms.Label
 $WatchdogTimersLabel.AutoSize = $false
-$WatchdogTimersLabel.Width = 450
+$WatchdogTimersLabel.Width = 600
 $WatchdogTimersLabel.Height = 18
 $WatchdogTimersLabel.Location = [System.Drawing.Point]::new(6, 8)
 $WatchdogTimersLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -978,55 +975,63 @@ Function Update-TabControl {
         }
         "Rig Monitor" { 
 
-            Read-MonitoringData | Out-Null
+            $WorkersDGV.Visible = $Config.ShowWorkerStatus
 
-            If ($Variables.Workers) { 
-                $nl = "`n" # Must use variable, cannot join with '`n' directly
-                $WorkersDGV.DataSource = $Variables.Workers | Select-Object @(
-                    @{ Name = "Worker"; Expression = { $_.worker } }, 
-                    @{ Name = "Status"; Expression = { $_.status } }, 
-                    @{ Name = "Last seen"; Expression = { (Get-TimeSince $_.date) } }, 
-                    @{ Name = "Version"; Expression = { $_.version } }, 
-                    @{ Name = "Currency"; Expression = { [String]$Config.Currency } }, 
-                    @{ Name = "Estimated Earning/day"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ([Decimal](($_.Data.Earning | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
-                    @{ Name = "Estimated Profit/day"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ([Decimal](($_.Data.Profit | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
-                    @{ Name = "Miner(s)"; Expression = { $_.data.Name -join $nl } }, 
-                    @{ Name = "Pool(s)"; Expression = { ($_.data | ForEach-Object { $_.Pool -split "," -join " & " }) -join $nl } }, 
-                    @{ Name = "Algorithm(s)"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join $nl } }, 
-                    @{ Name = "Live Hashrate(s)"; Expression = { ($_.data | ForEach-Object { ($_.CurrentSpeed | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " }) -join $nl } }, 
-                    @{ Name = "Benchmark Hashrate(s)"; Expression = { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " }) -join $nl } }
-                ) | Sort-Object "Worker" | Out-DataTable
+            If ($Config.ShowWorkerStatus) { 
 
-                # Set row color
-                ForEach ($Row in $WorkersDGV.Rows) { 
-                    $Row.DefaultCellStyle.Backcolor = Switch ($Row.DataBoundItem.Status) { 
-                        "Offline" { [System.Drawing.Color]::FromArgb(255, 255, 230, 230) }
-                        "Paused"  { [System.Drawing.Color]::FromArgb(255, 255, 241, 195) }
-                        "Running" { [System.Drawing.Color]::FromArgb(255, 232, 250, 232) }
-                        Default   { [System.Drawing.Color]::FromArgb(255, 255, 255, 255) }
+                Read-MonitoringData | Out-Null
+
+                If ($Variables.Workers) { 
+                    $nl = "`n" # Must use variable, cannot join with '`n' directly
+                    $WorkersDGV.DataSource = $Variables.Workers | Select-Object @(
+                        @{ Name = "Worker"; Expression = { $_.worker } }, 
+                        @{ Name = "Status"; Expression = { $_.status } }, 
+                        @{ Name = "Last seen"; Expression = { (Get-TimeSince $_.date) } }, 
+                        @{ Name = "Version"; Expression = { $_.version } }, 
+                        @{ Name = "Currency"; Expression = { [String]$Config.Currency } }, 
+                        @{ Name = "Estimated Earning/day"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ([Decimal](($_.Data.Earning | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
+                        @{ Name = "Estimated Profit/day"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ([Decimal](($_.Data.Profit | Measure-Object -Sum).Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
+                        @{ Name = "Miner(s)"; Expression = { $_.data.Name -join $nl } }, 
+                        @{ Name = "Pool(s)"; Expression = { ($_.data | ForEach-Object { $_.Pool -split "," -join " & " }) -join $nl } }, 
+                        @{ Name = "Algorithm(s)"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join $nl } }, 
+                        @{ Name = "Live Hashrate(s)"; Expression = { ($_.data | ForEach-Object { ($_.CurrentSpeed | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " }) -join $nl } }, 
+                        @{ Name = "Benchmark Hashrate(s)"; Expression = { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " }) -join $nl } }
+                    ) | Sort-Object "Worker" | Out-DataTable
+
+                    # Set row color
+                    ForEach ($Row in $WorkersDGV.Rows) { 
+                        $Row.DefaultCellStyle.Backcolor = Switch ($Row.DataBoundItem.Status) { 
+                            "Offline" { [System.Drawing.Color]::FromArgb(255, 255, 230, 230) }
+                            "Paused"  { [System.Drawing.Color]::FromArgb(255, 255, 241, 195) }
+                            "Running" { [System.Drawing.Color]::FromArgb(255, 232, 250, 232) }
+                            Default   { [System.Drawing.Color]::FromArgb(255, 255, 255, 255) }
+                        }
                     }
+
+                    If ($WorkersDGV.Columns) { 
+                        $WorkersDGV.Columns[0].FillWeight = 70
+                        $WorkersDGV.Columns[1].FillWeight = 40
+                        $WorkersDGV.Columns[2].FillWeight = 80
+                        $WorkersDGV.Columns[3].FillWeight = 70
+                        $WorkersDGV.Columns[4].FillWeight = 40
+                        $WorkersDGV.Columns[5].FillWeight = 65; $WorkersDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"
+                        $WorkersDGV.Columns[6].FillWeight = 65; $WorkersDGV.Columns[6].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[6].HeaderCell.Style.Alignment = "MiddleRight"
+                        $WorkersDGV.Columns[7].FillWeight = 175
+                        $WorkersDGV.Columns[8].FillWeight = 95
+                        $WorkersDGV.Columns[9].FillWeight = 75
+                        $WorkersDGV.Columns[10].FillWeight = 65; $WorkersDGV.Columns[10].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[10].HeaderCell.Style.Alignment = "MiddleRight"
+                        $WorkersDGV.Columns[11].FillWeight = 65; $WorkersDGV.Columns[11].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[11].HeaderCell.Style.Alignment = "MiddleRight"
+                    }
+
+                    $WorkersDGV.ClearSelection()
+
+                    $WorkersLabel.Text = "Worker Status - Updated $($Variables.WorkersLastUpdated.ToString())"
                 }
-
-                If ($WorkersDGV.Columns) { 
-                    $WorkersDGV.Columns[0].FillWeight = 70
-                    $WorkersDGV.Columns[1].FillWeight = 40
-                    $WorkersDGV.Columns[2].FillWeight = 80
-                    $WorkersDGV.Columns[3].FillWeight = 70
-                    $WorkersDGV.Columns[4].FillWeight = 40
-                    $WorkersDGV.Columns[5].FillWeight = 65; $WorkersDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"
-                    $WorkersDGV.Columns[6].FillWeight = 65; $WorkersDGV.Columns[6].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[6].HeaderCell.Style.Alignment = "MiddleRight"
-                    $WorkersDGV.Columns[7].FillWeight = 175
-                    $WorkersDGV.Columns[8].FillWeight = 95
-                    $WorkersDGV.Columns[9].FillWeight = 75
-                    $WorkersDGV.Columns[10].FillWeight = 65; $WorkersDGV.Columns[10].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[10].HeaderCell.Style.Alignment = "MiddleRight"
-                    $WorkersDGV.Columns[11].FillWeight = 65; $WorkersDGV.Columns[11].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[11].HeaderCell.Style.Alignment = "MiddleRight"
-                }
-
-                $WorkersDGV.ClearSelection()
-
-                $WorkersLabel.Text = "Worker Status - Updated $($Variables.WorkersLastUpdated.ToString())"
+                Else { $WorkersLabel.Text = "Worker Status - no workers" }
             }
-            Else { $WorkersLabel.Text = "Worker Status - no workers" }
+            Else { 
+                $WorkersLabel.Text = "Worker status reporting is disabled (Configuration item 'ShowWorkerStatus' -eq `$false)"
+            }
         }
         "Switching Log" { 
 
@@ -1044,32 +1049,40 @@ Function Update-TabControl {
         }
         "Watchdog Timers" { 
 
-            $WatchdogTimersRemoveButton.Enabled = $Variables.WatchdogTimers
+            $WatchdogTimersRemoveButton.Visible = $Config.Watchdog
+            $WatchdogTimersDGV.Visible = $Config.Watchdog
 
-            If ($Variables.WatchdogTimers) { 
-                $WatchdogTimersDGV.DataSource = $Variables.WatchdogTimers | Select-Object @(
-                    @{ Name = "Name"; Expression = { $_.MinerName } }, 
-                    @{ Name = "Algorithms"; Expression = { $_.Algorithm } }, 
-                    @{ Name = "Pool Name"; Expression = { $_.PoolName } }, 
-                    @{ Name = "Region"; Expression = { $_.PoolRegion } }, 
-                    @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join ', '} }, 
-                    @{ Name = "Last Updated"; Expression = { (Get-TimeSince $_.kicked.ToLocalTime()) } }
-                ) | Sort-Object "DeviceNames" | Out-DataTable
+            If ($Config.Watchdog) { 
+                $WatchdogTimersRemoveButton.Enabled = $Variables.WatchdogTimers
 
-                If ($WatchdogTimersDGV.Columns) { 
-                    $WatchdogTimersDGV.Columns[0].FillWeight = 120
-                    $WatchdogTimersDGV.Columns[1].FillWeight = 100
-                    $WatchdogTimersDGV.Columns[2].FillWeight = 100
-                    $WatchdogTimersDGV.Columns[3].FillWeight = 60
-                    $WatchdogTimersDGV.Columns[4].FillWeight = 100
-                    $WatchdogTimersDGV.Columns[5].FillWeight = 100
+                If ($Variables.WatchdogTimers) { 
+                    $WatchdogTimersDGV.DataSource = $Variables.WatchdogTimers | Select-Object @(
+                        @{ Name = "Name"; Expression = { $_.MinerName } }, 
+                        @{ Name = "Algorithms"; Expression = { $_.Algorithm } }, 
+                        @{ Name = "Pool Name"; Expression = { $_.PoolName } }, 
+                        @{ Name = "Region"; Expression = { $_.PoolRegion } }, 
+                        @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join ', '} }, 
+                        @{ Name = "Last Updated"; Expression = { (Get-TimeSince $_.kicked.ToLocalTime()) } }
+                    ) | Sort-Object "DeviceNames" | Out-DataTable
+
+                    If ($WatchdogTimersDGV.Columns) { 
+                        $WatchdogTimersDGV.Columns[0].FillWeight = 120
+                        $WatchdogTimersDGV.Columns[1].FillWeight = 100
+                        $WatchdogTimersDGV.Columns[2].FillWeight = 100
+                        $WatchdogTimersDGV.Columns[3].FillWeight = 60
+                        $WatchdogTimersDGV.Columns[4].FillWeight = 100
+                        $WatchdogTimersDGV.Columns[5].FillWeight = 100
+                    }
+
+                    $WatchdogTimersDGV.ClearSelection()
+
+                    $WatchdogTimersLabel.Text = "Watchdog Timers - Updated $((Get-Date).ToString())"
                 }
-
-                $WatchdogTimersDGV.ClearSelection()
-
-                $WatchdogTimersLabel.Text = "Watchdog Timers - Updated $((Get-Date).ToString())"
+                Else { $WatchdogTimersLabel.Text = "Watchdog Timers - no data" }
             }
-            Else { $WatchdogTimersLabel.Text = "Watchdog Timers - no data" }
+            Else { 
+                $WatchdogTimersLabel.Text = "Watchdog is disabled (Configuration item 'Watchdog' -eq `$false)"
+            }
         }
     }
 
@@ -1127,8 +1140,8 @@ Function Form_Resize {
 
     $WatchdogTimersDGV.Height = $TabControl.Height - 98
 
-    $EditConfigLink.Location = [System.Drawing.Point]::new(12, $LegacyGUIForm.Height - 66)
-    $CopyrightLabel.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - 380), $LegacyGUIForm.Height - 66)
+    $EditConfigLink.Location = [System.Drawing.Point]::new(14, $LegacyGUIForm.Height - 66)
+    $CopyrightLabel.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - 382), $LegacyGUIForm.Height - 66)
 }
 
 $LegacyGUIForm.Add_Load(
@@ -1341,9 +1354,6 @@ $ContextMenuStrip.Add_ItemClicked(
                     }
                 }
                 "Remove Watchdog Timer" { 
-                    If ($This.SourceControl.Name -match "LaunchedMinersDGV|MinersDGV|WatchdogTimersDGV") { 
-
-                    }
                     $Counter = 0
                     $This.SourceControl.SelectedRows | ForEach-Object { 
                         If ($This.SourceControl.Name -eq "LaunchedMinersDGV") { 

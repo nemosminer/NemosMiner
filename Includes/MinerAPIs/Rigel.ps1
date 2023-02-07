@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,18 +17,18 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           Cast.ps1
-Version:        4.2.3.5
-Version date:   23 January 2023
+File:           Rigel.ps1
+Version:        4.3.0.0
+Version date:   06 February 2023
 #>
 
-class Cast : Miner { 
+class Rigel : Miner { 
     [Object]GetMinerData () { 
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
         $PowerUsage = [Double]0
 
-        $Request = "http://127.0.0.1:$($this.Port)/"
+        $Request = "http://127.0.0.1:$($this.Port)/stat"
 
         Try { 
             $Data = Invoke-RestMethod -Uri $Request -TimeoutSec $Timeout
@@ -40,14 +40,24 @@ class Cast : Miner {
         If (-not $Data) { Return $null }
 
         $HashRate = [PSCustomObject]@{ }
-        $HashRate_Name = [String]$this.Algorithms[0]
-        $HashRate_Value = [Double]($Data.devices.hash_rate | Measure-Object -Sum).Sum / 1000
-        $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
+        $HashRate_Name = ""
+        $Hashrate_Value = [Double]0
+        $Algorithms = [String[]]@($Data.algorithm -split "\+")
+        $Algorithm = $Algorithms[0]
 
         $Shares = [PSCustomObject]@{ }
-        $Shares_Accepted = [Int64]$Data.shares.num_accepted
-        $Shares_Rejected = [Int64]($Data.shares.num_rejected + $Data.shares.num_rejected + $Data.shares.num_network_fail + $Data.shares.num_outdated)
-        $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
+        $Shares_Accepted = $Shares_Rejected = $Shares_Invalid = [Int64]0
+
+        ForEach ($Algorithm in $Algorithms) { 
+            $HashRate_Name = $this.Algorithms | Select-Object -Index $Algorithms.IndexOf($Algorithm)
+            $HashRate_Value = [Double]$Data.hashrate.$Algorithm
+            $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
+
+            $Shares_Accepted = [Int64]$Data.solution_stat.$Algorithm.accepted
+            $Shares_Rejected = [Int64]$Data.solution_stat.$Algorithm.rejected
+            $Shares_Invalid = [Int64]$Data.solution_stat.$Algorithm.invalid
+            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
+        }
 
         If ($this.ReadPowerUsage) { 
             $PowerUsage = $this.GetPowerUsage()
@@ -64,3 +74,4 @@ class Cast : Miner {
         Return $null
     }
 }
+

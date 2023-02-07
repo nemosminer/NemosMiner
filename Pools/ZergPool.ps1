@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 
 NemosMiner is free software: you can redistribute it and/or modify
@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.2.3.5
-Version date:   23 January 2023
+Version:        4.3.0.0
+Version date:   06 February 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -96,7 +96,9 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
                     Port                     = If ($PoolConfig.SSL -eq "Always") { 0 } Else { [UInt16]$Request.$_.port }
                     PortSSL                  = If ($PoolConfig.SSL -eq "Never") { 0 } Else { [UInt16]$Request.$_.tls_port }
                     Price                    = [Double]$Stat.Live
+                    Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratum" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                     Region                   = [String]$Region_Norm
+                    SSLSelfSignedCertificate = $true
                     StablePrice              = [Double]$Stat.Week
                     Updated                  = [DateTime]$Request.$_.Updated
                     User                     = [String]$Wallet
@@ -108,3 +110,5 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
         }
     }
 }
+
+$Error.Clear()

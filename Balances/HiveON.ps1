@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,9 +17,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           HiveON.ps1
-Version:        4.2.3.5
-Version date:   23 January 2023
+File:           Hiveon.ps1
+Version:        4.3.0.0
+Version date:   06 February 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -34,14 +34,14 @@ $Config.PoolsConfig.$Name.Wallets.Keys | Where-Object { $Config.PoolsConfig.$Nam
     $RetryCount = 3
     $RetryDelay = 3
 
-    $Request = "https://hiveon.net/api/v1/stats/miner/$Wallet/$Currency/billing-acc"
+    $Request = "https://Hiveon.net/api/v1/stats/miner/$Wallet/$Currency/billing-acc"
 
     While (-not $APIResponse -and $RetryCount -gt 0 -and $Wallet) { 
 
         Try { 
             $APIResponse = Invoke-RestMethod $Request -TimeoutSec $Config.PoolAPITimeout -ErrorAction Ignore
 
-            If ($Config.LogBalanceAPIResponse -eq $true) { 
+            If ($Config.LogBalanceAPIResponse) { 
                 "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
                 $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
                 $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
@@ -58,7 +58,7 @@ $Config.PoolsConfig.$Name.Wallets.Keys | Where-Object { $Config.PoolsConfig.$Nam
                     Unpaid   = [Double]($APIResponse.totalUnpaid)
                     # Paid     = [Double]$APIResponse.stats.totalPaid
                     # Total    = [Double]$APIResponse.stats.balance + [Decimal]$APIResponse.stats.penddingBalance
-                    Url      = "https://hiveon.net/$($Currency.ToLower())?miner=$Wallet"
+                    Url      = "https://Hiveon.net/$($Currency.ToLower())?miner=$Wallet"
                 }
             }
         }

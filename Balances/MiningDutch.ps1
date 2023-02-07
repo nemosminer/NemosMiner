@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningDutch.ps1
-Version:        4.2.3.5
-Version date:   23 January 2023
+Version:        4.3.0.0
+Version date:   06 February 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -45,7 +45,7 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.MiningDutchAPIKey) 
                 Try { 
                     $APIResponse = ((Invoke-RestMethod "https://www.mining-dutch.nl/pools/$($CoinName.ToLower()).php?page=api&action=getuserbalance&api_key=$($Config.MiningDutchAPIKey)" -UserAgent $Useragent -Headers $Headers -TimeoutSec $Config.PoolAPITimeout -ErrorAction Ignore).getuserbalance).data
 
-                    If ($Config.LogBalanceAPIResponse -eq $true) { 
+                    If ($Config.LogBalanceAPIResponse) { 
                         @{ $Currency = $APIResponse }  | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name)_$($CoinName).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
                     }
 

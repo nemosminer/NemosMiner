@@ -1,4 +1,4 @@
-If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.Type -eq"NVIDIA" })) { Return }
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.Type -eq "NVIDIA" })) { Return }
 
 $Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/2.75/gminer_2_75_windows64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
@@ -37,7 +37,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { $Arguments += " --ssl 1" }
 
                 # Apply tuning parameters
-                If ($Variables.UseMinerTweaks -eq $true) { $Arguments += $_.Tuning }
+                If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
 
                 # Contest ETH address (if ETH wallet is specified in config)
                 # $Arguments += If ($Config.Wallets.ETH) { " --contest_wallet $($Config.Wallets.ETH)" } Else { " --contest_wallet 0x92e6F22C1493289e6AD2768E1F502Fc5b414a287" }

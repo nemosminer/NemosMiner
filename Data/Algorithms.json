@@ -217,6 +217,7 @@
   "sha512256d": "SHA512256d",
   "sha256dt": "SHA256dt",
   "skunk": "SkunkHash",
+  "stakecubecoin": "FiroPowSCC",
   "swap": "Cuckaroo29S",
   "theopennetwork": "SHA256ton",
   "toncoin": "SHA256ton",

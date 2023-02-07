@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 
 NemosMiner is free software: you can redistribute it and/or modify
@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.2.3.5
-Version date:   23 January 2023
+Version:        4.3.0.0
+Version date:   06 February 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -107,7 +107,9 @@ If ($PoolConfig.UserName) {
                         Port                     = [UInt16]$Port
                         PortSSL                  = $null
                         Price                    = [Double]$Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * [Math]::Min($Stat.Day_Fluctuation, 1)
+                        Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratumnh" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                         Region                   = [String]$Region_Norm
+                        SSLSelfSignedCertificate = $true
                         StablePrice              = [Double]$Stat.Week
                         User                     = "$($PoolConfig.UserName).$($PoolConfig.WorkerName)"
                         WorkerName               = ""
@@ -171,8 +173,10 @@ If ($PoolConfig.UserName) {
                         Port                     = [UInt16]$Port
                         PortSSL                  = $null
                         Price                    = [Double]($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1)))
+                        Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratumnh" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                         Region                   = [String]$Region_Norm
                         StablePrice              = [Double]$Stat.Week
+                        SSLSelfSignedCertificate = $true
                         User                     = "$($PoolConfig.UserName).$($PoolConfig.WorkerName)"
                         WorkerName               = ""
                     }
@@ -182,3 +186,5 @@ If ($PoolConfig.UserName) {
         }
     }
 }
+
+$Error.Clear()

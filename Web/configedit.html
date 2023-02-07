@@ -106,7 +106,7 @@
 
                   <!-- General Settings -->
                   <legend class=h6><b>General Settings</b></legend>
-                  <div style="padding-top: 0.2rem" title="Identifies your worker&#10;e.g. Computername&#10;(min. 2 and max. 32 characters)">
+                  <div style="padding-top: 0.2rem" title="Identifies your worker&#10;e.g. Computername&#10;(min. 2 and max. 32 characters or numbers)">
                     <label for="WorkerName">Worker name</label>
                     <input type="text" id="WorkerName" name="WorkerName" maxlength=33 size=38 value="Workername">
                   </div>
@@ -183,6 +183,9 @@
                           <option value="Always" title="Always use SSL for pool connections&#10;Pools that do not support SSL connections are ignored&#10;&#10;Note: This setting might reduce earnings because not all pools & miners support SSL connections">Always use</option>
                         </select>
                         <label for="SSL"> SSL for pool connections</label>
+                      </div>
+                      <div style="padding-top: 0.5rem" title="Some pools use self signed certificates for SSL and/or TLS encryption&#10;&#10;Note: This is a security issue and allows 'Man in the middle attacks'">
+                        <input type="checkbox" class="toggle-switch" id="SSLAllowSelfSignedCertificate" name="SSLAllowSelfSignedCertificate"> Allow SSL/TLS connections with self signed certificates
                       </div>
                     </fieldset>
                     <br>
@@ -729,6 +732,7 @@
               if (config.UseAnycast) document.getElementById('UseAnycast').checked = true;
               if (config.SSL === 'Never' || config.SSL === 'Prefer' || config.SSL === 'Always') document.getElementById('SSL').value = config.SSL;
               else document.getElementById('SSL').value = 'Prefer';
+              if (config.SSLAllowSelfSignedCertificate) document.getElementById('SSLAllowSelfSignedCertificate').checked = true;
 
               // Select the Region closest to your Location
               // Fill region list
@@ -1243,6 +1247,7 @@
                   config.UseAnycast = document.getElementById('UseAnycast').checked;
                   if (document.getElementById('SSL').value.match('Never|Prefer|Always')) config.SSL = document.getElementById('SSL').value;
                   else config.SSL = 'Prefer';
+                  config.SSLAllowSelfSignedCertificate = document.getElementById('SSLAllowSelfSignedCertificate').checked;
 
                   // Select the region closest to your location
                   $.each(regions, function (key, value) {

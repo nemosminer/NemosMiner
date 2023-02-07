@@ -12,7 +12,7 @@
           </div>
           <table id="miners" class="table"
             data-auto-refresh="true"
-            data-auto-refresh-status="true"
+            data-auto-refresh-status="false"
             data-cache="true"
             data-click-to-select="true"
             data-cookie="true"
@@ -40,7 +40,7 @@
             >
             <thead>
               <tr>
-                <th data-switchable="false" data-field="Status" data-class="hidden"></th>
+                <th data-switchable="false" data-field="Status" data-class="hidden statusmessage"></th>
                 <th data-field="state" data-checkbox="true"></th>
                 <th data-field="tName" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
                 <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">Miner</th>
@@ -56,6 +56,7 @@
                 <th data-field="Profit_Bias" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Profit Bias</th>
                 <th data-field="Profit" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Profit</th>
                 <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt" class="text-nowrap" data-title-tooltip="per 24hrs (estimated)">Power<br>Usage</th>
+                <th data-field="PowerUsage_Live" data-align="right" data-sortable="true" data-formatter="formatWatt">Power Usage<br>Live</th>
                 <th data-field="tTotalMiningDuration" data-sortable="true" data-visible="false">Total Mining Duration</th>
                 <th data-field="tEarningAccuracy" data-align="right" data-sortable="true">Accuracy</th>
                 <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Primary Algorithm</th>
@@ -101,6 +102,7 @@
 <!-- Start of page scripts 'miners.html' -->
           <script type="text/javascript">
             var $table = $('#miners');
+            const enumstatus = ['Running', 'Idle', 'Failed', 'Disabled', 'Unavailable'];
 
             $table.bootstrapTable({
               onLoadSuccess: function() {
@@ -119,9 +121,8 @@
 
               onPostBody: function() {
                 if (config.UseColorForMinerStatus == true) {
-                  const enumstatus = ['Running', 'Idle', 'Failed', 'Disabled', 'Unavailable'];
-                  $('#miners td:nth-child(2').each(function () {
-                    $(this).parent('tr').addClass('miner-' + enumstatus[this.innerText].toLowerCase());
+                  $("td.statusmessage").each(function () {
+                    this.parentNode.classList.add(("miner-" + enumstatus[this.innerText]).toLowerCase());
                   });
                 };
               },

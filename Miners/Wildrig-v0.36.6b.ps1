@@ -1,6 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.Type -eq "NVIDIA"})) { Return }
 
-$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.36.5b/wildrig-multi-windows-0.36.5b.7z"
+$Uri = "https://github.com/andru-kun/wildrig-multi/releases/download/0.36.6b/wildrig-multi-windows-0.36.6b.7z"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\wildrig.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -29,8 +29,8 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Hex";              Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo hex" }
     [PSCustomObject]@{ Algorithm = "HMQ1725";          Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            MinerSet = 0; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo hmq1725" } # CryptoDredge-v0.27.0 is fastest
     [PSCustomObject]@{ Algorithm = "JeongHash";        Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo glt-jeonghash" }
-    [PSCustomObject]@{ Algorithm = "KawPow";           Type = "AMD"; Fee = @(0.01); MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.62;      Minerset = 1; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo kawpow" } # TeamRedMiner-v0.10.7 is fastest on Navi
-    [PSCustomObject]@{ Algorithm = "Lyra2RE3";         Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo lyra2v3" } # TeamRedMiner-v0.10.7 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPow";           Type = "AMD"; Fee = @(0.01); MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.62;      Minerset = 1; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo kawpow" } # TeamRedMiner-v0.10.8 is fastest on Navi
+    [PSCustomObject]@{ Algorithm = "Lyra2RE3";         Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo lyra2v3" } # TeamRedMiner-v0.10.8 is fastest
     [PSCustomObject]@{ Algorithm = "Lyra2TDC";         Type = "AMD"; Fee = @(0.02); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo lyra2tdc" }
     [PSCustomObject]@{ Algorithm = "Lyra2vc0ban";      Type = "AMD"; Fee = @(0.02); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo lyra2vc0ban" }
     [PSCustomObject]@{ Algorithm = "MegaBtx";          Type = "AMD"; Fee = @(0.02); MinMemGiB = 1;                                            MinerSet = 0; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo megabtx" }
@@ -54,7 +54,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "SHA256csm";        Type = "AMD"; Fee = @(0.02); MinMemGiB = 2;                                            MinerSet = 0; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo sha256csm" }
     [PSCustomObject]@{ Algorithm = "SHA256t";          Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            MinerSet = 0; WarmupTimes = @(60, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo sha256t" } # Takes too long until it starts mining
     [PSCustomObject]@{ Algorithm = "SHA256q";          Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo sha256q" }
-    [PSCustomObject]@{ Algorithm = "SHA512256d";       Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 1; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo sha512256d" }
+    [PSCustomObject]@{ Algorithm = "SHA512256d";       Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 0; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo sha512256d" }
     [PSCustomObject]@{ Algorithm = "SHAndwich256";     Type = "AMD"; Fee = @(0.01); MinMemGiB = 3;                                            MinerSet = 0; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo skydoge" }
     [PSCustomObject]@{ Algorithm = "Skein2";           Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            MinerSet = 0; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo skein2" }
     [PSCustomObject]@{ Algorithm = "SkunkHash";        Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo skunkhash" } # Algorithm is dead
@@ -68,7 +68,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "X16s";             Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo x16s" } # FPGA
     [PSCustomObject]@{ Algorithm = "X17";              Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            MinerSet = 0; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo x17" }
     [PSCustomObject]@{ Algorithm = "X17r";             Type = "AMD"; Fee = @(0.02); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo x17r --protocol ufo2" }
-    [PSCustomObject]@{ Algorithm = "X21s";             Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            MinerSet = 0; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo x21s" } # TeamRedMiner-v0.10.7 is fastest
+    [PSCustomObject]@{ Algorithm = "X21s";             Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            MinerSet = 0; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo x21s" } # TeamRedMiner-v0.10.8 is fastest
     [PSCustomObject]@{ Algorithm = "X22i";             Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(60, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo x22i" }
     [PSCustomObject]@{ Algorithm = "X33";              Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo x33" }
     [PSCustomObject]@{ Algorithm = "Xevan";            Type = "AMD"; Fee = @(0.02); MinMemGiB = 3;                                            MinerSet = 0; WarmupTimes = @(60, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo xevan" } # No hashrate on time for old GPUs
@@ -139,14 +139,14 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "X33";              Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @(); ExcludePool = @(); Arguments = " --algo x33 --watchdog" }
 ) 
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 
+If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts } | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePool }) { 
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model
         $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-        $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePool } | Where-Object Type -EQ $_.Type | ForEach-Object { 
+        $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
             If ($AvailableMiner_Devices = ($Miner_Devices | Where-Object MemoryGiB -ge $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture)) { 
 

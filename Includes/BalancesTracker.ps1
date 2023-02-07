@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.2.3.5
-Version date:   23 January 2023
+Version:        4.3.0.0
+Version date:   06 February 2023
 #>
 
 Do {
@@ -35,7 +35,8 @@ Do {
     $Earnings = @()
 
     # Get pools last earnings
-    $Variables.PoolsLastEarnings = If (Test-Path -Path ".\Data\PoolsLastEarnings.json" -PathType Leaf) { Get-Content ".\Data\PoolsLastEarnings.json" | ConvertFrom-Json | Get-SortedObject } Else { [Ordered]@{ } }
+    # $Variables.PoolsLastEarnings = If (Test-Path -Path ".\Data\PoolsLastEarnings.json" -PathType Leaf) { Get-Content ".\Data\PoolsLastEarnings.json" | ConvertFrom-Json | Get-SortedObject } Else { [Ordered]@{ } }
+    $Variables.PoolsLastEarnings = If (Test-Path -Path ".\Data\PoolsLastEarnings.json" -PathType Leaf) { Get-Content ".\Data\PoolsLastEarnings.json" | ConvertFrom-Json | Get-SortedObject } Else { @{ } }
 
     # Get pools data
     $PoolData = If (Test-Path -Path ".\Data\PoolData.json" -PathType Leaf) { Get-Content ".\Data\PoolData.json" | ConvertFrom-Json } Else { [PSCustomObject]@{ } }
@@ -111,8 +112,15 @@ Do {
                 If (-not $PayoutThreshold) { $PayoutThreshold = [Double]($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold.$PayoutThresholdCurrency) }
             }
 
-            If (-not $PayoutThreshold) { 
-                $PayoutThreshold = If ($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold."*" -like "* *") { [Double](($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold."*" -split ' ' | Select-Object -First 1) * $Variables.Rates.$PayoutThresholdCurrency.($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold."*" -split ' ' | Select-Object -Index 1)) } Else { [Double]($PoolConfig.PayoutThreshold."*") }
+            If (-not $PayoutThreshold -and $Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").PayoutThreshold."*") { 
+                $PayoutThresholdCurrency = [String]$Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").PayoutThreshold."*".Keys
+                If ($PayoutThresholdCurrency -and $Variables.Rates.($PoolBalanceObject.Currency).$PayoutThresholdCurrency) { 
+                    $PayoutThreshold = [Double]($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").PayoutThreshold."*"."$PayoutThresholdCurrency")
+                }
+                Else { 
+                    $PayoutThresholdCurrency = $PoolBalanceObject.Currency
+                    $PayoutThreshold = $Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").PayoutThreshold."*"
+                }
             }
 
             If ($PayoutThresholdCurrency -eq "mBTC") { 
@@ -199,7 +207,7 @@ Do {
                     }
                 }
                 Else { 
-                    # BlazePool, HiveON, MiningDutch, NLPool, ZergPool, ZPool
+                    # BlazePool, Hiveon, MiningDutch, NLPool, ZergPool, ZPool
                     $Delta = $PoolBalanceObject.Unpaid - ($PoolBalanceObjects | Select-Object -Last 1).Unpaid
                     # Current 'Unpaid' is smaller
                     If ($Delta -lt 0) { 
@@ -240,7 +248,7 @@ Do {
 
                 $AvgHourlyGrowth = If ($PoolBalanceObjects | Where-Object { $_.DateTime -lt $Now.AddHours(-1) }) { [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalHours) } Else { $Growth1 }
                 $AvgDailyGrowth = If ($PoolBalanceObjects | Where-Object { $_.DateTime -lt $Now.AddDays(-1) }) { [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalDays) } Else { $Growth24 }
-                $AvgWeeklyGrowth = If ($PoolBalanceObjects | Where-Object { $_.DateTime -lt $Now.AddDays(-7) } ) { [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalDays * 7) } Else { $Growth168 }
+                $AvgWeeklyGrowth = If ($PoolBalanceObjects | Where-Object { $_.DateTime -lt $Now.AddDays(-7) }) { [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalDays * 7) } Else { $Growth168 }
 
                 If ($PoolBalanceObjects | Where-Object { $_.DateTime.Date -eq $Now.Date }) { 
                     $GrowthToday = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime.Date -eq $Now.Date } | Sort-Object Date | Select-Object -First 1).Earnings)
@@ -276,12 +284,13 @@ Do {
                 TrustLevel              = [Double]((($Now - $PoolBalanceObjects[0].DateTime).TotalHours / 168), 1 | Measure-Object -Minimum).Minimum
                 TotalHours              = [Double]($Now - $PoolBalanceObjects[0].DateTime).TotalHours
                 PayoutThreshold         = [Double]$PayoutThreshold
+                PayoutThresholdCurrency = $PayoutThresholdCurrency
                 Payout                  = [Double]$PoolBalanceObject.Payout
                 Uri                     = $PoolBalanceObject.Url
                 LastEarnings            = If ($Growth24 -gt 0) { $PoolBalanceObject.DateTime } Else { $PoolBalanceObjects[0].DateTime }
             }
 
-            If ($Config.BalancesTrackerLog -eq $true) { 
+            If ($Config.BalancesTrackerLog) { 
                 $EarningsObject | Export-Csv -NoTypeInformation -Append ".\Logs\BalancesTrackerLog.csv" -Force
             }
 
@@ -320,6 +329,8 @@ Do {
             $Variables.Balances.$_ = $Balances.$_
             $Variables.PoolsLastEarnings.($_ -replace ' \(.+') = ($Variables.PoolsLastEarnings.($_ -replace ' \(.+'), $Balances.$_.LastEarnings | Measure-Object -Maximum).Maximum
         }
+        $Variables.BalancesCurrencies = @($Variables.Balances.Keys | ForEach-Object { $Variables.Balances.$_.Currency } | Sort-Object -Unique)
+
         $Variables.PoolsLastEarnings = $Variables.PoolsLastEarnings | Get-SortedObject
         $Variables.PoolsLastEarnings | ConvertTo-Json | Out-File -FilePath ".\Data\PoolsLastEarnings.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
 

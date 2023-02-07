@@ -12,7 +12,7 @@
           </div>
           <table id="miners" class="table"
             data-auto-refresh="true"
-            data-auto-refresh-status="true"
+            data-auto-refresh-status="false"
             data-cache="true"
             data-click-to-select="true"
             data-cookie="true"
@@ -40,7 +40,7 @@
             >
             <thead>
               <tr>
-                <th data-switchable="false" data-field="Status" data-class="hidden"></th>
+                <th data-switchable="false" data-field="Status" data-class="hidden statusmessage"></th>
                 <th data-field="state" data-checkbox="true"></th>
                 <th data-field="tName" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
                 <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">Miner</th>
@@ -48,7 +48,7 @@
                 <th data-field="CommandLine" data-sortable="true" data-filter-control="input" data-visible="false">CommandLine</th>
                 <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
-                <th data-field="tStatus" data-sortable="true" data-filter-control="select">Status</th>
+                <th data-field="tStatus" data-sortable="true" data-filter-control="select" data-visible="false">Status</th>
                 <th data-field="Reasons" data-sortable="true" data-filter-control="select">Reasons</th>
                 <th data-field="Earning_Bias" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning Bias</th>
                 <th data-field="Earning" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning</th>
@@ -100,6 +100,7 @@
 <!-- Start of page scripts 'minersunavailable.html' -->
           <script type="text/javascript">
             var $table = $('#miners');
+            const enumstatus = ['Running', 'Idle', 'Failed', 'Disabled', 'Unavailable'];
 
             $table.bootstrapTable({
               onLoadSuccess: function() {
@@ -118,9 +119,8 @@
 
               onPostBody: function() {
                 if (config.UseColorForMinerStatus == true) {
-                  const enumstatus = ['Running', 'Idle', 'Failed', 'Disabled', 'Unavailable'];
-                  $('#miners td:nth-child(2').each(function () {
-                    $(this).parent('tr').addClass('miner-' + enumstatus[this.innerText].toLowerCase());
+                  $("td.statusmessage").each(function () {
+                    this.parentNode.classList.add(("miner-" + enumstatus[this.innerText]).toLowerCase());
                   });
                 };
               },

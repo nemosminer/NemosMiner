@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           EthMiner.ps1
-Version:        4.2.3.5
-Version date:   23 January 2023
+Version:        4.3.0.0
+Version date:   06 February 2023
 #>
 
 class EthMiner : Miner { 
@@ -56,7 +56,8 @@ class EthMiner : Miner {
         $Shares = [PSCustomObject]@{ }
         $Shares_Accepted = [Int64]($Data.result[2] -split ";")[1]
         $Shares_Rejected = [Int64]($Data.result[2] -split ";")[2]
-        $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
+        $Shares_Invalid = [Int64]0
+        $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
 
         If ($HashRate_Name = [String]($this.Algorithms -ne $HashRate_Name)) { # Dual algo mining
             $HashRate_Value = [Double]($Data.result[4] -split ";")[0]
@@ -66,7 +67,8 @@ class EthMiner : Miner {
 
             $Shares_Accepted = [Int64]($Data.result[4] -split ";")[1]
             $Shares_Rejected = [Int64]($Data.result[4] -split ";")[2]
-            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
+            $Shares_Invalid = [Int64]0
+            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
         }
 
         If ($this.ReadPowerUsage) { 

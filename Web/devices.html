@@ -9,15 +9,14 @@
           <h3>Enabled Devices</h3>
           <table id="enableddevices" class="table"
             data-cache="true"
+            data-click-to-select="true"
             data-cookie="true"
-            data-cookie-id-table="enaleddevices"
+            data-cookie-id-table="enableddevices"
             data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
             data-detail-formatter="detailFormatter"
             data-detail-view="true"
-            data-click-to-select="true"
             data-disable-control-when-search="true"
             data-filter-control="true"
-            data-header-style="headerStyleAlignTop"
             data-icons="icons"
             data-maintain-meta-data="true"
             data-reorderable-columns="true"
@@ -33,42 +32,41 @@
             >
             <thead>
               <tr>
-                <th data-switchable="false" data-field="Status" data-class="hidden"></th>
                 <th data-field="state" data-checkbox="true"></th>
-                <th data-field="Name" data-sortable="true">Name</th>
-                <th data-field="Model" data-sortable="true">Model</th>
-                <th data-field="Vendor" data-sortable="true">Vendor</th>
-                <th data-field="Type" data-sortable="true" data-visible="false">Type</th>
-                <th data-field="Status" data-sortable="true">Status</th>
-                <th data-field="tMemory" data-align="right" data-sortable="true" data-width=3>Memory</th>
-                <th data-field="tCores" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
-                <th data-field="tClockSpeed" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
-                <th data-field="tDriverVersionCIM" data-width=3>Driver Version<br>CIM</th>
-                <th data-field="tDriverVersionOpenCL" data-width=3>Driver Version<br>OpenCL</th>
-                <th data-field="CUDAVersion" data-align="right" data-width=3>CUDA Version</th>
-                <th data-field="tArchitecture" data-width=3>Architecture</th>
-                <th data-field="ConfiguredPowerUsage" data-align="right" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt" data-width=3>Configured Power Usage</th>
-                <th data-field="Bus" data-align="right" data-visible="false" data-sortable="true">PCI<br>Bus<br>Id</th>
-                <th data-field="Bus_Index" data-align="right" data-visible="false" data-sortable="true">Bus<br>Index</th>
-                <th data-field="Bus_Type_Index" data-align="right" data-visible="false" data-sortable="true">Bus<br>Type<br>Index</th>
-                <th data-field="Bus_Vendor_Index" data-align="right" data-visible="false" data-sortable="true">Bus<br>Vendor<br>Index</th>
-                <th data-field="Bus_Platform_Index" data-align="right" data-visible="false" data-sortable="true">Bus<br>Platform<br>Index</th>
-                <th data-field="Id" data-align="right" data-visible="false" data-sortable="true">Id</th>
-                <th data-field="Index" data-align="right" data-visible="false" data-sortable="true">Index</th>
-                <th data-field="PlatformId" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id</th>
-                <th data-field="PlatformId_Index" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id<br>Index</th>
-                <th data-field="Slot" data-align="right" data-visible="false" data-sortable="true">Slot</th>
-                <th data-field="Type_Id" data-align="right" data-visible="false" data-sortable="true">Type<br>Id</th>
-                <th data-field="Type_Index" data-align="right" data-visible="false" data-sortable="true">Type<br>Index</th>
-                <th data-field="Type_PlatformId_Index" data-align="right" data-visible="false" data-sortable="true">Type<br>PlatformId<br>Index</th>
-                <th data-field="Type_Slot" data-align="right" data-visible="false" data-sortable="true">Type<br>Slot</th>
-                <th data-field="Type_Vendor_Id" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Id</th>
-                <th data-field="Type_Vendor_Index" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Index</th>
-                <th data-field="Type_Vendor_Slot" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Slot</th>
-                <th data-field="Vendor_Id" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Id</th>
-                <th data-field="Vendor_Index" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Index</th>
-                <th data-field="Vendor_Slot" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Slot</th>
-                <th data-field="tState" data-sortable="true" data-visible="false">State</th>
+                <th data-field="Name" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
+                <th data-field="Model" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Model</th>
+                <th data-field="Vendor" data-sortable="true" data-filter-control="select">Vendor</th>
+                <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
+                <th data-field="Status" class="statusmessage" data-sortable="true" data-filter-control="select">Status</th>
+                <th data-field="tMemory" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Memory</th>
+                <th data-field="tCores" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
+                <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
+                <th data-field="tDriverVersionCIM" data-filter-control="select" data-width=3>Driver Version<br>CIM</th>
+                <th data-field="tDriverVersionOpenCL" data-filter-control="select" data-width=3>Driver Version<br>OpenCL</th>
+                <th data-field="CUDAVersion" data-align="right" data-filter-control="select" data-width=3>CUDA Version</th>
+                <th data-field="tArchitecture" data-filter-control="select" data-width=3>Architecture</th>
+                <th data-field="ConfiguredPowerUsage" data-filter-control="select" data-align="right" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt" data-width=3>Configured Power Usage</th>
+                <th data-field="Bus" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">PCI<br>Bus<br>Id</th>
+                <th data-field="Bus_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Index</th>
+                <th data-field="Bus_Type_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Type<br>Index</th>
+                <th data-field="Bus_Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Vendor<br>Index</th>
+                <th data-field="Bus_Platform_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Platform<br>Index</th>
+                <th data-field="Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Id</th>
+                <th data-field="Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Index</th>
+                <th data-field="PlatformId" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id</th>
+                <th data-field="PlatformId_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id<br>Index</th>
+                <th data-field="Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Slot</th>
+                <th data-field="Type_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Id</th>
+                <th data-field="Type_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Index</th>
+                <th data-field="Type_PlatformId_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>PlatformId<br>Index</th>
+                <th data-field="Type_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Slot</th>
+                <th data-field="Type_Vendor_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Id</th>
+                <th data-field="Type_Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Index</th>
+                <th data-field="Type_Vendor_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Slot</th>
+                <th data-field="Vendor_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Id</th>
+                <th data-field="Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Index</th>
+                <th data-field="Vendor_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Slot</th>
+                <th data-field="tState" data-filter-control="select" data-sortable="true" data-visible="false">State</th>
               </tr>
             </thead>
           </table>
@@ -83,13 +81,12 @@
             data-cache="true"
             data-click-to-select="true"
             data-cookie="true"
-            data-cookie-id-table="diableddevices"
+            data-cookie-id-table="disableddevices"
             data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
-            data-detail-view="true"
             data-detail-formatter="detailFormatter"
+            data-detail-view="true"
             data-disable-control-when-search="true"
             data-filter-control="true"
-            data-header-style="headerStyleAlignTop"
             data-icons="icons"
             data-maintain-meta-data="true"
             data-reorderable-columns="true"
@@ -106,40 +103,40 @@
             <thead>
               <tr>
                 <th data-field="state" data-checkbox="true"></th>
-                <th data-field="Name" data-sortable="true">Name</th>
-                <th data-field="Model" data-sortable="true">Model</th>
-                <th data-field="Vendor" data-sortable="true">Vendor</th>
-                <th data-field="Type" data-sortable="true" data-visible="false">Type</th>
-                <th data-field="Status" data-sortable="true">Status</th>
-                <th data-field="tMemory" data-align="right" data-sortable="true" data-width=3>Memory</th>
-                <th data-field="tCores" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
-                <th data-field="tClockSpeed" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
-                <th data-field="tDriverVersionCIM" data-width=3>Driver Version<br>CIM</th>
-                <th data-field="tDriverVersionOpenCL" data-width=3>Driver Version<br>OpenCL</th>
-                <th data-field="CUDAVersion" data-align="right" data-width=3>CUDA Version</th>
-                <th data-field="tArchitecture" data-width=3>Architecture</th>
-                <th data-field="ConfiguredPowerUsage" data-align="right" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt" data-width=3>Configured Power Usage</th>
-                <th data-field="Bus" data-align="right" data-visible="false" data-sortable="true">PCI<br>Bus<br>Id</th>
-                <th data-field="Bus_Index" data-align="right" data-visible="false" data-sortable="true">Bus<br>Index</th>
-                <th data-field="Bus_Type_Index" data-align="right" data-visible="false" data-sortable="true">Bus<br>Type<br>Index</th>
-                <th data-field="Bus_Vendor_Index" data-align="right" data-visible="false" data-sortable="true">Bus<br>Vendor<br>Index</th>
-                <th data-field="Bus_Platform_Index" data-align="right" data-visible="false" data-sortable="true">Bus<br>Platform<br>Index</th>
-                <th data-field="Id" data-align="right" data-visible="false" data-sortable="true">Id</th>
-                <th data-field="Index" data-align="right" data-visible="false" data-sortable="true">Index</th>
-                <th data-field="PlatformId" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id</th>
-                <th data-field="PlatformId_Index" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id<br>Index</th>
-                <th data-field="Slot" data-align="right" data-visible="false" data-sortable="true">Slot</th>
-                <th data-field="Type_Id" data-align="right" data-visible="false" data-sortable="true">Type<br>Id</th>
-                <th data-field="Type_Index" data-align="right" data-visible="false" data-sortable="true">Type<br>Index</th>
-                <th data-field="Type_PlatformId_Index" data-align="right" data-visible="false" data-sortable="true">Type<br>PlatformId<br>Index</th>
-                <th data-field="Type_Slot" data-align="right" data-visible="false" data-sortable="true">Type<br>Slot</th>
-                <th data-field="Type_Vendor_Id" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Id</th>
-                <th data-field="Type_Vendor_Index" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Index</th>
-                <th data-field="Type_Vendor_Slot" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Slot</th>
-                <th data-field="Vendor_Id" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Id</th>
-                <th data-field="Vendor_Index" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Index</th>
-                <th data-field="Vendor_Slot" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Slot</th>
-                <th data-field="tState" data-sortable="true" data-visible="false">State</th>
+                <th data-field="Name" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
+                <th data-field="Model" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Model</th>
+                <th data-field="Vendor" data-sortable="true" data-filter-control="select">Vendor</th>
+                <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
+                <th data-field="Status" class="statusmessage" data-sortable="true" data-filter-control="select">Status</th>
+                <th data-field="tMemory" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Memory</th>
+                <th data-field="tCores" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
+                <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
+                <th data-field="tDriverVersionCIM" data-filter-control="select" data-width=3>Driver Version<br>CIM</th>
+                <th data-field="tDriverVersionOpenCL" data-filter-control="select" data-width=3>Driver Version<br>OpenCL</th>
+                <th data-field="CUDAVersion" data-filter-control="select" data-align="right" data-width=3>CUDA Version</th>
+                <th data-field="tArchitecture" data-filter-control="select" data-width=3>Architecture</th>
+                <th data-field="ConfiguredPowerUsage" data-filter-control="select" data-align="right" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt" data-width=3>Configured Power Usage</th>
+                <th data-field="Bus" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">PCI<br>Bus<br>Id</th>
+                <th data-field="Bus_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Index</th>
+                <th data-field="Bus_Type_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Type<br>Index</th>
+                <th data-field="Bus_Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Vendor<br>Index</th>
+                <th data-field="Bus_Platform_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Platform<br>Index</th>
+                <th data-field="Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Id</th>
+                <th data-field="Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Index</th>
+                <th data-field="PlatformId" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id</th>
+                <th data-field="PlatformId_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id<br>Index</th>
+                <th data-field="Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Slot</th>
+                <th data-field="Type_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Id</th>
+                <th data-field="Type_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Index</th>
+                <th data-field="Type_PlatformId_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>PlatformId<br>Index</th>
+                <th data-field="Type_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Slot</th>
+                <th data-field="Type_Vendor_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Id</th>
+                <th data-field="Type_Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Index</th>
+                <th data-field="Type_Vendor_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Slot</th>
+                <th data-field="Vendor_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Id</th>
+                <th data-field="Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Index</th>
+                <th data-field="Vendor_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Slot</th>
+                <th data-field="tState" data-filter-control="select" data-sortable="true" data-visible="false">State</th>
               </tr>
             </thead>
           </table>
@@ -172,40 +169,40 @@
               >
               <thead>
                 <tr>
-                  <th data-field="Name" data-sortable="true">Name</th>
-                  <th data-field="Model" data-sortable="true">Model</th>
-                  <th data-field="Vendor" data-sortable="true">Vendor</th>
-                  <th data-field="Type" data-sortable="true" data-visible="false">Type</th>
-                  <th data-field="Status" data-sortable="true">Status</th>
-                  <th data-field="tMemory" data-align="right" data-sortable="true" data-width=3>Memory</th>
-                  <th data-field="tCores" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
-                  <th data-field="tClockSpeed" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
-                  <th data-field="tDriverVersionCIM" data-width=3>Driver Version<br>CIM</th>
-                  <th data-field="tDriverVersionOpenCL" data-width=3>Driver Version<br>OpenCL</th>
-                  <th data-field="CUDAVersion" data-align="right" data-width=3>CUDA Version</th>
-                  <th data-field="tArchitecture" data-width=3>Architecture</th>
-                  <th data-field="ConfiguredPowerUsage" data-align="right" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt" data-width=3>Configured<br>Power Usage</th>
-                  <th data-field="Bus" data-align="right" data-visible="false" data-sortable="true">PCI<br>Bus<br>Id</th>
-                  <th data-field="Bus_Index" data-align="right" data-visible="false" data-sortable="true">Bus<br>Index</th>
-                  <th data-field="Bus_Type_Index" data-align="right" data-visible="false" data-sortable="true">Bus<br>Type<br>Index</th>
-                  <th data-field="Bus_Vendor_Index" data-align="right" data-visible="false" data-sortable="true">Bus<br>Vendor<br>Index</th>
-                  <th data-field="Bus_Platform_Index" data-align="right" data-visible="false" data-sortable="true">Bus<br>Platform<br>Index</th>
-                  <th data-field="Id" data-align="right" data-visible="false" data-sortable="true">Id</th>
-                  <th data-field="Index" data-align="right" data-visible="false" data-sortable="true">Index</th>
-                  <th data-field="PlatformId" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id</th>
-                  <th data-field="PlatformId_Index" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id<br>Index</th>
-                  <th data-field="Slot" data-align="right" data-visible="false" data-sortable="true">Slot</th>
-                  <th data-field="Type_Id" data-align="right" data-visible="false" data-sortable="true">Type<br>Id</th>
-                  <th data-field="Type_Index" data-align="right" data-visible="false" data-sortable="true">Type<br>Index</th>
-                  <th data-field="Type_PlatformId_Index" data-align="right" data-visible="false" data-sortable="true">Type<br>PlatformId<br>Index</th>
-                  <th data-field="Type_Slot" data-align="right" data-visible="false" data-sortable="true">Type<br>Slot</th>
-                  <th data-field="Type_Vendor_Id" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Id</th>
-                  <th data-field="Type_Vendor_Index" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Index</th>
-                  <th data-field="Type_Vendor_Slot" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Slot</th>
-                  <th data-field="Vendor_Id" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Id</th>
-                  <th data-field="Vendor_Index" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Index</th>
-                  <th data-field="Vendor_Slot" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Slot</th>
-                  <th data-field="tState" data-sortable="true" data-visible="false">State</th>
+                  <th data-field="Name" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
+                  <th data-field="Model" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Model</th>
+                  <th data-field="Vendor" data-sortable="true" data-filter-control="select">Vendor</th>
+                  <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
+                  <th data-field="Status" class="statusmessage" data-sortable="true" data-filter-control="select">Status</th>
+                  <th data-field="tMemory" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Memory</th>
+                  <th data-field="tCores" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
+                  <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
+                  <th data-field="tDriverVersionCIM" data-filter-control="select" data-width=3>Driver Version<br>CIM</th>
+                  <th data-field="tDriverVersionOpenCL" data-filter-control="select" data-width=3>Driver Version<br>OpenCL</th>
+                  <th data-field="CUDAVersion" data-filter-control="select" data-align="right" data-width=3>CUDA Version</th>
+                  <th data-field="tArchitecture" data-filter-control="select" data-width=3>Architecture</th>
+                  <th data-field="ConfiguredPowerUsage" data-filter-control="select" data-align="right" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt" data-width=3>Configured<br>Power Usage</th>
+                  <th data-field="Bus" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">PCI<br>Bus<br>Id</th>
+                  <th data-field="Bus_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Index</th>
+                  <th data-field="Bus_Type_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Type<br>Index</th>
+                  <th data-field="Bus_Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Vendor<br>Index</th>
+                  <th data-field="Bus_Platform_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Platform<br>Index</th>
+                  <th data-field="Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Id</th>
+                  <th data-field="Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Index</th>
+                  <th data-field="PlatformId" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id</th>
+                  <th data-field="PlatformId_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id<br>Index</th>
+                  <th data-field="Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Slot</th>
+                  <th data-field="Type_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Id</th>
+                  <th data-field="Type_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Index</th>
+                  <th data-field="Type_PlatformId_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>PlatformId<br>Index</th>
+                  <th data-field="Type_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Slot</th>
+                  <th data-field="Type_Vendor_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Id</th>
+                  <th data-field="Type_Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Index</th>
+                  <th data-field="Type_Vendor_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Slot</th>
+                  <th data-field="Vendor_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Id</th>
+                  <th data-field="Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Index</th>
+                  <th data-field="Vendor_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Slot</th>
+                  <th data-field="tState" data-filter-control="select" data-sortable="true" data-visible="false">State</th>
                 </tr>
               </thead>
             </table>
@@ -247,10 +244,10 @@
               return data;
             };
 
-            $('#enableddevices').bootstrapTable({
+            $(".table").bootstrapTable({
               onPostBody: function() {
                 if (config.UseColorForMinerStatus == true) {
-                  $('#enableddevices td:nth-child(2)').each(function () {
+                  $(".statusmessage").each(function () {
                     switch(this.innerText) {
                       case this.innerText.match(/^Mining/)?.input:
                         $(this).parent('tr').addClass('miner-running');
@@ -267,7 +264,10 @@
                       case this.innerText.match(/^Stopping/)?.input:
                         $(this).parent('tr').addClass('miner-stopping');
                         break;
-                    };
+                      case this.innerText.match(/^Disabled/)?.input:
+                        $(this).parent('tr').addClass('miner-disabled');
+                        break;
+                      };
                   });
                 }
               },

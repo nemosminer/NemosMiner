@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 
 NemosMiner is free software: you can redistribute it and/or modify
@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.2.3.5
-Version date:   23 January 2023
+Version:        4.3.0.0
+Version date:   06 February 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -85,13 +85,15 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
                     Disabled                 = [Boolean]$Stat.Disabled
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                     Fee                      = [Decimal]$Fee
-                    Host                     = "$Region.$HostSuffix"
+                    Host                     = "$($Region.ToLower()).$HostSuffix"
                     Name                     = [String]$PoolVariant
                     Pass                     = [String]$Pass
                     Port                     = [UInt16]$Request.$_.port
                     PortSSL                  = $null
                     Price                    = [Double]$Stat.Live
+                    Protocol                 = "" # Use defaults; If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratumnh" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                     Region                   = [String]$Region_Norm
+                    SSLSelfSignedCertificate = $true
                     StablePrice              = [Double]$Stat.Week
                     Updated                  = [DateTime]$Stat.Updated
                     User                     = [String]$PoolConfig.UserName
@@ -102,3 +104,5 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
         }
     }
 }
+
+$Error.Clear()

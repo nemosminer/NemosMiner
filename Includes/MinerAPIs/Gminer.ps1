@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           GMiner.ps1
-Version:        4.2.3.5
-Version date:   23 January 2023
+Version:        4.3.0.0
+Version date:   06 February 2023
 #>
 
 class Gminer : Miner { 
@@ -47,15 +47,17 @@ class Gminer : Miner {
         $Shares = [PSCustomObject]@{ }
         $Shares_Accepted = [Int64]$Data.total_accepted_shares
         $Shares_Rejected = [Int64]$Data.total_rejected_shares
-        $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
+        $Shares_Invalid = [Int64]$Data.total_invalid_shares
+        $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
 
         If ($HashRate_Name = [String]($this.Algorithms -ne $HashRate_Name)) {
             $HashRate_Value = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
+            $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
+
             $Shares_Accepted = [Int64]$Data.total_accepted_shares2
             $Shares_Rejected = [Int64]$Data.total_rejected_shares2
-            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
-
-            $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
+            $Shares_Invalid = [Int64]$Data.total_invalid_shares2
+            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
         }
 
         If ($this.ReadPowerUsage) { 

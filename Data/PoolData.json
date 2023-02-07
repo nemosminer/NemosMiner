@@ -1,5 +1,69 @@
 {
-  "HiveON": {
+  "HashCryptos": {
+    "Algorithm": [
+      "_-KawPow"
+    ],
+    "AutoExchange": true,
+    "BalancesKeepAlive": 90, // Inactive accounts are purged after 90 days
+    "BrainConfig": {
+      "Debug": false,
+      "PoolAPIAllowedFailureCount": 3,
+      "PoolAPIPerFailPercentPenalty": 10,
+      "PoolAPIRetryInterval": 10,
+      "PoolAPITimeout": 30,
+      "PoolCurrenciesUri": "",
+      "PoolStatusUri": "https://www.hashcryptos.com/api/status",
+      "SampleHalfPower": 0,
+      "SampleSizeMinutes": 45,
+      "UseFullTrust": false,
+      "UseTransferFile": false
+    },
+    "BrainDebug": false,
+    "ExcludeAlgorithm": [],
+    "GuaranteedPayoutCurrencies": [
+      "BCH",
+      "BSV",
+      "BTC",
+      "DASH",
+      "DGB",
+      "DOGE",
+      "FTC",
+      "GRS",
+      "HATCH",
+      "LTC",
+      "MONA",
+      "NLG",
+      "RVN",
+      "SIB",
+      "VTC",
+      "XMY",
+      "XVG",
+      "ZEC"
+    ],
+    "PayoutCurrency": "[Default]",
+    "PayoutThreshold": {
+      "*": 0.0000075
+    },
+    "Region": [
+      "n/a"
+    ],
+    "SSL": "prefer",
+    "Variant": {
+      "HashCryptos": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_current"
+      },
+      "HashCryptos24hr": {
+        "DivisorMultiplier": 1000000000,
+        "PriceField": "estimate_last24h"
+      },
+      "HashCryptosPlus": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "Plus_Price"
+      }
+    }
+  },
+  "Hiveon": {
     "Algorithm": [],
     "AutoExchange": false,
     "BalancesKeepAlive": 90, // No expiration communicated by pool, use 90 days just to be sure
@@ -25,7 +89,7 @@
     ],
     "SSL": "prefer",
     "Variant": {
-      "HiveON": {
+      "Hiveon": {
       }
     }
   },
@@ -127,7 +191,7 @@
       "ZER":  "Zero"
     },
     "PayoutThreshold": {
-      "*": 0.00000025,
+      "*": { "BTC": 0.00000025 },
       "BTC": 0.001
     },
     "Region": [
@@ -155,9 +219,7 @@
       "_-Equihash1445", // Pool closed at end of 2022
       "_-Equihash1927", // Pool closed at end of 2022
       "_-Neoscrypt", // Connection issues
-      "-RandomX", // ASIC
-      "_-Verthash", // Connection issues
-      "_-Yescrypt"
+      "-RandomX" // ASIC
     ],
     "AutoExchange": true,
     "BalancesKeepAlive": 90, // No expiration communicated by pool
@@ -353,9 +415,7 @@
     }
   },
   "ZPool": {
-    "Algorithm": [
-      "-FiroPow"
-    ],
+    "Algorithm": [],
     "AutoExchange": true,
     "BalancesKeepAlive": 90, // Inactive accounts are purged after 90 days
     "BrainConfig": {

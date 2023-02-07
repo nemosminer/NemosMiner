@@ -18,15 +18,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.2.3.5
-Version date:   23 January 2023
+Version:        4.3.0.0
+Version date:   06 February 2023
 #>
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.5.1.4"
+    $APIVersion = "0.5.1.5"
 
-    If ($Variables.APIRunspace.AsyncObject.IsCompleted -eq $true -or $Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
+    If ($Variables.APIRunspace.AsyncObject.IsCompleted -or $Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
         Stop-APIServer
         $Variables.Remove("APIVersion")
     }
@@ -51,10 +51,7 @@ Function Start-APIServer {
             $Variables.APIRunspace = [RunspaceFactory]::CreateRunspace()
             $Variables.APIRunspace.Open()
             Get-Variable -Scope Global | Where-Object Name -in @("Config", "Stats", "Variables") | ForEach-Object { 
-                Try { 
-                    $Variables.APIRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
-                }
-                Catch { }
+                $Variables.APIRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
             }
             $Variables.APIRunspace.SessionStateProxy.SetVariable("APIVersion", $APIVersion)
             $Variables.APIRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath) | Out-Null
@@ -89,7 +86,8 @@ Function Start-APIServer {
                     $Variables.APIRunspace | Add-Member -Force @{ APIServer = $Server }
 
                     # Listening on anything other than localhost requires admin privileges
-                    $Server.Prefixes.Add("http://localhost:$($Variables.APIRunspace.APIPort)/")
+                    # $Server.Prefixes.Add("http://localhost:$($Variables.APIRunspace.APIPort)/")
+                    $Server.Prefixes.Add("http://localhost:$($Config.APIPort)/")
                     $Server.Start()
 
                     While ($Server.IsListening) { 
@@ -287,7 +285,9 @@ Function Start-APIServer {
                             "/functions/config/set" { 
                                 Try { 
                                     Write-Config -ConfigFile $Variables.ConfigFile -Config ($Key | ConvertFrom-Json -AsHashtable)
-                                    Read-Config -ConfigFile $Variables.ConfigFile
+                                    $TempConfig = ($Key | ConvertFrom-Json -AsHashtable)
+                                    $TempConfig.Keys | ForEach-Object { $Config.$_ = $TempConfig.$_ }
+
                                     $Variables.Devices | Select-Object | Where-Object { $_.State -ne [DeviceState]::Unsupported } | ForEach-Object { 
                                         If ($_.Name -in @($Config.ExcludeDeviceName)) { 
                                             $_.State = [DeviceState]::Disabled
@@ -314,8 +314,8 @@ Function Start-APIServer {
                                     $Variables.ShowProfit = $Config.ShowProfit
                                     $Variables.ShowProfitBias = $Config.ShowProfitBias
 
-                                    Write-Message -Level Verbose "Web GUI: Configuration saved. It will become active in next cycle."
-                                    $Data = "Configuration saved to '$($Variables.ConfigFile)'.`nIt will become active in next cycle."
+                                    Write-Message -Level Verbose "Web GUI: Configuration saved. It will become fully active in next cycle."
+                                    $Data = "Configuration saved to '$($Variables.ConfigFile)'.`nIt will become fully active in next cycle."
                                 }
                                 Catch { 
                                     $Data = "Error saving configuration file '$($Variables.ConfigFile)'.`n`n[ $($_) ]"
@@ -806,7 +806,7 @@ Function Start-APIServer {
                                 Break
                             }
                             "/miners/available" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available -EQ $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object Name)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object Name)
                                 Break
                             }
                             "/miners/best" { 
@@ -861,16 +861,20 @@ Function Start-APIServer {
                                 $Data = $Variables.MiningProfit
                                 Break
                             }
+                            "/poolname" { 
+                                $Data = ConvertTo-Json -Depth 10 $Config.PoolName
+                                break
+                            }
                             "/pooldata" { 
                                 $Data = ConvertTo-Json -Depth 10 $Variables.PoolData
                                 break
                             }
                             "/poolsconfig" { 
-                                $Data = ConvertTo-Json -Depth 10 ($Config.PoolsConfiguration | Select-Object)
+                                $Data = ConvertTo-Json -Depth 10 ($Config.PoolsConfig | Select-Object)
                                 Break
                             }
                             "/poolsconfigfile" { 
-                                $Data = $Variables.PoolsConfigFile
+                                $Data = $Config.PoolsConfigFile
                                 Break
                             }
                             "/pools" { 
@@ -882,7 +886,7 @@ Function Start-APIServer {
                                 Break
                             }
                             "/pools/available" { 
-                                $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Available -EQ $true | Select-Object | Sort-Object Algorithm, Name, Region)
+                                $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Where-Object Available | Select-Object | Sort-Object Algorithm, Name, Region)
                                 Break
                             }
                             "/pools/best" { 
@@ -1073,7 +1077,7 @@ Function Start-APIServer {
                     If ($Variables.APIVersion = (Invoke-RestMethod "http://localhost:$($Variables.APIRunspace.APIPort)/apiversion" -TimeoutSec 1 -ErrorAction Stop)) { 
                         Write-Message -Level Info "Web GUI and API (version $($Variables.APIVersion)) running on http://localhost:$($Variables.APIRunspace.APIPort)."
                         # Start Web GUI (show configuration edit if no existing config)
-                        If ($Config.WebGui) { Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/$(If ($Variables.FreshConfiguration -eq $true) { "configedit.html" })" }
+                        If ($Config.WebGUI) { Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/$(If ($Variables.FreshConfig) { "configedit.html" })" }
                         Break
                     }
                 }

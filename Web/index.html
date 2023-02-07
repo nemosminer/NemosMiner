@@ -38,37 +38,38 @@
             >
             <thead>
               <tr>
-                <th data-switchable="false" data-field="tStatusMessage" data-class="hidden"></th>
+                <th data-switchable="false" data-field="StatusMessage" data-class="hidden statusmessage"></th>
                 <th data-field="state" data-checkbox="true"></th>
                 <th data-field="tName" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
                 <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">Miner</th>
                 <th data-field="Version" data-sortable="true" data-filter-control="select" data-visible="false">Version</th>
                 <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
-                <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false" data-filter-strict-search="true">Type</th>
-                <th data-field="tStatusMessage" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Status</th>
+                <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
+                <th data-field="tStatusMessage" data-sortable="true" data-filter-control="select">Status</th>
                 <th data-field="Earning" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)" data-visible="false">Earning</th>
                 <th data-field="Earning_Bias" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning Bias</th>
                 <th data-field="PowerCost" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Power Cost</th>
                 <th data-field="Profit" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)" data-visible="false">Profit</th>
                 <th data-field="Profit_Bias" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Profit Bias</th>
-                <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt">Power Usage</th>
+                <th data-field="PowerUsage_Live" data-align="right" data-sortable="true" data-formatter="formatWatt">Power Usage<br>Live</bt></th>
+                <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt" data-visible="false">Power Usage</th>
                 <th data-field="BeginTime" data-sortable="true" data-visible="false" data-formatter="formatDate">BeginTime</th>
                 <th data-field="Cycle" data-sortable="true" data-visible="false">Cycles</th>
                 <th data-field="tMiningDuration" data-sortable="true">Running Time</th>
-                <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Primary Algorithm</th>
-                <th data-field="tPrimaryCurrency" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Primary Currency</th>
-                <th data-field="tPrimaryCoinName" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Primary CoinName</th>
-                <th data-field="tPrimaryPool" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Primary Pool</th>
-                <th data-field="tPrimaryPoolUser" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Primary User</th>
+                <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select">Primary Algorithm</th>
+                <th data-field="tPrimaryCurrency" data-sortable="true" data-filter-control="select" data-visible="false">Primary Currency</th>
+                <th data-field="tPrimaryCoinName" data-sortable="true" data-filter-control="select" data-visible="false">Primary CoinName</th>
+                <th data-field="tPrimaryPool" data-sortable="true" data-filter-control="select" >Primary Pool</th>
+                <th data-field="tPrimaryPoolUser" data-sortable="true" data-filter-control="select" data-visible="false">Primary User</th>
                 <th data-field="tPrimaryHashrateLive" data-align="right" data-sortable="true" data-formatter="formatHashrateValue">Live<br>Hashrate</th>
                 <th data-field="tPrimaryHashrate" data-align="right" data-sortable="true" data-formatter="formatHashrateValue">Benchmarked<br>Hashrate</th>
                 <th data-field="tPrimaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Primary Pool Fee</th>
                 <th data-field="tPrimaryMinerFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Primary Algorithm Miner Fee</th>
-                <th data-field="tSecondaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Secondary Algorithm</th>
-                <th data-field="tSecondaryCurrency" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Secondary Currency</th>
-                <th data-field="tSecondaryCoinName" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Secondary CoinName</th>
-                <th data-field="tSecondaryPool" data-align="right" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Secondary Pool</th>
-                <th data-field="tSecondaryPoolUser" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Secondary User</th>
+                <th data-field="tSecondaryAlgorithm" data-sortable="true" data-filter-control="select">Secondary Algorithm</th>
+                <th data-field="tSecondaryCurrency" data-sortable="true" data-filter-control="select" data-visible="false">Secondary Currency</th>
+                <th data-field="tSecondaryCoinName" data-sortable="true" data-filter-control="select" data-visible="false">Secondary CoinName</th>
+                <th data-field="tSecondaryPool" data-align="right" data-sortable="true" data-filter-control="select">Secondary Pool</th>
+                <th data-field="tSecondaryPoolUser" data-sortable="true" data-filter-control="select" data-visible="false">Secondary User</th>
                 <th data-field="tSecondaryHashrateLive" data-align="right" data-sortable="true" data-formatter="formatHashrateValue">Live<br>Hashrate</th>
                 <th data-field="tSecondaryHashrate" data-align="right" data-sortable="true" data-formatter="formatHashrateValue">Benchmarked<br>Hashrate</th>
                 <th data-field="tSecondaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Secondary Pool Fee</th>
@@ -77,9 +78,9 @@
                 <th data-field="WarmupTimes" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false" data-width=3>WarmupTimes</th>
                 <th data-field="EnvVars" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false" data-width=3>Environment Variables</th>
                 <th data-field="Port" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">API Port</th>
-                <th data-field="Best" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Best</th>
-                <th data-field="MinerSet" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">MinerSet</th>
-                <th data-field="Activated" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Activated</th>
+                <th data-field="Best" data-sortable="true" data-filter-control="select" data-visible="false">Best</th>
+                <th data-field="MinerSet" data-sortable="true" data-filter-control="select" data-visible="false">MinerSet</th>
+                <th data-field="Activated" data-sortable="true" data-filter-control="select" data-visible="false">Activated</th>
               </tr> 
             </thead>
           </table>
@@ -188,12 +189,12 @@
                     <p class="card-text currencies">
                       <div class="payout text-center">
                         {{#if payoutthreshold}}
-                        <div title="{{percentage}}% of {{formatCurrency payoutthreshold rate}} {{maincurrency}}">
-                          Payout threshold<br/><b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{currency}}</b>
+                        <div title="{{percentage}}% of {{convertRate payoutthreshold rates payoutthresholdcurrency maincurrency}} {{maincurrency}}">
+                          Payout threshold<br/><b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{payoutthresholdcurrency}}</b>
                         </div>
                         {{else}}
-                        <div title="{{percentage}}% of {{formatCurrency payoutthreshold rate}} {{maincurrency}}">
-                          Payout threshold<br/><b>Unknown</b>
+                        <div title="Threshold can not be determined">
+                          Payout threshold<br/><b>Unknown {{payoutthresholdcurrency}}</b>
                         </div>
                         {{/if}}
                         <br/>
@@ -213,7 +214,16 @@
 <!-- Start of page scripts 'index.html' -->
           <script type="text/javascript">
             var $table = $('#miners');
-            var currency = config.Currency
+            var currency = config.Currency;
+
+            Handlebars.registerHelper('convertRate', function(value, rates, from, to) {
+              if (value >= 0) { 
+                value *= rates[from][to];
+                return formatDecimals(value);
+              } else {
+                return;
+              }
+            });
 
             Handlebars.registerHelper('formatCurrency', function(value, rate) {
               if (value >= 0) { 
@@ -252,13 +262,13 @@
               var rates = {};
               // get rates
               $.ajax({
-                  async: false,
-                  dataType: 'json',
-                  timeout: 10,
-                  url: '/rates',
-                  success: function(result) {
-                    rates = result;
-                    sessionStorage.setItem('rates', JSON.stringify(rates));
+                async: false,
+                dataType: 'json',
+                timeout: 10,
+                url: '/rates',
+                success: function(result) {
+                  rates = result;
+                  sessionStorage.setItem('rates', JSON.stringify(rates));
 
                   $.ajax({
                     async: false,
@@ -284,12 +294,18 @@
 
                         $.each(result, function(index, item) {
                           if (config.UsemBTC && item.Currency == 'BTC') {
-                            var factor = 1000;
                             var currency = 'mBTC';
                           } else {
-                            var factor = 1;
                             var currency = item.Currency;
                           }
+
+                          if (config.UsemBTC && item.PayoutThresholdCurrency == 'BTC') {
+                            item.PayoutThresholdCurrency = 'mBTC';
+                            var factor = 0.001;
+                          } else {
+                            var factor = 1;
+                          }
+
                           if (config.BalancesShowInAllCurrencies || footer.test(item.Pool)) {
                             item.Currencies = [currency].concat(currencies);
                           } else if (config.BalancesShowInMainCurrency || footer.test(item.Pool)) {
@@ -300,12 +316,13 @@
 
                           if (!(footer.test(item.Pool))) {
 
-                            if (rates[item.Currency]) currencyrate = rates[item.Currency][config.Currency] / factor;
+                            if (rates[item.Currency]) currencyrate = rates[item.Currency][config.Currency];
 
-                            // MiningDutch payout threshold
-                            if (item.Pool == "MiningDutch" && item.Currency != "BTC" && rates[item.Currency]) {
-                              item.PayoutThresholdCurrency = "BTC";
-                              item.PayoutThreshold = item.PayoutThreshold / rates[item.Currency][item.PayoutThresholdCurrency];
+                            // Payout threshold currency is different from asset currency
+                            if (rates[item.Currency] && [item.PayoutThresholdCurrency]) {
+                              var percentage = (item.Balance / item.PayoutThreshold * rates[item.Currency][item.PayoutThresholdCurrency] * 100);
+                            } else { 
+                              var percentage = (item.Balance / item.PayoutThreshold * 100);
                             }
 
                             var data = {
@@ -313,19 +330,21 @@
                               uri: item.Uri,
                               updated: formatDate(item.LastUpdated),
                               balances: {},
-                              growth1: item.Growth1 * factor,
-                              growth6: item.Growth6 * factor,
-                              growth24: item.Growth24 * factor,
-                              growth168: item.Growth168 * factor,
-                              growth720: item.Growth720 * factor,
-                              avghourlygrowth: item.AvgHourlyGrowth * factor,
-                              avgdailygrowth: item.AvgDailyGrowth * factor,
-                              avgweeklygrowth: item.AvgWeeklyGrowth * factor,
-                              payoutthreshold: item.PayoutThreshold * factor,
+                              growth1: item.Growth1,
+                              growth6: item.Growth6,
+                              growth24: item.Growth24,
+                              growth168: item.Growth168,
+                              growth720: item.Growth720,
+                              avghourlygrowth: item.AvgHourlyGrowth,
+                              avgdailygrowth: item.AvgDailyGrowth,
+                              avgweeklygrowth: item.AvgWeeklyGrowth,
+                              payoutthreshold: parseFloat(item.PayoutThreshold) / factor,
+                              payoutthresholdcurrency: item.PayoutThresholdCurrency,
                               rate: currencyrate,
+                              rates: rates,
                               currency: currency,
                               maincurrency: config.Currency,
-                              percentage: (item.Balance / item.PayoutThreshold * 100).toFixed(2),
+                              percentage: (percentage * factor).toFixed(2),
                               paydate: formatDate(item.ProjectedPayDate),
                               showaverages: config.BalancesShowAverages,
                               showsums: config.BalancesShowSums,
@@ -492,7 +511,7 @@
 
               onPostBody: function () {
                 if (config.UseColorForMinerStatus == true ) {
-                  $('#miners td:nth-child(2)').each(function () {
+                  $(".statusmessage").each(function () {
                     switch(this.innerText) {
                       case this.innerText.match(/^Mining/)?.input:
                         $(this).parent('tr').addClass('miner-running');
@@ -532,9 +551,8 @@
               $(".addlocalcurrency").each(function () {
                 this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.Currency + ')';
               });
+              updatePoolBalances();
             });
-
-            updatePoolBalances();
 
           </script>
 <!-- End of page scripts 'index.html' -->

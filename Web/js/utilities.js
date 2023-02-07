@@ -84,7 +84,7 @@ function formatMiners(data) {
     else item.tMiningDuration = formatTimeSince(item.BeginTime).replace(' ago' ,'').replace('-', 'just started');
 
     // Format status
-    const enumstatus = ['Running', 'Idle', 'Failed', 'Disabled'];
+    const enumstatus = ['Running', 'Idle', 'Failed', 'Disabled', 'Unavailable'];
     item.tStatus = enumstatus[item.Status];
 
     // Format status message

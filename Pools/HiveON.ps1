@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 
 NemosMiner is free software: you can redistribute it and/or modify
@@ -18,9 +18,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           HiveOn.ps1
-Version:        4.2.3.5
-Version date:   23 January 2023
+File:           Hiveon.ps1
+Version:        4.3.0.0
+Version date:   06 February 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -39,7 +39,7 @@ $PoolConfig = $Variables.PoolsConfig.$Name
 If ($PoolConfig.Wallets) { 
     Do {
         Try { 
-            $Request = Invoke-RestMethod -Uri "https://hiveon.net/api/v1/stats/pool" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec 3
+            $Request = Invoke-RestMethod -Uri "https://Hiveon.net/api/v1/stats/pool" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec 3
         }
         Catch { 
             $APICallFails++
@@ -80,7 +80,9 @@ If ($PoolConfig.Wallets) {
             Port                     = If ($PoolConfig.SSL -eq "Always") { 0 } Else { [UInt16]$_.servers[0].ports[0] }
             PortSSL                  = If ($PoolConfig.SSL -eq "Never") { 0 } Else { [UInt16]$_.servers[0].ssl_ports[0] }
             Price                    = [Double]$Stat.Live
+            Protocol                 = "ethproxy"
             Region                   = [String]$PoolConfig.Region
+            SSLSelfSignedCertificate = $false
             StablePrice              = [Double]$Stat.Week
             Updated                  = [DateTime]$Stat.Updated
             User                     = "$($PoolConfig.Wallets.$Currency).$($PoolConfig.WorkerName)"
@@ -89,3 +91,5 @@ If ($PoolConfig.Wallets) {
         }
     }
 }
+
+$Error.Clear()

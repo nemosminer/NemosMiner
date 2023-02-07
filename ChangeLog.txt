@@ -10,6 +10,45 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+
+ChangeLog NemosMiner 4.3.0.0 06.02.2023
+=======================================
+
+Changes:
+- Code optimization: remove ' -eq $true' & ' -eq $false'
+
+Enhancements:
+- Core: / §Pools & Miners: Rewrite ethereum stratum mode handling
+- Core: Where applicable use Hashtables instead of PSCustomObjects for better performance
+- Core & Miner APIs: Add Stale/Invalid share data
+- Core: New configuration item 'SSLAllowSelfSignedCertificate' 
+- Web GUI / Devices: Use colors for all tables
+- Web GUI: Keep colors even when 'Status' column is hidden
+- Web & legacy GUI: Hide watchdog timer table and show message instead if watchdog is disabled
+
+Fixes:
+- Brains / ProHashing: Continous memory consumption growth
+- Brains / ZPool: Continous memory consumption growth
+- Core / Includes.psm1: Continous memory consumption growth in functions 'Get-CommandLineParameter', 'Get-Rate', 'Get-SortedObject'
+- GMiner-v3-27: Fix 'Beamv3' for Nvidia broken and causing continous memory consumption growth
+- NanoMiner-v3.7.6: Causing continous memory consumption growth
+
+Miner updates:
+- GMiner-v3.28
+- KawpowMiner-v1.2.4cl
+- KawpowMiner-v1.2.4cuda
+- MiniZ-v2.0c
+- lolMiner-v1.67
+- Rigel-v1.3.4
+- SRBMinerMulti-v2.1.0
+- TeamBlackMiner-v1.84
+- TTMiner-v2023.1.5
+- Wildrig-v0.36.6b
+
+Pools:
+- HashCrypto pool added
+
+
 ChangeLog NemosMiner 4.2.3.5 23.01.2023
 =======================================
 
@@ -22,7 +61,7 @@ Improvements:
 - Core: Add core cycle watchdog to restart stuck core after 10x $Interval
 - Core: Optimized order of miners getting benchmarked (run miners with long warmup time or high number o data samples first)
 - Core: Reduce number of API calls to CryptoCompare.com
-- Core / Main text window: Add hotkey '<Ctrl><Alt>-P' to suspend main loop (useful for debugging)
+- Core / Main text window: Add hotkey '<Ctrl><Alt>P' to suspend main loop (useful for debugging)
 - Core, Legacy & Web GUI: Add 'Cycles' column to miner tables
 - Legacy GUI: Added 'Watchdog Timers' page
 
@@ -45,6 +84,8 @@ Fixes:
 - Core / Include.psm1: Get-Rate not working for large number of currencies
 
 Miner updates:
+- Rigel-v1.3.2
+- TeamRedMiner-v0.10.8
 - TTMiner-v2023.1.1
 - Wildrig-v0.36.2b
 

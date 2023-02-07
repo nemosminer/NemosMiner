@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           SRBminer.ps1
-Version:        4.2.3.5
-Version date:   23 January 2023
+Version:        4.3.0.0
+Version date:   06 February 2023
 #>
 
 class SRBMiner : Miner { 
@@ -49,8 +49,9 @@ class SRBMiner : Miner {
 
         $Shares = [PSCustomObject]@{ }
         $Shares_Accepted = [Int64]$Data.algorithms[0].shares.accepted
-        $Shares_Rejected = [Int64]$Data.algorithms[0].shares.rejected 
-        $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
+        $Shares_Rejected = [Int64]$Data.algorithms[0].shares.rejected
+        $Shares_Invalid = [Int64]0
+        $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
 
         If ($this.Algorithms[1]) { 
             $HashRate_Name = [String]$this.Algorithms[1]
@@ -59,7 +60,8 @@ class SRBMiner : Miner {
 
             $Shares_Accepted = [Int64]$Data.algorithms[1].shares.accepted
             $Shares_Rejected = [Int64]$Data.algorithms[1].shares.rejected 
-            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, ($Shares_Accepted + $Shares_Rejected)) }
+            $Shares_Invalid = [Int64]0
+            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
         }
 
         If ($this.ReadPowerUsage) { 

@@ -123,12 +123,12 @@
       if (version) $('#footer').empty().append(version.join('&nbsp;/&nbsp;') + '&nbsp;/&nbsp;All earnings and profit numbers are estimates based on data provided by the pools APIs&nbsp;/&nbsp&copy; www.nemosminer.com');
     });
 
-      // Update data once per interval
-      window.setInterval(function() { 
-        updateSummary();
-        updateData();
-        if (typeof updatePoolBalances === "function") updatePoolBalances();
-      }, config.Interval * 1000);
+    // Update data once per interval
+    window.setInterval(function() { 
+      updateSummary();
+      updateData();
+      if (typeof updatePoolBalances === "function") updatePoolBalances();
+    }, config.Interval * 1000);
 </script>
 <!-- End of page scripts 'foot.html'-->
 </html>

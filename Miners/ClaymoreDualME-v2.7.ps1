@@ -30,20 +30,20 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                If ($MinerPools[0].($_.Algorithm).DAGSizeGiB -ne $null -and $MinerPools[0].($_.Algorithm).BaseName -in @("MiningPoolHub", "NiceHash", "ProHashing")) { 
-                    $Arguments += " -esm 3"
-                    $Arguments += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { " -epool stratum+ssl://" } Else { " -epool stratum+tcp://" }
+                $Arguments += Switch ($MinerPools[0].($_.Algorithm).Protocol) { 
+                    "ethproxy"     { " -esm 1" }
+                    "ethstratum"   { " -esm 0" }
+                    "ethstratumnh" { " -esm 3" }
+                    Default        { " -esm 0" }
                 }
-                Else { 
-                    $Arguments += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { " -epool ssl://" } Else { " -epool " }
-                }
-                $Arguments += "$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) -ewal $($MinerPools[0].($_.Algorithm).User)"
+                $Arguments += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { " -epool stratum+ssl" } Else { " -epool stratum+tcp" }
+                $Arguments += "://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) -ewal $($MinerPools[0].($_.Algorithm).User)"
                 $Arguments += " -epsw $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].($_.Algorithm).DAGSizeGiB))" })"
                 If ($MinerPools[0].($_.Algorithm).WorkerName) { $Arguments += " -eworker $($MinerPools[0].($_.Algorithm).WorkerName)" }
                 If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { $Arguments += " -checkcert 0" }
 
                 # Apply tuning parameters
-                If ($Variables.UseMinerTweaks -eq $true) { $Arguments += $_.Tuning }
+                If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
 
                 [PSCustomObject]@{ 
                     Algorithms  = @($_.Algorithm)

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool.ps1
-Version:        4.2.3.5
-Version date:   23 January 2023
+Version:        4.3.0.0
+Version date:   06 February 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -44,9 +44,9 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
 
     $Duration = Measure-Command { 
         $CurDate = (Get-Date).ToUniversalTime()
-        $PoolVariant = $Config.PoolName | Where-Object { $_ -match "$($BrainName)*" } 
+        $PoolVariant = $Config.PoolName | Where-Object { $_ -match "$($BrainName)*" }
 
-        If ($Config.PoolsConfig.$BrainName.BrainDebug) { Write-Message -Level Debug "Start Brain '$Brainname ($PoolVariant)'." }
+        If ($Config.PoolsConfig.$BrainName.BrainDebug) { Write-Message -Level Debug "$($BrainName) (Variant $($PoolVariant)): Start Brain" }
 
         Do {
             Try { 
@@ -115,7 +115,7 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
                         $Price = [Math]::min([Double]$Price, [Double]($CurAlgoObject | Where-Object { $_.Name -eq $Name }).estimate_current)
                     }
                 }
-                $AlgoData.$Name | Add-Member -Force @{ Plus_Price = $Price }
+                $AlgoData.$Name | Add-Member @{ Plus_Price = $Price } -Force
             }
         }
 
@@ -135,27 +135,29 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
         }
         Remove-Variable AlgoData -ErrorAction Ignore
         # Keep CurrenciesData for one hour
-        If ($CurrenciesDataTimestamp.AddHours(1) -lt (GetDate).ToUniversalTime()) { Remove-Variable CurrenciesData -ErrorAction Ignore }
+        If ($CurrenciesDataTimestamp.AddHours(1) -lt (Get-Date).ToUniversalTime()) { Remove-Variable CurrenciesData -ErrorAction Ignore }
 
         # Limit to only sample size + 10 minutes min history
         $AlgoObject = @($AlgoObject | Where-Object { $_.Date -ge $CurDate.AddMinutes(-($BrainConfig.SampleSizeMinutes + 10)) })
 
         If ($Config.PoolsConfig.$BrainName.BrainDebug) { 
-            Write-Message -Level Debug ("$PoolVariant AlgoObject size: {0:n0} Bytes" -f ($AlgoObject | ConvertTo-Json -Compress).length)
-            Get-MemoryUsage
+            Write-Message -Level Debug ("$($BrainName) (Variant $($PoolVariant)): AlgoObject size {0:n0} Bytes" -f ($AlgoObject | ConvertTo-Json -Compress).length)
+            Write-Message -Level Debug "$($BrainName) (Variant $($PoolVariant)): $(Get-MemoryUsage)"
         }
     }
+
+    $Error.Clear()
 
     [System.GC]::Collect() | Out-Null
     [System.GC]::WaitForPendingFinalizers() | Out-Null
     [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
 
     If ($Config.PoolsConfig.$BrainName.BrainDebug) { 
-        Get-MemoryUsage
-        Write-Message -Level Debug "End Brain '$Brainname' ($($Duration.TotalSeconds) sec.)."
+        Write-Message -Level Debug "$($BrainName) (Variant $($PoolVariant)): $(Get-MemoryUsage)"
+        Write-Message -Level Debug "$($BrainName) (Variant $($PoolVariant)): End Brain ($($Duration.TotalSeconds) sec.)"
     }
 
     Do { 
         Start-Sleep -Seconds 3
-    } While (-not $Variables.Miners -or $CurDate -gt $Variables.PoolDataCollectedTimeStamp -or (Get-Date).ToUniversalTime().AddSeconds([Int]$Duration.TotalSeconds + 5) -lt $Variables.EndCycleTime -or $CurDate.AddSeconds([Int]$Config.Interval) -gt (Get-Date).ToUniversalTime())
+    } While ($CurDate -gt $Variables.PoolDataCollectedTimeStamp -or (Get-Date).ToUniversalTime().AddSeconds([Int]$Duration.TotalSeconds + 5) -lt $Variables.EndCycleTime -or $CurDate.AddSeconds([Int]$Config.Interval) -gt (Get-Date).ToUniversalTime())
 }

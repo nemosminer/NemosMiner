@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.2.3.5
-Version date:   23 January 2023
+Version:        4.3.0.0
+Version date:   06 February 2023
 #>
 
 [CmdletBinding()]
@@ -94,7 +94,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$IdleDetection = $false, # If true will start mining only if system is idle for $IdleSec seconds
     [Parameter(Mandatory = $false)]
-    [Int]$IdleSec = 120, # seconds the system must be idle before mining starts (if IdleDetection -eq $true)
+    [Int]$IdleSec = 120, # seconds the system must be idle before mining starts (if IdleDetection)
     [Parameter(Mandatory = $false)]
     [Switch]$IgnoreMinerFee = $false, # If true will ignore miner fee for earning & profit calculation
     [Parameter(Mandatory = $false)]
@@ -114,7 +114,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String[]]$LogToScreen = @("Info", "Warn", "Error", "Verbose"), # Log level detail to be written to screen, see Write-Message function; any of @("Info", "Warn", "Error", "Verbose", "Debug")
     [Parameter(Mandatory = $false)]
-    [String]$LogViewerConfig = ".\Utils\NemosMiner_LogReader.xml", # Path to SnakeTail session config file
+    [String]$LogViewerConfig = ".\Utils\NemosMiner_LogReader.xml", # Path to external log viewer config file
     [Parameter(Mandatory = $false)]
     [String]$LogViewerExe = ".\Utils\SnakeTail.exe", # Path to optional external log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net], leave empty to disable
     [Parameter(Mandatory = $false)]
@@ -172,7 +172,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$PoolsConfigFile = ".\Config\PoolsConfig.json", # PoolsConfig file name
     [Parameter(Mandatory = $false)]
-    [String[]]$PoolName = @("HiveOn", "MiningDutch", "MiningPoolHub", "NiceHash", "NLPool", "ProHashing", "ZergPoolCoins", "ZPool"), 
+    [String[]]$PoolName = @("Hiveon", "MiningDutch", "MiningPoolHub", "NiceHash", "NLPool", "ProHashing", "ZergPoolCoins", "ZPool"), 
     [Parameter(Mandatory = $false)]
     [Int]$PoolTimeout = 20, # Time (in seconds) until it aborts the pool request (useful if a pool's API is stuck). Note: do not set this value too small or NM will not be able to get any pool data
     [Parameter(Mandatory = $false)]
@@ -232,6 +232,8 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$SSL = "Prefer", # SSL pool connections: One of three values: 'Prefer' (use where available), 'Never' or 'Always' (pools that do not allow SSL are ignored)
     [Parameter(Mandatory = $false)]
+    [Switch]$SSLAllowSelfSignedCertificate = $false, # If $true NemosMiner will allow SSL/TLS connections with self signed certificates (this is a security issue)
+    [Parameter(Mandatory = $false)]
     [String]$StartupMode = $false, # One of 'Idle', 'Paused' or 'Running'. This is the same as the buttons in the Web GUI
     [Parameter(Mandatory = $false)]
     [Boolean]$SubtractBadShares = $true, # If true will deduct rejected shares when calculating effective hashrates
@@ -279,9 +281,9 @@ https://github.com/Minerx117/NemosMiner/blob/master/LICENSE
 Write-Host "`nCopyright and license notices must be preserved.`n" -ForegroundColor Yellow
 
 # Initialize thread safe global variables
-New-Variable Config ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
-New-Variable Stats ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
-New-Variable Variables ([Hashtable]::Synchronized(@{ })) -Scope "Global" -Force -ErrorAction Stop
+$Global:Config = [Hashtable]::Synchronized(@{ })
+$Global:Stats = [Hashtable]::Synchronized(@{ })
+$Global:Variables = [Hashtable]::Synchronized(@{ })
 
 # Load Branding
 $Variables.Branding = [PSCustomObject]@{ 
@@ -289,7 +291,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.2.3.5"
+    Version      = [System.Version]"4.3.0.0"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -321,9 +323,18 @@ $Variables.PoolsConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolve
 $Variables.BalancesTrackerConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.BalancesTrackerConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
 
 $Variables.AllCommandLineParameters = [Ordered]@{ }
-$MyInvocation.MyCommand.Parameters.Keys | Where-Object { Get-Variable $_ } | ForEach-Object { 
+$MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -ne "ConfigFile" } | Where-Object { Get-Variable $_ } | Sort-Object | ForEach-Object { 
     $Variables.AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly
-    If ($Variables.AllCommandLineParameters.$_ -is [Switch]) { $Variables.AllCommandLineParameters.$_ = [Boolean]$Variables.AllCommandLineParameters.$_ }
+    If ($MyInvocation.MyCommandLineParameters.$_ -is [Switch]) { $Variables.AllCommandLineParameters.$_ = [Boolean]$Variables.AllCommandLineParameters.$_ }
+}
+
+# Load pool data
+$Variables.PoolData = Get-Content -Path ".\Data\PoolData.json" | ConvertFrom-Json -AsHashtable | Get-SortedObject
+$Variables.PoolVariants = @(($Variables.PoolData.Keys | ForEach-Object { $Variables.PoolData.$_.Variant.Keys -replace " External$| Internal$" }) | Sort-Object -Unique)
+If (-not $Variables.PoolVariants) { 
+    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\PoolData.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file. Please restore it from your original download."
+    Start-Sleep -Seconds 10
+    Exit
 }
 
 # Read configuration
@@ -335,7 +346,7 @@ If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFil
 }
 
 # Start transcript log
-If ($Config.Transcript -eq $true) { Start-Transcript ".\Logs\$((Get-Item $MyInvocation.MyCommand.Path).BaseName)-Transcript_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
+If ($Config.Transcript) { Start-Transcript ".\Logs\$((Get-Item $MyInvocation.MyCommand.Path).BaseName)-Transcript_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
 
 # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
 Start-LogReader
@@ -434,16 +445,8 @@ If (-not $Variables.CUDAVersionTable) {
     Start-Sleep -Seconds 10
     Exit
 }
-# Load pool data
-$Variables.PoolData = Get-Content -Path ".\Data\PoolData.json" | ConvertFrom-Json -AsHashtable | Get-SortedObject
-$Variables.PoolVariants = @(($Variables.PoolData.Keys | ForEach-Object { $Variables.PoolData.$_.Variant.Keys -replace " External$| Internal$" }) | Sort-Object -Unique)
-If (-not $Variables.PoolVariants) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\PoolData.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file. Please restore it from your original download."
-    Start-Sleep -Seconds 10
-    Exit
-}
 # Load DAG data, if not available it will get recreated
-$Variables.DAGdata = Get-Content ".\Data\DagData.json" | ConvertFrom-Json
+$Variables.DAGdata = Get-Content ".\Data\DagData.json" | ConvertFrom-Json -AsHashtable
 
 # Load PoolsLastUsed data
 $Variables.PoolsLastUsed = Get-Content -Path ".\Data\PoolsLastUsed.json" | ConvertFrom-Json -AsHashtable
@@ -498,13 +501,17 @@ If (Get-Item .\* -Stream Zone.*) {
 Write-Message -Level Verbose "Setting variables..."
 $Variables.IsLocalAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
 $Variables.Miners = [Miner[]]@()
+$Variables.MiningEarning = $Variables.MiningProfit = $Variables.MiningPowerCost = [Double]::NaN
 $Variables.NewMiningStatus = If ($Config.StartupMode -match "Paused|Running") { $Config.StartupMode } Else { "Idle" }
+$Variables.RestartCycle = $true
 $Variables.Pools = [Pool[]]@()
-$Variables.RestartCycle = $true # To simulate first loop
 $Variables.ScriptStartTime = (Get-Process -id $PID).StartTime.ToUniversalTime()
 $Variables.SuspendCycle = $false
 $Variables.WatchdogTimers = @()
-$Variables.MiningEarning = $Variables.MiningProfit = $Variables.MiningPowerCost = [Double]::NaN
+
+$Variables.RegexAlgoHasEthproxy = "^Etc?hash|ProgPow|UbqHash"
+$Variables.RegexAlgoIsEthash = "^Etc?hash|^UbqHash"
+$Variables.RegexAlgoIsProgPow = "^KawPow|^ProgPow|^FiroPow"
 
 Get-Rate | Out-Null
 
@@ -559,7 +566,7 @@ If ((Get-Content -Path ".\Cache\DriverVersion.json" | ConvertFrom-Json | Convert
 }
 
 # Start Web GUI
-If ($Config.WebGUI -eq $true) { 
+If ($Config.WebGUI) { 
     Start-APIServer
     Start-LogReader # To bring SnakeTail back in focus
 }
@@ -596,7 +603,7 @@ If ($Variables.FreshConfig) {
 Function MainLoop { 
 
     # Core watchdog. Sometimes core loop gets stuck
-    If (-not $Variables.SuspencCyle -and $Variables.MiningStatus -eq "Running" -and (Get-Date).ToUniversalTime() -gt $Variables.EndCycleTime.AddSeconds(10 * $Config.Interval)) { 
+    If (-not $Variables.SuspendCyle -and $Variables.EndCycleTime -and $Variables.MiningStatus -eq "Running" -and (Get-Date).ToUniversalTime() -gt $Variables.EndCycleTime.AddSeconds(10 * $Config.Interval)) { 
         Write-Message -Level Warn "Core cycle is stuck - restarting..."
         Stop-Mining -Quick
         $Variables.EndCycleTime = (Get-Date).ToUniversalTime()
@@ -613,7 +620,7 @@ Function MainLoop {
 
             Switch ($Variables.NewMiningStatus) { 
                 "Idle" { 
-                    If ($Variables.NewMiningStatus -ne $Variables.MiningStatus) { 
+                    If ($Variables.MiningStatus -and $Variables.NewMiningStatus -ne $Variables.MiningStatus) { 
                         $Variables.Summary = "'Stop mining' button clicked.<br>Stopping $($Variables.Branding.ProductLabel)..."
                         Write-Host "`n"
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
@@ -624,7 +631,7 @@ Function MainLoop {
                     Stop-BalancesTracker
                     Update-MonitoringData | Out-Null
 
-                    If ($LegacyGUIform) { 
+                    If ($Variables.MiningStatus -and $LegacyGUIform) { 
                         $MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) is stopped"
                         $MiningStatusLabel.ForeColor = [System.Drawing.Color]::Red
                         $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Black
@@ -639,7 +646,7 @@ Function MainLoop {
                     Write-Host "`n"
                 }
                 "Paused" { 
-                    If ($Variables.NewMiningStatus -ne $Variables.MiningStatus) { 
+                    If ($Variables.MiningStatus -and $Variables.NewMiningStatus -ne $Variables.MiningStatus) { 
                         $Variables.Summary = "'Pause mining' button pressed.<br>Pausing $($Variables.Branding.ProductLabel)..."
                         Write-Host "`n"
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
@@ -667,7 +674,7 @@ Function MainLoop {
                     Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                 }
                 "Running" { 
-                    If ($Variables.NewMiningStatus -ne $Variables.MiningStatus) { 
+                    If ($Variables.MiningStatus -and $Variables.NewMiningStatus -ne $Variables.MiningStatus) { 
                         $Variables.Summary = "'Start mining' button clicked.<br>Starting $($Variables.Branding.ProductLabel)..."
                         Write-Host "`n"
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
@@ -897,7 +904,7 @@ Function MainLoop {
             $Variables.UIStyle = $Config.UIStyle
         }
 
-        If ($Variables.MiningStatus -eq "Running" -and ($Variables.Miners | Where-Object Available -EQ $true)) { 
+        If ($Variables.MiningStatus -eq "Running" -and ($Variables.Miners | Where-Object Available)) { 
             # Display available miners list
             [System.Collections.ArrayList]$Miner_Table = @(
                 @{ Label = "Miner"; Expression = { $_.Name } }
@@ -920,18 +927,18 @@ Function MainLoop {
                 If ($Variables.ShowCoinName) { @{ Label = "CoinName"; Expression = { If ($_.Workers.Pool.CoinName) { $_.Workers.Pool.CoinName } } } }
             )
             $SortBy = If ($Variables.CalculatePowerCost) { "Profit" } Else { "Earning" }
-            $Variables.Miners | Where-Object Available -EQ $true | Group-Object -Property { [String]$_.DeviceNames } | Sort-Object Name | ForEach-Object { 
+            $Variables.Miners | Where-Object Available | Group-Object -Property { [String]$_.DeviceNames } | Sort-Object Name | ForEach-Object { 
                 $MinersDeviceGroup = @($_.Group)
-                $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object Benchmark -EQ $true)
-                $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object Enabled -EQ $True | Where-Object MeasurePowerUsage -EQ $true)
-                $MinersDeviceGroup = @($MinersDeviceGroup | Where-Object { $Variables.ShowAllMiners -or $_.MostProfitable -eq $true -or $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 })
+                $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object Benchmark)
+                $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object Enabled | Where-Object MeasurePowerUsage)
+                $MinersDeviceGroup = @($MinersDeviceGroup | Where-Object { $Variables.ShowAllMiners -or $_.MostProfitable -or $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 })
                 $MinersDeviceGroup | Where-Object { 
                     $Variables.ShowAllMiners -or <#List all miners#>
                     $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <#List all miners when benchmarking#>
                     $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 -or <#List all miners when measuring power usage#>
                     $_.$SortBy -ge ($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index (($MinersDeviceGroup.Count, 5 | Measure-Object -Minimum).Minimum - 1)) -or <#Always list at least the top 5 miners per device group#>
                     $_.$SortBy -ge (($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -First 1) * 0.5) <#Always list the better 50% miners per device group#>
-                } | Sort-Object -Property DeviceName, @{ Expression = { $_.Benchmark -eq $true }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage -eq $true }; Descending = $true }, @{ Expression = { $_.KeepRunning -eq $true }; Descending = $true }, @{ Expression = { $_.Prioritize -eq $true }; Descending = $true }, @{ Expression = { $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithms[0] }; Descending = $false }, @{ Expression = { $_.Algorithms[1] }; Descending = $false } | 
+                } | Sort-Object -Property DeviceName, @{ Expression = { $_.Benchmark }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage }; Descending = $true }, @{ Expression = { $_.KeepRunning }; Descending = $true }, @{ Expression = { $_.Prioritize }; Descending = $true }, @{ Expression = { $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithms[0] }; Descending = $false }, @{ Expression = { $_.Algorithms[1] }; Descending = $false } | 
                 Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (@($_).Count -ne 1) { "s" })"; Expression = { "$($_.DeviceNames -join ',') [$(($Variables.Devices | Where-Object Name -In $_.DeviceNames).Model -join ', ')]" } } -AutoSize | Out-Host
 
                 # Display benchmarking progress
@@ -991,7 +998,7 @@ Function MainLoop {
                 $ProcessesFailed | Sort-Object { If ($_.Process) { $_.Process.StartTime } Else { [DateTime]0 } } | Format-Table $Miner_Table -Wrap | Out-Host
             }
 
-            If ($Config.Watchdog -eq $true) { 
+            If ($Config.Watchdog) { 
                 # Display watchdog timers
                 $Variables.WatchdogTimers | Where-Object Kicked -GT $Variables.Timer.AddSeconds(-$Variables.WatchdogReset) | Format-Table -Wrap (
                     @{Label = "Miner Watchdog Timer"; Expression = { $_.MinerName } }, 
@@ -1006,7 +1013,7 @@ Function MainLoop {
         If ($Variables.Timer) { $Variables.Summary -split '<br>' | ForEach-Object { Write-Host ($_ -replace "&ensp;", " " -replace "'/ ", "/") } }
 
         If (-not $Variables.Paused) { 
-            If ($Variables.Miners | Where-Object Available -EQ $true | Where-Object { $_.Benchmark -eq $false -or $_.MeasurePowerUsage -eq $false }) { 
+            If ($Variables.Miners | Where-Object Available | Where-Object { -not ($_.Benchmark -or $_.MeasurePowerUsage) }) { 
                 If ($Variables.MiningProfit -lt 0) { 
                     # Mining causes a loss
                     Write-Host -ForegroundColor Red ("Mining is currently NOT profitable and causes a loss of {0} {1:n$($Config.DecimalsMax)} / day (including Base Power Cost)." -f $Config.Currency, (-$Variables.MiningProfit * $Variables.Rates.BTC.($Config.Currency)))

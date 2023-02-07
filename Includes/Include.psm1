@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.2.3.5
-Version date:   22 January 2023
+Version:        4.3.0.0
+Version date:   06 February 2023
 #>
 
 # Window handling
@@ -115,8 +115,10 @@ Class Pool {
     [UInt16]$PortSSL
     [Double]$Price
     [Double]$Price_Bias
+    [String]$Protocol
     [String[]]$Reasons = @()
     [String]$Region
+    [Boolean]$SSLSelfSignedCertificate
     [Double]$StablePrice
     [DateTime]$Updated = (Get-Date).ToUniversalTime()
     [String]$User
@@ -269,6 +271,9 @@ Class Miner {
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
         $this.Activated++
         $this.Cycle = 0
+        $this.Hashrates_Live = @([Double]::NaN * $this.Algorithm.Count)
+        $this.PowerUsage = [Double]::NaN
+
 
         Write-Message -Level Info "Starting miner '$($this.Name) $($this.Info)'..."
 
@@ -287,7 +292,7 @@ Class Miner {
         }
 
         If (-not $this.Process) { 
-            If ($this.Benchmark -EQ $true -or $this.MeasurePowerUsage -EQ $true) { $this.Data = @() } # When benchmarking clear data on each miner start
+            If ($this.Benchmark -or $this.MeasurePowerUsage) { $this.Data = @() } # When benchmarking clear data on each miner start
             $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.WindowStyle -Priority $this.ProcessPriority -EnvBlock $this.EnvVars -JobName $this.Name -LogFile $this.LogFile
 
             $this.Status = [MinerStatus]::Running
@@ -389,12 +394,12 @@ Class Miner {
             if ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
                 $this.Process | Get-Job | Receive-Job | Remove-Job -Force
             }
-            $this.Process = $null 
+            $this.Process = $null
         }
 
         $this.Status = If ($this.Status -eq [MinerStatus]::Running) { [MinerStatus]::Idle } Else { [MinerStatus]::Failed }
         $this.Devices | ForEach-Object { $_.Status = $this.Status }
-        $this.Devices | Where-Object { $_.State -eq [DeviceState]::Disabled} | ForEach-Object { $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
+        $this.Devices | Where-Object { $_.State -eq [DeviceState]::Disabled } | ForEach-Object { $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
         # Log switching information to .\Logs\SwitchingLog
         [PSCustomObject]@{ 
@@ -546,7 +551,7 @@ Class Miner {
         $this.Earning_Bias = ($this.Workers.Earning_Bias | Measure-Object -Sum).Sum
 
         If ($this.Workers[0].Hashrate -eq 0) { # Allow 0 hashrate on secondary algorithm
-            $this.Status = [MinerStatus]::Failed
+            # $this.Status = [MinerStatus]::Failed
             $this.Available = $false
             $this.Earning = [Double]::NaN
             $this.Earning_Bias = [Double]::NaN
@@ -591,8 +596,9 @@ Function Start-IdleDetection {
     # Function tracks how long the system has been idle and controls the paused state
     $Variables.IdleRunspace = [runspacefactory]::CreateRunspace()
     $Variables.IdleRunspace.Open()
-    $Variables.IdleRunspace.SessionStateProxy.SetVariable('Config', $Config)
-    $Variables.IdleRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
+    Get-Variable -Scope Global | Where-Object Name -in @("Config", "Variables") | ForEach-Object { 
+        $Variables.IdleRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
+    }
     $Variables.IdleRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath) | Out-Null
     $Variables.IdleRunspace | Add-Member MiningStatus "Running" -Force
 
@@ -707,11 +713,13 @@ Function Start-Mining {
         $Variables.Miners = [Miner[]]@()
         $Variables.MinersBest_Combo = [Miner[]]@()
 
+        $Variables.CycleStarts = @()
+
         $Variables.CoreRunspace = [RunspaceFactory]::CreateRunspace()
         $Variables.CoreRunspace.Open()
-        $Variables.CoreRunspace.SessionStateProxy.SetVariable('Config', $Config)
-        $Variables.CoreRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
-        $Variables.CoreRunspace.SessionStateProxy.SetVariable('Stats', $Stats)
+        Get-Variable -Scope Global | Where-Object Name -in @("Config", "Stats", "Variables") | ForEach-Object { 
+            $Variables.CoreRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
+        }
         $Variables.CoreRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath) | Out-Null
 
         $PowerShell = [PowerShell]::Create()
@@ -748,11 +756,17 @@ Function Stop-Mining {
     }
     $Variables.MiningStatus = "Idle"
 
-    $Variables.MinersBest_Combo = $Variables.MinersBest_Combos = [Pool[]]@()
+    $Variables.CycleStarts = @()
+    $Variables.Pools = $Variables.PoolsBest = $Variables.NewPools = [Pool[]]@()
+    $Variables.RunningMiners = $Variables.Miners = $Variables.MinersBest = $Variables.MinersBest_Combo = $Variables.MinersBest_Combos = $Variables.RunningMiners = $Variables.MinersMostProfitable = [Miner[]]@()
+    $Variables.EndCycleTime = $null
     $Variables.WatchdogTimers = @()
+    $Variables.PoolsCount = 0
     $Variables.MiningEarning = $Variables.MiningProfit = $Variables.MiningPowerCost = [Double]::NaN
 
     [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
+
+    $Error.Clear()
 }
 
 Function Start-Brain { 
@@ -763,23 +777,6 @@ Function Start-Brain {
     )
 
     If (Test-Path -Path ".\Brains" -PathType Container) { 
-        If ($Brains -and -not $Variables.BrainRunspacePool) { 
-
-            # https://stackoverflow.com/questions/38102068/sessionstateproxy-variable-with-runspace-pools
-            $InitialSessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
-
-            # Create the sessionstate variable entries
-            @("Config", "Variables") | ForEach-Object { 
-                $InitialSessionState.Variables.Add((New-Object System.Management.Automation.Runspaces.SessionStateVariableEntry -ArgumentList $_, (Get-Variable $_ -ValueOnly), $null))
-            }
-
-            $Variables.BrainRunspacePool = [RunspaceFactory]::CreateRunspacePool(1, (Get-Item -Path ".\Brains\*.ps1").Count, $InitialSessionState, $Host)
-            $Variables.BrainRunspacePool.Open()
-            $Variables.Brains = @{ }
-            $Variables.BrainData = [PSCustomObject]@{ }
-        }
-
-        If ($Variables.BrainRunspacePool) { $Variables.BrainRunspacePool.CleanupInterval = New-TimeSpan -Seconds (10 * $Config.Interval) }
 
         # Starts Brains if necessary
         $BrainsStarted = @()
@@ -787,6 +784,23 @@ Function Start-Brain {
             If ($Config.PoolsConfig.$_.BrainConfig -and -not $Variables.Brains.$_) { 
                 $BrainScript = ".\Brains\$($_).ps1"
                 If (Test-Path -Path $BrainScript -PathType Leaf) { 
+                    If (-not $Variables.BrainRunspacePool) { 
+
+                        # https://stackoverflow.com/questions/38102068/sessionstateproxy-variable-with-runspace-pools
+                        $InitialSessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
+
+                        # Create the sessionstate variable entries
+                        (Get-Variable -Scope Global | Where-Object Name -in @("Config", "Stats", "Variables")).Name | ForEach-Object { 
+                            $InitialSessionState.Variables.Add((New-Object System.Management.Automation.Runspaces.SessionStateVariableEntry -ArgumentList $_, (Get-Variable $_ -ValueOnly), $null))
+                        }
+                        $Variables.BrainRunspacePool = [RunspaceFactory]::CreateRunspacePool(1, (Get-Item -Path ".\Brains\*.ps1").Count, $InitialSessionState, $Host)
+                        $Variables.BrainRunspacePool.Open()
+                        $Variables.Brains = @{ }
+                        $Variables.BrainData = [PSCustomObject]@{ }
+                    }
+
+                    # $Variables.BrainRunspacePool.CleanupInterval = New-TimeSpan -Seconds (10 * $Config.Interval)
+
                     $PowerShell = [PowerShell]::Create()
                     $PowerShell.RunspacePool = $Variables.BrainRunspacePool
                     $PowerShell.AddScript($BrainScript) | Out-Null
@@ -849,8 +863,9 @@ Function Start-BalancesTracker {
 
                 $Variables.BalancesTrackerRunspace = [runspacefactory]::CreateRunspace()
                 $Variables.BalancesTrackerRunspace.Open()
-                $Variables.BalancesTrackerRunspace.SessionStateProxy.SetVariable('Config', $Config)
-                $Variables.BalancesTrackerRunspace.SessionStateProxy.SetVariable('Variables', $Variables)
+                Get-Variable -Scope Global | Where-Object Name -in @("Config", "Variables") | ForEach-Object { 
+                    $Variables.BalancesTrackerRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
+                }
                 $Variables.BalancesTrackerRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath) | Out-Null
 
                 $PowerShell = [PowerShell]::Create()
@@ -914,25 +929,24 @@ Function Get-CommandLineParameter {
         [String]$Arguments
     )
 
-    If ($Arguments -and (Test-Json $Arguments)) { $Arguments = ($Arguments | ConvertFrom-Json).Arguments }
+    If ($Arguments -and (Test-Json -Json $Arguments -ErrorAction Ignore)) { $Arguments = ($Arguments | ConvertFrom-Json).Arguments }
     Return $Arguments
 }
 
 Function Get-Rate { 
     # Read exchange rates from min-api.cryptocompare.com, use stored data as fallback
-    $CryptoCompareAPIKeyParam = $Config.CryptoCompareAPIKeyParam
-
-    $RatesFileName = "Cache\Rates.json"
-    $RatesCache = Get-Content -Path $RatesFileName -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue
+    $RatesCacheFileName = "Cache\Rates.json"
+    $RatesCache = Get-Content -Path $RatesCacheFileName -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue
 
     If (-not $RatesCache.Values) { $RatesCache = [PSCustomObject]@{ } }
     $RatesValues = $RatesCache.Values
     $AllCurrencies = $RatesCache.Currencies
+    # Use stored currencies from last run to get mor
+    If (-not $Variables.BalancesCurrencies -and $Config.BalancesTrackerPollInterval) { $Variables.BalancesCurrencies = $AllCurrencies }
 
-    $Variables.BalancesCurrencies = @($Variables.Balances.Keys | ForEach-Object { $Variables.Balances.$_.Currency } | Sort-Object -Unique)
-    $Variables.AllCurrencies = @(@($Config.Currency) + @($Config.Wallets.PSObject.Properties.Name) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies) | Where-Object { $_ -replace "mBTC", "BTC" } | Sort-Object -Unique)
+    $Variables.AllCurrencies = @(@($Config.Currency) + @($Config.Wallets.Keys) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies)) -replace "mBTC", "BTC" | Sort-Object -Unique
 
-    If (-not $Variables.Rates.BTC.($Config.Currency) -or (Compare-Object @($AllCurrencies | Select-Object) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "=>") -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-(3, $Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum))) { 
+    If (-not $Variables.Rates.BTC.($Config.Currency) -or (Compare-Object @($Variables.Rates.PSObject.Properties.Name | Select-Object) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "=>") -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-(3, $Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum))) { 
         Try { 
             $RatesValues = [PSCustomObject]@{ BTC = [PSCustomObject]@{} }
             $TSymBatches = @()
@@ -949,19 +963,16 @@ Function Get-Rate {
             $TSymBatches += $TSyms
 
             $TSymBatches | ForEach-Object { 
-                (Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$($_)$($CryptoCompareAPIKeyParam)&extraParams=$($Variables.Branding.BrandWebSite) Version $($Variables.Branding.Version)" -TimeoutSec 5 -ErrorAction Ignore).BTC | ForEach-Object { 
+                (Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$($_)$($Config.CryptoCompareAPIKeyParam)&extraParams=$($Variables.Branding.BrandWebSite) Version $($Variables.Branding.Version)" -TimeoutSec 5 -ErrorAction Ignore).BTC | ForEach-Object { 
                     $_.PSObject.Properties | ForEach-Object { $RatesValues.BTC | Add-Member @{ "$($_.Name)" = ($_.Value) } }
                 }
             }
-
-            # $RatesValues = $RatesValues | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json
 
             If ($RatesValues) { 
                 $Currencies = ($RatesValues.BTC | Get-Member -MemberType NoteProperty).Name
                 $Currencies | Where-Object { $_ -ne "BTC" } | ForEach-Object { 
                     $Currency = $_
-                    # $RatesValues | Add-Member $Currency ($RatesValues.BTC | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json)
-                    $RatesValues | Add-Member $Currency ($RatesValues.BTC.PSObject.Copy())
+                    $RatesValues | Add-Member $Currency ($RatesValues.BTC.PSObject.Copy()) -Force
                     ($RatesValues.$Currency | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
                         $RatesValues.$Currency | Add-Member $_ ([Double]$RatesValues.BTC.$_ / $RatesValues.BTC.$Currency) -Force
                     }
@@ -972,14 +983,14 @@ Function Get-Rate {
 
                 $RatesCache | Add-Member @{ Currencies = $Variables.AllCurrencies } -Force
                 $RatesCache | Add-Member @{ Values = $RatesValues } -Force
-                $RatesCache | ConvertTo-Json -Depth 5 | Out-File -FilePath $RatesFileName -Encoding utf8NoBOM -Force -ErrorAction SilentlyContinue
+                $RatesCache | ConvertTo-Json -Depth 5 | Out-File -FilePath $RatesCacheFileName -Encoding utf8NoBOM -Force -ErrorAction SilentlyContinue
             }
         }
         Catch { 
-            If ($RatesValuesCache.PSObject.Properties.Name) { 
-                $Variables.Rates = $RatesValuesCache
-                $Variables.RatesUpdated = "FromFile: $((Get-Item -Path $RatesValuesFileName).CreationTime.ToUniversalTime())"
-                Write-Message -Level Warn "Could not load exchange rates from 'min-api.cryptocompare.com'. Using cached data from $((Get-Item -Path $RatesValuesFileName).LastWriteTime)."
+            If ($RatesCache.PSObject.Properties.Name) { 
+                $Variables.Rates = $RatesCache
+                $Variables.RatesUpdated = "FromFile: $((Get-Item -Path $RatesCacheFileName).CreationTime.ToUniversalTime())"
+                Write-Message -Level Warn "Could not load exchange rates from 'min-api.cryptocompare.com'. Using cached data from $((Get-Item -Path $RatesCacheFileName).LastWriteTime)."
             }
             Else { 
                 Write-Message -Level Warn "Could not load exchange rates from 'min-api.cryptocompare.com'."
@@ -994,7 +1005,7 @@ Function Get-Rate {
             $Currency = $_
             $mCurrency = "m$($Currency)"
             # $Variables.Rates | Add-Member $mCurrency ($Variables.Rates.$Currency | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json)
-            $Variables.Rates | Add-Member $mCurrency ($Variables.Rates.$Currency.PSObject.Copy())
+            $Variables.Rates | Add-Member $mCurrency ($Variables.Rates.$Currency.PSObject.Copy()) -Force
             ($Variables.Rates.$mCurrency | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
                 $Variables.Rates.$mCurrency | Add-Member $_ ([Double]$Variables.Rates.$Currency.$_ / 1000) -Force
             }
@@ -1003,7 +1014,7 @@ Function Get-Rate {
             $Currency = $_
             ($RatesValues | Get-Member -MemberType NoteProperty).Name | Where-Object { $_ -in $Currencies } | ForEach-Object { 
                 $mCurrency = "m$($_)"
-                $Variables.Rates.$Currency | Add-Member $mCurrency ([Double]$Variables.Rates.$Currency.$_ * 1000)
+                $Variables.Rates.$Currency | Add-Member $mCurrency ([Double]$Variables.Rates.$Currency.$_ * 1000) -Force
             }
         }
     }
@@ -1242,74 +1253,84 @@ Function Read-Config {
 
     Function Get-DefaultConfig { 
 
-        $Config = @{}
+        $DefaultConfig = @{}
 
-        $Config.ConfigFileVersion = $Variables.Branding.Version.ToString()
+        $DefaultConfig.ConfigFileVersion = $Variables.Branding.Version.ToString()
         $Variables.FreshConfig = $true
 
         # Add default enabled pools
         If (Test-Path -Path ".\Data\PoolsConfig-Recommended.json" -PathType Leaf) { 
             $Temp = (Get-Content ".\Data\PoolsConfig-Recommended.json" | ConvertFrom-Json)
-            $Config.PoolName = $Temp.PSObject.Properties.Name | Where-Object { $_ -ne "Default" } | ForEach-Object { $Temp.$_.Variant.PSObject.Properties.Name }
+            $DefaultConfig.PoolName = $Temp.PSObject.Properties.Name | Where-Object { $_ -ne "Default" } | ForEach-Object { $Temp.$_.Variant.PSObject.Properties.Name }
         }
 
         # Add default config items
-        $Variables.AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys } | ForEach-Object { 
+        $Variables.AllCommandLineParameters.Keys | Where-Object { $_ -notin $DefaultConfig.Keys } | ForEach-Object { 
             $Value = $Variables.AllCommandLineParameters.$_
             If ($Value -is [Switch]) { $Value = [Boolean]$Value }
-            $Config.$_ = $Value
+            $DefaultConfig.$_ = $Value
         }
         # MinerInstancePerDeviceModel: Default to $true if more than one device model per vendor
-        $Config.MinerInstancePerDeviceModel = ($Variables.Devices | Group-Object Vendor | ForEach-Object { ($_.Group.Model | Sort-Object -Unique).Count } | Measure-Object -Maximum).Maximum -gt 1
+        $DefaultConfig.MinerInstancePerDeviceModel = ($Variables.Devices | Group-Object Vendor | ForEach-Object { ($_.Group.Model | Sort-Object -Unique).Count } | Measure-Object -Maximum).Maximum -gt 1
 
-        Write-Message -Level Warn "Use the configuration editor ('http://127.0.0.1:$($Config.APIPort)') to create a new configuration file."
-
-        Return $Config
+        Return $DefaultConfig
     }
 
     # Load the configuration
+    $Local:Config = @{}
     If (Test-Path -Path $ConfigFile -PathType Leaf) { 
-        $Config_Tmp = Get-Content $ConfigFile | ConvertFrom-Json | Select-Object
-        If ($Config_Tmp.PSObject.Properties.Count -eq 0 -or $Config_Tmp -isnot [PSCustomObject]) { 
+        # $ConfigTemp = Get-Content $ConfigFile | ConvertFrom-Json -AsHashtable -ErrorAction Ignore | Select-Object
+        # $ConfigTemp.Keys | ForEach-Object { $Local:Config.$_ = $ConfigTemp.$_ }
+        # $Local:Config = Get-Content $ConfigFile | ConvertFrom-Json -AsHashtable -ErrorAction Ignore | Select-Object
+        New-Variable Config ([Hashtable]::Synchronized((Get-Content $ConfigFile | ConvertFrom-Json -AsHashtable -ErrorAction Ignore | Select-Object))) -Scope "Local" -Force -ErrorAction Stop
+        If ($Local:Config.Keys.Count -eq 0 -or $Local:Config -isnot [Hashtable]) { 
             $CorruptConfigFile = "$($ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").corrupt"
             Move-Item -Path $ConfigFile $CorruptConfigFile -Force
             $Message = "Configuration file '$ConfigFile' is corrupt and was renamed to '$CorruptConfigFile'."
             Write-Message -Level Warn $Message
-            $Variables.FreshConfigText = "$Message`n`nUse the configuration editor to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!"
-            $Config = Get-DefaultConfig
+            $Local:Config = Get-DefaultConfig
+            $Variables.FreshConfigText = "$Message`n`nUse the configuration editor ('http://127.0.0.1:$($Local:Config.APIPort)') to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!"
         }
         Else { 
-            # Fix upper / lower case (Web GUI is case sensitive)
-            $Config_Tmp.PSObject.Properties.Name | ForEach-Object { 
-                $Config.$_ = $Config_Tmp.$_ 
-
-                # Enforce array
-                If ($Variables.AllCommandLineParameters.$_ -is [Array] -and $Config.$_ -isnot [Array]) { $Config.$_ = @($Config.$_ -replace " " -split ",") }
+            $Variables.AllCommandLineParameters.Keys | Sort-Object | ForEach-Object { 
+                If ($_ -in $Local:Config.Keys) { 
+                    # Upper / lower case conversion of variable keys (Web GUI is case sensitive)
+                    $Value = $Local:Config.$_
+                    $Local:Config.Remove($_)
+                    If ($Variables.AllCommandLineParameters.$_ -is [Switch]) { 
+                        $Local:Config.$_ = [Boolean]$Value
+                    }
+                    ElseIf ($Variables.AllCommandLineParameters.$_ -is [Array]) { 
+                        $Local:Config.$_ = [Array]$Value
+                    }
+                    Else { 
+                        $Local:Config.$_ = $Value -as $Variables.AllCommandLineParameters.$_.GetType().Name
+                    }
+                }
+                Else { 
+                    # Config parameter not in config file - use hardcoded value
+                    $Local:Config.$_ = $Variables.AllCommandLineParameters.$_
+                }
             }
         }
-        If ($Config.EarningsAdjustmentFactor -le 0 -or $Config.EarningsAdjustmentFactor -gt 10) { 
-            Write-Message -Level Warn "Default Earnings adjustment factor (value: $($Config.EarningsAdjustmentFactor)) is not within supported range (0 - 10); using default value 1."
-            $Config.EarningsAdjustmentFactor = 1
+        If ($Local:Config.EarningsAdjustmentFactor -le 0 -or $Local:Config.EarningsAdjustmentFactor -gt 10) { 
+            $Local:Config.EarningsAdjustmentFactor = 1
+            Write-Message -Level Warn "Default Earnings adjustment factor (value: $($Local:Config.EarningsAdjustmentFactor)) is not within supported range (0 - 10); using default value $($Local:Config.EarningsAdjustmentFactor)."
         }
     }
     Else { 
         Write-Message -Level Warn "No valid configuration file '$ConfigFile' found."
         $Variables.FreshConfigText = "This is the first time you have started $($Variables.Branding.ProductLabel).`n`nUse the configuration editor to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!"
-        $Config = Get-DefaultConfig
+        $Local:Config = Get-DefaultConfig
     }
-
-    $Variables.PoolData = Get-Content -Path ".\Data\PoolData.json" | ConvertFrom-Json -AsHashtable | Get-SortedObject
 
     # Build custom pools configuration, create case insensitive hashtable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
     If ($Variables.PoolsConfigFile -and (Test-Path -Path $Variables.PoolsConfigFile -PathType Leaf)) { 
-        $CustomPoolsConfig = @{ }
         Try { 
-            $Temp = (Get-Content $Variables.PoolsConfigFile | ConvertFrom-Json -NoEnumerate -AsHashTable)
-            $Temp.Keys | Sort-Object | ForEach-Object { $CustomPoolsConfig += @{ $_ = $Temp.$_ } }
-            $Variables.PoolsConfigData = $CustomPoolsConfig
+            $Variables.PoolsConfigData = Get-Content $Variables.PoolsConfigFile | ConvertFrom-Json -AsHashTable | Get-SortedObject
         }
         Catch { 
-            $CustomPoolsConfig = $null
+            $Variables.PoolsConfigData = [Ordered]@{}
             Write-Message -Level Warn "Pools configuration file '$($Variables.PoolsConfigFile)' is corrupt and will be ignored."
         }
     }
@@ -1319,56 +1340,57 @@ Function Read-Config {
     (Get-ChildItem .\Pools\*.ps1 -File).BaseName | Sort-Object -Unique | ForEach-Object { 
         $PoolName = $_
         If ($PoolConfig = $Variables.PoolData.$PoolName) { 
-
-            # Merge default pool data with custom pool config
-            If ($CustomPoolConfig = $CustomPoolsConfig.$PoolName) { $PoolConfig = Merge-Hashtable -HT1 $PoolConfig -HT2 $CustomPoolConfig -Unique $true }
+            If ($CustomPoolConfig = $Variables.PoolsConfigData.$PoolName) { 
+                # Merge default config data with custom pool config
+                $PoolConfig = Merge-Hashtable -HT1 $PoolConfig -HT2 $CustomPoolConfig -Unique $true
+            }
 
             If (-not $PoolConfig.EarningsAdjustmentFactor) {
-                 $PoolConfig.EarningsAdjustmentFactor = $Config.EarningsAdjustmentFactor
+                 $PoolConfig.EarningsAdjustmentFactor = $Local:Config.EarningsAdjustmentFactor
             }
             If ($PoolConfig.EarningsAdjustmentFactor -le 0 -or $PoolConfig.EarningsAdjustmentFactor -gt 10) { 
-                Write-Message -Level Warn "Earnings adjustment factor (value: $($PoolConfig.EarningsAdjustmentFactor)) for pool '$PoolName' is not within supported range (0 - 10); using default value $($Config.EarningsAdjustmentFactor)."
-                $PoolConfig.EarningsAdjustmentFactor = $Config.EarningsAdjustmentFactor
+                $PoolConfig.EarningsAdjustmentFactor = $Local:Config.EarningsAdjustmentFactor
+                Write-Message -Level Warn "Earnings adjustment factor (value: $($PoolConfig.EarningsAdjustmentFactor)) for pool '$PoolName' is not within supported range (0 - 10); using default value $($PoolConfig.EarningsAdjustmentFactor)."
             }
 
-            If (-not $PoolConfig.WorkerName) { $PoolConfig.WorkerName = $Config.WorkerName }
+            If (-not $PoolConfig.WorkerName) { $PoolConfig.WorkerName = $Local:Config.WorkerName }
             If (-not $PoolConfig.BalancesKeepAlive) { $PoolConfig.BalancesKeepAlive = $PoolData.$PoolName.BalancesKeepAlive }
 
             $PoolConfig.Region = $PoolConfig.Region | Where-Object { (Get-Region $_) -notin @($PoolConfig.ExcludeRegion) }
 
             Switch ($PoolName) { 
-                "HiveON" { 
+                "Hiveon" { 
                     If (-not $PoolConfig.Wallets) { 
-                        $PoolConfig.Wallets = [PSCustomObject]@{ }
-                        ($Config.Wallets | Get-Member -MemberType NoteProperty).Name | Where-Object { $_ -in $PoolConfig.PayoutCurrencies } | ForEach-Object { 
-                            $PoolConfig.Wallets | Add-Member $_ ($Config.Wallets.$_)
+                        $PoolConfig.Wallets = [Ordered]@{ }
+                        $Local:Config.Wallets.GetEnumerator().Name | Where-Object { $_ -in $PoolConfig.PayoutCurrencies } | ForEach-Object { 
+                            $PoolConfig.Wallets.$_ = $Local:Config.Wallets.$_
                         }
                     }
                 }
                 "MiningDutch" { 
-                    If ((-not $PoolConfig.PayoutCurrency) -or $PoolConfig.PayoutCurrency -eq "[Default]") { $PoolConfig.PayoutCurrency = $Config.PayoutCurrency }
-                    If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Config.MiningDutchUserName }
-                    If (-not $PoolConfig.Wallets) { $PoolConfig.Wallets = @{ "$($PoolConfig.PayoutCurrency)" = $($Config.Wallets.($PoolConfig.PayoutCurrency)) } }
+                    If ((-not $PoolConfig.PayoutCurrency) -or $PoolConfig.PayoutCurrency -eq "[Default]") { $PoolConfig.PayoutCurrency = $Local:Config.PayoutCurrency }
+                    If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Local:Config.MiningDutchUserName }
+                    If (-not $PoolConfig.Wallets) { $PoolConfig.Wallets = @{ "$($PoolConfig.PayoutCurrency)" = $($Local:Config.Wallets.($PoolConfig.PayoutCurrency)) } }
                 }
                 "MiningPoolHub" { 
-                    If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Config.MiningPoolHubUserName }
+                    If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Local:Config.MiningPoolHubUserName }
                 }
                 "NiceHash" { 
                     If (-not $PoolConfig.Variant."Nicehash Internal".Wallets.BTC) { 
-                        If ($Config.NiceHashWallet -and $Config.NiceHashWalletIsInternal) { $PoolConfig.Variant."NiceHash Internal".Wallets = @{ "BTC" = $Config.NiceHashWallet } }
+                        If ($Local:Config.NiceHashWallet -and $Local:Config.NiceHashWalletIsInternal) { $PoolConfig.Variant."NiceHash Internal".Wallets = @{ "BTC" = $Local:Config.NiceHashWallet } }
                     }
                     If (-not $PoolConfig.Variant."Nicehash External".Wallets.BTC) { 
-                        If ($Config.NiceHashWallet -and -not $Config.NiceHashWalletIsInternal) { $PoolConfig.Variant."NiceHash External".Wallets = @{ "BTC" = $Config.NiceHashWallet } }
-                        ElseIf ($Config.Wallets.BTC) { $PoolConfig.Variant."NiceHash External".Wallets = @{ "BTC" = $Config.Wallets.BTC } }
+                        If ($Local:Config.NiceHashWallet -and -not $Local:Config.NiceHashWalletIsInternal) { $PoolConfig.Variant."NiceHash External".Wallets = @{ "BTC" = $Local:Config.NiceHashWallet } }
+                        ElseIf ($Local:Config.Wallets.BTC) { $PoolConfig.Variant."NiceHash External".Wallets = @{ "BTC" = $Local:Config.Wallets.BTC } }
                     }
                 }
                 "ProHashing" { 
-                    If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Config.ProHashingUserName }
-                    If (-not $PoolConfig.MiningMode) { $PoolConfig.MiningMode = $Config.ProHashingMiningMode }
+                    If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Local:Config.ProHashingUserName }
+                    If (-not $PoolConfig.MiningMode) { $PoolConfig.MiningMode = $Local:Config.ProHashingMiningMode }
                 }
                 Default { 
-                    If ((-not $PoolConfig.PayoutCurrency) -or $PoolConfig.PayoutCurrency -eq "[Default]") { $PoolConfig.PayoutCurrency = $Config.PayoutCurrency }
-                    If (-not $PoolConfig.Wallets) { $PoolConfig.Wallets = @{ "$($PoolConfig.PayoutCurrency)" = $($Config.Wallets.($PoolConfig.PayoutCurrency)) } }
+                    If ((-not $PoolConfig.PayoutCurrency) -or $PoolConfig.PayoutCurrency -eq "[Default]") { $PoolConfig.PayoutCurrency = $Local:Config.PayoutCurrency }
+                    If (-not $PoolConfig.Wallets) { $PoolConfig.Wallets = @{ "$($PoolConfig.PayoutCurrency)" = $($Local:Config.Wallets.($PoolConfig.PayoutCurrency)) } }
                     $PoolConfig.Remove("PayoutCurrency")
                 }
             }
@@ -1376,7 +1398,10 @@ Function Read-Config {
         }
         $PoolsConfig.$PoolName = $PoolConfig
     }
-    $Config.PoolsConfig = $PoolsConfig | Get-SortedObject
+    $Local:Config.PoolsConfig = $PoolsConfig
+    # Must update existing thread safe variable. Reassingment breaks updates to instances in other threads
+    $Local:Config.Keys | ForEach-Object { $Global:Config.$_ = $Local:Config.$_ }
+
 }
 
 Function Write-Config { 
@@ -1384,8 +1409,8 @@ Function Write-Config {
     Param(
         [Parameter(Mandatory = $true)]
         [String]$ConfigFile, 
-        [Parameter(Mandatory = $false)]
-        [PSCustomObject]$Config = $Config.PSObject.Copy()
+        [Parameter(Mandatory = $true)]
+        [PSCustomObject]$Config
     )
 
     $Header = 
@@ -1449,7 +1474,7 @@ Function Edit-File {
 Function Get-SortedObject { 
 
     Param (
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+        [Parameter(Mandatory = $false, ValueFromPipeline = $true)]
         [Object]$Object
     )
 
@@ -1458,27 +1483,17 @@ Function Get-SortedObject {
     Try { 
         Switch -Regex ($Object.GetType().Name) { 
             "PSCustomObject" { 
-                Get-Member -Type NoteProperty -InputObject $Object | Sort-Object Name | ForEach-Object { 
-                    # Upper / lower case conversion (Web GUI is case sensitive)
-                    $Property = $_.Name
-                    $Property = $Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $Property }
-                    If (-not $Property) { $Property = $_.Name }
-
-                    If ($Object.$Property -is [Hashtable] -or $Object.$Property -is [PSCustomObject]) { $SortedObject[$Property] = Get-SortedObject $Object.$Property }
-                    ElseIf ($Object.$Property -is [Array]) { $SortedObject[$Property] = $Object.$Property -as [Array] }
-                    Else { $SortedObject[$Property] = $Object.$Property }
+                $Object.PSObject.Properties.Name | Sort-Object | ForEach-Object { 
+                    If ($Object.$_ -match "Hashtable|OrderedDictionary|SyncHashtable") { $SortedObject[$_] = Get-SortedObject $Object.$_ }
+                    ElseIf ($Object.$_ -is [Array]) { $SortedObject[$_] = $Object.$_ -as [Array] }
+                    Else { $SortedObject.$_ = $Object.$_ }
                 }
             }
             "Hashtable|OrderedDictionary|SyncHashtable" { 
-                $Object.Keys | Sort-Object | ForEach-Object { 
-                    # Upper / lower case conversion (Web GUI is case sensitive)
-                    $Key = $_
-                    $Key = $Variables.AvailableCommandLineParameters | Where-Object { $_ -eq $Key }
-                    If (-not $Key) { $Key = $_ }
-
-                    If ($Object.$Key -is [Hashtable] -or $Object.$Key -is [PSCustomObject]) { $SortedObject[$Key] = Get-SortedObject $Object.$Key }
-                    ElseIf ($Object.$Key -is [Array]) { $SortedObject[$Key] = $Object.$Key -as [Array] }
-                    Else { $SortedObject[$Key] = $Object.$Key }
+                $Object.GetEnumerator().Name | Sort-Object | ForEach-Object { 
+                    If ($Object.$_ -match "Hashtable|OrderedDictionary|SyncHashtable") { $SortedObject[$_] = Get-SortedObject $Object.$_ }
+                    ElseIf ($Object.$_ -is [Array]) { $SortedObject.$_ = $Object.$_ -as [Array] }
+                    Else { $SortedObject.$_ = $Object.$_ }
                 }
             }
             Default { 
@@ -1487,7 +1502,6 @@ Function Get-SortedObject {
         }
     }
     Catch {
-        $Error
     }
 
     Return $SortedObject
@@ -2678,7 +2692,7 @@ public static class Kernel32
                 $null = $Process.CloseMainWindow()
                 [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
             }
-        } While ($Process.HasExited -eq $false)
+        } While (-not $Process.HasExited)
     }
 
     Return $Job
@@ -2827,14 +2841,14 @@ Function Add-CoinName {
         If ($Mutex.WaitOne(1000)) { 
 
             If (-not $Global:CurrencyAlgorithm.$Currency) { 
-                $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
+                $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json -AsHashtable | Get-SortedObject
                 $Global:CurrencyAlgorithm | Add-Member $Currency $Algorithm -Force
-                $Global:CurrencyAlgorithm | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
+                $Global:CurrencyAlgorithm | ConvertTo-Json | Out-File -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
             }
             If (-not $Global:CoinNames.$Currency) { 
-                $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
+                $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json -AsHashtable | Get-SortedObject
                 $Global:CoinNames | Add-Member $Currency ((Get-Culture).TextInfo.ToTitleCase($CoinName.Trim().ToLower()) -replace '[^A-Z0-9\$\.]' -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin') -Force
-                $Global:CoinNames | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CoinNames.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
+                $Global:CoinNames | ConvertTo-Json | Out-File -Path ".\Data\CoinNames.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
             }
 
             $Mutex.ReleaseMutex()
@@ -2956,7 +2970,7 @@ Function Get-NMVersion {
         $Variables.CheckedForUpdate = Get-Date
 
         If ($UpdateVersion.Product -eq $Variables.Branding.ProductLabel -and [Version]$UpdateVersion.Version -gt $Variables.Branding.Version) { 
-            If ($UpdateVersion.AutoUpdate -eq $true) { 
+            If ($UpdateVersion.AutoUpdate) { 
                 If ($Config.AutoUpdate) { 
                     Write-Message -Level Verbose "Version checker: New Version $($UpdateVersion.Version) found. Starting update..."
                     Initialize-Autoupdate -UpdateVersion $UpdateVersion
@@ -2979,6 +2993,25 @@ Function Get-NMVersion {
     Catch { 
         Write-Message -Level Warn "Version checker could not contact update server."
     }
+}
+
+Function Copy-Object { 
+    Param(
+        [Parameter(Mandatory = $true)]
+        [Object]$Object
+    )
+
+    $Copy = @()
+    $Object.ForEach({
+        $CurrentObject = $_
+        $CurrentObjectCopy = New-Object $CurrentObject.GetType().Name
+        $CurrentObjectCopy.PSObject.Properties.ForEach({
+            $_.Value = $CurrentObject.PSObject.Properties[($_.Name)].Value
+        })
+        $Copy += $CurrentObjectCopy
+    })
+
+    return $Copy
 }
 
 Function Initialize-Autoupdate { 
@@ -3043,8 +3076,8 @@ Function Update-ConfigFile {
         Switch ($_) { 
             "ActiveMinergain" { $Config.MinerSwitchingThreshold = $Config.$_; $Config.Remove($_) }
             "AutoStart" { 
-                If ($Config.$_ -eq $true) { 
-                    If ($Config.StartPaused -eq $true) { $Config.StartupMode = "Paused" }
+                If ($Config.$_) { 
+                    If ($Config.StartPaused) { $Config.StartupMode = "Paused" }
                     Else { $Config.StartupMode = "Running" }
                 }
                 Else { $Config.StartupMode = "Idle" }
@@ -3060,8 +3093,8 @@ Function Update-ConfigFile {
             "EstimateCorrection" { $Config.Remove($_) }
             "EthashLowMemMinMemGiB" { $Config.Remove($_) }
             "Location" { $Config.Region = $Config.$_; $Config.Remove($_) }
-            "IdleDetection" { $Config.IdleDetection = $Config.$_; $Config.Remove($_) }
             "IdlePowerUsageW" { $Config.PowerUsageIdleSystemW = $Config.$_; $Config.Remove($_) }
+            "MineWhenIdle" { $Config.IdleDetection = $Config.$_; $Config.Remove($_) }
             "MinInterval" { $Config.MinCycle = $Config.$_; $Config.Remove($_) }
             "MinDataSamples" { $Config.MinDataSample = $Config.$_; $Config.Remove($_) }
             "MinDataSamplesAlgoMultiplier" { $Config.MinDataSampleAlgoMultiplier = $Config.$_; $Config.Remove($_) }
@@ -3079,9 +3112,8 @@ Function Update-ConfigFile {
             "RunningMinerGainPct" { $Config.MinerSwitchingThreshold = $Config.$_; $Config.Remove($_) }
             "ShowMinerWindows" { $Config.MinerWindowStyle = $Config.$_; $Config.Remove($_) }
             "ShowMinerWindowsNormalWhenBenchmarking" { $Config.MinerWindowStyleNormalWhenBenchmarking = $Config.$_; $Config.Remove($_) }
-            "LogViewerConfig" { $Config.LogViewerConfig = $Config.$_; $Config.Remove($_) }
-            "LogViewerExe" { $Config.LogViewerExe = $Config.$_; $Config.Remove($_) }
-            "SSL" { $Config.Remove($_) }
+            "SnakeTailConfig" { $Config.LogViewerConfig = $Config.$_; $Config.Remove($_) }
+            "SnakeTailExe" { $Config.LogViewerExe = $Config.$_; $Config.Remove($_) }
             "StartGUIMinimized" { $Config.LegacyGUI = $Config.$_; $Config.Remove($_) }
             "StartGUI" { $Config.LegacyGUIStartMinimized = $Config.$_; $Config.Remove($_) }
             "UIStyle" { $Config.$_ = $Config.$_.ToLower() }
@@ -3099,15 +3131,6 @@ Function Update-ConfigFile {
             "WarmupTime" { $Config.Remove($_) }
             "WebGUIUseColor" { $Config.UseColorForMinerStatus = $Config.$_; $Config.Remove($_) }
             Default { If ($_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("CryptoCompareAPIKeyParam") + @("DryRun") + @("PoolsConfig"))) { $Config.Remove($_) } } # Remove unsupported config items
-        }
-    }
-
-    # Add new config items
-    If ($New_Config_Items = $Variables.AllCommandLineParameters.Keys | Where-Object { $_ -notin $Config.Keys }) { 
-        $New_Config_Items | Sort-Object Name | ForEach-Object { 
-            $Value = $Variables.AllCommandLineParameters.$_
-            If ($Value -is [Switch]) { $Value = [Boolean]$Value }
-            $Config.$_ = $Value
         }
     }
 
@@ -3134,9 +3157,8 @@ Function Update-ConfigFile {
 
     # *Coins pool no longer exists
     $OldPoolName = $Config.PoolName
-    $Config.PoolName = $Config.PoolName
     $Config.PoolName = $Config.PoolName -replace 'Coins$', '' -replace 'CoinsPlus$', 'Plus'
-    If ($OldPoolName -ne $Config.PoolName) { 
+    If (Compare-Object @($OldPoolName | Select-Object) @($Config.PoolName | Select-Object)) { 
         Write-Message -Level Info "Pool configuration has changed ($($OldPoolName -join ', ') -> $($Config.PoolName -join ', ')). Please verify your configuration."
     }
     # Available regions have changed
@@ -3172,7 +3194,7 @@ Function Update-ConfigFile {
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "TonWhales" }
 
     $Config.ConfigFileVersion = $Variables.Branding.Version.ToString()
-    Write-Config -ConfigFile $ConfigFile
+    Write-Config -ConfigFile $ConfigFile -Config $Config
     Write-Message -Level Verbose "Updated configuration file '$($ConfigFile)' to version $($Variables.Branding.Version.ToString())."
 }
 
@@ -3313,15 +3335,23 @@ Function Update-DAGData {
         }
     }
 
-    If (($Variables.DAGdata.Updated.Values | Sort-Object | Select-Object -Last 1) -gt $Variables.Timer -and $Variables.DAGdata.Currency.Count -gt 1) { 
+    If ($Variables.DAGdata.Updated.Values -gt $Variables.Timer) { 
         #At least one DAG was updated, get maximum DAG size per algorithm
+
+        If ($Variables.DAGdata.Currency.FIRO) { # SCC firo variant
+            $Variables.DAGdata.Currency.SCC = $Variables.DAGdata.Currency.FIRO.Clone()
+            $Variables.DAGdata.Currency.SCC.Algorithm = "FiroPowSSC"
+            $Variables.DAGdata.Currency.SCC.CoinName = "StakeCubeCoin"
+        }
+
         ForEach ($Algorithm in @($Variables.DAGdata.Currency.Keys | ForEach-Object { $Variables.DAGdata.Currency.$_.Algorithm } | Select-Object)) { 
             $Variables.DAGdata.Algorithm.$Algorithm = @{ 
                 BlockHeight = [Int]($Variables.DAGdata.Currency.Keys | Where-Object { (Get-AlgorithmFromCurrency $_) -eq $Algorithm } | ForEach-Object { $Variables.DAGdata.Currency.$_.BlockHeight } | Measure-Object -Maximum).Maximum
                 DAGsize     = [Int64]($Variables.DAGdata.Currency.Keys | Where-Object { (Get-AlgorithmFromCurrency $_) -eq $Algorithm } | ForEach-Object { $Variables.DAGdata.Currency.$_.DAGsize } | Measure-Object -Maximum).Maximum
                 Epoch       = [Int]($Variables.DAGdata.Currency.Keys | Where-Object { (Get-AlgorithmFromCurrency $_) -eq $Algorithm } | ForEach-Object { $Variables.DAGdata.Currency.$_.Epoch } | Measure-Object -Maximum).Maximum
             }
-            $Variables.DAGdata.Algorithm.$Algorithm | Add-Member CoinName ($Variables.DAGdata.Currency.Keys | Where-Object { $Variables.DAGdata.Currency.$_.DAGsize -eq $Variables.DAGdata.Algorithm.$Algorithm.DAGsize -and $Variables.DAGdata.Currency.$_.Algorithm -eq $Algorithm })
+
+            $Variables.DAGdata.Algorithm.$Algorithm | Add-Member CoinName ($Variables.DAGdata.Currency.Keys | Where-Object { $Variables.DAGdata.Currency.$_.DAGsize -eq $Variables.DAGdata.Algorithm.$Algorithm.DAGsize -and $Variables.DAGdata.Currency.$_.Algorithm -eq $Algorithm }) -Force
 
             If ($Variables.EthashLowMemCurrency) { 
                 $Variables.DAGdata.Algorithm.EthashLowMem = @{ 
@@ -3528,8 +3558,9 @@ Function Get-MemoryUsage {
         }
         $DiffText = ", $Sign$DiffBytes"
     }
-    Write-Message -Level Debug ("Memory usage: {0:n1} MB ({1:n0} Bytes{2})" -f $MemUsageMB, $MemUsageByte, $Difftext)
 
     # save last value in script global variable
     $Script:last_memory_usage_byte = $MemUsageByte
+
+    Return ("Memory usage {0:n1} MB ({1:n0} Bytes{2})" -f $MemUsageMB, $MemUsageByte, $Difftext)
 }

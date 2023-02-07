@@ -33,6 +33,7 @@
   "CCX": "CryptonightGpu",
   "CFX": "Octopus",
   "CHC": "C11",
+  "CHEESE": "Scrypt",
   "CHI": "NeoscryptXaya",
   "CHTA": "SHA256",
   "CLO": "Ethash",
@@ -46,6 +47,7 @@
   "DGB": "Odocrypt",
   "DIME": "Quark",
   "DIN": "Neoscrypt",
+  "DINGO": "Scrypt",
   "DMS": "YescryptR32",
   "DVT": "SHA256",
   "DYN": "Argon2dDyn",
@@ -75,6 +77,7 @@
   "FTO": "X11",
   "GALE": "SHA256csm",
   "GBX": "Neoscrypt",
+  "GEC": "Ghostrider",
   "GENIX": "X16r",
   "GLINK": "Equihash1445",
   "GLT": "Allium",
@@ -198,5 +201,6 @@
   "ZEC": "Equihash",
   "ZEN": "Equihash",
   "ZER": "Equihash1927",
-  "ZOC": "Neoscrypt"
+  "ZOC": "Neoscrypt",
+  "DNX": "Dynexsolve"
 }

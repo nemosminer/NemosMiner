@@ -137,6 +137,7 @@
   "DGC": "DigitalCoin",
   "DIME": "DimeCoin",
   "DIN": "Dinero",
+  "DINGO": "DingoCoin",
   "DMS": "Documentchain",
   "DNGR": "DangerCoin",
   "DOGE": "DogeCoin",
@@ -197,6 +198,7 @@
   "GATE": "GateCoin",
   "GBX": "Gobyte",
   "GCN": "GCoin",
+  "GEC": "Gecko",
   "GEERT": "GeertCoin",
   "GEN": "Genom",
   "GENIX": "Genix",
@@ -601,5 +603,6 @@
   "ZOC": "01Coin",
   "ZP": "ZenProtocol",
   "ZUR": "ZurCoin",
-  "ZYON": "BitZyon"
+  "ZYON": "BitZyon",
+  "DNX": "DynexCoin"
 }
