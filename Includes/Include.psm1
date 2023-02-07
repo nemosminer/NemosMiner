@@ -3055,10 +3055,11 @@ Function Start-LogReader {
             $SnaketailWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
             If (@($SnaketailWindowHandle).Count -eq 1) { 
                 Try { 
-                    [Win32]::ShowWindowAsync($SnaketailWindowHandle, 6) | Out-Null# SW_MINIMIZE 
+                    [Win32]::ShowWindowAsync($SnaketailWindowHandle, 6) | Out-Null # SW_MINIMIZE 
                     [Win32]::ShowWindowAsync($SnaketailWindowHandle, 9) | Out-Null # SW_RESTORE
+                }
+                Catch {}
             }
-            Catch {}
         }
         Else { 
             Invoke-CreateProcess -BinaryPath $Variables.LogViewerExe -ArgumentList $Variables.LogViewerConfig -WorkingDirectory (Split-Path $Variables.LogViewerExe) -MinerWindowStyle "Normal" -Priority "-2" -EnvBlock $null -LogFile $null -JobName "Snaketail" | Out-Null
