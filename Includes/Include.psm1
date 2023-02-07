@@ -3052,11 +3052,13 @@ Function Start-LogReader {
         $Variables.LogViewerExe = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.LogViewerExe)
         If ($SnaketailProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -EQ "$($Variables.LogViewerExe) $($Variables.LogViewerConfig)")) { 
             # Activate existing Snaketail window
-            $MainWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
-            If (@($SnaketailMainWindowHandle).Count -eq 1) { 
-                [Win32]::ShowWindowAsync($MainWindowHandle, 6) | Out-Null# SW_MINIMIZE 
-                [Win32]::ShowWindowAsync($MainWindowHandle, 9) | Out-Null # SW_RESTORE
+            $SnaketailWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
+            If (@($SnaketailWindowHandle).Count -eq 1) { 
+                Try { 
+                    [Win32]::ShowWindowAsync($SnaketailWindowHandle, 6) | Out-Null# SW_MINIMIZE 
+                    [Win32]::ShowWindowAsync($SnaketailWindowHandle, 9) | Out-Null # SW_RESTORE
             }
+            Catch {}
         }
         Else { 
             Invoke-CreateProcess -BinaryPath $Variables.LogViewerExe -ArgumentList $Variables.LogViewerConfig -WorkingDirectory (Split-Path $Variables.LogViewerExe) -MinerWindowStyle "Normal" -Priority "-2" -EnvBlock $null -LogFile $null -JobName "Snaketail" | Out-Null
