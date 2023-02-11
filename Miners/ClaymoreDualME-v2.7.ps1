@@ -33,7 +33,9 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 $Arguments += Switch ($MinerPools[0].($_.Algorithm).Protocol) { 
                     "ethproxy"     { " -esm 1" }
                     "ethstratum"   { " -esm 0" }
-                    "ethstratumnh" { " -esm 3" }
+                    "ethstratum1"  { " -esm 4" }
+                    "ethstratum2"  { " -esm 4" }
+                    "ethstratumnh" { " -esm 4" }
                     Default        { " -esm 0" }
                 }
                 $Arguments += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { " -epool stratum+ssl" } Else { " -epool stratum+tcp" }

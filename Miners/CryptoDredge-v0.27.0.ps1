@@ -9,31 +9,31 @@ $Path = ".\Bin\$($Name)\CryptoDredge.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Argon2d4096";       Fee = 0.01; MinMemGiB = 2;                                             ExcludePool = @();           Minerset = 2; WarmupTimes = @(60, 0);  Arguments = " --algo argon2d4096 --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Argon2d500";        Fee = 0.01; MinMemGiB = 2;                                             ExcludePool = @();           Minerset = 2; WarmupTimes = @(60, 0);  Arguments = " --algo argon2d-dyn --intensity 6" }
-    [PSCustomObject]@{ Algorithm = "Argon2dNim";        Fee = 0.01; MinMemGiB = 2;                                             ExcludePool = @();           Minerset = 2; WarmupTimes = @(30, 0);  Arguments = " --algo argon2d-nim --intensity 6" }
-    [PSCustomObject]@{ Algorithm = "Argon2Chukwa";      Fee = 0.01; MinMemGiB = 1;                                             ExcludePool = @();           Minerset = 2; WarmupTimes = @(30, 0);  Arguments = " --algo chukwa --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Argon2ChukwaV2";    Fee = 0.01; MinMemGiB = 1;                                             ExcludePool = @();           Minerset = 2; WarmupTimes = @(30, 0);  Arguments = " --algo chukwa2 --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";    Fee = 0.01; MinMemGiB = 1;                                             ExcludePool = @();           Minerset = 2; WarmupTimes = @(30, 0);  Arguments = " --algo cnconceal --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "CryptonightGpu";    Fee = 0.01; MinMemGiB = 1;                                             ExcludePool = @();           MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo cngpu --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";  Fee = 0.01; MinMemGiB = 1;                                             ExcludePool = @();           Minerset = 2; WarmupTimes = @(30, 0);  Arguments = " --algo cnheavy --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "CryptonightTurtle"; Fee = 0.01; MinMemGiB = 1;                                             ExcludePool = @();           Minerset = 2; WarmupTimes = @(30, 0);  Arguments = " --algo cnturtle --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "CryptonightUpx";    Fee = 0.01; MinMemGiB = 2;                                             ExcludePool = @();           MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo cnupx2 --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "CryptonightXhv";    Fee = 0.01; MinMemGiB = 1;                                             ExcludePool = @();           Minerset = 2; WarmupTimes = @(75, 15); Arguments = " --algo cnhaven --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Ethash";            Fee = 0.01; MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.42;       ExcludePool = @("NiceHash"); Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo ethash" }
-#   [PSCustomObject]@{ Algorithm = "EthashLowMem";      Fee = 0.01; MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.42; ExcludePool = @("NiceHash"); Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo ethash" }
-    [PSCustomObject]@{ Algorithm = "FiroPow";           Fee = 0.01; MinMemGiB = $MinerPools[0].FiroPow.DAGSizeGiB + 0.50;      ExcludePool = @();           Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo firopow" }
-    [PSCustomObject]@{ Algorithm = "KawPow";            Fee = 0.01; MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.42;       ExcludePool = @();           Minerset = 2;           WarmupTimes = @(45, 0);  Arguments = " --algo kawpow --intensity 8" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "Argon2d4096";       Fee = 0.01; MinMemGiB = 2;                                             ExcludePool = @();                Minerset = 2; WarmupTimes = @(60, 0);  Arguments = " --algo argon2d4096 --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Argon2d500";        Fee = 0.01; MinMemGiB = 2;                                             ExcludePool = @();                Minerset = 2; WarmupTimes = @(60, 0);  Arguments = " --algo argon2d-dyn --intensity 6" }
+    [PSCustomObject]@{ Algorithm = "Argon2dNim";        Fee = 0.01; MinMemGiB = 2;                                             ExcludePool = @();                Minerset = 2; WarmupTimes = @(30, 0);  Arguments = " --algo argon2d-nim --intensity 6" }
+    [PSCustomObject]@{ Algorithm = "Argon2Chukwa";      Fee = 0.01; MinMemGiB = 1;                                             ExcludePool = @();                Minerset = 2; WarmupTimes = @(30, 0);  Arguments = " --algo chukwa --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Argon2ChukwaV2";    Fee = 0.01; MinMemGiB = 1;                                             ExcludePool = @();                Minerset = 2; WarmupTimes = @(30, 0);  Arguments = " --algo chukwa2 --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";    Fee = 0.01; MinMemGiB = 1;                                             ExcludePool = @();                Minerset = 2; WarmupTimes = @(30, 0);  Arguments = " --algo cnconceal --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "CryptonightGpu";    Fee = 0.01; MinMemGiB = 1;                                             ExcludePool = @();                MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo cngpu --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";  Fee = 0.01; MinMemGiB = 1;                                             ExcludePool = @();                Minerset = 2; WarmupTimes = @(30, 0);  Arguments = " --algo cnheavy --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "CryptonightTurtle"; Fee = 0.01; MinMemGiB = 1;                                             ExcludePool = @();                Minerset = 2; WarmupTimes = @(30, 0);  Arguments = " --algo cnturtle --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "CryptonightUpx";    Fee = 0.01; MinMemGiB = 2;                                             ExcludePool = @();                MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo cnupx2 --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "CryptonightXhv";    Fee = 0.01; MinMemGiB = 1;                                             ExcludePool = @();                Minerset = 2; WarmupTimes = @(75, 15); Arguments = " --algo cnhaven --intensity 8" }
+    [PSCustomObject]@{ Algorithm = "Ethash";            Fee = 0.01; MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.72;       ExcludePool = @("MiningPoolHub"); Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo ethash" }
+#   [PSCustomObject]@{ Algorithm = "EthashLowMem";      Fee = 0.01; MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.72; ExcludePool = @("MiningPoolHub"); Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo ethash" }
+    [PSCustomObject]@{ Algorithm = "FiroPow";           Fee = 0.01; MinMemGiB = $MinerPools[0].FiroPow.DAGSizeGiB + 0.70;      ExcludePool = @();                Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo firopow" }
+    [PSCustomObject]@{ Algorithm = "KawPow";            Fee = 0.01; MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.72;       ExcludePool = @();                Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo kawpow --intensity 8" } # TTMiner-v5.0.3 is fastest
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] }) { 
+If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] } | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePool }) { 
 
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Model -EQ $_.Model
         $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
 
-        $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePool } | ForEach-Object { 
+        $Algorithms | ForEach-Object { 
 
             $MinComputeCapability = $_.MinComputeCapability
 

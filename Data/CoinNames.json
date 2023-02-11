@@ -140,6 +140,7 @@
   "DINGO": "DingoCoin",
   "DMS": "Documentchain",
   "DNGR": "DangerCoin",
+  "DNX": "DynexCoin",
   "DOGE": "DogeCoin",
   "DOGX": "Dogethereum",
   "DSR": "Desire",
@@ -470,6 +471,7 @@
   "SWAMP": "SwampCoin",
   "SXC": "SexCoin",
   "SYS": "SysCoin",
+  "TAJ": "TajCoin",
   "TCR": "TecraCoin",
   "TDC": "TideCoin",
   "TENT": "TentCoin",
@@ -604,5 +606,5 @@
   "ZP": "ZenProtocol",
   "ZUR": "ZurCoin",
   "ZYON": "BitZyon",
-  "DNX": "DynexCoin"
+  "ALT": "Altcoinchain"
 }

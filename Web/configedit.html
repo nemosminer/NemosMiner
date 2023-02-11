@@ -41,7 +41,7 @@
                     <label for="MiningPoolHubUserName">Mining Pool Hub user name</label>
                     <input type="text" id="MiningPoolHubUserName" name="MiningPoolHubUserName" maxlength=33 size=38>
                   </div>
-                  <div title="Your Mining Pool Hub API Key&#10;taken from your Mining Pool Hub account settings&#10;If left empty NemosMiner cannot retrieve balance data from MiningPoolHub">
+                  <div title="Your Mining Pool Hub API Key&#10;taken from your Mining Pool Hub account settings&#10;If left empty NemosMiner cannot retrieve balance data from Mining Pool Hub">
                     <label for="MiningPoolHubAPIKey">Mining Pool Hub API key</label>
                     <input type="text" id="MiningPoolHubAPIKey" name="MiningPoolHubAPIKey" maxlength=65 size=70>
                   </div>
@@ -303,7 +303,7 @@
                   <div style="padding-top: 0.5rem" title="Minimum workers mining the algorithm at the pool&#10;If less miners are mining the algorithm then the pool will be disabled.&#10;This is also a per pool setting configurable in 'PoolsConfig.json'&#10;(min=0, max=99, default=10 workers). Set to 0 to disable this check."> Minimum
                     <input type="number" step=1 min=0 max=99 value=10 size=3 id="MinWorker" name="MinWorker"> workers at pool
                   </div>
-                  <div style="padding-top: 0.3rem" title="Default factor with which NemosMiner multiplies the prices reported by ALL pools.&#10;E.g. If you feel that the effective earnings seen at the pools are 20% lower than what NemosMiner projects&#10;then set Earnings Adjustment Factor to 0.80&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')&#10;(min=0.00, max=10.00, default=1.00)" for="EarningsAdjustmentFactor"> Earnings adjustment factor
+                  <div style="padding-top: 0.3rem" title="Default factor with which NemosMiner multiplies the prices reported by ALL pools.&#10;&#10;E.g. If you feel that the effective earnings seen at the pools are 20% lower than what NemosMiner projects&#10;then set Earnings Adjustment Factor to 0.80&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')&#10;(min=0.00, max=10.00, default=1.00)" for="EarningsAdjustmentFactor"> Earnings adjustment factor
                     <input type="number" id="EarningsAdjustmentFactor" name="EarningsAdjustmentFactor" min=0 max=10 value=1 step=0.01 size=4>
                   </div>
                   <div style="padding-top: 0.3rem" title="Mark a miner as unavailable if earning is x times higher than the&#10;next best 10% or at least 5 miners with same algorithm&#10;(min=1, max=99, default=5; 1 disables this check)">Unreal miner earning factor
@@ -410,7 +410,7 @@
                     <br>
 
                     <!-- GUI Display Settings -->
-                    <legend class=h6 title="These Settings will not affect the information available in in the web and legacy GUI"><b>GUI Display Settings</b></legend>
+                    <legend class=h6><b>GUI Display Settings</b></legend>
                     <div style="padding-top: 0.4rem" title="Miners and Rigs will be shown with colored background depending on status">
                       <input type="checkbox" class="toggle-switch" id="UseColorForMinerStatus" name="UseColorForMinerStatus"> Use colors for miner & rig status
                     </div>
@@ -818,7 +818,7 @@
               $(document.getElementById('Currency')).change(function (event) {
                 document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
                 document.getElementById('PowerPricekWhCurrency').innerHTML = '(time: ' + document.getElementById('Currency').value.split(',')[0] + ' per kW/h)';
-                document.getElementById('PowerPricekWhTitle').title = 'Price of power in ' + document.getElementById('Currency').value.split(',')[0] + ' per kW⋅h, valid from HH:mm (24hr format)\nData must be in compressed JSON format\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom 00:00h to 12:00h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom 12:00h to 23:59h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h'
+                document.getElementById('PowerPricekWhTitle').title = 'Price of power in ' + document.getElementById('Currency').value.split(',')[0] + ' per kW⋅h, valid from HH:mm (24hr format)\nData must be in compressed JSON format\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom 00:00h to 11:59h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom 12:00h to 23:59h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h'
                 if (document.getElementById('CalculatePowerCost').checked) document.getElementById('ProfitabilityThresholdTitle').title = 'Mining will stop when profit (earnings - power cost) is less than the configured value\n(e.g. ' + document.getElementById('Currency').value.split(',')[0] + ' 1.00). Use negative numbers to allow mining at loss.\n\nNote: This does not apply when benchmarking or measuring power cost'
                 else document.getElementById('ProfitabilityThresholdTitle').title = 'Mining will stop when earning is less than the configured value\n(e.g. ' + document.getElementById('Currency').value.split(',')[0] + ' 1.00). Use negative numbers to allow mining at loss.\n\nNote: This does not apply when benchmarking'
               });

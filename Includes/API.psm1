@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.3.0.0
-Version date:   06 February 2023
+Version:        4.3.0.1
+Version date:   11 February 2023
 #>
 
 Function Start-APIServer { 
@@ -363,7 +363,7 @@ Function Start-APIServer {
                             "/functions/mining/stop" { 
                                 If ($Variables.MiningStatus -ne "Idle") { 
                                     $Variables.NewMiningStatus = "Idle"
-                                    $Data = "$($Variables.Branding.ProductLabel) is getting idle...`n"
+                                    $Data = "$($Variables.Branding.ProductLabel) is stopping...`n"
                                     $Variables.RestartCycle = $true
                                 }
                                 $Data = "<pre>$Data</pre>"
@@ -882,7 +882,7 @@ Function Start-APIServer {
                                 Break
                             }
                             "/pools/added" { 
-                                $Data = ConvertTo-Json -Depth 10 @($Variables.AddedPools | Select-Object | Sort-Object Algorithm, Name, Region)
+                                $Data = ConvertTo-Json -Depth 10 @($Variables.PoolsAdded | Select-Object | Sort-Object Algorithm, Name, Region)
                                 Break
                             }
                             "/pools/available" { 
@@ -894,7 +894,7 @@ Function Start-APIServer {
                                 Break
                             }
                             "/pools/new" { 
-                                $Data = ConvertTo-Json -Depth 10 @($Variables.NewPools | Select-Object | Sort-Object Algorithm, Name, Region)
+                                $Data = ConvertTo-Json -Depth 10 @($Variables.PoolsNew | Select-Object | Sort-Object Algorithm, Name, Region)
                                 Break
                             }
                             "/pools/minersprimaryalgorithm" { 
@@ -918,7 +918,7 @@ Function Start-APIServer {
                                 Break
                             }
                             "/pools/updated" { 
-                                $Data = ConvertTo-Json -Depth 10 @($Variables.UpdatedPools | Select-Object | Sort-Object Algorithm, Name, Region)
+                                $Data = ConvertTo-Json -Depth 10 @($Variables.PoolsUpdated | Select-Object | Sort-Object Algorithm, Name, Region)
                                 Break
                             }
                             "/poolreasons" { 

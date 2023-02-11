@@ -1,18 +1,18 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "NVIDIA")) { Return }
 
-$Uri = "https://github.com/rigelminer/rigel/releases/download/1.3.4/rigel-1.3.4-win.zip"
+$Uri = "https://github.com/rigelminer/rigel/releases/download/1.3.6/rigel-1.3.6-win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\Rigel.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = [PSCustomObject[]]@(
 
-    [PSCustomObject]@{ Algorithms = @("EtcHash");                    Fee = @(0.007);  MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB + 0.41;      Tuning = " --mt"; MinerSet = 0; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  etchash" }
+    [PSCustomObject]@{ Algorithms = @("EtcHash");                    Fee = @(0.007);  MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB + 0.77;      Tuning = " --mt"; MinerSet = 0; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  etchash" }
     [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");      Fee = @(0.007);  MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB+ 0.41;       Tuning = " --mt"; MinerSet = 0; WarmupTimes = @(45, 45); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  etchash+kheavyhash" }
-    [PSCustomObject]@{ Algorithms = @("Ethash");                     Fee = @(0.007);  MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.41;       Tuning = " --mt"; MinerSet = 0; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  ethash" }
-    [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Fee = @(0.007);  MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.41;       Tuning = " --mt"; Minerset = 2; WarmupTimes = @(45, 45); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  ethash+kheavyhash" }
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem");               Fee = @(0.007);  MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.41; Tuning = " --mt"; Minerset = 2; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  ethash" }
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "kHeavyHash"); Fee = @(0.007);  MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.41; Tuning = " --mt"; Minerset = 2; WarmupTimes = @(45, 45)  ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  ethash+kheavyhash" }
+    [PSCustomObject]@{ Algorithms = @("Ethash");                     Fee = @(0.007);  MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.77;       Tuning = " --mt"; MinerSet = 0; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  ethash" }
+    [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Fee = @(0.007);  MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.77;       Tuning = " --mt"; Minerset = 2; WarmupTimes = @(45, 45); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  ethash+kheavyhash" }
+#   [PSCustomObject]@{ Algorithms = @("EthashLowMem");               Fee = @(0.007);  MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.77; Tuning = " --mt"; Minerset = 2; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  ethash" }
+#   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "kHeavyHash"); Fee = @(0.007);  MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.77; Tuning = " --mt"; Minerset = 2; WarmupTimes = @(45, 45)  ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  ethash+kheavyhash" }
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Fee = @(0.007);  MinMemGiB = 2.0;                                           Tuning = " --mt"; MinerSet = 0; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  kheavyhash" }
     [PSCustomObject]@{ Algorithms = @("NexaPow");                    Fee = @(0.02);   MinMemGiB = 2.0;                                           Tuning = " --mt"; Minerset = 1; WarmupTimes = @(45, 45); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  nexapow" }
 )
@@ -41,18 +41,19 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 ForEach ($Algorithm in $_.Algorithms) { 
                     $Arguments += Switch ($MinerPools[$Index].$Algorithm.Protocol) { 
                         "ethproxy"     { " --url [$($Index + 1)]ethproxy"}
-                        "ethstratum"   { " --url [$($Index + 1)]stratum" }
+                        "ethstratum1"  { " --url [$($Index + 1)]ethstratum" }
+                        "ethstratum2"  { " --url [$($Index + 1)]stratum" }
                         "ethstratumnh" { " --url [$($Index + 1)]ethstratum" }
                         Default        { " --url [$($Index + 1)]stratum" }
                     }
                     $Arguments += If ($MinerPools[$Index].$Algorithm.PoolPorts[1]) { "+ssl://" } Else { "+tcp://" }
                     $Arguments += "$($MinerPools[$Index].$Algorithm.Host):$($MinerPools[$Index].$Algorithm.PoolPorts | Select-Object -Last 1)"
-                    $Arguments += If ($MinerPools[$Index].$Algorithm.PoolPorts[1]) { " --no-strict-ssl" }
                     $Arguments += " --username [$($Index + 1)]$($MinerPools[$Index].$Algorithm.User)"
                     $Arguments += " --password [$($Index + 1)]$($MinerPools[$Index].$Algorithm.Pass)$(If ($MinerPools[$Index].$Algorithm.BaseName -eq "ProHashing" -and $_.Algorithms[$Index] -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[$Index].($_.Algorithm).DAGSizeGiB))" })"
                     If ($MinerPools[$Index].$Algorithm.WorkerName) { $Arguments += " --worker [$($Index + 1)]$($MinerPools[$Index].$Algorithm.WorkerName)" }
                     $Index ++
                 }
+                $Arguments += If ($MinerPools[0].$Algorithm.PoolPorts[1] -or $MinerPools[1].$Algorithm.PoolPorts[1]) { " --no-strict-ssl" } # Parameter cannot be used multiple times
 
                 # Apply tuning parameters
                 If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }

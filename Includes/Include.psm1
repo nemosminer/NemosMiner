@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.0.0
-Version date:   06 February 2023
+Version:        4.3.0.1
+Version date:   11 February 2023
 #>
 
 # Window handling
@@ -55,6 +55,7 @@ Class Device {
     [Int]$Bus_Platform_Index
     [Int]$Bus_Vendor_Index
     [PSCustomObject]$CIM
+    [Version]$CUDAVersion = $null
     [Double]$ConfiguredPowerUsage = 0 # Workaround if device does not expose power usage
     [PSCustomObject]$CpuFeatures
     [Int]$Id
@@ -739,8 +740,8 @@ Function Stop-Mining {
         [Switch]$Quick = $false
     )
 
-
     If ($Variables.CoreRunspace) { 
+        $Variables.Summary = "Stopping mining processes..."
         # Give core loop time to shut down gracefully
         $Timestamp = (Get-Date).AddSeconds(30)
         While (-not $Quick -and ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }) -and (Get-Date) -le $Timestamp) { 
@@ -751,18 +752,18 @@ Function Stop-Mining {
         If ($Variables.CoreRunspace.PowerShell) { $Variables.CoreRunspace.PowerShell.Dispose() }
         $Variables.CoreRunspace.Dispose()
         $Variables.Remove("CoreRunspace")
-
-        $Variables.Summary = "Mining processes stopped."
     }
-    $Variables.MiningStatus = "Idle"
 
-    $Variables.CycleStarts = @()
-    $Variables.Pools = $Variables.PoolsBest = $Variables.NewPools = [Pool[]]@()
-    $Variables.RunningMiners = $Variables.Miners = $Variables.MinersBest = $Variables.MinersBest_Combo = $Variables.MinersBest_Combos = $Variables.RunningMiners = $Variables.MinersMostProfitable = [Miner[]]@()
+    If ($Variables.NewMiningStatus -eq "Idle") { 
+        $Variables.Pools = $Variables.PoolsBest = $Variables.PoolsNew = [Pool[]]@()
+        $Variables.PoolsCount = 0
+        $Variables.Miners = $Variables.MinersBest = $Variables.MinersBest_Combos = $Variables.MinersMostProfitable = $Variables.RunningMiners = [Miner[]]@()
+    }
+    $Variables.MinersBest_Combo = [Miner[]]@()
+    $Variables.MiningEarning = $Variables.MiningProfit = $Variables.MiningPowerCost = [Double]::NaN
     $Variables.EndCycleTime = $null
     $Variables.WatchdogTimers = @()
-    $Variables.PoolsCount = 0
-    $Variables.MiningEarning = $Variables.MiningProfit = $Variables.MiningPowerCost = [Double]::NaN
+    $Variables.CycleStarts = @()
 
     [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
 
@@ -2205,8 +2206,6 @@ Function Get-Device {
         }
     }
 
-    # If ($Variables.Devices -isnot [Device[]] -or $Refresh) { 
-    #     [Device[]]$Variables.Devices = @()
     If (-not $Variables.Devices -or $Refresh) { 
         $Variables.Devices = @()
 
@@ -3052,11 +3051,11 @@ Function Start-LogReader {
         $Variables.LogViewerExe = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.LogViewerExe)
         If ($SnaketailProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -EQ "$($Variables.LogViewerExe) $($Variables.LogViewerConfig)")) { 
             # Activate existing Snaketail window
-            $SnaketailWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
-            If (@($SnaketailWindowHandle).Count -eq 1) { 
+            $LogViewerMainWindowHandle = (Get-Process -Id $SnaketailProcess.ProcessId).MainWindowHandle
+            If (@($LogViewerMainWindowHandle).Count -eq 1) { 
                 Try { 
-                    [Win32]::ShowWindowAsync($SnaketailWindowHandle, 6) | Out-Null # SW_MINIMIZE 
-                    [Win32]::ShowWindowAsync($SnaketailWindowHandle, 9) | Out-Null # SW_RESTORE
+                    [Win32]::ShowWindowAsync($LogViewerMainWindowHandle, 6) | Out-Null # SW_MINIMIZE 
+                    [Win32]::ShowWindowAsync($LogViewerMainWindowHandle, 9) | Out-Null # SW_RESTORE
                 }
                 Catch {}
             }
@@ -3347,14 +3346,16 @@ Function Update-DAGData {
             $Variables.DAGdata.Currency.SCC.CoinName = "StakeCubeCoin"
         }
 
-        ForEach ($Algorithm in @($Variables.DAGdata.Currency.Keys | ForEach-Object { $Variables.DAGdata.Currency.$_.Algorithm } | Select-Object)) { 
+        $DagDataKeys = @($Variables.DAGdata.Currency.Keys) # Store as array to avoid error 'An error occurred while enumerating through a collection: Collection was modified; enumeration operation may not execute..'
+
+        ForEach ($Algorithm in @($DagDataKeys | ForEach-Object { $Variables.DAGdata.Currency.$_.Algorithm } | Select-Object)) { 
             $Variables.DAGdata.Algorithm.$Algorithm = @{ 
-                BlockHeight = [Int]($Variables.DAGdata.Currency.Keys | Where-Object { (Get-AlgorithmFromCurrency $_) -eq $Algorithm } | ForEach-Object { $Variables.DAGdata.Currency.$_.BlockHeight } | Measure-Object -Maximum).Maximum
-                DAGsize     = [Int64]($Variables.DAGdata.Currency.Keys | Where-Object { (Get-AlgorithmFromCurrency $_) -eq $Algorithm } | ForEach-Object { $Variables.DAGdata.Currency.$_.DAGsize } | Measure-Object -Maximum).Maximum
-                Epoch       = [Int]($Variables.DAGdata.Currency.Keys | Where-Object { (Get-AlgorithmFromCurrency $_) -eq $Algorithm } | ForEach-Object { $Variables.DAGdata.Currency.$_.Epoch } | Measure-Object -Maximum).Maximum
+                BlockHeight = [Int]($DagDataKeys | Where-Object { (Get-AlgorithmFromCurrency $_) -eq $Algorithm } | ForEach-Object { $Variables.DAGdata.Currency.$_.BlockHeight } | Measure-Object -Maximum).Maximum
+                DAGsize     = [Int64]($DagDataKeys | Where-Object { (Get-AlgorithmFromCurrency $_) -eq $Algorithm } | ForEach-Object { $Variables.DAGdata.Currency.$_.DAGsize } | Measure-Object -Maximum).Maximum
+                Epoch       = [Int]($DagDataKeys | Where-Object { (Get-AlgorithmFromCurrency $_) -eq $Algorithm } | ForEach-Object { $Variables.DAGdata.Currency.$_.Epoch } | Measure-Object -Maximum).Maximum
             }
 
-            $Variables.DAGdata.Algorithm.$Algorithm | Add-Member CoinName ($Variables.DAGdata.Currency.Keys | Where-Object { $Variables.DAGdata.Currency.$_.DAGsize -eq $Variables.DAGdata.Algorithm.$Algorithm.DAGsize -and $Variables.DAGdata.Currency.$_.Algorithm -eq $Algorithm }) -Force
+            $Variables.DAGdata.Algorithm.$Algorithm | Add-Member CoinName ($DagDataKeys | Where-Object { $Variables.DAGdata.Currency.$_.DAGsize -eq $Variables.DAGdata.Algorithm.$Algorithm.DAGsize -and $Variables.DAGdata.Currency.$_.Algorithm -eq $Algorithm }) -Force
 
             If ($Variables.EthashLowMemCurrency) { 
                 $Variables.DAGdata.Algorithm.EthashLowMem = @{ 
@@ -3368,10 +3369,10 @@ Function Update-DAGData {
 
         # Add default '*' (equal to highest)
         $Variables.DAGdata.Currency."*" = @{ 
-            BlockHeight = [Int]($Variables.DAGdata.Currency.Keys | ForEach-Object { $Variables.DAGdata.Currency.$_.BlockHeight } | Measure-Object -Maximum).Maximum
+            BlockHeight = [Int]($DagDataKeys | ForEach-Object { $Variables.DAGdata.Currency.$_.BlockHeight } | Measure-Object -Maximum).Maximum
             CoinName    = "*"
-            DAGsize     = [Int64]($Variables.DAGdata.Currency.Keys | ForEach-Object { $Variables.DAGdata.Currency.$_.DAGsize } | Measure-Object -Maximum).Maximum
-            Epoch       = [Int]($Variables.DAGdata.Currency.Keys | ForEach-Object { $Variables.DAGdata.Currency.$_.Epoch } | Measure-Object -Maximum).Maximum
+            DAGsize     = [Int64]($DagDataKeys | ForEach-Object { $Variables.DAGdata.Currency.$_.DAGsize } | Measure-Object -Maximum).Maximum
+            Epoch       = [Int]($DagDataKeys | ForEach-Object { $Variables.DAGdata.Currency.$_.Epoch } | Measure-Object -Maximum).Maximum
         }
 
         $Variables.DAGdata | Get-SortedObject | ConvertTo-Json | Out-File -FilePath ".\Data\DagData.json" -Force -Encoding utf8NoBOM

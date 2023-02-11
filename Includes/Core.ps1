@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.3.0.0
-Version date:   06 February 2023
+Version:        4.3.0.1
+Version date:   11 February 2023
 #>
 
 using module .\Include.psm1
@@ -54,9 +54,6 @@ Do {
             Continue
         }
 
-        # # Store to detect config change
-        # $Variables.PoolName = $Config.PoolName
-
         # Always get the latest config
         Read-Config -ConfigFile $Variables.ConfigFile
         $Variables.PoolsConfig = $Config.PoolsConfig | ConvertTo-Json -depth 99 -Compress | ConvertFrom-Json -AsHashTable
@@ -69,7 +66,7 @@ Do {
                 $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { 
                     $_.SetStatus([MinerStatus]::Idle)
                     $_.Info = ""
-                    $_.WorkersRunning = @()
+                    $_.WorkersRunning = [Worker[]]@()
                 }
                 $Variables.WatchdogTimers = @()
                 $Variables.Summary = "Mining is suspended until system is idle<br>again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" })..."
@@ -96,14 +93,14 @@ Do {
             # Remove model information from devices -> will create only one miner instance
             If (-not $Config.MinerInstancePerDeviceModel) { $Variables.EnabledDevices | ForEach-Object { $_.Model = $_.Vendor } }
 
+            If ($Variables.EndCycleTime) { $Variables.EndCycleTime = $Variables.EndCycleTime.AddSeconds($Config.Interval) }
+
             # Skip stuff if previous cycle was shorter than half of what it should
             If ((Compare-Object @($Config.PoolName | Select-Object) @($Variables.PoolName | Select-Object)) -or -not $Variables.Timer -or -not $Variables.Miners -or $Variables.Timer.AddSeconds([Int]($Config.Interval / 2)) -lt (Get-Date).ToUniversalTime() -or (Compare-Object @($Config.ExtraCurrencies | Select-Object) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "<=")) { 
 
-                $Variables.PoolName = $Config.PoolName
-
                 # Set master timer
                 $Variables.Timer = (Get-Date).ToUniversalTime()
-                $Variables.EndCycleTime = If ($Variables.EndCycleTime) { $Variables.EndCycleTime.AddSeconds($Config.Interval) } Else { $Variables.Timer.AddSeconds($Config.Interval) }
+                If ($Variables.EndCycleTime -lt $Variables.Timer) { $Variables.EndCycleTime = $Variables.Timer.AddSeconds($Config.Interval) }
 
                 $Variables.CycleStarts += $Variables.Timer
                 $Variables.CycleStarts = @($Variables.CycleStarts | Select-Object -Last (3, ($Config.SyncWindow + 1) | Measure-Object -Maximum).Maximum)
@@ -121,6 +118,7 @@ Do {
                 If ($Config.AutoUpdateCheckInterval -and $Variables.CheckedForUpdate -lt (Get-Date).AddDays(-$Config.AutoUpdateCheckInterval)) { Get-NMVersion }
 
                 # Use non-donate pool config
+                $Variables.PoolName = $Config.PoolName
                 $Variables.NiceHashWalletIsInternal = $Config.NiceHashWalletIsInternal
                 $Variables.PoolTimeout = [Int]$Config.PoolTimeout
 
@@ -182,24 +180,22 @@ Do {
 
                 # Get pool data
                 If ($Variables.PoolName) { 
-                    If ($Variables.Brains.Keys | Where-Object { $Variables.Brains.$_.StartTime -gt $Variables.Timer.AddSeconds(- $Config.Interval) }) { 
+                    If ($Variables.Brains.Keys | Where-Object { $Variables.Brains.$_.StartTime -gt $Variables.Timer.AddSeconds(- $Config.Interval) }) {
                         # Newly started brains, allow extra time for brains to get ready
-                        If ($Variables.Brains.Keys) {
-                            $Variables.PoolTimeout = $WaitForBrainData = 60
-                            $Variables.Summary = "Loading initial pool data from '$($Variables.PoolName -join ', ')'.<br>This may take up to $($WaitForBrainData) seconds..."
-                            $Variables.RefreshNeeded = $true
-                            Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
-                            Do { 
-                                Start-Sleep -Seconds 1
-                                $WaitForBrainData --
-                            } While ($Variables.BrainData.PSObject.Properties.Name.Count -lt $Variables.Brains.Keys.Count -and $WaitForBrainData -gt 0)
-                            Remove-Variable ExtendLoop
-                        }
-                        Else { 
-                            $Variables.Summary = "Loading initial pool data from '$($Variables.PoolName -join ', ')'.<br>This wil take while..."
-                            $Variables.RefreshNeeded = $true
-                            Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
-                        }
+                        $Variables.PoolTimeout = $WaitForBrainData = 60
+                        $Variables.Summary = "Loading initial pool data from '$($Variables.PoolName -join ', ')'.<br>This may take up to $($WaitForBrainData) seconds..."
+                        $Variables.RefreshNeeded = $true
+                        Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
+                        Do { 
+                            Start-Sleep -Seconds 1
+                            $WaitForBrainData --
+                        } While ($Variables.BrainData.PSObject.Properties.Name.Count -lt $Variables.Brains.Keys.Count -and $WaitForBrainData -gt 0)
+                        Remove-Variable ExtendLoop
+                    }
+                    ElseIf (-not $Variables.PoolsCount) { 
+                        $Variables.Summary = "Loading initial pool data from '$($Variables.PoolName -join ', ')'.<br>This wil take while..."
+                        $Variables.RefreshNeeded = $true
+                        Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                     }
                     Else { 
                         Write-Message -Level Info "Loading pool data from '$($Variables.PoolName -join ', ')'..."
@@ -207,7 +203,7 @@ Do {
 
                     # Query pool data
                     If ($Config.UsePoolJobs) { 
-                        $NewPoolsJob = $Variables.PoolName | ForEach-Object -Parallel { 
+                        $PoolsNewJob = $Variables.PoolName | ForEach-Object -Parallel { 
                             $Config = $Using:Config
                             $PoolBaseName = $_ -replace "24hr$|Coins$|Plus$"
                             $Variables = $Using:Variables
@@ -285,7 +281,7 @@ Do {
 
                 # Power price
                 If (-not $Config.PowerPricekWh.Keys) { $Config.PowerPricekWh."00:00" = 0 }
-                If ($null -eq $Config.PowerPricekWh."00:00") { 
+                ElseIf ($null -eq $Config.PowerPricekWh."00:00") { 
                     # 00:00h power price is the same as the latest price of the previous day
                     $Config.PowerPricekWh."00:00" = $Config.PowerPricekWh.($Config.PowerPricekWh.Keys | Sort-Object | Select-Object -Last 1)
                 }
@@ -348,6 +344,7 @@ Do {
 
                     If ($Miner.Data.Count) { 
                         # Collect hashrate from miner, returns an array of two values (safe, unsafe)
+                        $Miner.Hashrates_Live = @()
                         $Miner_Hashrates = [Hashtable]@{ }
                         ForEach ($Algorithm in $Miner.Algorithms) { 
                             $CollectedHashrate = $Miner.CollectHashrate($Algorithm, (-not $Miner.Benchmark -and $Miner.Data.Count -lt $Miner.MinDataSample))
@@ -429,11 +426,11 @@ Do {
                 While ($Variables.SuspendCycle) { Start-Sleep -Seconds 1 }
 
                 # Collect pool data
-                $NewPools = [Pool[]]@()
+                $PoolsNew = [Pool[]]@()
                 If ($Variables.PoolName) { 
                     If ($Config.UsePoolJobs) { 
                         # Collect pool data
-                        $NewPoolsJob | Get-Job | Wait-Job -Timeout $Variables.PoolTimeout | Receive-Job | ForEach-Object { 
+                        $PoolsNewJob | Get-Job | Wait-Job -Timeout $Variables.PoolTimeout | Receive-Job | ForEach-Object { 
                             $_ = [Pool]$_
                             $_.CoinName = Get-CoinName $_.Currency
                             $_.Fee = If ($Config.IgnorePoolFee -or $_.Fee -lt 0 -or $_.Fee -gt 1) { 0 } Else { $_.Fee }
@@ -441,9 +438,9 @@ Do {
                             $_.Price *= $Factor
                             $_.Price_Bias = $_.Price * $_.Accuracy
                             $_.StablePrice *= $Factor
-                            $NewPools += $_
+                            $PoolsNew += $_
                         }
-                        $NewPoolsJob | Remove-Job
+                        $PoolsNewJob | Remove-Job
                         [System.GC]::Collect()
                     }
                     Else { 
@@ -458,12 +455,12 @@ Do {
                             $_.Price *= $Factor
                             $_.Price_Bias = $_.Price * $_.Accuracy
                             $_.StablePrice *= $Factor
-                            $NewPools += $_
+                            $PoolsNew += $_
                         }
                     }
-                    $Variables.NewPools = $NewPools
+                    $Variables.PoolsNew = $PoolsNew
 
-                    If ($PoolNoData = @(Compare-Object @($Variables.PoolName) @($NewPools.Name | Sort-Object -Unique) -PassThru)) { 
+                    If ($PoolNoData = @(Compare-Object @($Variables.PoolName) @($PoolsNew.Name | Sort-Object -Unique) -PassThru)) { 
                         Write-Message -Level Warn "No data received from pool$(If ($PoolNoData.Count -gt 1) { "s" }) '$($PoolNoData -join ', ')'."
                     }
                     $Variables.PoolDataCollectedTimeStamp = (Get-Date).ToUniversalTime()
@@ -476,13 +473,13 @@ Do {
                     # Remove de-configured pools
                     $DeconfiguredPools = @($Pools | Where-Object Name -notin $Variables.PoolName)
                     $Pools = @($Pools | Where-Object Name -in $Variables.PoolName)
-                    $NewPools = @($NewPools | Where-Object Name -in $Variables.PoolName)
+                    $PoolsNew = @($PoolsNew | Where-Object Name -in $Variables.PoolName)
 
-                    If ($ComparePools = @(Compare-Object -PassThru $NewPools $Pools -Property Name, Algorithm -IncludeEqual)) { 
+                    If ($ComparePools = @(Compare-Object -PassThru $PoolsNew $Pools -Property Name, Algorithm -IncludeEqual)) { 
                         # Find added & updated pools
-                        $Variables.AddedPools = @($ComparePools | Where-Object SideIndicator -EQ "<=")
-                        $Variables.UpdatedPools = @($ComparePools | Where-Object SideIndicator -EQ "==")
-                        $Pools += $Variables.AddedPools
+                        $Variables.PoolsAdded = @($ComparePools | Where-Object SideIndicator -EQ "<=")
+                        $Variables.PoolsUpdated = @($ComparePools | Where-Object SideIndicator -EQ "==")
+                        $Pools += $Variables.PoolsAdded
 
                         $Variables.PoolsCount = $Pools.Count
 
@@ -494,7 +491,7 @@ Do {
                             $_.Best = $false
                             $_.Reasons = $null
 
-                            If ($Pool = $Variables.UpdatedPools | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Select-Object -First 1) { 
+                            If ($Pool = $Variables.PoolsUpdated | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Select-Object -First 1) { 
                                 $_.Accuracy                 = $Pool.Accuracy
                                 $_.CoinName                 = $Pool.CoinName
                                 $_.Currency                 = $Pool.Currency
@@ -593,7 +590,7 @@ Do {
                             }
                             $Pools | Where-Object Available | Group-Object -Property Algorithm, Name | ForEach-Object { 
                                 # Suspend algorithm@pool if > 50% of all possible miners for algorithm failed
-                                $WatchdogCount = ($Variables.WatchdogCount, (($Variables.Miners | Where-Object Algorithm -contains $_.Group[0].Algorithm).Count / 2) | Measure-Object -Maximum).Maximum + 1
+                                $WatchdogCount = ($Variables.WatchdogCount, (($Variables.Miners | Where-Object Algorithm2 -contains $_.Group[0].Algorithm).Count / 2) | Measure-Object -Maximum).Maximum + 1
                                 If ($PoolsToSuspend = $_.Group | Where-Object { @($Variables.WatchdogTimers | Where-Object Algorithm -EQ $_.Algorithm | Where-Object PoolName -EQ $_.Name | Where-Object Kicked -LT $Variables.CycleStarts[-2]).Count -gt $WatchdogCount }) { 
                                     $PoolsToSuspend | ForEach-Object { $_.Reasons += "Algorithm@Pool suspended by watchdog" }
                                     Write-Message -Level Warn "Algorithm@Pool '$($_.Group[0].Algorithm)@$($_.Group[0].Name)' is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object Algorithm -EQ $_.Group[0].Algorithm | Where-Object PoolName -EQ $_.Group[0].Name | Where-Object Kicked -LT $Variables.Timer).Kicked | Sort-Object | Select-Object -First 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))."
@@ -611,10 +608,10 @@ Do {
                         }
 
                         If ($Variables.Pools.Count -gt 0) { 
-                            Write-Message -Level Info "Had $($Variables.PoolsCount + $DeconfiguredPools.Count) pool$(If (($Variables.PoolsCount + $DeconfiguredPools.Count) -ne 1) { "s" }),$(If ($DeconfiguredPools) { " removed $($DeconfiguredPools.Count) deconfigured pool$(If ($DeconfiguredPools.Count -ne 1) { "s" } )," }) updated $($Variables.UpdatedPools.Count) pool$(If ($Variables.UpdatedPools.Count -ne 1) { "s" }), found $($Variables.AddedPools.Count) new pool$(If ($Variables.AddedPools.Count -ne 1) { "s" }), filtered out $(@($Pools | Where-Object Available -NE $true).Count) pool$(If (@($Pools | Where-Object Available -NE $true).Count -ne 1) { "s" }). $(@($Pools | Where-Object Available).Count) available pool$(If (@($Pools | Where-Object Available).Count -ne 1) { "s" }) remain$(If (@($Pools | Where-Object Available).Count -eq 1) { "s" })."
+                            Write-Message -Level Info "Had $($Variables.PoolsCount + $DeconfiguredPools.Count) pool$(If (($Variables.PoolsCount + $DeconfiguredPools.Count) -ne 1) { "s" }),$(If ($DeconfiguredPools) { " removed $($DeconfiguredPools.Count) deconfigured pool$(If ($DeconfiguredPools.Count -ne 1) { "s" } )," }) updated $($Variables.PoolsUpdated.Count) pool$(If ($Variables.PoolsUpdated.Count -ne 1) { "s" }), found $($Variables.PoolsAdded.Count) new pool$(If ($Variables.PoolsAdded.Count -ne 1) { "s" }), filtered out $(@($Pools | Where-Object Available -NE $true).Count) pool$(If (@($Pools | Where-Object Available -NE $true).Count -ne 1) { "s" }). $(@($Pools | Where-Object Available).Count) available pool$(If (@($Pools | Where-Object Available).Count -ne 1) { "s" }) remain$(If (@($Pools | Where-Object Available).Count -eq 1) { "s" })."
                         }
                         Else { 
-                            Write-Message -Level Info "Found $($NewPools.Count) pool$(If ($NewPools.Count -ne 1) { "s" }), filtered out $(@($Pools | Where-Object Available -NE $true).Count) pool$(If (@($Pools | Where-Object Available -NE $true).Count -ne 1) { "s" }). $(@($Pools | Where-Object Available).Count) available pool$(If (@($Pools | Where-Object Available).Count -ne 1) { "s" }) remain$(If (@($Pools | Where-Object Available).Count -eq 1) { "s" })."
+                            Write-Message -Level Info "Found $($PoolsNew.Count) pool$(If ($PoolsNew.Count -ne 1) { "s" }), filtered out $(@($Pools | Where-Object Available -NE $true).Count) pool$(If (@($Pools | Where-Object Available -NE $true).Count -ne 1) { "s" }). $(@($Pools | Where-Object Available).Count) available pool$(If (@($Pools | Where-Object Available).Count -ne 1) { "s" }) remain$(If (@($Pools | Where-Object Available).Count -eq 1) { "s" })."
                         }
 
                         # Keep pool balances alive; force mining at pool even if it is not the best for the algo

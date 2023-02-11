@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HashCryptos.ps1
-Version:        4.3.0.0
-Version date:   06 February 2023
+Version:        4.3.0.1
+Version date:   11 February 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -65,7 +65,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
 
         # Add coin name
         If ($Request.$_.CoinName -and $Currency) { 
-            $CoinName = $Request.$_.CoinName
+            $CoinName = $Request.$_.CoinName.Trim()
             Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $CoinName
         }
         Else { 
@@ -109,6 +109,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
             "YescryptR32"   { "stratum4." }
             "Yespower"      { "stratum4." }
             "YespowerR16"   { "stratum4." }
+            Default         { "" }
         }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
@@ -126,11 +127,11 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
                 Fee                      = [Decimal]$Fee
                 Host                     = [String]"$($HostPrefix)$($HostSuffix)"
                 Name                     = [String]$PoolVariant
-                Pass                     = "n=r"
+                Pass                     = [String]$PoolConfig.WorkerName
                 Port                     = [UInt16]$Request.$_.port
                 PortSSL                  = $null
                 Price                    = [Double]$Stat.Live
-                Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratum" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
+                Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratum1" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                 Region                   = [String]$PoolConfig.Region
                 SSLSelfSignedCertificate = $true
                 StablePrice              = [Double]$Stat.Week

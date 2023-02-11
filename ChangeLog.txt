@@ -10,6 +10,25 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.3.0.1 06.02.2023
+=======================================
+
+Enhancements:
+- Brains & Pools: Strip trailing spaces in CoinName & Currency
+
+Fixes:
+- Core: Cycle time too short (Regression from 4.3.0.0)
+- Core: Hashrates_Live gets too many values
+- Core: Update CUDAVersion.json, some Nvidia miners were no longer available
+- Lecagy GUI: Switching UI style to 'full' would not stick
+- Web GUI: Keep currency in column headers when hiding/showing columns
+- ZergPool: Missing pools (noautotrade=0)
+
+Miner updates:
+- JayddeeCpu-v3.21.1
+- Rigel-v1.3.6
+- TeamBlackMiner-v1.86
+
 
 ChangeLog NemosMiner 4.3.0.0 06.02.2023
 =======================================

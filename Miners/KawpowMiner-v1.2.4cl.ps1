@@ -6,7 +6,7 @@ $Path = ".\Bin\$($Name)\kawpowminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "KawPow"; MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.42; Minerset = 2; WarmupTimes = @(60, 20); ExcludePool = @("ZergPool"); Arguments = "" }
+    [PSCustomObject]@{ Algorithm = "KawPow"; MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.77; Minerset = 2; WarmupTimes = @(75, 20); ExcludePool = @(); Arguments = "" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 
@@ -28,7 +28,8 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 $Protocol = Switch ($MinerPools[0].($_.Algorithm).Protocol) { 
                     "ethproxy"     { "stratum1" }
                     "ethstratum"   { "stratum1" }
-                    "ethstratumnh" { "stratum2" }
+                    "ethstratum1"  { "stratum2" }
+                    "ethstratum2"  { "stratum2" }
                     Default        { "stratum" }
                 }
                 $Protocol += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "+tls" } Else { "+tcp" }

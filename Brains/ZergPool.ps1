@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.3.0.0
-Version date:   06 February 2023
+Version:        4.3.0.1
+Version date:   11 February 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -81,7 +81,7 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
         ForEach ($Algo in (($AlgoData | Get-Member -MemberType NoteProperty).Name)) { 
             If (-not $AlgoData.$Algo.currency) { 
                 $Currencies = @(($CurrenciesData | Get-Member -MemberType NoteProperty).Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo } | ForEach-Object { $CurrenciesData.$_ })
-                $Currency = If ($Currencies.Currency) { ($Currencies | Sort-Object Estimate)[-1].Currency } Else { "" }
+                $Currency = If ($Currencies.Currency) { (($Currencies | Sort-Object Estimate)[-1].Currency).Trim() } Else { "" }
             }
             Else { 
                 $Currency = $AlgoData.$Algo.currency

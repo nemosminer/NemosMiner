@@ -65,6 +65,8 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 $Arguments += Switch ($MinerPools[0].($_.Algorithm).Protocol) { 
                     "minerproxy"   { " --esm 1" }
                     "ethproxy"     { " --esm 0" }
+                    "ethstratum1"  { " --esm 1" }
+                    "ethstratum2"  { " --esm 2" }
                     "ethstratumnh" { " --esm 2" }
                 }
                 $Arguments += " --pool $($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) --wallet $($MinerPools[0].($_.Algorithm).User)"

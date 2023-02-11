@@ -43,7 +43,7 @@
                 <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
                 <th data-field="tDriverVersionCIM" data-filter-control="select" data-width=3>Driver Version<br>CIM</th>
                 <th data-field="tDriverVersionOpenCL" data-filter-control="select" data-width=3>Driver Version<br>OpenCL</th>
-                <th data-field="CUDAVersion" data-align="right" data-filter-control="select" data-width=3>CUDA Version</th>
+                <th data-field="tCUDAVersion" data-align="right" data-filter-control="select" data-width=3>CUDA Version</th>
                 <th data-field="tArchitecture" data-filter-control="select" data-width=3>Architecture</th>
                 <th data-field="ConfiguredPowerUsage" data-filter-control="select" data-align="right" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt" data-width=3>Configured Power Usage</th>
                 <th data-field="Bus" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">PCI<br>Bus<br>Id</th>
@@ -113,7 +113,7 @@
                 <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
                 <th data-field="tDriverVersionCIM" data-filter-control="select" data-width=3>Driver Version<br>CIM</th>
                 <th data-field="tDriverVersionOpenCL" data-filter-control="select" data-width=3>Driver Version<br>OpenCL</th>
-                <th data-field="CUDAVersion" data-filter-control="select" data-align="right" data-width=3>CUDA Version</th>
+                <th data-field="tCUDAVersion" data-filter-control="select" data-align="right" data-width=3>CUDA Version</th>
                 <th data-field="tArchitecture" data-filter-control="select" data-width=3>Architecture</th>
                 <th data-field="ConfiguredPowerUsage" data-filter-control="select" data-align="right" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt" data-width=3>Configured Power Usage</th>
                 <th data-field="Bus" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">PCI<br>Bus<br>Id</th>
@@ -179,7 +179,7 @@
                   <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
                   <th data-field="tDriverVersionCIM" data-filter-control="select" data-width=3>Driver Version<br>CIM</th>
                   <th data-field="tDriverVersionOpenCL" data-filter-control="select" data-width=3>Driver Version<br>OpenCL</th>
-                  <th data-field="CUDAVersion" data-filter-control="select" data-align="right" data-width=3>CUDA Version</th>
+                  <th data-field="tCUDAVersion" data-filter-control="select" data-align="right" data-width=3>CUDA Version</th>
                   <th data-field="tArchitecture" data-filter-control="select" data-width=3>Architecture</th>
                   <th data-field="ConfiguredPowerUsage" data-filter-control="select" data-align="right" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt" data-width=3>Configured<br>Power Usage</th>
                   <th data-field="Bus" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">PCI<br>Bus<br>Id</th>
@@ -218,24 +218,21 @@
               $.each(data, function(index, item) {
                 // Format the device(s)
                 if (item.OpenCL) item.tMemory = formatBytes(item.OpenCL.GlobalMemSize);
-                else item.tMemory = 'n/a';
 
                 if (item.OpenCL) item.tClockSpeed = item.OpenCL.MaxClockFrequency;
                 else if (item.CIM) item.tClockSpeed = item.CIM.MaxClockSpeed;
-                else item.tClockSpeed = 'n/a';
 
                 if (item.CIM) item.tDriverVersionCIM = item.CIM.DriverVersion;
-                else item.tDriverVersionCIM = 'n/a';
 
                 if (item.OpenCL) item.tDriverVersionOpenCL = item.OpenCL.DriverVersion;
-                else item.tDriverVersionOpenCL = 'n/a';
 
                 if (item.OpenCL) item.tCores = item.OpenCL.MaxComputeUnits;
                 else if (item.CIM) item.tCores = item.CIM.NumberOfLogicalProcessors;
-                else item.tCores = 'n/a';
+
+                // Convert CUDAVersion to string
+                if (item.CUDAVersion) item.tCUDAVersion = item.CUDAVersion.Major + '.' + item.CUDAVersion.Minor;
 
                 if (item.Architecture) item.tArchitecture = item.Architecture;
-                else item.tArchitecture = 'n/a';
 
                 // Format device state
                 const enumstatus = ['Enabled', 'Disabled', 'Unsupported'];

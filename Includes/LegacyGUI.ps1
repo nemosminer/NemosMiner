@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           LegacyGUI.psm1
-Version:        4.3.0.0
-Version date:   06 February 2023
+Version:        4.3.0.1
+Version date:   11 February 2023
 #>
 
 [Void] [System.Reflection.Assembly]::LoadWithPartialName(“System.Windows.Forms”)
@@ -1056,14 +1056,14 @@ Function Update-TabControl {
                 $WatchdogTimersRemoveButton.Enabled = $Variables.WatchdogTimers
 
                 If ($Variables.WatchdogTimers) { 
-                    $WatchdogTimersDGV.DataSource = $Variables.WatchdogTimers | Select-Object @(
+                    $WatchdogTimersDGV.DataSource = $Variables.WatchdogTimers | Sort-Object MinerName, Kicked | Select-Object @(
                         @{ Name = "Name"; Expression = { $_.MinerName } }, 
                         @{ Name = "Algorithms"; Expression = { $_.Algorithm } }, 
                         @{ Name = "Pool Name"; Expression = { $_.PoolName } }, 
                         @{ Name = "Region"; Expression = { $_.PoolRegion } }, 
                         @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join ', '} }, 
-                        @{ Name = "Last Updated"; Expression = { (Get-TimeSince $_.kicked.ToLocalTime()) } }
-                    ) | Sort-Object "DeviceNames" | Out-DataTable
+                        @{ Name = "Last Updated"; Expression = { (Get-TimeSince $_.Kicked.ToLocalTime()) } }
+                    ) | Out-DataTable
 
                     If ($WatchdogTimersDGV.Columns) { 
                         $WatchdogTimersDGV.Columns[0].FillWeight = 120

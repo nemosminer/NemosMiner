@@ -49,6 +49,7 @@
   "DIN": "Neoscrypt",
   "DINGO": "Scrypt",
   "DMS": "YescryptR32",
+  "DNX": "DynexSolve",
   "DVT": "SHA256",
   "DYN": "Argon2dDyn",
   "DYNAMO": "DynamoCoin",
@@ -161,6 +162,7 @@
   "STAK": "Lyra2RE2",
   "SUGAR": "YespowerSugar",
   "SWAMP": "Yespower",
+  "TAJ": "Blake2s",
   "TDC": "YespowerTide",
   "TIT": "SHA256",
   "TLR": "Lyra2Z",
@@ -202,5 +204,5 @@
   "ZEN": "Equihash",
   "ZER": "Equihash1927",
   "ZOC": "Neoscrypt",
-  "DNX": "Dynexsolve"
+  "ALT": "Ethash"
 }

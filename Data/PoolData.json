@@ -216,10 +216,9 @@
   },
   "MiningPoolHub": {
     "Algorithm": [
-      "_-Equihash1445", // Pool closed at end of 2022
-      "_-Equihash1927", // Pool closed at end of 2022
-      "_-Neoscrypt", // Connection issues
-      "-RandomX" // ASIC
+      "-Neoscrypt", // Connection issues
+      "-RandomX", // ASIC
+      "-VertHash" // Connection issues
     ],
     "AutoExchange": true,
     "BalancesKeepAlive": 90, // No expiration communicated by pool

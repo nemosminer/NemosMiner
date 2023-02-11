@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningDutch.ps1
-Version:        4.3.0.0
-Version date:   06 February 2023
+Version:        4.3.0.1
+Version date:   11 February 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -65,7 +65,7 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
         } While (($AlgoData | Get-Member -MemberType NoteProperty).Name.Count -lt 2)
 
         ForEach ($Algo in (($AlgoData | Get-Member -MemberType NoteProperty).Name)) { 
-            $Currency = If ($Currencies.Symbol) { ($Currencies | Sort-Object Estimate)[-1].Symbol } Else { "" }
+            $Currency = If ($Currencies.Symbol) { (($Currencies | Sort-Object Estimate)[-1].Symbol).Trim() } Else { "" }
 
             If ($Currency) { $AlgoData.$Algo | Add-Member @{ Currency = $Currency } -Force } Else { $AlgoData.$Algo.PSObject.Properties.Remove("Currency") }
 
