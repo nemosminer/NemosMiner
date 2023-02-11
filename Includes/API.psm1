@@ -977,7 +977,7 @@ Function Start-APIServer {
                                 $Data = $Variables.WatchdogReset
                                 Break
                             }
-                            "workers" { 
+                            "/workers" { 
                                 If ($Config.ShowWorkerStatus -and $Config.MonitoringUser -and $Config.MonitoringServer -and $Variables.WorkersLastUpdated -lt (Get-Date).AddSeconds(-30)) { 
                                     Read-MonitoringData
                                 }
