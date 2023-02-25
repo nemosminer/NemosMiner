@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Hiveon.ps1
-Version:        4.3.0.1
-Version date:   11 February 2023
+Version:        4.3.0.2
+Version date:   25 February 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -49,9 +49,9 @@ If ($PoolConfig.Wallets) {
 
     If (-not $Request) { Return }
 
-    $Request.cryptoCurrencies | Where-Object { $PoolConfig.Wallets.($_.Name) -and $Variables.Rates.($_.name).BTC } | ForEach-Object { 
+    $Request.cryptoCurrencies | Where-Object { $Request.stats.($_.name).hashrate -gt 0 } | Where-Object { $Variables.Rates.($_.name).BTC } | ForEach-Object { 
         $Currency = "$($_.name)".Trim()
-        $Algorithm_Norm = Get-Algorithm $Currency
+        $Algorithm_Norm = Get-AlgorithmFromCurrency $Currency
         $Divisor = [Double]$_.profitPerPower
 
         # Add coin name
@@ -82,10 +82,11 @@ If ($PoolConfig.Wallets) {
             Price                    = [Double]$Stat.Live
             Protocol                 = "ethproxy"
             Region                   = [String]$PoolConfig.Region
+            SendHashrate             = $false
             SSLSelfSignedCertificate = $false
             StablePrice              = [Double]$Stat.Week
             Updated                  = [DateTime]$Stat.Updated
-            User                     = "$($PoolConfig.Wallets.$Currency).$($PoolConfig.WorkerName)"
+            User                     = If ($PoolConfig.Wallets.$Currency) { "$($PoolConfig.Wallets.$Currency).$($PoolConfig.WorkerName)" } Else { "" }
             Workers                  = [Int]$Request.stats.($_.name).workers
             WorkerName               = ""
         }

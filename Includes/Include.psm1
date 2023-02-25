@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.0.1
-Version date:   11 February 2023
+Version:        4.3.0.2
+Version date:   25 February 2023
 #>
 
 # Window handling
@@ -119,6 +119,7 @@ Class Pool {
     [String]$Protocol
     [String[]]$Reasons = @()
     [String]$Region
+    [Boolean]$SendHashrate # If true miner will send hashrate to pool
     [Boolean]$SSLSelfSignedCertificate
     [Double]$StablePrice
     [DateTime]$Updated = (Get-Date).ToUniversalTime()
@@ -141,6 +142,7 @@ Class Worker {
 
 Enum MinerStatus { 
     Running
+    DryRun
     Idle
     Failed
     Disabled
@@ -168,6 +170,7 @@ Class Miner {
     [Double]$Earning_Accuracy # derived from pool and stats
     [DateTime]$EndTime
     [String[]]$EnvVars = @()
+    [DateTime]$FirstValidDataSampleDate = 0
     [Double[]]$Hashrates_Live = @()
     [String]$Info
     [Boolean]$KeepRunning = $false # do not stop miner even if not best (MinInterval)
@@ -199,12 +202,12 @@ Class Miner {
     [String]$StatusMessage
     [TimeSpan]$TotalMiningDuration # derived from pool and stats
     [String]$Type
-    [DateTime]$Updated
+    [DateTime]$Updated # derived from stats
     [String]$URI
     [Worker[]]$Workers = @()
     [Worker[]]$WorkersRunning = @()
     [String]$Version
-    [Int[]]$WarmupTimes # First value: time (in seconds) until first hashrate sample is valid (default 0, accept first sample), second value: time (in seconds) the miner is allowed to warm up, e.g. to compile the binaries or to get the API ready and providing first data samples before it get marked as failed (default 15)
+    [Int[]]$WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
     [String]$WindowStyle = "minimized"
 
     hidden [PSCustomObject[]]$Data = $null
@@ -257,7 +260,6 @@ Class Miner {
         If ($this.DataReaderJob.HasMoreData) { $this.Data += @($this.DataReaderJob | Receive-Job | Select-Object -Property Date, Hashrate, Shares, PowerUsage) }
         $this.DataReaderJob | Get-Job | Stop-Job | Receive-Job | Out-Null
         $this.DataReaderJob = $null
-        $this.PowerUsage_Live = [Double]::NaN
     }
 
     hidden RestartDataReader() { 
@@ -266,75 +268,64 @@ Class Miner {
     }
 
     hidden StartMining() { 
-        $this.Status = [MinerStatus]::Idle
         $this.Info = "{$(($this.Workers.Pool | ForEach-Object { $_.Algorithm, $_.Name -join '@' }) -join ' & ')}"
-        $this.StatusMessage = "Starting $($this.Info)"
-        $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
-        $this.Activated++
-        $this.Cycle = 0
-        $this.Hashrates_Live = @([Double]::NaN * $this.Algorithm.Count)
-        $this.PowerUsage = [Double]::NaN
-
-
-        Write-Message -Level Info "Starting miner '$($this.Name) $($this.Info)'..."
-
         If ($this.Arguments -and (Test-Json $this.Arguments)) { $this.CreateConfigFiles() }
 
-        If ($this.Process) { 
-            If ($this.Process | Get-Job) { 
-                $this.Process | Get-Job | Receive-Job | Out-Null
-                $this.Process | Get-Job | Remove-Job -Force
-            }
-
-            If (-not ($this.Process | Get-Job)) { 
-                $this.Active += $this.Process.PSEndTime - $this.Process.PSBeginTime
-                $this.Process = $null
-            }
+        If ($this.Status -eq [MinerStatus]::DryRun) { 
+            $this.StatusMessage = "Dry run $($this.Info)"
+            Write-Message -Level Info "Dry run for miner '$($this.Name) $($this.Info)'..."
         }
-
-        If (-not $this.Process) { 
-            If ($this.Benchmark -or $this.MeasurePowerUsage) { $this.Data = @() } # When benchmarking clear data on each miner start
+        Else { 
+            $this.StatusMessage = "Starting $($this.Info)"
+            Write-Message -Level Info "Starting miner '$($this.Name) $($this.Info)'..."
             $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.WindowStyle -Priority $this.ProcessPriority -EnvBlock $this.EnvVars -JobName $this.Name -LogFile $this.LogFile
+        }
+        $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
 
-            $this.Status = [MinerStatus]::Running
-            Write-Message -Level Verbose $this.CommandLine
+        Write-Message -Level Verbose $this.CommandLine
 
-            # Log switching information to .\Logs\SwitchingLog.csv
-            [PSCustomObject]@{ 
-                DateTime          = (Get-Date -Format o)
-                Action            = "Launched"
-                Name              = $this.Name
-                Accounts          = ($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
-                Algorithms        = $this.Workers.Pool.Algorithm -join "; "
-                Benchmark         = $this.Benchmark
-                CommandLine       = $this.CommandLine
-                Cycle             = ""
-                DeviceNames       = $this.DeviceNames -join "; "
-                Duration          = ""
-                Earning           = $this.Earning
-                Earning_Bias      = $this.Earning_Bias
-                LastDataSample    = $null
-                MeasurePowerUsage = $this.MeasurePowerUsage
-                Pools              = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
-                Profit            = $this.Profit
-                Profit_Bias       = $this.Profit_Bias
-                Reason            = ""
-                Type              = $this.Type
-            } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation
+        # Log switching information to .\Logs\SwitchingLog.csv
+        [PSCustomObject]@{ 
+            DateTime          = (Get-Date -Format o)
+            Action            = "Launched"
+            Name              = $this.Name
+            Accounts          = ($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
+            Algorithms        = $this.Workers.Pool.Algorithm -join "; "
+            Benchmark         = $this.Benchmark
+            CommandLine       = $this.CommandLine
+            Cycle             = ""
+            DeviceNames       = $this.DeviceNames -join "; "
+            Duration          = ""
+            Earning           = $this.Earning
+            Earning_Bias      = $this.Earning_Bias
+            LastDataSample    = $null
+            MeasurePowerUsage = $this.MeasurePowerUsage
+            Pools              = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
+            Profit            = $this.Profit
+            Profit_Bias       = $this.Profit_Bias
+            Reason            = ""
+            Type              = $this.Type
+        } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation
 
-            0..20 | ForEach-Object { 
+        If ($this.Status -eq [MinerStatus]::DryRun) { 
+            $this.Data = @()
+            $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
+            $this.WorkersRunning = $this.Workers
+        }
+        Else { 
+            0..50 | ForEach-Object { 
                 If ($this.ProcessId = ($this.Process | Get-Job -ErrorAction SilentlyContinue | Receive-Job).ProcessId) { 
+                    $this.Status = [MinerStatus]::Running
                     $this.StatusMessage = "Warming up $($this.Info)"
                     $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
                     $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
-                    $this.Hashrates_Live = @($this.Workers | ForEach-Object { [Double]::NaN })
                     $this.WorkersRunning = $this.Workers
                     $this.StartDataReader()
                     Break
                 }
                 Start-Sleep -Milliseconds 100
             }
-            If (-not $this.ProcessId) { 
+            Else { 
                 $this.Status = [MinerStatus]::Failed
                 $this.StatusMessage = "Failed $($this.Info)"
                 $this.Devices | ForEach-Object { $_.Status = "Failed" }
@@ -343,7 +334,8 @@ Class Miner {
     }
 
     [MinerStatus]GetStatus() { 
-        If ($this.Process.State -eq [MinerStatus]::Running -and $this.ProcessId -and (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue).ProcessName) { # Use ProcessName, some crashed miners are dead, but may still be found by their processId
+        # If ($this.Status -eq [MinerStatus]::DryRun) { Return [MinerStatus]::DryRun }
+        If ($this.Process.State -eq [MinerStatus]::Running -and $this.ProcessId -and (Get-Process -Id $this.ProcessId -ErrorAction Ignore).ProcessName) { # Use ProcessName, some crashed miners are dead, but may still be found by their processId
             Return [MinerStatus]::Running
         }
         ElseIf ($this.Status -eq [MinerStatus]::Running) { 
@@ -356,8 +348,11 @@ Class Miner {
 
     SetStatus([MinerStatus]$Status) { 
         Switch ($Status) { 
+            "DryRun" { 
+                $this.Status = [MinerStatus]::DryRun
+                $this.StartMining()
+            }
             "Running" { 
-                If ($Status -eq $this.GetStatus()) { Return }
                 $this.StartMining()
             }
             "Idle" { 
@@ -392,13 +387,15 @@ Class Miner {
         }
 
         If ($this.Process) { 
-            if ($this.Process | Get-Job -ErrorAction SilentlyContinue) { 
-                $this.Process | Get-Job | Receive-Job | Remove-Job -Force
+            If ($this.Process | Get-Job) { 
+                $this.Process | Get-Job | Receive-Job | Out-Null
+                $this.Process | Get-Job | Remove-Job -Force
             }
+            $this.Active += $this.Process.PSEndTime - $this.Process.PSBeginTime
             $this.Process = $null
         }
 
-        $this.Status = If ($this.Status -eq [MinerStatus]::Running) { [MinerStatus]::Idle } Else { [MinerStatus]::Failed }
+        $this.Status = If ($this.Status -eq [MinerStatus]::Running -or $this.Status -eq [MinerStatus]::DryRun) { [MinerStatus]::Idle } Else { [MinerStatus]::Failed }
         $this.Devices | ForEach-Object { $_.Status = $this.Status }
         $this.Devices | Where-Object { $_.State -eq [DeviceState]::Disabled } | ForEach-Object { $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
@@ -434,6 +431,9 @@ Class Miner {
         }
         ElseIf ($this.Process.PSBeginTime) { 
             Return [DateTime]::Now
+        }
+        ElseIf ($this.EndTime) { 
+            Return $this.EndTime
         }
         Else { 
             Return [DateTime]::MinValue
@@ -706,7 +706,7 @@ Function Start-Mining {
 
     If (-not $Variables.CoreRunspace) { 
         $Variables.Summary = "Starting mining processes..."
-        Write-Message -Level Info $Variables.Summary
+        Write-Message -Level Info Write-Message -Level Verbose ($Variables.Summary -replace "<br>", " ")
 
         $Variables.Timer = $null
         $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
@@ -811,10 +811,10 @@ Function Start-Brain {
             }
         }
 
-        If ($BrainsStarted.Count -gt 0) { Write-Message -Level Info "Pool Brain Job$(If ($BrainsStarted.Count -gt 1) { "s" }) for '$($BrainsStarted -join ", ")' started." }
+        If ($BrainsStarted.Count -gt 0) { Write-Message -Level Info "Pool brain backgound job$(If ($BrainsStarted.Count -gt 1) { "s" }) for '$($BrainsStarted -join ", ")' started." }
     }
     Else {
-        Write-Message -Level Error "Failed to start Pool Brain Jobs. Directory '.\Brains' is missing."
+        Write-Message -Level Error "Failed to start Pool brain backgound jobs. Directory '.\Brains' is missing."
     }
 }
 
@@ -839,7 +839,7 @@ Function Stop-Brain {
 
         [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
 
-        If ($BrainsStopped.Count -gt 0) { Write-Message -Level Info  "Pool Brain Job$(If ($BrainsStopped.Count -gt 1) { "s" }) for '$(($BrainsStopped | Sort-Object) -join ", ")' stopped." }
+        If ($BrainsStopped.Count -gt 0) { Write-Message -Level Info  "Pool brain backgound job$(If ($BrainsStopped.Count -gt 1) { "s" }) for '$(($BrainsStopped | Sort-Object) -join ", ")' stopped." }
     }
 
     If ($Variables.BrainRunspacePool -and -not $Variables.Brains.Keys.Count) { 
@@ -860,7 +860,7 @@ Function Start-BalancesTracker {
         If (Test-Path -Path ".\Balances" -PathType Container) { 
             Try { 
                 $Variables.Summary = "Starting Balances Tracker background process..."
-                Write-Message -Level Info $Variables.Summary
+                Write-Message -Level Verbose ($Variables.Summary -replace "<br>", " ")
 
                 $Variables.BalancesTrackerRunspace = [runspacefactory]::CreateRunspace()
                 $Variables.BalancesTrackerRunspace.Open()
@@ -901,7 +901,82 @@ Function Stop-BalancesTracker {
 }
 
 Function Initialize-Application { 
+    # Verify donation data
+    $Variables.DonationData = Get-Content -Path ".\Data\DonationData.json" | ConvertFrom-Json -NoEnumerate
+    If (-not $Variables.DonationData) { 
+        Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\DonationData.json' is not a valid JSON file. Please restore it from your original download."
+        Start-Sleep -Seconds 10
+        Exit
+    }
+    # Verify donation log
+    $Variables.DonationLog = Get-Content -Path ".\Logs\DonateLog.json" | ConvertFrom-Json -NoEnumerate
+    If (-not $Variables.DonationLog) { 
+        $Variables.DonationLog = @()
+    }
+    # Load algorithm list
+    $Variables.Algorithms = Get-Content -Path ".\Data\Algorithms.json" | ConvertFrom-Json
+    If (-not $Variables.Algorithms) { 
+        Write-Message -Level Error "Terminating Error - Cannot continue! File '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Data\Algorithms.json'))' is not a valid JSON file. Please restore it from your original download."
+        Start-Sleep -Seconds 10
+        Exit
+    }
+    # Load coin names
+    $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
+    If (-not $Global:CoinNames) { 
+        Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CoinNames.json' is not a valid JSON file. Please restore it from your original download."
+        Start-Sleep -Seconds 10
+        Exit
+    }
+    # Load EquihashCoinPers data
+    $Global:EquihashCoinPers = Get-Content -Path ".\Data\EquihashCoinPers.json" | ConvertFrom-Json
+    If (-not $Global:EquihashCoinPers) { 
+        Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\EquihashCoinPers.json' is not a valid JSON file. Please restore it from your original download."
+        Start-Sleep -Seconds 10
+        Exit
+    }
+    # Load currency algorithm data
+    $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
+    If (-not $Global:CurrencyAlgorithm) { 
+        Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CurrencyAlgorithm.json' is not a valid JSON file. Please restore it from your original download."
+        Start-Sleep -Seconds 10
+        Exit
+    }
+    # Load regions list
+    $Variables.Regions = Get-Content -Path ".\Data\Regions.json" | ConvertFrom-Json
+    If (-not $Variables.Regions) { 
+        Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\Regions.json' is not a valid JSON file. Please restore it from your original download."
+        Start-Sleep -Seconds 10
+        Exit
+    }Variables
+    # Load FIAT currencies list
+    $Variables.FIATcurrencies = Get-Content -Path ".\Data\FIATcurrencies.json" | ConvertFrom-Json
+    If (-not $Variables.FIATcurrencies) { 
+        Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\FIATcurrencies.json' is not a valid JSON file. Please restore it from your original download."
+        Start-Sleep -Seconds 10
+        Exit
+    }
+    # Load DAG data, if not available it will get recreated
+    $Variables.DAGdata = Get-Content ".\Data\DagData.json" | ConvertFrom-Json -AsHashtable
 
+    # Load PoolsLastUsed data
+    $Variables.PoolsLastUsed = Get-Content -Path ".\Data\PoolsLastUsed.json" | ConvertFrom-Json -AsHashtable
+    If (-not $Variables.PoolsLastUsed.Keys) { $Variables.PoolsLastUsed = @{ } }
+
+    # Load AlgorithmsLastUsed data
+    $Variables.AlgorithmsLastUsed = Get-Content -Path ".\Data\AlgorithmsLastUsed.json" | ConvertFrom-Json -AsHashtable
+    If (-not $Variables.AlgorithmsLastUsed.Keys) { $Variables.AlgorithmsLastUsed = @{ } }
+
+    # Load EarningsChart data to make it available early in Web GUI
+    If (Test-Path -Path ".\Data\EarningsChartData.json" -PathType Leaf) { $Variables.EarningsChartData = Get-Content ".\Data\EarningsChartData.json" | ConvertFrom-Json }
+
+    # Load pool data
+    $Variables.PoolData = Get-Content -Path ".\Data\PoolData.json" | ConvertFrom-Json -AsHashtable | Get-SortedObject
+    $Variables.PoolVariants = @(($Variables.PoolData.Keys | ForEach-Object { $Variables.PoolData.$_.Variant.Keys -replace " External$| Internal$" }) | Sort-Object -Unique)
+    If (-not $Variables.PoolVariants) { 
+        Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\PoolData.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file. Please restore it from your original download."
+        Start-Sleep -Seconds 10
+        Exit
+    }
     # Keep only the last 10 files
     Get-ChildItem -Path ".\Logs\$($Variables.Branding.ProductLabel)_*.log" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse
     Get-ChildItem -Path ".\Logs\SwitchingLog_*.csv" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse
@@ -1478,27 +1553,32 @@ Function Get-SortedObject {
         [Parameter(Mandatory = $false, ValueFromPipeline = $true)]
         [Object]$Object
     )
-
-    $SortedObject = [Ordered]@{ }
-
     Try { 
         Switch -Regex ($Object.GetType().Name) { 
             "PSCustomObject" { 
+                $SortedObject = [PSCustomObject]@{ }
                 $Object.PSObject.Properties.Name | Sort-Object | ForEach-Object { 
-                    If ($Object.$_ -match "Hashtable|OrderedDictionary|SyncHashtable") { $SortedObject[$_] = Get-SortedObject $Object.$_ }
-                    ElseIf ($Object.$_ -is [Array]) { $SortedObject[$_] = $Object.$_ -as [Array] }
-                    Else { $SortedObject.$_ = $Object.$_ }
+                    If ($Object.$_ -is [Array]) { 
+                        $SortedObject | Add-Member $_ @(Get-SortedObject $Object.$_)
+                    }
+                    Else { 
+                        $SortedObject | Add-Member $_ (Get-SortedObject $Object.$_)
+                    }
                 }
             }
             "Hashtable|OrderedDictionary|SyncHashtable" { 
+                $SortedObject = [Ordered]@{ }
                 $Object.GetEnumerator().Name | Sort-Object | ForEach-Object { 
-                    If ($Object.$_ -match "Hashtable|OrderedDictionary|SyncHashtable") { $SortedObject[$_] = Get-SortedObject $Object.$_ }
-                    ElseIf ($Object.$_ -is [Array]) { $SortedObject.$_ = $Object.$_ -as [Array] }
-                    Else { $SortedObject.$_ = $Object.$_ }
+                    If ($Object.$_ -is [Array]) { 
+                        $SortedObject.$_ = @(Get-SortedObject $Object.$_)
+                    }
+                    Else { 
+                        $SortedObject.$_ = (Get-SortedObject $Object.$_)
+                    }
                 }
             }
             Default { 
-                $SortedObject = $Object
+                $SortedObject = ($Object | Sort-Object)
             }
         }
     }
@@ -1546,30 +1626,29 @@ Function Disable-Stat {
         [String]$Name
     )
 
-    If ($Stat = Get-Stat -Name $Name) { 
+    If (-not $Stat) { $Stat = (Set-Stat -Name $Name -Value 0) }
 
-        $Path = "Stats\$Name.txt"
+    $Path = "Stats\$Name.txt"
 
-        $Stat.Disabled = $true
-        @{ 
-            Live                  = [Double]$Stat.Live
-            Minute                = [Double]$Stat.Minute
-            Minute_Fluctuation    = [Double]$Stat.Minute_Fluctuation
-            Minute_5              = [Double]$Stat.Minute_5
-            Minute_5_Fluctuation  = [Double]$Stat.Minute_5_Fluctuation
-            Minute_10             = [Double]$Stat.Minute_10
-            Minute_10_Fluctuation = [Double]$Stat.Minute_10_Fluctuation
-            Hour                  = [Double]$Stat.Hour
-            Hour_Fluctuation      = [Double]$Stat.Hour_Fluctuation
-            Day                   = [Double]$Stat.Day
-            Day_Fluctuation       = [Double]$Stat.Day_Fluctuation
-            Week                  = [Double]$Stat.Week
-            Week_Fluctuation      = [Double]$Stat.Week_Fluctuation
-            Duration              = [String]$Stat.Duration
-            Updated               = [DateTime]$Stat.Updated
-            Disabled              = [Boolean]$Stat.Disabled
-        } | ConvertTo-Json | Out-File -FilePath $Path -Force -Encoding utf8NoBOM
-    }
+    $Stat.Disabled = $true
+    @{ 
+        Live                  = [Double]$Stat.Live
+        Minute                = [Double]$Stat.Minute
+        Minute_Fluctuation    = [Double]$Stat.Minute_Fluctuation
+        Minute_5              = [Double]$Stat.Minute_5
+        Minute_5_Fluctuation  = [Double]$Stat.Minute_5_Fluctuation
+        Minute_10             = [Double]$Stat.Minute_10
+        Minute_10_Fluctuation = [Double]$Stat.Minute_10_Fluctuation
+        Hour                  = [Double]$Stat.Hour
+        Hour_Fluctuation      = [Double]$Stat.Hour_Fluctuation
+        Day                   = [Double]$Stat.Day
+        Day_Fluctuation       = [Double]$Stat.Day_Fluctuation
+        Week                  = [Double]$Stat.Week
+        Week_Fluctuation      = [Double]$Stat.Week_Fluctuation
+        Duration              = [String]$Stat.Duration
+        Updated               = [DateTime]$Stat.Updated
+        Disabled              = [Boolean]$Stat.Disabled
+    } | ConvertTo-Json | Out-File -FilePath $Path -Force -Encoding utf8NoBOM
 }
 
 Function Set-Stat { 
@@ -3181,6 +3260,7 @@ Function Update-ConfigFile {
     }
     # Extend MinDataSampleAlgoMultiplier
     If ($Config.MinDataSampleAlgoMultiplier.Ghostrider -eq $null) { $Config.MinDataSampleAlgoMultiplier | Add-Member "GhostRider" 3 }
+    If ($Config.MinDataSampleAlgoMultiplier.Mike -eq $null) { $Config.MinDataSampleAlgoMultiplier | Add-Member "Mike" 3 }
     # Remove AHashPool config data
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "AhashPool*" }
     Remove-Item ".\Stats\AhashPool*.txt" -Force

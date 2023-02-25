@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.3.0.1
-Version date:   11 February 2023
+Version:        4.3.0.2
+Version date:   25 February 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -30,7 +30,7 @@ $Wallet = $Config.PoolsConfig.$Name.Wallets.$PayoutCurrency
 $RetryCount = 3
 $RetryDelay = 3
 
-$Request = "https://www.zergpool.com:8443/api/wallet?address=$Wallet"
+$Request = "https://zergpool.com/api/wallet?address=$Wallet"
 
 While (-not $APIResponse -and $RetryCount -gt 0 -and $Wallet) { 
 

@@ -22,7 +22,7 @@ $DeviceEnumerator = "PlatformId_Index"
 
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cryptonight";          Type = "AMD"; MinMemGiB = 2;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/0" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "AMD"; MinMemGiB = 2;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/ccx" } # SRBMinerMulti-v2.0.1 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "AMD"; MinMemGiB = 2;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/ccx" } # SRBMinerMulti-v2.1.0 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";    Type = "AMD"; MinMemGiB = 2;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/double" }
     [PSCustomObject]@{ Algorithm = "CryptonightFast";      Type = "AMD"; MinMemGiB = 2;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/fast" }
     [PSCustomObject]@{ Algorithm = "CryptonightLite";      Type = "AMD"; MinMemGiB = 1;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn-lite/0" }
@@ -32,7 +32,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; Type = "AMD"; MinMemGiB = 4;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn-heavy/tube" }
     [PSCustomObject]@{ Algorithm = "CryptonightPico";      Type = "AMD"; MinMemGiB = 0.25;                                    Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn-pico" }
     [PSCustomObject]@{ Algorithm = "CryptonightPicoTlo";   Type = "AMD"; MinMemGiB = 0.25;                                    Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn-pico/tlo" }
-    [PSCustomObject]@{ Algorithm = "CryptonightR";         Type = "AMD"; MinMemGiB = 2;                                       Minerset = 3; WarmupTimes = @(45, 0); Arguments = " --algo cn/r" } # ASIC
+#   [PSCustomObject]@{ Algorithm = "CryptonightR";         Type = "AMD"; MinMemGiB = 2;                                       Minerset = 3; WarmupTimes = @(45, 0); Arguments = " --algo cn/r" } # ASIC
     [PSCustomObject]@{ Algorithm = "CryptonightRto";       Type = "AMD"; MinMemGiB = 2;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/rto" }
     [PSCustomObject]@{ Algorithm = "CryptonightRwz";       Type = "AMD"; MinMemGiB = 2;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/rwz" }
     [PSCustomObject]@{ Algorithm = "CryptonightV1";        Type = "AMD"; MinMemGiB = 2;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/1" }
@@ -40,7 +40,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXao";       Type = "AMD"; MinMemGiB = 2;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/xao" }
     [PSCustomObject]@{ Algorithm = "CryptonightHeavyXhv";  Type = "AMD"; MinMemGiB = 4;                                       Minerset = 1; WarmupTimes = @(45, 0); Arguments = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "AMD"; MinMemGiB = 2;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/zls" } 
-    [PSCustomObject]@{ Algorithm = "KawPow";               Type = "AMD"; MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.42; Minerset = 1; WarmupTimes = @(60, 15); Arguments = " --algo kawpow" } # NBMiner-v42.3 is fastest, but has 2% miner fee
+    [PSCustomObject]@{ Algorithm = "KawPow";               Type = "AMD"; MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.77; Minerset = 1; WarmupTimes = @(60, 15); Arguments = " --algo kawpow" } # NBMiner-v42.3 is fastest, but has 2% miner fee
 #   [PSCustomObject]@{ Algorithm = "Randomx";              Type = "AMD"; MinMemGiB = 3;                                       Minerset = 3; WarmupTimes = @(45, 0); Arguments = " --algo rx/0" } # GPUs don't do Randomx and when they do it's a watt-wasting miracle anyway
 #   [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "AMD"; MinMemGiB = 4;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo rx/arq" } # GPUs don't do Randomx and when they do it's a watt-wasting miracle anyway
 #   [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "AMD"; MinMemGiB = 1;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo rx/keva" } # GPUs don't do Randomx and when they do it's a watt-wasting miracle anyway
@@ -49,37 +49,37 @@ $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "AMD"; MinMemGiB = 3;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo rx/wow" } # GPUs don't do Randomx and when they do it's a watt-wasting miracle anyway
     [PSCustomObject]@{ Algorithm = "Uplexa";               Type = "AMD"; MinMemGiB = 0.25;                                    Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo rx/upx2" } # GPUs don't do Randomx and when they do it's a watt-wasting miracle anyway
 
-    [PSCustomObject]@{ Algorithm = "Argon2Chukwa";         Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo argon2/chukwa" }
-    [PSCustomObject]@{ Algorithm = "Argon2ChukwaV2";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo argon2/chukwav2" }
-    [PSCustomObject]@{ Algorithm = "Argon2Ninja";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo argon2/ninja" }
-    [PSCustomObject]@{ Algorithm = "Argon2WRKZ";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo argon2/wrkz" }
-    [PSCustomObject]@{ Algorithm = "Cryptonight";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/0" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/ccx" }
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble";    Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/double" } # XmrStak-v2.10.8 is fastest
-    [PSCustomObject]@{ Algorithm = "CryptonightFast";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/fast" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLite";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn-lite/0" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";    Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn-lite/1" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHalf";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/half" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn-heavy/0" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn-heavy/tube" }
-    [PSCustomObject]@{ Algorithm = "CryptonightPico";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn-pico" }
-    [PSCustomObject]@{ Algorithm = "CryptonightPicoTlo";   Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn-pico/tlo" }
-    [PSCustomObject]@{ Algorithm = "CryptonightR";         Type = "CPU"; Minerset = 3; WarmupTimes = @(45, 0); Arguments = " --algo cn/r" } # ASIC
-    [PSCustomObject]@{ Algorithm = "CryptonightRto";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/rto" }
-    [PSCustomObject]@{ Algorithm = "CryptonightRwz";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/rwz" }
-    [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/upx2" }
-    [PSCustomObject]@{ Algorithm = "CryptonightV1";        Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/1" }
-    [PSCustomObject]@{ Algorithm = "CryptonightV2";        Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/2" }
-    [PSCustomObject]@{ Algorithm = "CryptonightXao";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/xao" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavyXhv";  Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn-heavy/xhv" }
-    [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/zls" }
-    [PSCustomObject]@{ Algorithm = "Randomx";              Type = "CPU"; Minerset = 3; WarmupTimes = @(45, 0); Arguments = " --algo rx/0" } # ASIC
-    [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo rx/arq" } # FPGA
-    [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo rx/keva" }
-    [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo rx/loki" }
-    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo rx/sfx" } # SRBMinerMulti-v2.0.1 is fastest, but has 0.85% miner fee
-    [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo rx/wow" }
-    [PSCustomObject]@{ Algorithm = "Uplexa";               Type = "CPU"; MinMemGiB = 0; WarmupTimes = @(45, 0); Arguments = " --algo rx/upx2" }
+    [PSCustomObject]@{ Algorithm = "Argon2Chukwa";         Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo argon2/chukwa" }
+    [PSCustomObject]@{ Algorithm = "Argon2ChukwaV2";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo argon2/chukwav2" }
+    [PSCustomObject]@{ Algorithm = "Argon2Ninja";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo argon2/ninja" }
+    [PSCustomObject]@{ Algorithm = "Argon2WRKZ";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo argon2/wrkz" }
+    [PSCustomObject]@{ Algorithm = "Cryptonight";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/0" }
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/ccx" }
+    [PSCustomObject]@{ Algorithm = "CryptonightDouble";    Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/double" } # XmrStak-v2.10.8 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightFast";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/fast" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLite";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn-lite/0" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";    Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn-lite/1" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHalf";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/half" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 20); Arguments = " --algo cn-heavy/0" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn-heavy/tube" }
+    [PSCustomObject]@{ Algorithm = "CryptonightPico";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn-pico" }
+    [PSCustomObject]@{ Algorithm = "CryptonightPicoTlo";   Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn-pico/tlo" }
+#   [PSCustomObject]@{ Algorithm = "CryptonightR";         Type = "CPU"; Minerset = 3; WarmupTimes = @(45, 0);  Arguments = " --algo cn/r" } # ASIC
+    [PSCustomObject]@{ Algorithm = "CryptonightRto";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/rto" }
+    [PSCustomObject]@{ Algorithm = "CryptonightRwz";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/rwz" }
+    [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/upx2" }
+    [PSCustomObject]@{ Algorithm = "CryptonightV1";        Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/1" }
+    [PSCustomObject]@{ Algorithm = "CryptonightV2";        Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/2" }
+    [PSCustomObject]@{ Algorithm = "CryptonightXao";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/xao" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavyXhv";  Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn-heavy/xhv" }
+    [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/zls" }
+#   [PSCustomObject]@{ Algorithm = "Randomx";              Type = "CPU"; Minerset = 3; WarmupTimes = @(45, 20); Arguments = " --algo rx/0" } # ASIC
+    [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo rx/arq" } # FPGA
+    [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo rx/keva" }
+    [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo rx/loki" }
+    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo rx/sfx" } # SRBMinerMulti-v2.1.0 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo rx/wow" }
+    [PSCustomObject]@{ Algorithm = "Uplexa";               Type = "CPU"; Minerset = 0; WarmupTimes = @(45, 0);  Arguments = " --algo rx/upx2" }
 
     [PSCustomObject]@{ Algorithm = "Cryptonight";          Type = "NVIDIA"; MinMemGiB = 2;                                      Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/0" }
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "NVIDIA"; MinMemGiB = 2;                                      Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/ccx" } # CryptoDredge-v0.27.0 is fastest, but has 1% miner fee
@@ -92,7 +92,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; Type = "NVIDIA"; MinMemGiB = 1;                                      Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn-heavy/tube" }
     [PSCustomObject]@{ Algorithm = "CryptonightPico";      Type = "NVIDIA"; MinMemGiB = 0.25;                                   Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn-pico" }
     [PSCustomObject]@{ Algorithm = "CryptonightPicoTlo";   Type = "NVIDIA"; MinMemGiB = 0.25;                                   Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn-pico/tlo" }
-    [PSCustomObject]@{ Algorithm = "CryptonightR";         Type = "NVIDIA"; MinMemGiB = 2;                                      Minerset = 3; WarmupTimes = @(45, 0);  Arguments = " --algo cn/r" } # ASIC
+#   [PSCustomObject]@{ Algorithm = "CryptonightR";         Type = "NVIDIA"; MinMemGiB = 2;                                      Minerset = 3; WarmupTimes = @(45, 0);  Arguments = " --algo cn/r" } # ASIC
     [PSCustomObject]@{ Algorithm = "CryptonightRto";       Type = "NVIDIA"; MinMemGiB = 2;                                      Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/rto" }
     [PSCustomObject]@{ Algorithm = "CryptonightRwz";       Type = "NVIDIA"; MinMemGiB = 2;                                      Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/rwz" }
     [PSCustomObject]@{ Algorithm = "CryptonightV1";        Type = "NVIDIA"; MinMemGiB = 2;                                      Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/1" }
@@ -100,7 +100,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXao";       Type = "NVIDIA"; MinMemGiB = 2;                                      Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/xao" }
     [PSCustomObject]@{ Algorithm = "CryptonightHeavyXhv";  Type = "NVIDIA"; MinMemGiB = 4;                                      Minerset = 1; WarmupTimes = @(45, 0);  Arguments = " --algo cn-heavy/xhv" }
     [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "NVIDIA"; MinMemGiB = 2;                                      Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo cn/zls" } 
-#   [PSCustomObject]@{ Algorithm = "KawPow";               Type = "NVIDIA"; MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.42; Minerset = 3; WarmupTimes = @(60, 15); Arguments = " --algo kawpow" } # Trex-v0.26.8 is fastest, but has 1% miner fee (Broken: https://github.com/RainbowMiner/RainbowMiner/issues/2224)
+#   [PSCustomObject]@{ Algorithm = "KawPow";               Type = "NVIDIA"; MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.77; Minerset = 3; WarmupTimes = @(60, 15); Arguments = " --algo kawpow" } # Trex-v0.26.8 is fastest, but has 1% miner fee (Broken: https://github.com/RainbowMiner/RainbowMiner/issues/2224)
 #   [PSCustomObject]@{ Algorithm = "Randomx";              Type = "NVIDIA"; MinMemGiB = 3;                                      Minerset = 3; WarmupTimes = @(45, 0);  Arguments = " --algo rx/0" } # GPUs don't do Randomx and when they do it's a watt-wasting miracle anyway
 #   [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "NVIDIA"; MinMemGiB = 4;                                      Minerset = 3; WarmupTimes = @(45, 0);  Arguments = " --algo rx/arq" } # GPUs don't do Randomx and when they do it's a watt-wasting miracle anyway
 #   [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "NVIDIA"; MinMemGiB = 1;                                      Minerset = 3; WarmupTimes = @(45, 0);  Arguments = " --algo rx/keva" } # GPUs don't do Randomx and when they do it's a watt-wasting miracle anyway
@@ -148,7 +148,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     Name        = $Miner_Name
                     Type        = ($AvailableMiner_Devices.Type | Select-Object -Unique)
                     URI         = $Uri
-                    WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
+                    WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
                 }
             }
         }

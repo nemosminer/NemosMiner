@@ -7,70 +7,7 @@
 <!-- Start of page scripts 'foot.html'-->
   <script type='text/javascript'>
 
-    function updateSummary(){
-      // get page header info
-      $.ajax({
-        async: false,
-        dataType: 'json',
-        timeout: 10,
-        url: '/summary',
-        success: function(result) {
-          $('#summary').empty().append(result);
-        }
-      });
-    }
-
-    $(document).ready(function () {
-
-      // Set the active sidebar item
-      $(function() {
-        $('#'+$('#title').data('navbaractive')).addClass('active');
-      });
-
-      $('#btn-miningpause').click(function () {
-        $command = '/functions/mining/pause';
-        $('.modal-body').load($command, function() {
-          if (this.outerText) {
-            $('.modal-title').text($('#btn-miningpause').text());
-            $('#myModal').modal({show:true});
-          };
-        });
-        updateSummary();
-        document.getElementById('btn-miningpause').disabled = true;
-        document.getElementById('btn-miningstart').disabled = false;
-        document.getElementById('btn-miningstop').disabled = false;
-      });
-
-      $('#btn-miningstart').click(function () {
-        $command = '/functions/mining/start';
-        $('.modal-body').load($command, function() {
-          if (this.outerText) {
-            $('.modal-title').text($('#btn-miningstart').text());
-            $('#myModal').modal({show:true});
-          };
-        });
-        updateSummary();
-        document.getElementById('btn-miningpause').disabled = false;
-        document.getElementById('btn-miningstart').disabled = true;
-        document.getElementById('btn-miningstop').disabled = false;
-      });
-
-      $('#btn-miningstop').click(function () {
-        $command = '/functions/mining/stop';
-        $('.modal-body').load($command, function() {
-          if (this.outerText) {
-            $('.modal-title').text($('#btn-miningstop').text());
-            $('#myModal').modal({show:true});
-          };
-        });
-        updateSummary();
-        document.getElementById('btn-miningpause').disabled = false;
-        document.getElementById('btn-miningstart').disabled = false;
-        document.getElementById('btn-miningstop').disabled = true;
-      });
-
-      updateSummary();
-
+    function updateButtonStatus(){
       $.ajax({
         async: false,
         dataType: 'json',
@@ -105,6 +42,72 @@
           }
         }
       });
+    }
+
+    function updateSummary(){
+      // get page header info
+      $.ajax({
+        async: false,
+        dataType: 'json',
+        timeout: 10,
+        url: '/summary',
+        success: function(result) {
+          $('#summary').empty().append(result);
+        }
+      });
+    }
+
+    $(document).ready(function () {
+
+      // Set the active sidebar item
+      $(function() {
+        $('#'+$('#title').data('navbaractive')).addClass('active');
+      });
+
+      $('#btn-miningpause').click(function () {
+        $command = '/functions/mining/pause';
+        $('.modal-body').load($command, function() {
+          if (this.outerText) {
+            $('.modal-title').text($('#btn-miningpause').text());
+            $('#myModal').modal({show:true});
+          };
+        });
+        updateSummary();
+        document.getElementById('btn-miningpause').disabled = true;
+        document.getElementById('btn-miningstart').disabled = true;
+        document.getElementById('btn-miningstop').disabled = true;
+      });
+
+      $('#btn-miningstart').click(function () {
+        $command = '/functions/mining/start';
+        $('.modal-body').load($command, function() {
+          if (this.outerText) {
+            $('.modal-title').text($('#btn-miningstart').text());
+            $('#myModal').modal({show:true});
+          };
+        });
+        updateSummary();
+        document.getElementById('btn-miningpause').disabled = true;
+        document.getElementById('btn-miningstart').disabled = true;
+        document.getElementById('btn-miningstop').disabled = true;
+      });
+
+      $('#btn-miningstop').click(function () {
+        $command = '/functions/mining/stop';
+        $('.modal-body').load($command, function() {
+          if (this.outerText) {
+            $('.modal-title').text($('#btn-miningstop').text());
+            $('#myModal').modal({show:true});
+          };
+        });
+        updateSummary();
+        document.getElementById('btn-miningpause').disabled = true;
+        document.getElementById('btn-miningstart').disabled = true;
+        document.getElementById('btn-miningstop').disabled = true;
+      });
+
+      updateSummary();
+      updateButtonStatus();
 
       // set the footer
       var version = JSON.parse(sessionStorage.getItem('version'));
@@ -126,6 +129,7 @@
     // Update data once per interval
     window.setInterval(function() { 
       updateSummary();
+      updateButtonStatus();
       updateData();
       if (typeof updatePoolBalances === "function") updatePoolBalances();
     }, config.Interval * 1000);

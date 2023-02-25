@@ -55,6 +55,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     "ethstratum1"  { " --url stratum2" }
                     "ethstratum2"  { " --url stratum2" }
                     "ethstratumnh" { " --url stratum2" }
+                    Default        { " --url stratum" }
                 }
                 $Arguments += If ($MinerPools[0].($Algorithm0).PoolPorts[1]) { "+ssl" } Else { "+tcp" }
                 $Arguments += "://$($MinerPools[0].($Algorithm0).Host):$($MinerPools[0].($Algorithm0).PoolPorts | Select-Object -Last 1)"
@@ -97,7 +98,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     Port        = $MinerAPIPort
                     Type        = ($AvailableMiner_Devices.Type | Select-Object -Unique)
                     URI         = $Uri
-                    WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
+                    WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
                 }
             }
         }

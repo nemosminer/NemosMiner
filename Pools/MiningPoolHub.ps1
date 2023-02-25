@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.3.0.1
-Version date:   11 February 2023
+Version:        4.3.0.2
+Version date:   25 February 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -43,7 +43,7 @@ If ($PoolConfig.UserName) {
     If ($PoolVariant -match "Coins$") { 
         Do {
             Try { 
-                $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics" -Headers $Headers -UserAgent $UserAgent -SkipCertificateCheck -TimeoutSec 3
+                $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics" -Headers $Headers -UserAgent $UserAgent -SkipCertificateCheck -TimeoutSec 5
             }
             Catch { 
                 $APICallFails++
@@ -55,7 +55,7 @@ If ($PoolConfig.UserName) {
 
         $Divisor = 1000000000
 
-        $Request.return | Where-Object profit | ForEach-Object { 
+        $Request.return | Where-Object profit -GT 0 | ForEach-Object { 
             $Current = $_
 
             $Algorithm_Norm = Get-Algorithm $_.algo
@@ -109,6 +109,7 @@ If ($PoolConfig.UserName) {
                         Price                    = [Double]$Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * [Math]::Min($Stat.Day_Fluctuation, 1)
                         Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratumnh" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                         Region                   = [String]$Region_Norm
+                        SendHashrate             = $false
                         SSLSelfSignedCertificate = $true
                         StablePrice              = [Double]$Stat.Week
                         User                     = "$($PoolConfig.UserName).$($PoolConfig.WorkerName)"
@@ -122,7 +123,7 @@ If ($PoolConfig.UserName) {
     Else { 
         Do {
             Try { 
-                $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getautoswitchingandprofitsstatistics" -Headers $Headers -UserAgent $UserAgent -SkipCertificateCheck -TimeoutSec 3
+                $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getautoswitchingandprofitsstatistics" -Headers $Headers -UserAgent $UserAgent -SkipCertificateCheck -TimeoutSec 5
             }
             Catch { 
                 $APICallFails++
@@ -134,7 +135,7 @@ If ($PoolConfig.UserName) {
 
         $Divisor = 1000000000
 
-        $Request.return | Where-Object profit | ForEach-Object { 
+        $Request.return | Where-Object profit -GT 0 | ForEach-Object { 
             $Current = $_
 
             $Algorithm_Norm = Get-Algorithm $_.algo

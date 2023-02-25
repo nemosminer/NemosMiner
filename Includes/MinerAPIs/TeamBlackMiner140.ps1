@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           lolMiner.ps1
-Version:        4.3.0.1
-Version date:   11 February 2023
+Version:        4.3.0.2
+Version date:   25 February 2023
 #>
 
 class TeamBlackMiner140 : Miner { 
@@ -28,7 +28,7 @@ class TeamBlackMiner140 : Miner {
         $Data = [PSCustomObject]@{ }
         $PowerUsage = [Double]0
 
-        $Request = "http://127.0.0.1:$($this.Port)/threads"
+        $Request = "http://127.0.0.1:$($this.Port)/pools"
 
         Try { 
             $Data = Invoke-RestMethod -Uri $Request -TimeoutSec $Timeout
@@ -39,7 +39,6 @@ class TeamBlackMiner140 : Miner {
 
         If (-not $Data) { Return $null }
 
-        $Algorithms = [String[]]($Data.Devices.PSObject.Properties.Value.algo | Sort-Object -Unique)
         $HashRate = [PSCustomObject]@{ }
         $HashRate_Name = [String]""
         $HashRate_Value = [Double]0
@@ -49,15 +48,19 @@ class TeamBlackMiner140 : Miner {
         $Shares_Rejected = [Int64]0
         $Shares_Invalid = [Int64]0
 
-        ForEach ($Algorithm in $Algorithms) { 
-            $HashRate_Name = [String](Get-Algorithm $Algorithm)
-            $HashRate_Value = [Double](($Data.Devices.PSObject.Properties.Name | ForEach-Object { $Data.Devices.$_ } | Where-Object { $_.algo -eq $Algorithm }).hashrate | Measure-Object -Sum).Sum
-            $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
+        ForEach ($Algorithm in $this.Algorithms) { 
+            $HashRate_Name = [String]$Algorithm
+            $Data.Pool.PSObject.Properties.Name | ForEach-Object { 
+                If ((Get-Algorithm $Data.Pool.$_.Algo) -eq $Algorithm) { 
+                    $HashRate_Value = [Double]($Data.Pool.$_.total_hashrate)
+                    $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
-            $Shares_Accepted = [Int64](($Data.Devices.PSObject.Properties.Name | ForEach-Object { $Data.Devices.$_ } | Where-Object { $_.algo -eq $Algorithm }).accepted | Measure-Object -Sum).Sum
-            $Shares_Rejected = [Int64](($Data.Devices.PSObject.Properties.Name | ForEach-Object { $Data.Devices.$_ } | Where-Object { $_.algo -eq $Algorithm }).rejected | Measure-Object -Sum).Sum
-            $Shares_Invalid = [Int64](($Data.Devices.PSObject.Properties.Name | ForEach-Object { $Data.Devices.$_ } | Where-Object { $_.algo -eq $Algorithm }).stale | Measure-Object -Sum).Sum
-            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
+                    $Shares_Accepted = [Int64]($Data.Pool.$_.total_accepted)
+                    $Shares_Rejected = [Int64]($Data.Pool.$_.total_rejected)
+                    $Shares_Invalid =  [Int64]($Data.Pool.$_.total_stale)
+                    $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
+                }
+            }
         }
 
         If ($this.ReadPowerUsage) { 

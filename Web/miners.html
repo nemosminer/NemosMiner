@@ -25,8 +25,8 @@
             data-header-style="headerStyleAlignTop"
             data-icons="icons"
             data-maintain-meta-data="true"
-            data-response-handler="formatMiners"
             data-reorderable-columns="true"
+            data-response-handler="formatMiners"
             data-show-button-text="true"
             data-show-columns="true"
             data-show-fullscreen="true"
@@ -49,14 +49,13 @@
                 <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
                 <th data-field="tStatus" data-sortable="true" data-filter-control="select">Status</th>
-                <th data-field="Reasons" data-sortable="true" data-filter-control="select" data-visible="false">Reasons</th>
+                <th data-field="Reasons" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Reasons</th>
                 <th data-field="Earning_Bias" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning Bias</th>
                 <th data-field="Earning" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning</th>
                 <th data-field="PowerCost" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Power Cost</th>
                 <th data-field="Profit_Bias" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Profit Bias</th>
                 <th data-field="Profit" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Profit</th>
                 <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt" class="text-nowrap" data-title-tooltip="per 24hrs (estimated)">Power<br>Usage</th>
-                <th data-field="PowerUsage_Live" data-align="right" data-sortable="true" data-formatter="formatWatt">Power Usage<br>Live</th>
                 <th data-field="tTotalMiningDuration" data-sortable="true" data-visible="false">Total Mining Duration</th>
                 <th data-field="tEarningAccuracy" data-align="right" data-sortable="true">Accuracy</th>
                 <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Primary Algorithm</th>
@@ -102,7 +101,6 @@
 <!-- Start of page scripts 'miners.html' -->
           <script type="text/javascript">
             var $table = $('#miners');
-            const enumstatus = ['Running', 'Idle', 'Failed', 'Disabled', 'Unavailable'];
 
             $table.bootstrapTable({
               onLoadSuccess: function() {
@@ -122,7 +120,7 @@
               onPostBody: function() {
                 if (config.UseColorForMinerStatus == true) {
                   $("td.statusmessage").each(function () {
-                    this.parentNode.classList.add(("miner-" + enumstatus[this.innerText]).toLowerCase());
+                    this.parentNode.classList.add(("miner-" + enumminerstatus[this.innerText]).toLowerCase());
                   });
                 };
               },
@@ -162,7 +160,7 @@
                     $('body').css('cursor', 'default');
                     $('#myModal').modal({show:true});
                   });
-                  $('#miners').bootstrapTable('refresh');
+                  $table.bootstrapTable('refresh');
                 }
               });
 
@@ -180,7 +178,7 @@
                     $('body').css('cursor', 'default');
                     $('#myModal').modal({show:true});
                   });
-                  $('#miners').bootstrapTable('refresh');
+                  $table.bootstrapTable('refresh');
                 }
               });
 
@@ -199,7 +197,7 @@
                     $('body').css('cursor', 'default');
                     $('#myModal').modal({show:true});
                   });
-                  $('#miners').bootstrapTable('refresh');
+                  $table.bootstrapTable('refresh');
                 }
               });
 
@@ -216,7 +214,7 @@
                     $('body').css('cursor', 'default');
                     $('#myModal').modal({show:true});
                   });
-                  $('#miners').bootstrapTable('refresh');
+                  $table.bootstrapTable('refresh');
                 }
               });
 
@@ -237,10 +235,11 @@
                 }
               });
 
-              $(".addlocalcurrency").each(function () {
-                this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.Currency + ')';
+              $(document).ready(function () {
+                $(".addlocalcurrency").each(function () {
+                  this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.Currency + ')';
+                });
               });
-
             });
 
             $(window).resize(function () {

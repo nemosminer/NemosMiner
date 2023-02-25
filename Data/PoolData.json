@@ -9,7 +9,7 @@
       "Debug": false,
       "PoolAPIAllowedFailureCount": 3,
       "PoolAPIPerFailPercentPenalty": 10,
-      "PoolAPIRetryInterval": 10,
+      "PoolAPIRetryInterval": 11,
       "PoolAPITimeout": 30,
       "PoolCurrenciesUri": "",
       "PoolStatusUri": "https://www.hashcryptos.com/api/status",
@@ -89,8 +89,7 @@
     ],
     "SSL": "prefer",
     "Variant": {
-      "Hiveon": {
-      }
+      "Hiveon": {}
     }
   },
   "MiningDutch": {
@@ -113,91 +112,93 @@
     "ExcludeAlgorithm": [],
     "ExcludeRegion": [],
     "PayoutCurrencies": {
-      "AEON":  "Aeon",
-      "BELL":  "Bellcoin",
-      "BTC":  "Bitcoin",
-      "BCH":  "Bitcoincashnode",
-      "XRC":  "Bitcoinrhodium",
-      "BSV":  "Bitcoinsv",
-      "BFL":  "Bitflate",
-      "BGL":  "Bitgesell",
-      "BTE":  "Bitweb",
-      "BOLI":  "Bolivarcoin",
-      "CRP":  "Cranepay",
-      "DASH":  "Dash",
-      "ONION":  "Deeponion",
-      "DVT":  "Devault",
-      "DGB":  "Digibyte",
-      "DIN":  "Dinero",
-      "DINGO":  "Dingocoin",
-      "DMS":  "Documentchain",
-      "DOGE":  "Dogecoin",
-      "XEC":  "Ecash",
-      "EMC2":  "Einsteinium",
-      "ELI":  "Elicoin",
-      "EMC":  "Emercoin",
-      "FTC":  "Feathercoin",
-      "FCH":  "Freecash",
-      "FTO":  "Futurocoin",
-      "GCN":  "Gcoin",
-      "BSTY":  "Globalboost",
-      "GRS":  "Groestlcoin",
-      "GUN":  "Guncoin",
-      "ZEN":  "Horizen",
-      "IBH":  "Ibithub",
-      "IQ":  "Iqcash",
-      "KMD":  "Komodo",
-      "KREDS":  "Kreds",
-      "KZC":  "Kzcash",
-      "LBC":  "Lbrycredits",
-      "LTC":  "Litecoin",
-      "LCC":  "Litecoincash",
-      "LTFN":  "Litecoinfinance",
-      "MAX":  "Maxcoin",
-      "MEWC":  "Meowcoin",
-      "MNC":  "Mincoin",
-      "MONA":  "Monacoin",
-      "MOON":  "Mooncoin",
-      "XMY":  "Myriadcoin",
-      "NMC":  "Namecoin",
-      "NEOX":  "Neoxa",
-      "NYC":  "Newyorkcoin",
-      "NYX":  "Nyxcoin",
-      "PPC":  "Peercoin",
-      "ARRR":  "Pirate",
-      "XPTX":  "Platinumbar",
-      "PYRK":  "Pyrk",
-      "RVN":  "Ravencoin",
-      "SCRIBE":  "Scribe",
-      "SCRIV":  "Scriv",
-      "SRC":  "Securecoin",
-      "SIB":  "Siberianchervonets",
-      "SMART":  "Smartcash",
-      "SMLY":  "Smileycoin",
-      "SYS":  "Syscoin",
-      "TRC":  "Terracoin",
-      "UFO":  "Ufocoin",
-      "UIS":  "Unitus",
-      "VECO":  "Veco",
-      "XVG":  "Verge",
-      "VTC":  "Vertcoin",
-      "VIA":  "Viacoin",
-      "WDC":  "Worldcoin",
-      "CHI":  "Xaya",
-      "YEC":  "Ycash",
-      "YTN":  "Yenten",
-      "ZEC":  "Zcash",
-      "ZCL":  "Zclassic",
-      "ZER":  "Zero"
+      "AEON": "Aeon",
+      "ARRR": "Pirate",
+      "BCH": "Bitcoincashnode",
+      "BELL": "Bellcoin",
+      "BFL": "Bitflate",
+      "BGL": "Bitgesell",
+      "BOLI": "Bolivarcoin",
+      "BSTY": "Globalboost",
+      "BSV": "Bitcoinsv",
+      "BTC": "Bitcoin",
+      "BTE": "Bitweb",
+      "CHI": "Xaya",
+      "CRP": "Cranepay",
+      "DASH": "Dash",
+      "DGB": "Digibyte",
+      "DIN": "Dinero",
+      "DINGO": "Dingocoin",
+      "DMS": "Documentchain",
+      "DOGE": "Dogecoin",
+      "DVT": "Devault",
+      "ELI": "Elicoin",
+      "EMC": "Emercoin",
+      "EMC2": "Einsteinium",
+      "FCH": "Freecash",
+      "FTC": "Feathercoin",
+      "FTO": "Futurocoin",
+      "GCN": "Gcoin",
+      "GRS": "Groestlcoin",
+      "GUN": "Guncoin",
+      "IBH": "Ibithub",
+      "IQ": "Iqcash",
+      "KMD": "Komodo",
+      "KREDS": "Kreds",
+      "KZC": "Kzcash",
+      "LBC": "Lbrycredits",
+      "LCC": "Litecoincash",
+      "LTC": "Litecoin",
+      "LTFN": "Litecoinfinance",
+      "MAX": "Maxcoin",
+      "MEWC": "Meowcoin",
+      "MNC": "Mincoin",
+      "MONA": "Monacoin",
+      "MOON": "Mooncoin",
+      "NEOX": "Neoxa",
+      "NMC": "Namecoin",
+      "NYC": "Newyorkcoin",
+      "NYX": "Nyxcoin",
+      "ONION": "Deeponion",
+      "PPC": "Peercoin",
+      "PYRK": "Pyrk",
+      "RVN": "Ravencoin",
+      "SCRIBE": "Scribe",
+      "SCRIV": "Scriv",
+      "SIB": "Siberianchervonets",
+      "SMART": "Smartcash",
+      "SMLY": "Smileycoin",
+      "SRC": "Securecoin",
+      "SYS": "Syscoin",
+      "TRC": "Terracoin",
+      "UFO": "Ufocoin",
+      "UIS": "Unitus",
+      "VECO": "Veco",
+      "VIA": "Viacoin",
+      "VTC": "Vertcoin",
+      "WDC": "Worldcoin",
+      "XEC": "Ecash",
+      "XMY": "Myriadcoin",
+      "XPTX": "Platinumbar",
+      "XRC": "Bitcoinrhodium",
+      "XVG": "Verge",
+      "YEC": "Ycash",
+      "YTN": "Yenten",
+      "ZCL": "Zclassic",
+      "ZEC": "Zcash",
+      "ZEN": "Horizen",
+      "ZER": "Zero"
     },
     "PayoutThreshold": {
-      "*": { "BTC": 0.00000025 },
+      "*": {
+         "BTC": 0.00000025
+      },
       "BTC": 0.001
     },
     "Region": [
+      "americas",
       "asia",
-      "eu",
-      "americas"
+      "eu"
     ],
     "Variant": {
       "MiningDutch": {
@@ -216,6 +217,7 @@
   },
   "MiningPoolHub": {
     "Algorithm": [
+      "-Equihash1927",
       "-Neoscrypt", // Connection issues
       "-RandomX", // ASIC
       "-VertHash" // Connection issues
@@ -228,8 +230,8 @@
     "GuaranteedPayoutCurrencies": [
       "ADZ",
       "AUR",
-      "BSTY",
       "BCH",
+      "BSTY",
       "BTC",
       "BTG",
       "DASH",
@@ -251,10 +253,10 @@
       "START",
       "SXC",
       "VTC",
-      "XZC",
       "XMR",
       "XMY",
       "XVG",
+      "XZC",
       "ZCL",
       "ZEC",
       "ZEN"
@@ -265,10 +267,8 @@
       "us-east"
     ],
     "Variant": {
-      "MiningPoolHub": {
-      },
-      "MiningPoolHubCoins": {
-      }
+      "MiningPoolHub": {},
+      "MiningPoolHubCoins": {}
     }
   },
   "NiceHash": {
@@ -324,8 +324,8 @@
       "LTC"
     ],
     "PayoutThreshold": {
-      "mBTC": 0,
       "LTC": 0.010950859265481713,
+      "mBTC": 0,
       "USD": 10
     },
     "Region": [
@@ -356,8 +356,8 @@
       "PoolAPIPerFailPercentPenalty": 10,
       "PoolAPIRetryInterval": 3,
       "PoolAPITimeout": 30,
-      "PoolCurrenciesUri": "https://api.zergpool.com:8443/api/currencies",
-      "PoolStatusUri": "https://api.zergpool.com:8443/api/status",
+      "PoolCurrenciesUri": "https://zergpool.com/api/currencies",
+      "PoolStatusUri": "https://zergpool.com/api/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
       "UseFullTrust": false,
@@ -366,12 +366,12 @@
     "BrainDebug": true,
     "ExcludeAlgorithm": [],
     "GuaranteedPayoutCurrencies": [
+      "DOGE",
       "BCH",
       "BNB",
       "BTC",
       "CAKE",
       "DASH",
-      "DOGE",
       "ETH",
       "KLV",
       "LTC",
@@ -389,16 +389,16 @@
       // e.g. "mBTC": 5
     },
     "Region": [
-      "n/a (Anycast)",
       "asia",
       "eu",
+      "n/a (Anycast)",
       "na"
     ],
     "SSL": "prefer",
     "Variant": {
       "ZergPool": {
-        "DivisorMultiplier": 1000000,
         "DefaultFee": 0.5,
+        "DivisorMultiplier": 1000000,
         "PriceField": "estimate_current"
       },
       "ZergPool24hr": {
@@ -442,8 +442,8 @@
     ],
     "PayoutCurrency": "[Default]",
     "PayoutThreshold": {
-      "mBTC": 1.5,
-      "*": 0.0125
+      "*": 0.0125,
+      "mBTC": 1.5
     },
     "Region": [
       "eu",

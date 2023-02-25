@@ -14,7 +14,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Argon2Chukwa2";     Fee = @(0.0085); MinMemGiB = 1;                                             Minerset = 2; WarmupTimes = @(60, 45); Arguments = " --disable-cpu -algorithm argon2id_chukwa2" }
     [PSCustomObject]@{ Algorithm = "Autolykos2";        Fee = @(0.02; ); MinMemGiB = $MinerPools[0].Autolykos2.DAGSizeGiB + 1.24;   Minerset = 0; WarmupTimes = @(45, 30); Arguments = " --disable-cpu -algorithm autolykos2" }
     [PSCustomObject]@{ Algorithm = "Blake2b";           Fee = @(0);    ; MinMemGiB = 1;                                             Minerset = 0; WarmupTimes = @(30, 30); Arguments = " --disable-cpu -algorithm blake2b" } # FPGA
-    [PSCustomObject]@{ Algorithm = "Blake2s";           Fee = @(0);    ; MinMemGiB = 1;                                             Minerset = 3; WarmupTimes = @(45, 30); Arguments = " --disable-cpu -algorithm blake2s" } # ASIC
+#   [PSCustomObject]@{ Algorithm = "Blake2s";           Fee = @(0);    ; MinMemGiB = 1;                                             Minerset = 3; WarmupTimes = @(45, 30); Arguments = " --disable-cpu -algorithm blake2s" } # ASIC
     [PSCustomObject]@{ Algorithm = "Blake3";            Fee = @(0.01); ; MinMemGiB = 2;                                             Minerset = 2; WarmupTimes = @(45, 30); Arguments = " --disable-cpu -algorithm blake3_alephium" }
     [PSCustomObject]@{ Algorithm = "CircCash";          Fee = @(00085;); MinMemGiB = 1;                                             Minerset = 2; WarmupTimes = @(45, 30); Arguments = " --disable-cpu -algorithm circcash" }
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";    Fee = @(0.0085); MinMemGiB = 1;                                             Minerset = 2; WarmupTimes = @(30, 30); Arguments = " --disable-cpu -algorithm cryptonight_ccx" }
@@ -29,9 +29,9 @@ $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "EthashLowMem";      Fee = @(0.0065); MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 1.24; Minerset = 2; WarmupTimes = @(90, 75); Arguments = " --disable-cpu -algorithm ethash --gpu-boost 50" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "FiroPow";           Fee = @(0.0085); MinMemGiB = $MinerPools[0].FiroPow.DAGSizeGiB + 1.24;      Minerset = 2; WarmupTimes = @(60, 75); Arguments = " --disable-cpu -algorithm firopow --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "HeavyHash";         Fee = @(0.01); ; MinMemGiB = 1;                                             Minerset = 1; WarmupTimes = @(45, 30); Arguments = " --disable-cpu -algorithm heavyhash" } # FPGA
-    [PSCustomObject]@{ Algorithm = "K12";               Fee = @(0.0085); MinMemGiB = 1;                                             Minerset = 3; WarmupTimes = @(30, 30); Arguments = " --disable-cpu -algorithm k12" }
+#   [PSCustomObject]@{ Algorithm = "K12";               Fee = @(0.0085); MinMemGiB = 1;                                             Minerset = 3; WarmupTimes = @(30, 30); Arguments = " --disable-cpu -algorithm k12" } # ASIC
     [PSCustomObject]@{ Algorithm = "KawPow";            Fee = @(0.0085); MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 1.24;       Minerset = 1; WarmupTimes = @(90, 75); Arguments = " --disable-cpu -algorithm kawpow --gpu-boost 50" }
-    [PSCustomObject]@{ Algorithm = "Keccak";            Fee = @(0);    ; MinMemGiB = 1;                                             Minerset = 1; WarmupTimes = @(30, 30); Arguments = " --disable-cpu -algorithm keccak" } # ASIC
+#   [PSCustomObject]@{ Algorithm = "Keccak";            Fee = @(0);    ; MinMemGiB = 1;                                             Minerset = 1; WarmupTimes = @(30, 30); Arguments = " --disable-cpu -algorithm keccak" } # ASIC
     [PSCustomObject]@{ Algorithm = "Lyra2v2Webchain";   Fee = @(0.0085); MinMemGiB = 1;                                             Minerset = 2; WarmupTimes = @(30, 30); Arguments = " --disable-cpu -algorithm lyra2v2_webchain" }
     [PSCustomObject]@{ Algorithm = "ProgPowEpic";       Fee = @(0.0065); MinMemGiB = 2;                                             Minerset = 2; WarmupTimes = @(45, 30); Arguments = " --disable-cpu -algorithm progpow_epic" }
     [PSCustomObject]@{ Algorithm = "ProgPowSero";       Fee = @(0.0065); MinMemGiB = $MinerPools[0].ProgPowSero.DAGSizeGiB + 1.24;  Minerset = 2; WarmupTimes = @(45, 30); Arguments = " --disable-cpu -algorithm progpow_sero" }
@@ -100,7 +100,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     PrerequisiteURI  = $PrerequisiteURI
                     Type             = ($AvailableMiner_Devices.Type | Select-Object -Unique)
                     URI              = $Uri
-                    WarmupTimes      = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
+                    WarmupTimes      = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
                 }
             }
         }

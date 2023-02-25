@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.3.0.1
-Version date:   11 February 2023
+Version:        4.3.0.2
+Version date:   25 February 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -98,6 +98,7 @@ If ($Wallet) {
             Price                    = [Double]$Stat.Live
             Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratumnh" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
             Region                   = [String]$PoolConfig.Region
+            SendHashrate             = $false
             SSLSelfSignedCertificate = $false
             StablePrice              = [Double]$Stat.Week
             Updated                  = [DateTime]$Stat.Updated

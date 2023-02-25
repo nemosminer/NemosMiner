@@ -12,13 +12,13 @@
 
     <link href="https://cdn.jsdelivr.net/gh/akottr/dragtable@master/dragtable.css" rel="stylesheet">
 
-    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/nemosminer.css">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.21.0/bootstrap-table.min.css" integrity="sha512-MkfcmT4F14hakMqtLd5lCuNaXdgeznbYwseYG7zi9pmhkJI8WzRCHpD+JxsPxzMg6kLyeBlIo+/maPjMaTR9cQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.21.2/bootstrap-table.min.css" integrity="sha512-nR/UyMwqN3G7hUXj555TPsmLNyBHbTuJal56HT4p1iYzJ6wdI8CFQfkHe6POuosBt7FC2dsrhBEGM71TCJyxXQ==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.20.2/extensions/filter-control/bootstrap-table-filter-control.min.css" integrity="sha512-WWlwZZ7XNJxOoHOannqUm1OBC7GQ7uVbG28nVkqVDWkFTOn/zl1X+qQU+XlsldkVdfJ3RgzDNlysJLgAoX/nKw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.21.2/extensions/filter-control/bootstrap-table-filter-control.min.css" integrity="sha512-Xki7DdcS/g9kMJo7Ccgz7aG2gbpNgqT6xPGPBsoNIqvoh32tJLs98BtgKgitFX3L/vLdeM7bVltZfR67UC/yJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.20.2/extensions/filter-control/bootstrap-table-filter-control.min.css" integrity="sha512-WWlwZZ7XNJxOoHOannqUm1OBC7GQ7uVbG28nVkqVDWkFTOn/zl1X+qQU+XlsldkVdfJ3RgzDNlysJLgAoX/nKw==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.21.2/extensions/filter-control/bootstrap-table-filter-control.min.css" integrity="sha512-Xki7DdcS/g9kMJo7Ccgz7aG2gbpNgqT6xPGPBsoNIqvoh32tJLs98BtgKgitFX3L/vLdeM7bVltZfR67UC/yJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
@@ -68,6 +68,8 @@
     var btc = 0;
     var config = {};
     var summary = ""
+
+    const enumminerstatus = ['Running', 'DryRun', 'Idle', 'Failed', 'Disabled', 'Unavailable'];
 
     function updateData(){ 
       // Get current config

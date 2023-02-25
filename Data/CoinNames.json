@@ -15,6 +15,7 @@
   "AKA": "Akroma",
   "ALEX": "Alexandrite",
   "ALPH": "Alephium",
+  "ALT": "Altcoinchain",
   "ALTEX": "Altex",
   "ANDS": "Anodos",
   "ANI": "Anime",
@@ -33,6 +34,7 @@
   "AURA": "Aura",
   "AUS": "AustraliaCash",
   "AVN": "Avian",
+  "AVS": "Aves",
   "AXE": "Axe",
   "AYA": "AryaCoin",
   "AZART": "Azart",
@@ -343,6 +345,7 @@
   "NEET": "NeetCoin",
   "NEOX": "Neoxa",
   "NEVA": "NevaCoin",
+  "NEXA": "Nexa",
   "NILU": "Nilu",
   "NIM": "Nimiq",
   "NLG": "Gulden",
@@ -536,6 +539,7 @@
   "WOW": "Wownero",
   "WRKZ": "WrkzCoin",
   "WSBC": "WallstreetBets",
+  "WW": "WayawolfCoin",
   "WXC": "WxCoin",
   "XBG": "BitGrin",
   "XBG29": "BitGrin",
@@ -606,5 +610,5 @@
   "ZP": "ZenProtocol",
   "ZUR": "ZurCoin",
   "ZYON": "BitZyon",
-  "ALT": "Altcoinchain"
+  "BTSC": "BitfishCoin"
 }

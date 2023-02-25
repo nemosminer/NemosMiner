@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiniZ.ps1
-Version:        4.3.0.1
-Version date:   11 February 2023
+Version:        4.3.0.2
+Version date:   25 February 2023
 #>
 
 class MiniZ : Miner { 
@@ -33,7 +33,7 @@ class MiniZ : Miner {
 
         Try { 
             $Response = Invoke-TcpRequest 127.0.0.1 -Port $this.Port -Request $Request -Timeout $Timeout -ReadToEnd $true -ErrorAction Stop
-            $Data = $Response.Substring($Response.IndexOf("{")) | ConvertFrom-Json -ErrorAction Stop
+            $Data = $Response | ConvertFrom-Json -ErrorAction Stop
         }
         Catch { 
             Return $null

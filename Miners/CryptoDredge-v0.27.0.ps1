@@ -22,7 +22,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightXhv";    Fee = 0.01; MinMemGiB = 1;                                             ExcludePool = @();                Minerset = 2; WarmupTimes = @(75, 15); Arguments = " --algo cnhaven --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Ethash";            Fee = 0.01; MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.72;       ExcludePool = @("MiningPoolHub"); Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo ethash" }
 #   [PSCustomObject]@{ Algorithm = "EthashLowMem";      Fee = 0.01; MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.72; ExcludePool = @("MiningPoolHub"); Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo ethash" }
-    [PSCustomObject]@{ Algorithm = "FiroPow";           Fee = 0.01; MinMemGiB = $MinerPools[0].FiroPow.DAGSizeGiB + 0.70;      ExcludePool = @();                Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo firopow" }
+    [PSCustomObject]@{ Algorithm = "FiroPow";           Fee = 0.01; MinMemGiB = $MinerPools[0].FiroPow.DAGSizeGiB + 1.25;      ExcludePool = @();                Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo firopow" }
     [PSCustomObject]@{ Algorithm = "KawPow";            Fee = 0.01; MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.72;       ExcludePool = @();                Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo kawpow --intensity 8" } # TTMiner-v5.0.3 is fastest
 )
 
@@ -61,7 +61,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     Port        = $MinerAPIPort
                     Type        = ($AvailableMiner_Devices.Type | Select-Object -Unique)
                     URI         = $Uri
-                    WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: seconds until miner sends stable hashrates that will count for benchmarking
+                    WarmupTimes = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
                 }
             }
         }

@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           Core.ps1
 Version:        4.3.0.2
-Version date:   25 February 2023
+Version date:   11 February 2023
 #>
 
 using module .\Include.psm1
@@ -348,10 +348,10 @@ Do {
                         }
                     }
 
-                    $Miner_Hashrates = [Hashtable]@{ }
                     If ($Miner.Data.Count) { 
                         # Collect hashrate from miner, returns an array of two values (safe, unsafe)
                         $Miner.Hashrates_Live = @()
+                        $Miner_Hashrates = [Hashtable]@{ }
                         ForEach ($Algorithm in $Miner.Algorithms) { 
                             $CollectedHashrate = $Miner.CollectHashrate($Algorithm, (-not $Miner.Benchmark -and $Miner.Data.Count -lt $Miner.MinDataSample))
                             $Miner.Hashrates_Live += [Double]($CollectedHashrate[1])

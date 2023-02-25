@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.3.0.1
-Version date:   11 February 2023
+Version:        4.3.0.2
+Version date:   25 February 2023
 #>
 
 Function Start-APIServer { 
@@ -86,7 +86,6 @@ Function Start-APIServer {
                     $Variables.APIRunspace | Add-Member -Force @{ APIServer = $Server }
 
                     # Listening on anything other than localhost requires admin privileges
-                    # $Server.Prefixes.Add("http://localhost:$($Variables.APIRunspace.APIPort)/")
                     $Server.Prefixes.Add("http://localhost:$($Config.APIPort)/")
                     $Server.Start()
 
@@ -339,7 +338,7 @@ Function Start-APIServer {
                                 Break
                             }
                             "/functions/mining/getstatus" { 
-                                $Data = If ($Variables.MiningStatus -eq $Variables.NewMiningStatus) {  ConvertTo-Json ($Variables.MiningStatus) } Else { ConvertTo-Json ($Variables.NewMiningStatus) }
+                                $Data = $Variables.NewMiningStatus | ConvertTo-Json
                                 Break
                             }
                             "/functions/mining/pause" { 
@@ -392,7 +391,7 @@ Function Start-APIServer {
                                     $Names = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).Name
                                     $Algorithms = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).Algorithm
                                     $Currencies = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).Currency
-                                    If ($Pools = @($Variables.Pools | Select-Object | Where-Object { $_.Name -in $Names -and $_.Algorithm -in $Algorithms -and $_.Currency -in $Currencies})) { 
+                                    If ($Pools = @($Variables.Pools | Select-Object | Where-Object { $_.Name -in $Names -and $_.Algorithm -in $Algorithms -and $_.Currency -in $Currencies })) { 
                                         $Pools | ForEach-Object { 
                                             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
                                             $Data += "$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })@$($_.Name)`n"
@@ -521,12 +520,11 @@ Function Start-APIServer {
                                 ElseIf ($Parameters.Miners -and $Parameters.Type -eq "Hashrate") { 
                                     If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithms)) { 
                                         $Miners | Sort-Object Name, Algorithms | ForEach-Object { 
-                                            If ($_.Earning -eq 0) { $_.Available = $true }
-                                            $_.Earning_Accuracy = [Double]::NaN
                                             $_.Activated = 0 # To allow 3 attempts
-                                            $_.Disabled = $false
+                                            $_.Available = $true
                                             $_.Benchmark = $true
-                                            $_.Restart = $true
+                                            $_.Earning_Accuracy = [Double]::NaN
+                                            $_.Disabled = $false
                                             $Data += "$($_.Name) ($($_.Algorithms -join " & "))`n"
                                             ForEach ($Worker in $_.Workers) { 
                                                 Remove-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
@@ -715,7 +713,7 @@ Function Start-APIServer {
                                 break
                             }
                             "/braindata" { 
-                                $Data = ConvertTo-Json -Depth 2 ($Variables.BrainData | Select-Object)
+                                $Data = ConvertTo-Json -Depth 2 ($Variables.BrainData | Get-SortedObject)
                                 Break
                             }
                             "/brainjobs" { 

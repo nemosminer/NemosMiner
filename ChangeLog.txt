@@ -10,6 +10,34 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.3.0.2 25.02.2023
+=======================================
+
+Enhancements:
+- Core: Improved MiinerWarmupTime handling for moce accurate has rate reading
+- Core: Minor code optimizations
+- Core: MinDataSampleAlgoMultiplier for algorithm 'Mike' set to 3
+- Core: Re-read static data files whenever mining status changes (start / pause / stop)
+- Pools: List pools as unavailable if no configured wallet or user name
+
+Fixes:
+- Core: Incorrect hash rate stored if miner failed when re-benchmarking
+- Core / Includes.psm1: Get-SortedObject not sorting recursively
+- GMiner-v3.28: Incorrect miner name for dual algorithm mode
+
+Miner updates:
+- CcminerSha3d-v1 (Removed, algorithm is ASIC mineable)
+- lolMiner-v1.68
+- MiniZ-v2.0c3
+- TeamBlackMiner-v1.91
+- TeamRedMiner-v0.10.9
+- TTMiner-v2023.1.7
+
+Pool changes:
+- Brain jobs: Do not penalize prices if API calls fail (decay is done in core)
+- ZergPool: Updated API URLs
+
+
 ChangeLog NemosMiner 4.3.0.1 06.02.2023
 =======================================
 
@@ -26,6 +54,7 @@ Fixes:
 
 Miner updates:
 - JayddeeCpu-v3.21.1
+
 - Rigel-v1.3.6
 - TeamBlackMiner-v1.86
 

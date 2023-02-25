@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.3.0.1
-Version date:   11 February 2023
+Version:        4.3.0.2
+Version date:   25 February 2023
 #>
 
 [CmdletBinding()]
@@ -291,7 +291,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.3.0.1"
+    Version      = [System.Version]"4.3.0.2"
 }
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
@@ -326,15 +326,6 @@ $Variables.AllCommandLineParameters = [Ordered]@{ }
 $MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -ne "ConfigFile" } | Where-Object { Get-Variable $_ } | Sort-Object | ForEach-Object { 
     $Variables.AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly
     If ($MyInvocation.MyCommandLineParameters.$_ -is [Switch]) { $Variables.AllCommandLineParameters.$_ = [Boolean]$Variables.AllCommandLineParameters.$_ }
-}
-
-# Load pool data
-$Variables.PoolData = Get-Content -Path ".\Data\PoolData.json" | ConvertFrom-Json -AsHashtable | Get-SortedObject
-$Variables.PoolVariants = @(($Variables.PoolData.Keys | ForEach-Object { $Variables.PoolData.$_.Variant.Keys -replace " External$| Internal$" }) | Sort-Object -Unique)
-If (-not $Variables.PoolVariants) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\PoolData.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file. Please restore it from your original download."
-    Start-Sleep -Seconds 10
-    Exit
 }
 
 # Read configuration
@@ -383,81 +374,6 @@ Write-Message -Level Verbose "Pre-requisites verification OK."
 
 # Check if new version is available
 Get-NMVersion
-
-# Verify donation data
-$Variables.DonationData = Get-Content -Path ".\Data\DonationData.json" | ConvertFrom-Json -NoEnumerate
-If (-not $Variables.DonationData) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\DonationData.json' is not a valid JSON file. Please restore it from your original download."
-    Start-Sleep -Seconds 10
-    Exit
-}
-# Verify donation log
-$Variables.DonationLog = Get-Content -Path ".\Logs\DonateLog.json" | ConvertFrom-Json -NoEnumerate
-If (-not $Variables.DonationLog) { 
-    $Variables.DonationLog = @()
-}
-# Load algorithm list
-$Variables.Algorithms = Get-Content -Path ".\Data\Algorithms.json" | ConvertFrom-Json
-If (-not $Variables.Algorithms) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue! File '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Data\Algorithms.json'))' is not a valid JSON file. Please restore it from your original download."
-    Start-Sleep -Seconds 10
-    Exit
-}
-# Load coin names
-$Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
-If (-not $Global:CoinNames) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CoinNames.json' is not a valid JSON file. Please restore it from your original download."
-    Start-Sleep -Seconds 10
-    Exit
-}
-# Load EquihashCoinPers data
-$Global:EquihashCoinPers = Get-Content -Path ".\Data\EquihashCoinPers.json" | ConvertFrom-Json
-If (-not $Global:EquihashCoinPers) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\EquihashCoinPers.json' is not a valid JSON file. Please restore it from your original download."
-    Start-Sleep -Seconds 10
-    Exit
-}
-# Load currency algorithm data
-$Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
-If (-not $Global:CurrencyAlgorithm) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CurrencyAlgorithm.json' is not a valid JSON file. Please restore it from your original download."
-    Start-Sleep -Seconds 10
-    Exit
-}
-# Load regions list
-$Variables.Regions = Get-Content -Path ".\Data\Regions.json" | ConvertFrom-Json
-If (-not $Variables.Regions) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\Regions.json' is not a valid JSON file. Please restore it from your original download."
-    Start-Sleep -Seconds 10
-    Exit
-}
-# Load FIAT currencies list
-$Variables.FIATcurrencies = Get-Content -Path ".\Data\FIATcurrencies.json" | ConvertFrom-Json
-If (-not $Variables.FIATcurrencies) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\FIATcurrencies.json' is not a valid JSON file. Please restore it from your original download."
-    Start-Sleep -Seconds 10
-    Exit
-}
-# Load CUDA version table
-$Variables.CUDAVersionTable = Get-Content -Path ".\Data\CUDAVersion.json" | ConvertFrom-Json -AsHashtable
-If (-not $Variables.CUDAVersionTable) { 
-    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CUDAVersion.json' is not a valid JSON file. Please restore it from your original download."
-    Start-Sleep -Seconds 10
-    Exit
-}
-# Load DAG data, if not available it will get recreated
-$Variables.DAGdata = Get-Content ".\Data\DagData.json" | ConvertFrom-Json -AsHashtable
-
-# Load PoolsLastUsed data
-$Variables.PoolsLastUsed = Get-Content -Path ".\Data\PoolsLastUsed.json" | ConvertFrom-Json -AsHashtable
-If (-not $Variables.PoolsLastUsed.Keys) { $Variables.PoolsLastUsed = @{ } }
-
-# Load AlgorithmsLastUsed data
-$Variables.AlgorithmsLastUsed = Get-Content -Path ".\Data\AlgorithmsLastUsed.json" | ConvertFrom-Json -AsHashtable
-If (-not $Variables.AlgorithmsLastUsed.Keys) { $Variables.AlgorithmsLastUsed = @{ } }
-
-# Load EarningsChart data to make it available early in Web GUI
-If (Test-Path -Path ".\Data\EarningsChartData.json" -PathType Leaf) { $Variables.EarningsChartData = Get-Content ".\Data\EarningsChartData.json" | ConvertFrom-Json }
 
 Write-Host "Importing modules..." -ForegroundColor Yellow
 Try { 
@@ -544,6 +460,13 @@ $Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -notin $Var
 
 $Variables.Devices | Where-Object Name -In $Config.ExcludeDeviceName | Where-Object { $_.State -NE [DeviceState]::Unsupported } | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
+# Load CUDA version table
+$Variables.CUDAVersionTable = Get-Content -Path ".\Data\CUDAVersion.json" | ConvertFrom-Json -AsHashtable
+If (-not $Variables.CUDAVersionTable) { 
+    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CUDAVersion.json' is not a valid JSON file. Please restore it from your original download."
+    Start-Sleep -Seconds 10
+    Exit
+}
 # Build driver version table
 $Variables.DriverVersion = [PSCustomObject]@{ }
 $Variables.DriverVersion | Add-Member "CIM" ([PSCustomObject]@{ })
@@ -603,7 +526,7 @@ If ($Variables.FreshConfig) {
 Function MainLoop { 
 
     # Core watchdog. Sometimes core loop gets stuck
-    If (-not $Variables.SuspendCyle -and $Variables.EndCycleTime -and $Variables.MiningStatus -eq "Running" -and (Get-Date).ToUniversalTime() -gt $Variables.EndCycleTime.AddSeconds(10 * $Config.Interval)) { 
+    If (-not $Variables.SuspendCycle -and $Variables.EndCycleTime -and $Variables.MiningStatus -eq "Running" -and (Get-Date).ToUniversalTime() -gt $Variables.EndCycleTime.AddSeconds(10 * $Config.Interval)) { 
         Write-Message -Level Warn "Core cycle is stuck - restarting..."
         Stop-Mining -Quick
         $Variables.EndCycleTime = (Get-Date).ToUniversalTime()
@@ -618,12 +541,14 @@ Function MainLoop {
 
         If ($Variables.NewMiningStatus -ne $Variables.MiningStatus -or (Compare-Object $Config.PoolName $Variables.PoolName)) { 
 
+            Initialize-Application
+
             Switch ($Variables.NewMiningStatus) { 
                 "Idle" { 
                     If ($Variables.MiningStatus -and $Variables.NewMiningStatus -ne $Variables.MiningStatus) { 
                         $Variables.Summary = "'Stop mining' button clicked.<br>Stopping $($Variables.Branding.ProductLabel)..."
-                        Write-Host "`n"
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
+                        Write-Host "`n"
                     }
                     Stop-Mining
                     Stop-Brain
@@ -648,12 +573,11 @@ Function MainLoop {
                 "Paused" { 
                     If ($Variables.MiningStatus -and $Variables.NewMiningStatus -ne $Variables.MiningStatus) { 
                         $Variables.Summary = "'Pause mining' button pressed.<br>Pausing $($Variables.Branding.ProductLabel)..."
-                        Write-Host "`n"
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
+                        Write-Host "`n"
                     }
                     Stop-Mining
                     Stop-IdleDetection
-                    Initialize-Application
                     Stop-Brain @($Variables.Brains.Keys | Where-Object { $_ -notin (Get-PoolBaseName $Config.PoolName) })
                     Start-Brain @(Get-PoolBaseName $Config.PoolName)
                     Start-BalancesTracker
@@ -670,16 +594,15 @@ Function MainLoop {
                     }
 
                     $Variables.Summary = "$($Variables.Branding.ProductLabel) is paused.<br>Click the 'Start mining' button to make money."
-                    Write-Host "`n"
                     Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
+                    Write-Host "`n"
                 }
                 "Running" { 
                     If ($Variables.MiningStatus -and $Variables.NewMiningStatus -ne $Variables.MiningStatus) { 
                         $Variables.Summary = "'Start mining' button clicked.<br>Starting $($Variables.Branding.ProductLabel)..."
-                        Write-Host "`n"
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
+                        Write-Host "`n"
                     }
-                    Initialize-Application
                     Start-Brain @(Get-PoolBaseName $Config.PoolName)
                     Start-BalancesTracker
                     Start-Mining
@@ -694,10 +617,11 @@ Function MainLoop {
                         $ButtonStop.Enabled = $true
                     }
 
-                    If ($Variables.CycleStarts -eq 1) { $Variables.Summary = "$($Variables.Branding.ProductLabel) is getting ready.<br>Please wait..." }
-
-                    Write-Host "`n"
-                    Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
+                    If ($Variables.CycleStarts -eq 1) { 
+                        $Variables.Summary = "$($Variables.Branding.ProductLabel) is getting ready.<br>Please wait..."
+                        Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
+                        Write-Host "`n"
+                    }
                 }
             }
 
@@ -958,7 +882,7 @@ Function MainLoop {
                 @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
                 @{ Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }
                 @{ Label = "Name"; Expression = { $_.Name } }
-                @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameter $_.Arguments)" } }
+                @{ Label = "Command"; Expression = { $_.CommandLine } }
             )
             $Variables.MinersBest_Combo | Sort-Object DeviceName | Format-Table $Miner_Table -Wrap | Out-Host
         }
@@ -974,7 +898,7 @@ Function MainLoop {
                     @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
                     @{ Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }
                     @{ Label = "Name"; Expression = { $_.Name } }
-                    @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameter $_.Arguments)" } }
+                    @{ Label = "Command"; Expression = { $_.CommandLine } }
                 )
                 $ProcessesIdle | Sort-Object { $_.GetActiveLast } -Descending | Select-Object -First ($MinersDeviceGroup.Count * 3) | Format-Table $Miner_Table -AutoSize | Out-Host
             }
@@ -989,7 +913,7 @@ Function MainLoop {
                     @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
                     @{ Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }
                     @{ Label = "Name"; Expression = { $_.Name } }
-                    @{ Label = "Command"; Expression = { "$($_.Path.TrimStart((Convert-Path ".\"))) $(Get-CommandLineParameter $_.Arguments)" } }
+                    @{ Label = "Command"; Expression = { $_.CommandLine } }
                 )
                 $ProcessesFailed | Sort-Object { If ($_.Process) { $_.Process.StartTime } Else { [DateTime]0 } } | Format-Table $Miner_Table -Wrap | Out-Host
             }
@@ -1022,7 +946,7 @@ Function MainLoop {
         }
 
         If ($Variables.Timer) { 
-            $StatusMessage = "Last refresh: $($Variables.Timer.ToLocalTime().ToString('G'))   |   Next refresh: $($Variables.EndCycleTime.ToLocalTime().ToString('G'))   |   Hot Keys: $(If ($Variables.CalculatePowerCost) { "[abcefimnprstuvwy]" } Else { "[abefimnpsvwy]" })   |   Press 'h' for help"
+            $StatusMessage = "Last refresh: $($Variables.BeginCycleTime.ToLocalTime().ToString('G'))   |   Next refresh: $($Variables.EndCycleTime.ToLocalTime().ToString('G'))   |   Hot Keys: $(If ($Variables.CalculatePowerCost) { "[abcefimnprstuvwy]" } Else { "[abefimnpsvwy]" })   |   Press 'h' for help"
             Write-Host ("-" * $StatusMessage.Length)
             Write-Host -ForegroundColor Yellow $StatusMessage
         }

@@ -3,7 +3,7 @@ function formatMiners(data) {
   // that is easier to display and manipulate in a table
   $.each(data, function(index, item) {
     // Format miner link
-    if (item.MinerUri && item.Best) item.tName = '<a href="' + item.MinerUri + '" target ="_blank">' + item.Name + '</a>';
+    if (item.MinerUri && item.Best && item.Status == "Running") item.tName = '<a href="' + item.MinerUri + '" target ="_blank">' + item.Name + '</a>';
     else item.tName = item.Name;
 
     // Format the device(s)
@@ -84,7 +84,7 @@ function formatMiners(data) {
     else item.tMiningDuration = formatTimeSince(item.BeginTime).replace(' ago' ,'').replace('-', 'just started');
 
     // Format status
-    const enumstatus = ['Running', 'Idle', 'Failed', 'Disabled', 'Unavailable'];
+    const enumstatus = ['Running', 'DryRun', 'Idle', 'Failed', 'Disabled', 'Unavailable'];
     item.tStatus = enumstatus[item.Status];
 
     // Format status message

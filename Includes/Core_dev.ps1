@@ -464,6 +464,7 @@ Do {
                             $PoolsNew += $_
                         }
                     }
+                    $Variables.BrainData | Get-SortedObject
                     $Variables.PoolsNew = $PoolsNew
 
                     If ($PoolNoData = @(Compare-Object @($Variables.PoolName) @($PoolsNew.Name | Sort-Object -Unique) -PassThru)) { 
@@ -1217,8 +1218,13 @@ Do {
         Start-Sleep -Milliseconds 250
 
         Do { 
+
             ForEach ($Miner in $Variables.RunningMiners) { 
                 If ($Miner.Status -ne [MinerStatus]::DryRun) { 
+                    If ($DebugMinerGetData) { 
+                        $Miner.GetMinerData()
+                    }
+
                     If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
                         # Miner crashed
                         $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
