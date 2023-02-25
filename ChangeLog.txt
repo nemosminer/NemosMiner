@@ -14,7 +14,7 @@ ChangeLog NemosMiner 4.3.0.2 25.02.2023
 =======================================
 
 Enhancements:
-- Core: Improved MiinerWarmupTime handling for moce accurate has rate reading
+- Core: Improved $MinerWarmupTimes handling for more accurate hash rate reading
 - Core: Minor code optimizations
 - Core: MinDataSampleAlgoMultiplier for algorithm 'Mike' set to 3
 - Core: Re-read static data files whenever mining status changes (start / pause / stop)
