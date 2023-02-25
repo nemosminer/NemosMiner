@@ -29,6 +29,7 @@ Miner updates:
 - CcminerSha3d-v1 (Removed, algorithm is ASIC mineable)
 - lolMiner-v1.68
 - MiniZ-v2.0c3
+- Rigel-v1.3.7
 - TeamBlackMiner-v1.91
 - TeamRedMiner-v0.10.9
 - TTMiner-v2023.1.7
