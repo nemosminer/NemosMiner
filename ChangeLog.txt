@@ -10,6 +10,25 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+
+ChangeLog NemosMiner 4.3.1.0 02.03.2023
+=======================================
+
+Enhancements:
+- API: Adjusted miner sort order (best miners are always first, then sort by device names)
+- Core: Display modal message box on terminating errors
+- Legacy GUI: Update tables when mining status changes
+- Legacy GUI: Use colors for tables (same a in Web GUI)
+- Legacy GUI: Keep table colors after sorting
+
+Fixes:
+- 'MiningDutch' BalanceTracker blocking all other balances if pool is down
+- BalanceTracker not updating PoolsLastEarnings data (regression from 4.3.0.0)
+
+Miner updates:
+- NanoMiner-v3.7.7
+
+
 ChangeLog NemosMiner 4.3.0.2 25.02.2023
 =======================================
 

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.0.2
-Version date:   25 February 2023
+Version:        4.3.1.0
+Version date:   02 March 2023
 #>
 
 # Window handling
@@ -366,7 +366,7 @@ Class Miner {
     }
 
     hidden StopMining() { 
-        If ($this.Status -eq [MinerStatus]::Running -or $this.StatusMessage -notlike "*$($this.Name)*") { 
+        If ($this.Status -eq [MinerStatus]::Running -or $this.Status -eq [MinerStatus]::DryRun -or $this.StatusMessage -notlike "*$($this.Name)*") { 
             $this.StatusMessage = "Stopping miner '$($this.Name) $($this.Info)'..."
             Write-Message -Level Info $this.StatusMessage
         }
@@ -744,7 +744,7 @@ Function Stop-Mining {
         $Variables.Summary = "Stopping mining processes..."
         # Give core loop time to shut down gracefully
         $Timestamp = (Get-Date).AddSeconds(30)
-        While (-not $Quick -and ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }) -and (Get-Date) -le $Timestamp) { 
+        While (-not $Quick -and ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running -or $_.Status -eq [MinerStatus]::DryRun }) -and (Get-Date) -le $Timestamp) { 
             Start-Sleep -Seconds 1
         }
 
@@ -905,7 +905,7 @@ Function Initialize-Application {
     $Variables.DonationData = Get-Content -Path ".\Data\DonationData.json" | ConvertFrom-Json -NoEnumerate
     If (-not $Variables.DonationData) { 
         Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\DonationData.json' is not a valid JSON file. Please restore it from your original download."
-        Start-Sleep -Seconds 10
+        $WscriptShell.Popup("File '.\Data\DonationData.json' is not a valid JSON file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
         Exit
     }
     # Verify donation log
@@ -916,28 +916,29 @@ Function Initialize-Application {
     # Load algorithm list
     $Variables.Algorithms = Get-Content -Path ".\Data\Algorithms.json" | ConvertFrom-Json
     If (-not $Variables.Algorithms) { 
-        Write-Message -Level Error "Terminating Error - Cannot continue! File '$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\Data\Algorithms.json'))' is not a valid JSON file. Please restore it from your original download."
-        Start-Sleep -Seconds 10
+        Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\Algorithms.json' is not a valid JSON file. Please restore it from your original download."
+        $WscriptShell.Popup("File '.\Data\Algorithms.json' is not a valid JSON file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
         Exit
     }
     # Load coin names
     $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
     If (-not $Global:CoinNames) { 
         Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CoinNames.json' is not a valid JSON file. Please restore it from your original download."
-        Start-Sleep -Seconds 10
+        $WscriptShell.Popup("File '.\Data\CoinNames.json' is not a valid JSON file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
         Exit
     }
     # Load EquihashCoinPers data
     $Global:EquihashCoinPers = Get-Content -Path ".\Data\EquihashCoinPers.json" | ConvertFrom-Json
     If (-not $Global:EquihashCoinPers) { 
         Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\EquihashCoinPers.json' is not a valid JSON file. Please restore it from your original download."
-        Start-Sleep -Seconds 10
+        $WscriptShell.Popup("File '.\Data\EquihashCoinPers.json' is not a valid JSON file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
         Exit
     }
     # Load currency algorithm data
     $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
     If (-not $Global:CurrencyAlgorithm) { 
         Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CurrencyAlgorithm.json' is not a valid JSON file. Please restore it from your original download."
+        $WscriptShell.Popup("File '.\Data\CurrencyAlgorithm.json' is not a valid JSON file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
         Start-Sleep -Seconds 10
         Exit
     }
@@ -945,14 +946,14 @@ Function Initialize-Application {
     $Variables.Regions = Get-Content -Path ".\Data\Regions.json" | ConvertFrom-Json
     If (-not $Variables.Regions) { 
         Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\Regions.json' is not a valid JSON file. Please restore it from your original download."
-        Start-Sleep -Seconds 10
+        $WscriptShell.Popup("File '.\Data\Regions.json' is not a valid JSON file.`nPlease restore it from your original download.", 4112) | Out-Null
         Exit
-    }Variables
+    }
     # Load FIAT currencies list
     $Variables.FIATcurrencies = Get-Content -Path ".\Data\FIATcurrencies.json" | ConvertFrom-Json
     If (-not $Variables.FIATcurrencies) { 
         Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\FIATcurrencies.json' is not a valid JSON file. Please restore it from your original download."
-        Start-Sleep -Seconds 10
+        $WscriptShell.Popup("Terminating Error - Cannot continue! File '.\Data\FIATcurrencies.json' is not a valid JSON file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
         Exit
     }
     # Load DAG data, if not available it will get recreated
@@ -974,7 +975,7 @@ Function Initialize-Application {
     $Variables.PoolVariants = @(($Variables.PoolData.Keys | ForEach-Object { $Variables.PoolData.$_.Variant.Keys -replace " External$| Internal$" }) | Sort-Object -Unique)
     If (-not $Variables.PoolVariants) { 
         Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\PoolData.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file. Please restore it from your original download."
-        Start-Sleep -Seconds 10
+        $WscriptShell.Popup("File '.\Data\PoolData.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
         Exit
     }
     # Keep only the last 10 files
@@ -2645,7 +2646,7 @@ Function Get-Combination {
     For ($I = $SizeMin; $I -le $SizeMax; $I++) { 
         $X = [Math]::Pow(2, $i) - 1
 
-        While ($x -le [Math]::Pow(2, $Value.Count) - 1) { 
+        While ($X -le [Math]::Pow(2, $Value.Count) - 1) { 
             [PSCustomObject]@{ Combination = $Combination_Keys | Where-Object { $_ -band $X } | ForEach-Object { $Combination.$_ } }
             $Smallest = ($X -band - $X)
             $Ripple = $X + $Smallest
@@ -3168,6 +3169,7 @@ Function Update-ConfigFile {
             "AllowedBadShareRatio" { $Config.BadShareRatioThreshold = $Config.$_; $Config.Remove($_) }
             "APIKEY" { $Config.MiningPoolHubAPIKey = $Config.$_; $Config.Remove($_) }
             "BalancesTrackerConfigFile" { $Config.Remove($_) }
+            "BalancesTrackerIgnorePool"  { $Config.BalancesTrackerExcludePool = $Config.$_; $Config.Remove($_) }
             "DeductRejectedShares" { $Config.SubtractBadShares = $Config.$_; $Config.Remove($_) }
             "Donate" { $Config.Donation = $Config.$_; $Config.Remove($_) }
             "EnableEarningsTrackerLog" { $Config.EnableBalancesLog = $Config.$_; $Config.Remove($_) }
@@ -3211,7 +3213,7 @@ Function Update-ConfigFile {
             "WaitForMinerData" { $Config.Remove($_) }
             "WarmupTime" { $Config.Remove($_) }
             "WebGUIUseColor" { $Config.UseColorForMinerStatus = $Config.$_; $Config.Remove($_) }
-            Default { If ($_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("CryptoCompareAPIKeyParam") + @("DryRun") + @("PoolsConfig"))) { $Config.Remove($_) } } # Remove unsupported config items
+            Default { If ($_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("CryptoCompareAPIKeyParam") + @("DryRun") + @("PoolsConfig") + @("UsePoolJobs"))) { $Config.Remove($_) } } # Remove unsupported config items
         }
     }
 

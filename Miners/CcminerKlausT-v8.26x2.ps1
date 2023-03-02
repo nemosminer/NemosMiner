@@ -12,8 +12,8 @@ $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "C11";           MinMemGiB = 2; Minerset = 1; WarmupTimes = @(60, 0);  Arguments = " --algo c11 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
-    [PSCustomObject]@{ Algorithm = "Keccak";        MinMemGiB = 2; Minerset = 3; WarmupTimes = @(60, 0);  Arguments = " --algo keccak --diff-multiplier 2 --intensity 29" } # ASIC
-    [PSCustomObject]@{ Algorithm = "Lyra2RE2";      MinMemGiB = 2; Minerset = 3; WarmupTimes = @(60, 0);  Arguments = " --algo lyra2v2" } # ASIC
+#   [PSCustomObject]@{ Algorithm = "Keccak";        MinMemGiB = 2; Minerset = 3; WarmupTimes = @(60, 0);  Arguments = " --algo keccak --diff-multiplier 2 --intensity 29" } # ASIC
+#   [PSCustomObject]@{ Algorithm = "Lyra2RE2";      MinMemGiB = 2; Minerset = 3; WarmupTimes = @(60, 0);  Arguments = " --algo lyra2v2" } # ASIC
     [PSCustomObject]@{ Algorithm = "Neoscrypt";     MinMemGiB = 2; Minerset = 1; WarmupTimes = @(60, 10); Arguments = " --algo neoscrypt --intensity 15.5" } # FPGA
     [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinMemGiB = 2; Minerset = 1; WarmupTimes = @(60, 0);  Arguments = " --algo neoscrypt-xaya --intensity 15.5" } # CryptoDredge-v0.27.0 is fastest
     [PSCustomObject]@{ Algorithm = "Skein";         MinMemGiB = 0; Minerset = 3; WarmupTimes = @(60, 0);  Arguments = " --algo skein" } # FPGA

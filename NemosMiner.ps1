@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.3.0.2
-Version date:   25 February 2023
+Version:        4.3.1.0
+Version date:   02 March 2023
 #>
 
 [CmdletBinding()]
@@ -54,7 +54,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Boolean]$BalancesShowInMainCurrency = $true, # If true pool balances will be shown in main currency in web dashboard
     [Parameter(Mandatory = $false)]
-    [String[]]$BalancesTrackerIgnorePool = @(), # Balances tracker will not track these pools
+    [String[]]$BalancesTrackerExcludePool = @(), # Balances tracker will not track these pools
     [Parameter(Mandatory = $false)]
     [Switch]$BalancesTrackerLog = $false, # If true will store all balance tracker data in .\Logs\EarningTrackerLog.csv
     [Parameter(Mandatory = $false)]
@@ -66,7 +66,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$CPUMinerProcessPriority = "-2", # Process priority for CPU miners
     [Parameter(Mandatory = $false)]
-    [String]$Currency = (Get-Culture).NumberFormat.CurrencySymbol, # Main 'real-money' currency, i.e. GBP, USD, AUD, NZD ect. Do not use crypto currencies
+    [String]$Currency = (Get-Culture).NumberFormat.CurrencySymbol, # Main 'real-money' currency, i.e. GBP, USD, AUD, NZD etc. Do not use crypto currencies
     [Parameter(Mandatory = $false)]
     [Int]$DecimalsMax = 6, # Display numbers with maximal n decimal digits (larger numbers are shown with less decimal digits)
     [Parameter(Mandatory = $false)]
@@ -291,12 +291,14 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.3.0.2"
+    Version      = [System.Version]"4.3.1.0"
 }
+
+$WscriptShell = New-Object -ComObject Wscript.Shell
 
 If ($PSVersiontable.PSVersion -lt [System.Version]"7.0.0") { 
     Write-Host "`nUnsupported PowerShell version $($PSVersiontable.PSVersion.ToString()) detected.`n$($Variables.Branding.BrandName) requires at least PowerShell version 7.0.0 which can be downloaded from https://github.com/PowerShell/powershell/releases.`n`n" -ForegroundColor Red
-    Start-Sleep -Seconds 30
+    $WscriptShell.Popup("Unsupported PowerShell version $($PSVersiontable.PSVersion.ToString()) detected.`n`n$($Variables.Branding.BrandName) requires at least PowerShell version 7.0.0 which can be downloaded from https://github.com/PowerShell/powershell/releases.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
     Exit
 }
 
@@ -307,7 +309,7 @@ If (Get-NetRoute | Where-Object DestinationPrefix -eq "0.0.0.0/0") {
 Else { 
     $Variables.MyIP = $null
     Write-Host "Terminating Error - No internet connection." -ForegroundColor "Red"
-    Start-Sleep -Seconds 10
+    $WscriptShell.Popup("No internet connection", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
     Exit
 }
 
@@ -359,14 +361,14 @@ If ($PrerequisitesMissing = @($Prerequisites | Where-Object { -not (Test-Path -P
     Write-Message -Level Error "Please install the required runtime modules. Download and extract"
     Write-Message -Level Error "https://github.com/Minerx117/Visual-C-Runtimes-All-in-One-Sep-2019/releases/download/sep2019/Visual-C-Runtimes-All-in-One-Sep-2019.zip"
     Write-Message -Level Error "and run 'install_all.bat' (Admin rights are required)."
-    Start-Sleep -Seconds 10
+    $WscriptShell.Popup("Prerequisites missing.`nPlease install the required runtime modules.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
     Exit
 }
 
 If ([System.Environment]::OSVersion.Version -lt [Version]"10.0.0.0" -and -not (Get-Command Get-PnpDevice)) { 
     Write-Message -Level Error "Windows Management Framework 5.1 is missing."
     Write-Message -Level Error "Please install the required runtime modules from https://www.microsoft.com/en-us/download/details.aspx?id=54616"
-    Start-Sleep -Seconds 10
+    $WscriptShell.Popup("Windows Management Framework 5.1 is missing.`nPlease install the required runtime modules.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
     Exit
 }
 
@@ -425,7 +427,6 @@ $Variables.ScriptStartTime = (Get-Process -id $PID).StartTime.ToUniversalTime()
 $Variables.SuspendCycle = $false
 $Variables.WatchdogTimers = @()
 
-$Variables.RegexAlgoHasEthproxy = "^Etc?hash|ProgPow|UbqHash"
 $Variables.RegexAlgoIsEthash = "^Etc?hash|^UbqHash"
 $Variables.RegexAlgoIsProgPow = "^KawPow|^ProgPow|^FiroPow"
 
@@ -464,7 +465,7 @@ $Variables.Devices | Where-Object Name -In $Config.ExcludeDeviceName | Where-Obj
 $Variables.CUDAVersionTable = Get-Content -Path ".\Data\CUDAVersion.json" | ConvertFrom-Json -AsHashtable
 If (-not $Variables.CUDAVersionTable) { 
     Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CUDAVersion.json' is not a valid JSON file. Please restore it from your original download."
-    Start-Sleep -Seconds 10
+    $WscriptShell.Popup("File '.\Data\CUDAVersion.json' is not a valid JSON file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
     Exit
 }
 # Build driver version table
@@ -513,14 +514,13 @@ If (Test-Path -Path $Variables.VerthashDatPath -PathType Leaf) {
     }
     Else { 
         Remove-Item -Path $Variables.VerthashDatPath -Force
-        Write-Message -Level Warn "VertHash data file '$($Variables.VerthashDatPath)' is corrupt -> file deleted. It will be reloaded if needed."
+        Write-Message -Level Warn "VertHash data file '$($Variables.VerthashDatPath)' is corrupt -> file deleted. It will be re-downloaded if needed."
     }
 }
 
 If ($Variables.FreshConfig) { 
     $Variables.Summary = "Change your settings and apply the configuration.<br>Then Click the 'Start mining' button."
-    $wshell = New-Object -ComObject Wscript.Shell
-    $wshell.Popup("This is the first time you have started $($Variables.Branding.ProductLabel).`n`nUse the configuration editor to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!", 0, "Welcome to $($Variables.Branding.ProductLabel) v$($Variables.Branding.Version)", 4096) | Out-Null
+    $WscriptShell.Popup("This is the first time you have started $($Variables.Branding.ProductLabel).`n`nUse the configuration editor to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!", 0, "Welcome to $($Variables.Branding.ProductLabel) v$($Variables.Branding.Version)", 4112) | Out-Null
 }
 
 Function MainLoop { 
@@ -624,6 +624,8 @@ Function MainLoop {
                     }
                 }
             }
+
+            If ($LegacyGUIform) { Update-TabControl }
 
             $Variables.MiningStatus = $Variables.NewMiningStatus
         }

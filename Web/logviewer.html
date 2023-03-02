@@ -7,20 +7,26 @@
           <br>
 <!-- Start of page scripts 'logviewer.html' -->
           <script type="text/javascript">
+            // if(typeof(EventSource)!=="undefined"){
+            //   var source = new EventSource("sse");
+            //   source.onmessage = function(event) {
+            //     document.getElementById("logtext").innerHTML += event.data + "<br>";
+            //   };
+            // } else {
+              function tailf() {
+                $.ajax({
+                  async: false,
+                  dataType: 'text',
+                  url: '/functions/log/get?lines=100', 
+                  success: function(result) {
+                    document.getElementById('logtext').innerHTML = result;
+                  }
+                });
+              };
 
-            function tailf() {
-              $.ajax({
-                async: false,
-                dataType: 'text',
-                url: '/functions/log/get?lines=100', 
-                success: function(result) {
-                  document.getElementById('logtext').innerHTML = result;
-                }
-              });
-            };
-
-            tailf();
-            setInterval('tailf()', 1000);
+              tailf();
+              setInterval('tailf()', 1000);
+            // }
           </script>
 <!-- End of page scripts 'logviewer.html' -->
 <!--#include file="/parts/foot.html" -->

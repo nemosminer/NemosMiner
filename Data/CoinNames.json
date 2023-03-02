@@ -84,6 +84,7 @@
   "BTH": "Bithereum",
   "BTM": "BTM",
   "BTRM": "Bitoreum",
+  "BTSC": "BitfishCoin",
   "BTX": "Bitcore",
   "BUCK": "Buck",
   "BUEN": "Buenos",
@@ -610,5 +611,5 @@
   "ZP": "ZenProtocol",
   "ZUR": "ZurCoin",
   "ZYON": "BitZyon",
-  "BTSC": "BitfishCoin"
+  "SATOX": "Satox"
 }

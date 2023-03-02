@@ -31,6 +31,7 @@
   "BTE": "Yespower",
   "BTG": "EquihashBTG",
   "BTRM": "Ghostrider",
+  "BTSC": "Ghostrider",
   "BTX": "MegaBtx",
   "BUTK": "Yespower",
   "CCX": "CryptonightGpu",
@@ -190,6 +191,7 @@
   "XBTX": "ScryptN2",
   "XDAG": "RandomX",
   "XDN": "Bmw512",
+  "XEC": "SHA256",
   "XEQ": "CryptonightGpu",
   "XLA": "Panthera",
   "XMG": "m7m",
@@ -210,5 +212,5 @@
   "ZEN": "Equihash",
   "ZER": "Equihash1927",
   "ZOC": "Neoscrypt",
-  "BTSC": "Ghostrider"
+  "SATOX": "KawPow"
 }

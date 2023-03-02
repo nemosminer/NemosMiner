@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.3.0.2
-Version date:   25 February 2023
+Version:        4.3.1.0
+Version date:   02 March 2023
 #>
 
 Do {
@@ -35,7 +35,6 @@ Do {
     $Earnings = @()
 
     # Get pools last earnings
-    # $Variables.PoolsLastEarnings = If (Test-Path -Path ".\Data\PoolsLastEarnings.json" -PathType Leaf) { Get-Content ".\Data\PoolsLastEarnings.json" | ConvertFrom-Json | Get-SortedObject } Else { [Ordered]@{ } }
     $Variables.PoolsLastEarnings = If (Test-Path -Path ".\Data\PoolsLastEarnings.json" -PathType Leaf) { Get-Content ".\Data\PoolsLastEarnings.json" | ConvertFrom-Json | Get-SortedObject } Else { @{ } }
 
     # Get pools data
@@ -74,14 +73,14 @@ Do {
         $Now = (Get-Date)
 
         # Get pools to track
-        $PoolsToTrack = @(Get-PoolBaseName (Get-ChildItem ".\Balances\*.ps1" -File).BaseName) | Sort-Object -Unique | Where-Object { $_ -notin $Config.BalancesTrackerIgnorePool }
+        $PoolsToTrack = @(Get-PoolBaseName (Get-ChildItem ".\Balances\*.ps1" -File).BaseName) | Sort-Object -Unique | Where-Object { $_ -notin $Config.BalancesTrackerExcludePool }
 
         # Fetch balances data from pools
         If ($PoolsToTrack) { Write-Message -Level Info "Balances Tracker is requesting data from pool$(If ($PoolsToTrack.Count -gt 1) { "s" }) '$($PoolsToTrack -join ', ')'..." }
         $PoolsToTrack | ForEach-Object { $BalanceObjects += @(& ".\Balances\$($_).ps1") }
 
         # Keep most recent balance objects, keep empty balances for 7 days
-        $BalanceObjects = @(@($BalanceObjects + $Variables.BalanceData) | Where-Object Pool -notin @($Config.BalancesTrackerIgnorePool) | Where-Object { $_.Unpaid -gt 0 -or $_.DateTime -gt $Now.AddDays(-7) } | Where-Object { $_.Wallet } | Group-Object Pool, Currency, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
+        $BalanceObjects = @(@($BalanceObjects + $Variables.BalanceData) | Where-Object Pool -notin @($Config.BalancesTrackerExcludePool) | Where-Object { $_.Unpaid -gt 0 -or $_.DateTime -gt $Now.AddDays(-7) } | Where-Object { $_.Wallet } | Group-Object Pool, Currency, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
 
         # Fix for pool reporting incorrect currency, e.g ZergPool ZER instead of BTC
         $BalanceObjects = @($BalanceObjects | Where-Object { $_.Pool -match "^MiningDutch.*|^MiningPoolHub.*|$|^ProHashing.*$" }) + @($BalanceObjects | Where-Object { $_.Pool -notmatch "^MiningDutch.*|^MiningPoolHub.*|$|^ProHashing.*$" } | Group-Object Pool, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime | Select-Object -Last 1 })
@@ -325,9 +324,9 @@ Do {
 
         # Always keep pools sorted, even when new pools were added
         $Variables.Balances = [Ordered]@{ }
-        $Balances.Keys | Where-Object { $Balances.$_.Pool -notin @($Config.BalancesTrackerIgnorePool) } | Sort-Object | ForEach-Object { 
+        $Balances.Keys | Where-Object { $Balances.$_.Pool -notin @($Config.BalancesTrackerExcludePool) } | Sort-Object | ForEach-Object { 
             $Variables.Balances.$_ = $Balances.$_
-            $Variables.PoolsLastEarnings.($_ -replace ' \(.+') = ($Variables.PoolsLastEarnings.($_ -replace ' \(.+'), $Balances.$_.LastEarnings | Measure-Object -Maximum).Maximum
+            $Variables.PoolsLastEarnings | Add-Member ($_ -replace ' \(.+') ($Variables.PoolsLastEarnings.($_ -replace ' \(.+'), $Balances.$_.LastEarnings | Measure-Object -Maximum).Maximum
         }
         $Variables.BalancesCurrencies = @($Variables.Balances.Keys | ForEach-Object { $Variables.Balances.$_.Currency } | Sort-Object -Unique)
 

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           SRBminer.ps1
-Version:        4.3.0.2
-Version date:   25 February 2023
+Version:        4.3.1.0
+Version date:   02 March 2023
 #>
 
 class SRBMiner : Miner { 

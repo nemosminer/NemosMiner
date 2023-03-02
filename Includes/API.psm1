@@ -18,13 +18,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.3.0.2
-Version date:   25 February 2023
+Version:        4.3.1.0
+Version date:   02 March 2023
 #>
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.5.1.5"
+    $APIVersion = "0.5.1.6"
 
     If ($Variables.APIRunspace.AsyncObject.IsCompleted -or $Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
         Stop-APIServer
@@ -118,7 +118,7 @@ Function Start-APIServer {
                             $Buffer = New-object "byte[]" $Length
 
                             [Void]$Request.inputstream.read($Buffer, 0, $Length)
-                            $Body = [system.text.encoding]::ascii.getstring($Buffer)
+                            $Body = [System.Text.Encoding]::ascii.getstring($Buffer)
 
                             $Parameters = @{ }
                             $Body -split "&" | ForEach-Object { 
@@ -800,7 +800,7 @@ Function Start-APIServer {
                                 Break
                             }
                             "/miners" { 
-                                $Data = ConvertTo-Json -Depth 4 -Compress @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | ConvertTo-Json -Depth 4 | ConvertFrom-Json | ForEach-Object { If ($_.WorkersRunning) { $_.Workers = $_.WorkersRunning }; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning | Sort-Object Status, DeviceName, Name)
+                                $Data = ConvertTo-Json -Depth 4 -Compress @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | ConvertTo-Json -Depth 4 | ConvertFrom-Json | ForEach-Object { If ($_.WorkersRunning) { $_.Workers = $_.WorkersRunning }; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning | Sort-Object @{ Expression = { $_.Best }; Descending = $true }, DeviceNames, Name)
                                 Break
                             }
                             "/miners/available" { 
@@ -820,11 +820,11 @@ Function Start-APIServer {
                                 Break
                             }
                             "/miners/disabled" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object { $_.Status -EQ [MinerStatus]::Disabled } | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object DeviceName, EndTime)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object { $_.Status -EQ [MinerStatus]::Disabled } | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object DeviceNames, EndTime)
                                 Break
                             }
                             "/miners/failed" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object { $_.Status -EQ [MinerStatus]::Failed } | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object DeviceName, EndTime)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object { $_.Status -EQ [MinerStatus]::Failed } | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object DeviceNames, EndTime)
                                 Break
                             }
                             "/miners/launched" { 
@@ -832,7 +832,7 @@ Function Start-APIServer {
                                 Break
                             }
                             "/miners/mostprofitable" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersMostProfitable | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object Status, DeviceName, @{Expression = "Earning_Bias"; Descending = $True })
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersMostProfitable | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object @{ Expression = { $_.Best }; Descending = $true }, DeviceNames, @{Expression = "Earning_Bias"; Descending = $True })
                                 Break
                             }
                             "/miners/running" { 
@@ -840,7 +840,7 @@ Function Start-APIServer {
                                 Break
                             }
                             "/miners/unavailable" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object DeviceName, Name, Algorithm)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object DeviceNames, Name, Algorithm)
                                 Break
                             }
                             "/miners/device_combos" { 
@@ -1047,7 +1047,7 @@ Function Start-APIServer {
                         }
 
                         # If $Data is null, the API will just return whatever data was in the previous request. Instead, show an error
-                        # This happens if the script just started and hasn't filled all the properties in yet. 
+                        # This happens if the script just started and hasn't filled all the properties in yet.
                         If ($null -eq $Data) { 
                             $Data = @{ "Error" = "API data not available" } | ConvertTo-Json
                         }

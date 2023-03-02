@@ -10,8 +10,8 @@ $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "C11";       MinMemGiB = 2; Minerset = 1; WarmupTimes = @(60, 0);  Arguments = " --algo c11 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
-    [PSCustomObject]@{ Algorithm = "Keccak";    MinMemGiB = 2; Minerset = 3; WarmupTimes = @(30, 0);  Arguments = " --algo keccak --diff-multiplier 2 --intensity 29" } # ASIC
-    [PSCustomObject]@{ Algorithm = "Lyra2RE2";  MinMemGiB = 2; Minerset = 3; WarmupTimes = @(45, 0);  Arguments = " --algo lyra2v2" } # ASIC
+#   [PSCustomObject]@{ Algorithm = "Keccak";    MinMemGiB = 2; Minerset = 3; WarmupTimes = @(30, 0);  Arguments = " --algo keccak --diff-multiplier 2 --intensity 29" } # ASIC
+#   [PSCustomObject]@{ Algorithm = "Lyra2RE2";  MinMemGiB = 2; Minerset = 3; WarmupTimes = @(45, 0);  Arguments = " --algo lyra2v2" } # ASIC
     [PSCustomObject]@{ Algorithm = "Neoscrypt"; MinMemGiB = 2; Minerset = 1; WarmupTimes = @(30, 10); Arguments = " --algo neoscrypt --intensity 15.5" } # FPGA
     [PSCustomObject]@{ Algorithm = "Skein";     MinMemGiB = 2; MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo skein" } # FPGA
     [PSCustomObject]@{ Algorithm = "Veltor";    MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo veltor --intensity 23" }

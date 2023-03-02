@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.3.0.2
-Version date:   25 February 2023
+Version:        4.3.1.0
+Version date:   02 March 2023
 #>
 
 using module .\Include.psm1
@@ -626,7 +626,7 @@ Do {
                         # Keep pool balances alive; force mining at pool even if it is not the best for the algo
                         If ($Config.BalancesKeepAlive -and $Variables.BalancesTrackerRunspace -and $Variables.PoolsLastEarnings.Count -gt 0 -and $Variables.PoolsLastUsed) { 
                             $Variables.PoolNameToKeepBalancesAlive = @()
-                            ForEach ($Pool in @($Pools | Where-Object Name -notin $Config.BalancesTrackerIgnorePool | Sort-Object Name -Unique)) { 
+                            ForEach ($Pool in @($Pools | Where-Object Name -notin $Config.BalancesTrackerExcludePool | Sort-Object Name -Unique)) { 
 
                                 $PoolName = Get-PoolBaseName $Pool.Name
                                 If ($Variables.PoolsLastEarnings.$PoolName -and $Variables.PoolsConfig.$PoolName.BalancesKeepAlive -gt 0 -and ((Get-Date).ToUniversalTime() - $Variables.PoolsLastEarnings.$PoolName).Days -ge ($Variables.PoolsConfig.$PoolName.BalancesKeepAlive - 10)) { 
@@ -1330,11 +1330,10 @@ Do {
 } While ($Variables.NewMiningStatus -eq "Running")
 
 #Stop all running miners
-$Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { 
+$Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running -or $_.Status -eq [MinerStatus]::DryRun } | ForEach-Object { 
     $_.SetStatus([MinerStatus]::Idle)
     $_.Info = ""
     $_.WorkersRunning = @()
 }
 
-# $Variables.MiningStatus = "Stopped"
 $Variables.RestartCycle = $true

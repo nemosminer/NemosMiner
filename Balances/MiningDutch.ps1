@@ -18,14 +18,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningDutch.ps1
-Version:        4.3.0.2
-Version date:   25 February 2023
+Version:        4.3.1.0
+Version date:   02 March 2023
 #>
 
 using module ..\Includes\Include.psm1
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$RetryCount = 6
+$RetryCount = 3
 $RetryDelay = 10 
 
 $Headers = @{"Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"}
@@ -44,6 +44,7 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.MiningDutchAPIKey) 
                 $RetryCount--
                 Try { 
                     $APIResponse = ((Invoke-RestMethod "https://www.mining-dutch.nl/pools/$($CoinName.ToLower()).php?page=api&action=getuserbalance&api_key=$($Config.MiningDutchAPIKey)" -UserAgent $Useragent -Headers $Headers -TimeoutSec $Config.PoolAPITimeout -ErrorAction Ignore).getuserbalance).data
+                    $RetryCount = 3
 
                     If ($Config.LogBalanceAPIResponse) { 
                         @{ $Currency = $APIResponse }  | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name)_$($CoinName).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
@@ -64,7 +65,6 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.MiningDutchAPIKey) 
                     Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
                 }
             }
-            $RetryCount = 3
         }
     }
     Catch { 

@@ -6,7 +6,7 @@ $Path = ".\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGiB = 3; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo lyra2z330  --intensity 12.5" } # CcminerLyraYesscrypt-v8.21r18v5 is fastest on single GPU's
+#   [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGiB = 3; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo lyra2z330  --intensity 12.5" } # Algorithtm is dead
 #   [PSCustomObject]@{ Algorithm = "Yescrypt";    MinMemGiB = 3; MinerSet = 0; WarmupTimes = @(75, 5); Arguments = " --algo yescrypt" } # Too many bad shares
     [PSCustomObject]@{ Algorithm = "YescryptR16"; MinMemGiB = 3; Minerset = 1; WarmupTimes = @(30, 0); Arguments = " --algo yescryptr16 --intensity 13.3" } # CcminerLyraYesscrypt-v8.21r18v5 is fastest
     [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGiB = 3; MinerSet = 0; WarmupTimes = @(60, 0); Arguments = " --algo yescryptr32 --intensity 12.3" } # CcminerLyraYesscrypt-v8.21r18v5 is fastest

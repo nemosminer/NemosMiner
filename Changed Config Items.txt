@@ -335,10 +335,11 @@ Removed Config Items
 
 Renamed config items (same functionality)
 =========================================
+  "BalancesTrackerIgnorePool" renamed to "BalancesTrackerExcludePool"
   "Donate" renamed to "Donation"
   "MineWhenIdle" renamed to "IdleDetection"
   "RunningMinerGainPct" renamed to "MinerSwitchingThreshold" 
 
 NiceHash pool Config:
 =====================
-- Added 'IsInternal' flag (lower fee of 2% instad of 5%), see .\Config.PoolsConfig-NiceHashInternal.json for an example
+- Added "IsInternal" flag (lower fee of 2% instad of 5%), see .\Config.PoolsConfig-NiceHashInternal.json for an example

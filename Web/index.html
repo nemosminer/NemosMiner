@@ -40,10 +40,10 @@
               <tr>
                 <th data-switchable="false" data-field="StatusMessage" data-class="hidden statusmessage"></th>
                 <th data-field="state" data-checkbox="true"></th>
+                <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
                 <th data-field="tName" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
                 <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">Miner</th>
                 <th data-field="Version" data-sortable="true" data-filter-control="select" data-visible="false">Version</th>
-                <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
                 <th data-field="tStatus" data-sortable="true" data-filter-control="select">Status</th>
                 <th data-field="Earning" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)" data-visible="false">Earning</th>
@@ -143,8 +143,9 @@
                   {{else}}
                     <br>
                     <h5><a href="{{uri}}" target="_blank">{{name}}</a></h5>
-                    <div title="Data last collected from pool">
-                      {{{updated}}}<br>
+                    <div title="{{{title}}}">
+                    <!-- <div title="Data last collected from pool"> -->
+                        {{{updated}}}<br>
                     </div>
                     {{#if showsums}}
                       <div title="{{formatCurrency growth1 rate}} {{maincurrency}} last 1 hour">
@@ -348,11 +349,13 @@
                               paydate: formatDate(item.ProjectedPayDate),
                               showaverages: config.BalancesShowAverages,
                               showsums: config.BalancesShowSums,
+                              title: "Data last collected from pool"
                             };
 
                             // Add warning symbol if data was not updated in last poll, add one minute to ensure completion of balance poll
                             if ((new Date() - new Date(item.LastUpdated)) / 1000 > parseInt(config.BalancesTrackerPollInterval + 1) * 60) {
                               outdatedicon = ' &#9888;&#65039;';
+                              data.title = "Outdated balance data"
                               data.updated += outdatedicon;
                             }
 
@@ -513,20 +516,20 @@
                 if (config.UseColorForMinerStatus == true ) {
                   $(".statusmessage").each(function () {
                     switch(this.innerText) {
-                      case this.innerText.match(/^Mining/)?.input:
-                        $(this).parent('tr').addClass('miner-running');
-                        break;
-                      case this.innerText.match(/^Warming/)?.input:
-                        $(this).parent('tr').addClass('miner-warmingup');
-                        break;
                       case this.innerText.match(/^Benchmarking|^Power usage/)?.input:
                         $(this).parent('tr').addClass('miner-measuring');
                         break;
-                      case this.innerText.match(/^Failed/)?.input:
+                        case this.innerText.match(/^Failed/)?.input:
                         $(this).parent('tr').addClass('miner-failed');
                         break;
-                      case this.innerText.match(/^Stopping/)?.input:
+                      case this.innerText.match(/^Mining/)?.input:
+                        $(this).parent('tr').addClass('miner-running');
+                        break;
+                        case this.innerText.match(/^Stopping/)?.input:
                         $(this).parent('tr').addClass('miner-stopping');
+                        break;
+                      case this.innerText.match(/^Warming/)?.input:
+                        $(this).parent('tr').addClass('miner-warmingup');
                         break;
                     };
                   });

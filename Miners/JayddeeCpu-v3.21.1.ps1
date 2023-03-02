@@ -14,23 +14,23 @@ ElseIf ((Compare-Object $AvailableMiner_Devices.CpuFeatures @("aes", "sse42")   
 Else { Return }
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Blake2b";       MinerSet = 3; WarmupTimes = @(45, 20); Arguments = " --algo blake2b" } # FPGA
-    [PSCustomObject]@{ Algorithm = "HMQ1725";       Minerset = 3; WarmupTimes = @(45, 40); Arguments = " --algo hmq1725" } # GPU
-    [PSCustomObject]@{ Algorithm = "Lyra2z330";     MinerSet = 3; WarmupTimes = @(45, 40); Arguments = " --algo lyra2z330" } # GPU
-    [PSCustomObject]@{ Algorithm = "m7m";           Minerset = 1; WarmupTimes = @(45, 60); Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
+    [PSCustomObject]@{ Algorithm = "Blake2b";       MinerSet = 3; WarmupTimes = @(45, 30); Arguments = " --algo blake2b" } # FPGA
+    [PSCustomObject]@{ Algorithm = "HMQ1725";       Minerset = 3; WarmupTimes = @(45, 45); Arguments = " --algo hmq1725" } # GPU
+#   [PSCustomObject]@{ Algorithm = "Lyra2z330";     MinerSet = 3; WarmupTimes = @(45, 45); Arguments = " --algo lyra2z330" } # Algorithm is dead
+    [PSCustomObject]@{ Algorithm = "m7m";           Minerset = 1; WarmupTimes = @(45, 80); Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
     [PSCustomObject]@{ Algorithm = "SHA3d";         MinerSet = 3; WarmupTimes = @(45, 40); Arguments = " --algo SHA3d" } # FPGA
     [PSCustomObject]@{ Algorithm = "ScryptN11";     Minerset = 3; WarmupTimes = @(45, 40); Arguments = " --algo scrypt(N,1,1)" } # GPU
-    [PSCustomObject]@{ Algorithm = "ScryptN2";      Minerset = 1; WarmupTimes = @(45, 40); Arguments = " --algo scrypt --param-n 1048576" }
+    [PSCustomObject]@{ Algorithm = "ScryptN2";      Minerset = 1; WarmupTimes = @(45, 60); Arguments = " --algo scrypt --param-n 1048576" }
     [PSCustomObject]@{ Algorithm = "VertHash";      MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo verthash --data-file ..\.$($Variables.VerthashDatPath)" }
     [PSCustomObject]@{ Algorithm = "YespowerARWN";  Minerset = 2; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "ARWN"' } # Arrowana
-    [PSCustomObject]@{ Algorithm = "YespowerIc";    Minerset = 2; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "IsotopeC"' }
+    [PSCustomObject]@{ Algorithm = "YespowerIc";    Minerset = 2; WarmupTimes = @(45, 60); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "IsotopeC"' }
     [PSCustomObject]@{ Algorithm = "YespowerIots";  Minerset = 2; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-key "Iots is committed to the development of IOT"' }
     [PSCustomObject]@{ Algorithm = "YespowerLitb";  Minerset = 2; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "LITBpower: The number of LITB working or available for proof-of-work mini"' }
     [PSCustomObject]@{ Algorithm = "YespowerLtncg"; Minerset = 2; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "LTNCGYES"' }
     [PSCustomObject]@{ Algorithm = "YespowerMGPC";  Minerset = 2; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "Magpies are birds of the Corvidae family."' } # Magpiecoin
     [PSCustomObject]@{ Algorithm = "YespowerSugar"; Minerset = 1; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "Satoshi Nakamoto 31/Oct/2008 Proof-of-work is essentially one-CPU-one-vote"' } # SRBMminerMulti is fastest, but has 0.85% miner fee
-    [PSCustomObject]@{ Algorithm = "YespowerTIDE";  Minerset = 1; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 8' } # TDC tidecoin
-    [PSCustomObject]@{ Algorithm = "YespowerUrx";   MinerSet = 0; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "UraniumX"' } # SRBMminerMulti is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "YespowerTIDE";  Minerset = 1; WarmupTimes = @(45, 55); Arguments = ' --algo yespower --param-n 2048 --param-r 8' } # TDC tidecoin
+    [PSCustomObject]@{ Algorithm = "YespowerUrx";   MinerSet = 0; WarmupTimes = @(45, 60); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "UraniumX"' } # SRBMminerMulti is fastest, but has 0.85% miner fee
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts } | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] }) { 

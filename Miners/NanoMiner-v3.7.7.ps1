@@ -1,8 +1,8 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -ne "NVIDIA" -or $_.OpenCL.DriverVersion -ge "410.48" })) { Return }
 
 $Uri = Switch ($Variables.DriverVersion.OpenCL.NVIDIA ) { 
-    { $_ -ge "455.23" } { "https://github.com/nanopool/nanominer/releases/download/v3.7.6/nanominer-windows-3.7.6-cuda11.zip"; Break }
-    Default             { "https://github.com/nanopool/nanominer/releases/download/v3.7.6/nanominer-windows-3.7.6.zip" }
+    { $_ -ge "455.23" } { "https://github.com/nanopool/nanominer/releases/download/v3.7.7/nanominer-windows-3.7.7-cuda11.zip"; Break }
+    Default             { "https://github.com/nanopool/nanominer/releases/download/v3.7.7/nanominer-windows-3.7.7.zip" }
 }
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\nanominer.exe"
@@ -19,7 +19,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01;  MinMemGiB = $MinerPools[0].UbqHash.DAGSizeGiB + 0.77;      Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePool = @();                                           ExcludeGPUArchitecture = @(); Arguments = " -algo Ubqhash" } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithm = "VertHash";      Type = "AMD"; Fee = 0.01;  MinMemGiB = 3;                                             Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePool = @("ZPool");                                    ExcludeGPUArchitecture = @(); Arguments = " -algo Verthash" } # SSL @ ZergPool is not supported
 
-    [PSCustomObject]@{ Algorithm = "Randomx";   Type = "CPU"; Fee = 0.02; Minerset = 3; WarmupTimes = @(45, 0); Arguments = " -algo Randomx" } # ASIC
+#   [PSCustomObject]@{ Algorithm = "Randomx";   Type = "CPU"; Fee = 0.02; Minerset = 3; WarmupTimes = @(45, 0); Arguments = " -algo Randomx" } # ASIC
     [PSCustomObject]@{ Algorithm = "VerusHash"; Type = "CPU"; Fee = 0.02; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " -algo Verushash" }
 
     [PSCustomObject]@{ Algorithm = "EtcHash";      Type = "INTEL"; Fee = 0.01;  MinMemGiB = $MinerPools[0].EtcHash.DAGSizeGiB + 0.77;      Minerset = 2; WarmupTimes = @(45, 45); ExcludePool = @();              ExcludeGPUArchitecture = @(); Arguments = " -algo Etchash" }
