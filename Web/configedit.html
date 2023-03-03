@@ -50,9 +50,9 @@
                   <legend class=h6 title="You must have a registered account with NiceHash">NiceHash
                     <a id="RegisterNiceHash" href="https://www.nicehash.com/my/register" target="_blank" hidden style="float: right;" title="Click here to go to the pool registration web site to register an account">Goto registration page</a>
                   </legend>
-                  <div style="padding-top: 0.2rem" title="Your NiceHash Bitcoin wallet address (must be 34 chars long)&#10;configure only if different from main Bitcoin wallet address">
+                  <div style="padding-top: 0.2rem" title="Your NiceHash Bitcoin wallet address (must be between 26 and 35 chars long)&#10;configure only if different from main Bitcoin wallet address">
                     <label for="NiceHashWallet">NiceHash Bitcoin wallet address</label>
-                    <input type="text" id="NiceHashWallet" name="NiceHashWallet" maxlength=35 size=40>
+                    <input type="text" id="NiceHashWallet" name="NiceHashWallet" minlenght=26 maxlength=35 size=40>
                     <input title="Tick if NiceHash wallet is a NiceHash internal address&#10;&#10;Note: NiceHash internal wallets have lower pool fees" type="checkbox" class="toggle-switch" id="NiceHashWalletIsInternal" name="NiceHashWalletIsInternal">
                     <label title="Tick if NiceHash wallet is a NiceHash internal address&#10;&#10;Note: NiceHash internal wallets have lower pool fees" for="NiceHashWalletIsInternal">is internal</label>
                   </div>
@@ -539,7 +539,7 @@
               $.each(config.Wallets, function (key, value) {
                 key = key.toUpperCase();
                 $('<label/>', { for: ('Wallet' + key), style: 'width:4rem', text: key }).appendTo(walletscontainer);
-                if (key === 'BTC' || key === 'LTC') $('<input/>', { type: 'text', id: ('Wallet' + key), value: value, name: ('Wallet' + key), maxlength: 35, size: 64 }).appendTo(walletscontainer);
+                if (key === 'BTC' || key === 'LTC') $('<input/>', { type: 'text', id: ('Wallet' + key), value: value, name: ('Wallet' + key), minlength: 26, maxlength: 35, size: 64 }).appendTo(walletscontainer);
                 else if (key === 'ETC' || key === 'ETH') $('<input/>', { type: 'text', id: ('Wallet' + key), value: value, name: ('Wallet' + key), maxlength: 42, size: 64 }).appendTo(walletscontainer);
                 else $('<input/>', { type: 'text', id: ('Wallet' + key), value: value, name: ('Wallet' + key), size: 64 }).appendTo(walletscontainer);
                 $('<br>').appendTo(walletscontainer);
@@ -941,9 +941,9 @@
                 rules: {
                   WalletBTC: {
                     required: false,
-                    minlength: 34,
-                    maxlength: 34,
-                    pattern: '^[0-9A-Za-z]{34}$'
+                    minlength: 26,
+                    maxlength: 35,
+                    pattern: '^[0-9A-Za-z]{26,35}$'
                   },
                   WalletETC: {
                     required: false,
@@ -983,9 +983,9 @@
                   },
                   NiceHashWallet: {
                     required: false,
-                    minlength: 34,
-                    maxlength: 34,
-                    pattern: '^[0-9A-Za-z]{34}$'
+                    minlength: 26,
+                    maxlength: 35,
+                    pattern: '^[0-9A-Za-z]{26,35}$'
                   },
                   NiceHashAPIKey: {
                     required: false,
@@ -1135,7 +1135,7 @@
                 },
                 messages: {
                   Wallet: {
-                    pattern: "<br>Bitcoin address must be exactly 34 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
+                    pattern: "<br>Bitcoin address must be between 26 and 35 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
                   },
                   MiningDutchserName: {
                     pattern: "<br>MiningPoolHub user name must be between 2 and 32 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
@@ -1150,7 +1150,7 @@
                     pattern: "<br>MiningPoolHub API key must be exactly 64 characters long<br>and may only contain lower case letters (a-f) and digits"
                   },
                   NiceHashWallet: {
-                    pattern: "<br>NiceHash internal Bitcoin address must be exactly 34 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
+                    pattern: "<br>NiceHash internal Bitcoin address must be be between 26 and 35 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
                   },
                   NiceHashAPIKey: {
                     pattern: "<br>NiceHash internal Bitcoin address must be exactly 36 characters long<br>and must match '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}'"
