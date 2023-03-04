@@ -37,7 +37,7 @@
                 <th data-field="Model" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Model</th>
                 <th data-field="Vendor" data-sortable="true" data-filter-control="select">Vendor</th>
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
-                <th data-field="Status" class="statusmessage" data-sortable="true" data-filter-control="select">Status</th>
+                <th data-field="Status" class="statuscolorizer" data-sortable="true" data-filter-control="select">Status</th>
                 <th data-field="tMemory" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Memory</th>
                 <th data-field="tCores" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
                 <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
@@ -107,7 +107,7 @@
                 <th data-field="Model" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Model</th>
                 <th data-field="Vendor" data-sortable="true" data-filter-control="select">Vendor</th>
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
-                <th data-field="Status" class="statusmessage" data-sortable="true" data-filter-control="select">Status</th>
+                <th data-field="Status" class="statuscolorizer" data-sortable="true" data-filter-control="select">Status</th>
                 <th data-field="tMemory" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Memory</th>
                 <th data-field="tCores" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
                 <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
@@ -173,7 +173,7 @@
                   <th data-field="Model" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Model</th>
                   <th data-field="Vendor" data-sortable="true" data-filter-control="select">Vendor</th>
                   <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
-                  <th data-field="Status" class="statusmessage" data-sortable="true" data-filter-control="select">Status</th>
+                  <th data-field="Status" class="statuscolorizer" data-sortable="true" data-filter-control="select">Status</th>
                   <th data-field="tMemory" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Memory</th>
                   <th data-field="tCores" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
                   <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
@@ -242,31 +242,37 @@
             };
 
             $(".table").bootstrapTable({
-              onPostBody: function() {
-                if (config.UseColorForMinerStatus == true) {
-                  $(".statusmessage").each(function () {
+              onPostBody: function () {
+                if (config.UseColorForMinerStatus == true ) {
+                  $(".statuscolorizer").each(function () {
                     switch(this.innerText) {
-                      case this.innerText.match(/^Mining/)?.input:
-                        $(this).parent('tr').addClass('miner-running');
-                        break;
-                      case this.innerText.match(/^Warming/)?.input:
-                        $(this).parent('tr').addClass('miner-warmingup');
-                        break;
                       case this.innerText.match(/^Benchmarking|^Power usage/)?.input:
                         $(this).parent('tr').addClass('miner-measuring');
-                        break;
-                      case this.innerText.match(/^Failed/)?.input:
-                        $(this).parent('tr').addClass('miner-failed');
-                        break;
-                      case this.innerText.match(/^Stopping/)?.input:
-                        $(this).parent('tr').addClass('miner-stopping');
                         break;
                       case this.innerText.match(/^Disabled/)?.input:
                         $(this).parent('tr').addClass('miner-disabled');
                         break;
-                      };
+                      case this.innerText.match(/^Failed/)?.input:
+                        $(this).parent('tr').addClass('miner-failed');
+                        break;
+                      case this.innerText.match(/^Idle/)?.input:
+                        $(this).parent('tr').addClass('miner-idle');
+                        break;
+                      case this.innerText.match(/^Mining/)?.input:
+                        $(this).parent('tr').addClass('miner-running');
+                        break;
+                      case this.innerText.match(/^Stopping/)?.input:
+                        $(this).parent('tr').addClass('miner-stopping');
+                        break;
+                      case this.innerText.match(/^Unavailable/)?.input:
+                        $(this).parent('tr').addClass('miner-unavailable');
+                        break;
+                      case this.innerText.match(/^Warming/)?.input:
+                        $(this).parent('tr').addClass('miner-warmingup');
+                        break;
+                    };
                   });
-                }
+                };
               },
 
               onAll: function() {

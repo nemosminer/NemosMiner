@@ -40,7 +40,7 @@
             >
             <thead>
               <tr>
-                <th data-switchable="false" data-field="StatusMessage" data-class="hidden statusmessage"></th>
+                <th data-switchable="false" data-field="tStatusMessage" data-class="hidden statuscolorizer"></th>
                 <th data-field="state" data-checkbox="true"></th>
                 <th data-field="tName" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
                 <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">Miner</th>
@@ -119,19 +119,28 @@
 
               onPostBody: function () {
                 if (config.UseColorForMinerStatus == true ) {
-                  $(".statusmessage").each(function () {
+                  $(".statuscolorizer").each(function () {
                     switch(this.innerText) {
                       case this.innerText.match(/^Benchmarking|^Power usage/)?.input:
                         $(this).parent('tr').addClass('miner-measuring');
                         break;
-                        case this.innerText.match(/^Failed/)?.input:
+                      case this.innerText.match(/^Disabled/)?.input:
+                        $(this).parent('tr').addClass('miner-disabled');
+                        break;
+                      case this.innerText.match(/^Failed/)?.input:
                         $(this).parent('tr').addClass('miner-failed');
+                        break;
+                      case this.innerText.match(/^Idle/)?.input:
+                        $(this).parent('tr').addClass('miner-idle');
                         break;
                       case this.innerText.match(/^Mining/)?.input:
                         $(this).parent('tr').addClass('miner-running');
                         break;
-                        case this.innerText.match(/^Stopping/)?.input:
+                      case this.innerText.match(/^Stopping/)?.input:
                         $(this).parent('tr').addClass('miner-stopping');
+                        break;
+                      case this.innerText.match(/^Unavailable/)?.input:
+                        $(this).parent('tr').addClass('miner-unavailable');
                         break;
                       case this.innerText.match(/^Warming/)?.input:
                         $(this).parent('tr').addClass('miner-warmingup');
