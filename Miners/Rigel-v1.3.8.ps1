@@ -1,6 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "NVIDIA")) { Return }
 
-$Uri = "https://github.com/rigelminer/rigel/releases/download/1.3.7/rigel-1.3.7-win.zip"
+$Uri = "https://github.com/rigelminer/rigel/releases/download/1.3.8/rigel-1.3.8-win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\Rigel.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -8,13 +8,13 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $Algorithms = [PSCustomObject[]]@(
 
     [PSCustomObject]@{ Algorithms = @("EtcHash");                    Fee = @(0.007);  MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB + 0.77;      Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(45, 10); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  etchash" }
-    [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");      Fee = @(0.007);  MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB+ 0.41;       Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  etchash+kheavyhash" }
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");      Fee = @(0.007);  MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB+ 0.41;       Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(45, 45); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  etchash+kheavyhash" }
     [PSCustomObject]@{ Algorithms = @("Ethash");                     Fee = @(0.007);  MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.77;       Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(55, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  ethash" }
     [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Fee = @(0.007);  MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.77;       Tuning = " --mt2"; Minerset = 2; WarmupTimes = @(55, 45); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  ethash+kheavyhash" }
 #   [PSCustomObject]@{ Algorithms = @("EthashLowMem");               Fee = @(0.007);  MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.77; Tuning = " --mt2"; Minerset = 2; WarmupTimes = @(45, 10); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  ethash" }
 #   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "kHeavyHash"); Fee = @(0.007);  MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.77; Tuning = " --mt2"; Minerset = 2; WarmupTimes = @(45, 15)  ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  ethash+kheavyhash" }
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Fee = @(0.007);  MinMemGiB = 2.0;                                           Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(45, 10); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  kheavyhash" }
-    [PSCustomObject]@{ Algorithms = @("NexaPow");                    Fee = @(0.02);   MinMemGiB = 2.0;                                           Tuning = " --mt2"; Minerset = 1; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  nexapow" }
+    [PSCustomObject]@{ Algorithms = @("NexaPow");                    Fee = @(0.02);   MinMemGiB = 3.0;                                           Tuning = " --mt2"; Minerset = 1; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  nexapow" }
 )
 
 If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithms[0]).PoolPorts -and (-not $_.Algorithms[1] -or $MinerPools[1].($_.Algorithms[1]).PoolPorts) } | Where-Object { -not $_.ExcludePools[0] -or $MinerPools[0].($_.Algorithms[0]).BaseName -notin $_.ExcludePools[0] } | Where-Object { -not $_.ExcludePools[1] -or $MinerPools[1].($_.Algorithms[1]).BaseName -notin $_.ExcludePools[1] }) { 
