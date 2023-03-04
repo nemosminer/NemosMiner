@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningDutch.ps1
-Version:        4.3.1.0
-Version date:   02 March 2023
+Version:        4.3.1.1
+Version date:   04 March 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -35,7 +35,7 @@ $APICallFails = 0
 $CurrenciesData = @()
 $TransferFile = "$($PWD)\Data\BrainData_$($BrainName).json"
 
-$Headers = @{ "Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8";"Cache-Control"="no-cache" }
+$Headers = @{ "Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8"; "Cache-Control"="no-cache" }
 $Useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"
 
 $ProgressPreference = "SilentlyContinue"

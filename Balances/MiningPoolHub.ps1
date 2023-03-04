@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.3.1.0
-Version date:   02 March 2023
+Version:        4.3.1.1
+Version date:   04 March 2023
 #>
 using module ..\Includes\Include.psm1
 
@@ -104,7 +104,7 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.MiningPoolHubAPIKey
                     }
 
                     If (-not $Currency) { 
-                        Write-Message -Level Warn "Cannot determine balance for currency ($(If ($_) { $_ }  Else { "unknown" } )) - cannot convert some balances to BTC or other currencies."
+                        Write-Message -Level Warn "$($Name): Cannot determine balance for currency '$(If ($_) { $_ }  Else { "unknown" } )' - cannot convert some balances to BTC or other currencies."
                     }
                     Else { 
                         # Prefer custom payout threshold

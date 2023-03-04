@@ -11,6 +11,22 @@ Known issues:
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
 
+ChangeLog NemosMiner 4.3.1.1 nn.03.2023
+=======================================
+
+Enhancements:
+- BalanceTracker for 'MiningDutch' gets available coins from pool API
+- Web GUI: Update fontawesome to version 6.3.0
+- Web GUI: Optimize table coloring
+
+Fixes:
+- Legacy GUI: Earnings / Payout Threshold calculation wrong for some pools
+- Web GUI: Support for variable BTC address length fron 26 to 35 characters (https://github.com/Minerx117/NemosMiner/issues/95)
+
+Miner updates:
+- Rigel-v1.3.8
+
+
 ChangeLog NemosMiner 4.3.1.0 02.03.2023
 =======================================
 

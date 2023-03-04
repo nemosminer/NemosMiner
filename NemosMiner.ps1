@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.3.1.0
-Version date:   02 March 2023
+Version:        4.3.1.1
+Version date:   04 March 2023
 #>
 
 [CmdletBinding()]
@@ -291,7 +291,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.3.1.0"
+    Version      = [System.Version]"4.3.1.1"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -456,8 +456,8 @@ $Variables.SupportedCPUDeviceVendors = @("AMD", "INTEL")
 $Variables.SupportedGPUDeviceVendors = @("AMD", "INTEL", "NVIDIA")
 $Variables.Devices = [Device[]](Get-Device -Refresh)
 
-$Variables.Devices | Where-Object { $_.Type -eq "CPU" -and $_.Vendor -notin $Variables.SupportedCPUDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported CPU Vendor: '$($_.Vendor)')" }
-$Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -notin $Variables.SupportedGPUDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Disabled (Unsupported GPU Vendor: '$($_.Vendor)')" }
+$Variables.Devices | Where-Object { $_.Type -eq "CPU" -and $_.Vendor -notin $Variables.SupportedCPUDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Unsupported CPU Vendor: '$($_.Vendor)'" }
+$Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -notin $Variables.SupportedGPUDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Unsupported GPU Vendor: '$($_.Vendor)'" }
 
 $Variables.Devices | Where-Object Name -In $Config.ExcludeDeviceName | Where-Object { $_.State -NE [DeviceState]::Unsupported } | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
