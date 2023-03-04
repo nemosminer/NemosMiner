@@ -21,7 +21,7 @@ Enhancements:
 
 Fixes:
 - Legacy GUI: Earnings / Payout Threshold calculation wrong for some pools
-- Web GUI: Support for variable BTC address length fron 26 to 35 characters (https://github.com/Minerx117/NemosMiner/issues/95)
+- Web GUI: Support for variable BTC address length from 26 to 35 characters (https://github.com/Minerx117/NemosMiner/issues/95)
 
 Miner updates:
 - Rigel-v1.3.8
