@@ -19,7 +19,7 @@ NemosMiner code is partly based on
 
 - MultiPoolMiner which can be found here: https://github.com/MultiPoolMiner/MultiPoolMiner (Project is no longer maintained)
 
-- NPlusMiner which can be found here: https://github.com/MrPlusGH/NPlusMiner
+- NPlusMiner which can be found here: https://github.com/MrPlusGH/NPlusMiner (Project is no longer maintained)
 
 
 Note: NemosMiner Version 4.x is **NOT backwards compatible** with the 3.8.x code base.
@@ -159,7 +159,7 @@ Easy configuration, easy start:
       You can set specific options per pool. For example, you can mine NiceHash on the internal wallet and other pools on a valid wallet. See 'PoolsConfig-Template.json' for some pool specific configuration options.
 
       Available options:
-         - Wallets[Currency] = Your wallet address for [Currency]; some pools, e.g. HiveOn require wallets in each supported currency
+         - Wallets[Currency] = Your wallet address for [Currency]; some pools, e.g. Hiveon require wallets in each supported currency
          - UserName = your MPH or ProHashing user name
          - WorkerName = your worker name
          - PricePenaltyFactor = See explanation below
@@ -195,7 +195,8 @@ Easy configuration, easy start:
 
       Displays available balances and an estimation of when the pool payment threshold will be reached.
       Supported pools:
-         - HiveON (*)
+         - HashCryptos
+         - Hiveon (*)
          - MiningDutch
          - MiningPoolHub
          - NiceHash (internal & external wallet)
@@ -229,7 +230,7 @@ Easy configuration, easy start:
       UIStyle automatically switches to full during benchmarking.
       Press key 's' in the console window to switch UIStyle.
 
-   In session console the following keys are supported
+   In session console the following hot keys are supported
  
       a: Toggle Accuracy column visibility
       b: Toggle Listing Pool Balances
@@ -248,13 +249,11 @@ Easy configuration, easy start:
       w: Toggle Power usage column visibility
       y: Toggle Currency column visibility
 
-   NemosMiner will notify new version availability
-
 ***Requirements***
 
 PowerShell Version 7.x is required:
 
-[Download Installer for version 7.3.1](https://github.com/PowerShell/PowerShell/releases/download/v7.3.1/PowerShell-7.3.1-win-x64.msi)
+[Download Installer for version 7.3.3](https://github.com/PowerShell/PowerShell/releases/download/v7.3.3/PowerShell-7.3.3-win-x64.msi)
 
 **Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file**
 
@@ -271,7 +270,7 @@ If you use older drivers some miners will not be available.
 
 **Recommended/optimal Windows AMD driver**
 
-[Windows 10 AMD GPU Driver 22.5.2](https://www.amd.com/en/support)
+[Windows 10 AMD GPU Driver 20.10.2022](https://www.amd.com/en/support)
 
    NemosMiner is currently tested on the following Rigs: 
 
