@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.3.1.1
-Version date:   04 March 2023
+Version:        4.3.1.2
+Version date:   06 March 2023
 #>
 
 using module .\Include.psm1
@@ -1321,7 +1321,6 @@ Do {
     }
     Catch { 
         "$(Get-Date -Format "yyyy-MM-dd_HH:mm:ss")" >> "Logs\Error.txt"
-        If ($Miner) { $Miner | ConvertTo-Json -Depth 3 >> "Logs\$($Miner.Name).txt" }
         $_.Exception | Format-List -Force >> "Logs\Error.txt"
         $_.InvocationInfo | Format-List -Force >> "Logs\Error.txt"
         Write-Message -Level Error "Error in core detected. Respawning core..."

@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.3.1.1
-Version date:   04 March 2023
+Version:        4.3.1.2
+Version date:   06 March 2023
 #>
 
 [CmdletBinding()]
@@ -291,7 +291,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.3.1.1"
+    Version      = [System.Version]"4.3.1.2"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -771,7 +771,13 @@ Function MainLoop {
         }
         If ($KeyPressed.Key -eq 80 -and $KeyPressed.Modifiers -eq 5) { 
             $Variables.SuspendCycle = -not $Variables.SuspendCycle
-            If ($Variables.SuspendCycle) { Write-Message -Level Debug "'<Ctrl><Alt>P' pressed. Main cycle is suspended until you press '<Ctrl><Alt>P' again." } Else { Write-Message -Level Debug "'<Ctrl><Alt>P' pressed. Main cycle is running again." }
+            If ($Variables.SuspendCycle) { 
+                Write-Message -Level Debug "'<Ctrl><Alt>P' pressed. Main cycle is suspended until you press '<Ctrl><Alt>P' again."
+            }
+            Else { 
+                Write-Message -Level Debug "'<Ctrl><Alt>P' pressed. Main cycle is running again."
+                If ((Get-Date).ToUniversalTime() -gt $Variables.EndCycleTime) { $Variables.EndCycleTime = (Get-Date).ToUniversalTime() }
+            }
         }
     }
 

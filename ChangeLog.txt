@@ -10,8 +10,25 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.3.1.2 06.03.2023
+=======================================
 
-ChangeLog NemosMiner 4.3.1.1 nn.03.2023
+Enhancement:
+- Web GUI: Moved 'Balances' to 'Earnings and Balances' page
+- Web GUI: Moved 'System log' to 'System Status' page
+- Web GUI / System Status: Optimize 'Status' columm text
+
+Fixes:
+- BalanceTracker 'MiningPoolHub': Reduce number of API calls (Regression from 4.2.3.0)
+- Core: '<Ctrl><Alt>P' no longer triggers a 'Core cycle is stuck - restarting...' message
+- Web GUI / Devices: Could not enable disabled devices (button not getting enabled)
+
+Miner changes:
+- JayddeeCpu-v3.21.2
+- lolMiner-v1.69
+
+
+ChangeLog NemosMiner 4.3.1.1 04.03.2023
 =======================================
 
 Enhancements:
@@ -34,7 +51,7 @@ Enhancements:
 - API: Adjusted miner sort order (best miners are always first, then sort by device names)
 - Core: Display modal message box on terminating errors
 - Legacy GUI: Update tables when mining status changes
-- Legacy GUI: Use colors for tables (same a in Web GUI)
+- Legacy GUI: Use colors for tables (same as in Web GUI)
 - Legacy GUI: Keep table colors after sorting
 
 Fixes:

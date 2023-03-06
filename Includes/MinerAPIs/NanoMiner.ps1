@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NanoMiner.ps1
-Version:        4.3.1.1
-Version date:   04 March 2023
+Version:        4.3.1.2
+Version date:   06 March 2023
 #>
 
 class NanoMiner : Miner { 

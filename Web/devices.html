@@ -277,11 +277,6 @@
 
               onAll: function() {
                 document.getElementById('btn-disable-device').disabled = !Boolean($('#enableddevices').bootstrapTable('getSelections').length);
-              }
-            });
-
-            $('#disableddevices').bootstrapTable({
-              onAll: function() {
                 document.getElementById('btn-enable-device').disabled = !Boolean($('#disableddevices').bootstrapTable('getSelections').length);
               }
             });

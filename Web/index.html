@@ -1,6 +1,6 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 id="title" data-navbaractive="navdashboard" class="h2">Dashboard</h2>
+            <h2 id="title" data-navbaractive="navsystemstatus" class="h2">Launched Miners</h2>
           </div>
           <div id="toolbar">
             <button id="btn-re-benchmark" class="btn btn-primary" disabled title="The marked miners will re-benchmark&#10;Use this if the recorded hashrate is unreal or to re-enable disabled miners">Re-benchmark</button>
@@ -8,7 +8,6 @@
             <button id="btn-failed" class="btn btn-warning" disabled title="The marked miners will be marked as failed&#10;Use this if the miners fail benchmarking or produce unpredictable results">Mark as failed</button>
             <button id="btn-disable" class="btn btn-danger" disabled title="The marked miners will be marked as disabled&#10;To re-enable trigger re-benchmarking">Disable</button>
           </div>
-          <h3>Launched Miners</h3>
           <table id="miners" class="table"
             data-auto-refresh="true"
             data-auto-refresh-status="true"
@@ -38,14 +37,14 @@
             >
             <thead>
               <tr>
-                <th data-switchable="false" data-field="tStatusMessage" data-class="hidden statuscolorizer"></th>
+                <th data-switchable="false" data-field="StatusMessage" data-class="hidden statuscolorizer"></th>
                 <th data-field="state" data-checkbox="true"></th>
                 <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
                 <th data-field="tName" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
                 <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">Miner</th>
                 <th data-field="Version" data-sortable="true" data-filter-control="select" data-visible="false">Version</th>
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
-                <th data-field="tStatus" data-sortable="true" data-filter-control="select">Status</th>
+                <th data-field="tStatusMessage" data-sortable="true" data-filter-control="select">Status</th>
                 <th data-field="Earning" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)" data-visible="false">Earning</th>
                 <th data-field="Earning_Bias" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning Bias</th>
                 <th data-field="PowerCost" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Power Cost</th>
@@ -85,334 +84,24 @@
             </thead>
           </table>
           <br>
-          <br>
-
-          <div id="balances" style="display:none">
-            <h3>Balances</h3>
-            <div id="balanceboxes" class="card-deck"></div>
-            <script id="poolbalance_template" type="text/x-handlebars-template">
-              <div class="card m-3 rounded {{#if total}}text-white bg-primary{{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}300px{{/if}}">
-                <div class="card-header text-center">
-                  {{#if total}}
-                    <br>
-                    <h4 {{#if outdated}}title="Some pool balances are outdated.&#10;Totals may not include recent earnings."{{/if}}>{{{name}}}</h4>
-                    <table class="center" style="width: 100%">
-                      <br>
-                      <tr>
-                        <th style="text-align:center"><h5>Earnings last hour</h5></th>
-                        <th style="text-align:center"><h5>Earnings last 6 hours</h5></th>
-                        <th style="text-align:center"><h5>Earnings last 24 hours</h5></th>
-                        <th style="text-align:center"><h5>Earnings last 7 days</h5></th>
-                        <th style="text-align:center"><h5>Earnings last 30 days</h5></th>
-                        <th style="text-align:center"><h5>Balances</h5></th>
-                      </tr>
-                      <tr>
-                        <td style="text-align:center">
-                          {{#each growth1}}
-                            <br>{{@key}}: {{formatCurrency this}}
-                          {{/each}}
-                        </td>
-                        <td style="text-align:center">
-                          {{#each growth6}}
-                            <br>{{@key}}: {{formatCurrency this}}
-                          {{/each}}
-                        </td>
-                        <td style="text-align:center">
-                          {{#each growth24}}
-                            <br>{{@key}}: {{formatCurrency this}}
-                          {{/each}}
-                        </td>
-                        <td style="text-align:center">
-                          {{#each growth168}}
-                            <br>{{@key}}: {{formatCurrency this}}
-                          {{/each}}
-                        </td>
-                        <td style="text-align:center">
-                          {{#each growth720}}
-                            <br>{{@key}}: {{formatCurrency this}}
-                          {{/each}}
-                        </td>
-                        <td style="text-align:center">
-                          {{#each allbalances}}
-                            <br>{{@key}}: {{formatCurrency this}}
-                          {{/each}}
-                        </td>
-                      </tr>
-                    </table>
-                    <br>
-                  {{else}}
-                    <br>
-                    <h5><a href="{{uri}}" target="_blank">{{name}}</a></h5>
-                    <div title="{{{title}}}">
-                    <!-- <div title="Data last collected from pool"> -->
-                        {{{updated}}}<br>
-                    </div>
-                    {{#if showsums}}
-                      <div title="{{formatCurrency growth1 rate}} {{maincurrency}} last 1 hour">
-                        <br>{{formatCurrency growth1}} {{currency}} last 1 hour
-                      </div>
-                      <div title="{{formatCurrency growth6 rate}} {{maincurrency}} last 6 hrs">
-                        {{formatCurrency growth6}} {{currency}} last 6 hrs
-                      </div>
-                      <div title="{{formatCurrency growth24 rate}} {{maincurrency}} last 24 hrs">
-                        {{formatCurrency growth24}} {{currency}} last 24 hrs
-                      </div>
-                      <div title="{{formatCurrency growth168 rate}} {{maincurrency}} last 7 days">
-                        {{formatCurrency growth168}} {{currency}} last 7 days
-                      </div>
-                      <div title="{{formatCurrency growth720 rate}} {{maincurrency}} last 30 days">
-                        {{formatCurrency growth720}} {{currency}} last 30 days
-                      </div>
-                    {{/if}}
-                    {{#if showaverages}}
-                      <br/>
-                      <div title="avg. {{formatCurrency avghourlygrowth rate}} {{maincurrency}} in 1h">
-                        avg. {{formatCurrency avghourlygrowth}} {{currency}} in 1h
-                      </div>
-                      <div title="avg. {{formatCurrency avgdailygrowth rate}} {{maincurrency}} in 24 hrs">
-                        avg. {{formatCurrency avgdailygrowth}} {{currency}} in 24 hrs
-                      </div>
-                      <div title="avg. {{formatCurrency avgweeklygrowth rate}} {{maincurrency}} in 7 days">
-                        avg. {{formatCurrency avgweeklygrowth}} {{currency}} in 7 days
-                      </div>
-                    {{/if}}
-                  {{/if}}
-                </div>
-                {{#if total}}
-                {{else}}
-                  <div class="card-body text-center">
-                    <p title="{{#if balanceinmaincurrency}}{{maincurrency}}: {{formatCurrency balanceinmaincurrency}}{{/if}}" class="card-text currencies">
-                      {{#each balances}}
-                        <b>{{@key}}: {{formatCurrency this}}</b>
-                        <br/>
-                      {{/each}}
-                    <p>
-                    <p class="card-text currencies">
-                      <div class="payout text-center">
-                        {{#if payoutthreshold}}
-                        <div title="{{percentage}}% of {{convertRate payoutthreshold rates payoutthresholdcurrency maincurrency}} {{maincurrency}}">
-                          Payout threshold<br/><b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{payoutthresholdcurrency}}</b>
-                        </div>
-                        {{else}}
-                        <div title="Threshold can not be determined">
-                          Payout threshold<br/><b>Unknown {{payoutthresholdcurrency}}</b>
-                        </div>
-                        {{/if}}
-                        <br/>
-                        <div title="Projection is based on the current daily average earnings">
-                          Projected paydate<br/><b>{{paydate}}</b>
-                        </div>
-                      </div>
-                    </p>
-                  </div>
-                {{/if}}
-              </div>
-            </script>
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h2 class="h2">System Log</h2>
           </div>
-          <br>
-          <br>
-
+          <pre id="logtext" style="font-size: 17px; line-height: 22px; margin-top: 20px; overflow: auto; display: flex; flex-direction: column-reverse;"></pre>
 <!-- Start of page scripts 'index.html' -->
           <script type="text/javascript">
             var $table = $('#miners');
-            var currency = config.Currency;
 
-            Handlebars.registerHelper('convertRate', function(value, rates, from, to) {
-              if (value >= 0) { 
-                value *= rates[from][to];
-                return formatDecimals(value);
-              } else {
-                return;
-              }
-            });
-
-            Handlebars.registerHelper('formatCurrency', function(value, rate) {
-              if (value >= 0) { 
-                if (rate > 0) value *= rate;
-                return formatDecimals(value);
-              } else {
-                return;
-              }
-            });
-
-            function updatePoolBalances() {
-              var data_sum = {
-                balances: {},
-                growth1: {},
-                growth6: {},
-                growth24: {},
-                growth168: {},
-                growth720: {},
-              };
-              var totals = {
-                name: "Totals of all pools",
-                growth1: {},
-                growth6: {},
-                growth24: {},
-                growth168: {},
-                growth720: {},
-                allbalances: {},
-                total: true,
-                outdated: false,
-                maincurrency: config.Currency
-              };
-              currencies = [config.Currency].concat(config.ExtraCurrencies)
-
-              if (config.UsemBTC == true) currencies[currencies.indexOf('BTC')] = 'mBTC'
-
-              var rates = {};
-              // get rates
+            function tailf() {
               $.ajax({
                 async: false,
-                dataType: 'json',
-                timeout: 10,
-                url: '/rates',
+                dataType: 'text',
+                url: '/functions/log/get?lines=100', 
                 success: function(result) {
-                  rates = result;
-                  sessionStorage.setItem('rates', JSON.stringify(rates));
-
-                  $.ajax({
-                    async: false,
-                    dataType: 'json',
-                    url: '/balances',
-                    success: function(result) {
-                      if (result != null) { 
-                        document.getElementById('balances').style.display = 'block';
-                        $('#balanceboxes').empty();
-
-                        var outdatedicon = '';
-                        var template = Handlebars.compile($('#poolbalance_template').html());
-                        var footer = new RegExp('-.+|=.+');
-
-                        $.each(currencies, function(cindex, currency) {
-                          data_sum['balances'][currency]  = 0;
-                          data_sum['growth1'][currency]   = 0;
-                          data_sum['growth6'][currency]   = 0;
-                          data_sum['growth24'][currency]  = 0;
-                          data_sum['growth168'][currency] = 0;
-                          data_sum['growth720'][currency] = 0;
-                        });
-
-                        $.each(result, function(index, item) {
-                          if (config.UsemBTC && item.Currency == 'BTC') {
-                            var currency = 'mBTC';
-                          } else {
-                            var currency = item.Currency;
-                          }
-
-                          if (config.UsemBTC && item.PayoutThresholdCurrency == 'BTC') {
-                            item.PayoutThresholdCurrency = 'mBTC';
-                            var factor = 0.001;
-                          } else {
-                            var factor = 1;
-                          }
-
-                          if (config.BalancesShowInAllCurrencies || footer.test(item.Pool)) {
-                            item.Currencies = [currency].concat(currencies);
-                          } else if (config.BalancesShowInMainCurrency || footer.test(item.Pool)) {
-                            item.Currencies = [currency].concat(config.Currency);
-                          } else {
-                            item.Currencies = [currency];
-                          }
-
-                          if (!(footer.test(item.Pool))) {
-
-                            if (rates[item.Currency]) currencyrate = rates[item.Currency][config.Currency];
-
-                            // Payout threshold currency is different from asset currency
-                            if (rates[item.Currency] && [item.PayoutThresholdCurrency]) {
-                              var percentage = (item.Balance / item.PayoutThreshold * rates[item.Currency][item.PayoutThresholdCurrency] * 100);
-                            } else { 
-                              var percentage = (item.Balance / item.PayoutThreshold * 100);
-                            }
-
-                            var data = {
-                              name: item.Pool + ' (' + item.Currency + ')',
-                              uri: item.Uri,
-                              updated: formatDate(item.LastUpdated),
-                              balances: {},
-                              growth1: item.Growth1,
-                              growth6: item.Growth6,
-                              growth24: item.Growth24,
-                              growth168: item.Growth168,
-                              growth720: item.Growth720,
-                              avghourlygrowth: item.AvgHourlyGrowth,
-                              avgdailygrowth: item.AvgDailyGrowth,
-                              avgweeklygrowth: item.AvgWeeklyGrowth,
-                              payoutthreshold: parseFloat(item.PayoutThreshold) / factor,
-                              payoutthresholdcurrency: item.PayoutThresholdCurrency,
-                              rate: currencyrate,
-                              rates: rates,
-                              currency: currency,
-                              maincurrency: config.Currency,
-                              percentage: (percentage * factor).toFixed(2),
-                              paydate: formatDate(item.ProjectedPayDate),
-                              showaverages: config.BalancesShowAverages,
-                              showsums: config.BalancesShowSums,
-                              title: "Data last collected from pool"
-                            };
-
-                            // Add warning symbol if data was not updated in last poll, add one minute to ensure completion of balance poll
-                            if ((new Date() - new Date(item.LastUpdated)) / 1000 > parseInt(config.BalancesTrackerPollInterval + 1) * 60) {
-                              outdatedicon = ' &#9888;&#65039;';
-                              data.title = "Outdated balance data"
-                              data.updated += outdatedicon;
-                            }
-
-                            // Convert balance to other currencies
-                            if (rates[item.Currency]) {
-                              $.each(item.Currencies, function(cindex, currency) {
-                                if (rates[currency]) data['balances'][currency] = item.Balance * rates[item.Currency][currency];
-                              });
-                              data.balanceinmaincurrency = item.Balance * rates[item.Currency][config.Currency];
-                            } else { 
-                              if (config.BalancesShowInAllCurrencies) {
-                                data['balances']['Exchange rates unknown'] = "";
-                              }
-                              data['balances'][item.Currency] = item.Balance;
-                            }
-
-                            // build totals
-                            $.each(currencies, function(cindex, currency) {
-                              if (rates[item.Currency] && rates[currency]) {
-                                data_sum['growth1'][currency]   += item.Growth1 * rates[item.Currency][currency];
-                                data_sum['growth6'][currency]   += item.Growth6 * rates[item.Currency][currency];
-                                data_sum['growth24'][currency]  += item.Growth24 * rates[item.Currency][currency];
-                                data_sum['growth168'][currency] += item.Growth168 * rates[item.Currency][currency];
-                                data_sum['growth720'][currency] += item.Growth720 * rates[item.Currency][currency];
-                                data_sum['balances'][currency]  += item.Balance * rates[item.Currency][currency];
-                              }
-                            });
-
-                            $('#balanceboxes').append(template(data));
-                          }
-                        });
-
-                        if (outdatedicon) {
-                          totals['name'] = totals['name'] + outdatedicon;
-                          totals.outdated = true;
-                        }
-
-                        if (!(config.BalancesShowInAllCurrencies)) currencies = [config.Currency];
-
-                        $.each(currencies, function(cindex, currency) {
-                          if (rates[currency]) {
-                            totals['growth1'][currency]     = data_sum['growth1'][currency];
-                            totals['growth6'][currency]     = data_sum['growth6'][currency];
-                            totals['growth24'][currency]    = data_sum['growth24'][currency];
-                            totals['growth168'][currency]   = data_sum['growth168'][currency];
-                            totals['growth720'][currency]   = data_sum['growth720'][currency];
-                            totals['allbalances'][currency] = data_sum['balances'][currency];
-                          }
-                        });
-
-                        $('#balanceboxes').append(template(totals));
-                      }
-                    }
-                  });
+                  document.getElementById('logtext').innerHTML = result.replaceAll('&', '&amp').replaceAll('<', '&lt').replaceAll('>', '&gt;').replaceAll("'", '&#39;').replaceAll('"', '&quot;');;
                 }
               });
-            }
+            };
 
             $('#btn-re-benchmark').click(function () {
               var $data = $table.bootstrapTable('getSelections');
@@ -512,6 +201,10 @@
                 }
               },
 
+              onResetView: function () {
+                document.getElementById('logtext').style.height = ($(window).height() - $table.height() - 415) + 'px';
+              },
+
               onPostBody: function () {
                 if (config.UseColorForMinerStatus == true ) {
                   $(".statuscolorizer").each(function () {
@@ -560,12 +253,19 @@
             });
 
             $(document).ready(function () {
+              tailf();
+              setInterval('tailf()', 1000);
               $(".addlocalcurrency").each(function () {
                 this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.Currency + ')';
               });
-              updatePoolBalances();
             });
 
+            $(window).resize(function () {
+              if (window.RT) clearTimeout(window.RT);
+              window.RT = setTimeout(function() {
+                this.location.reload(false); /* false to get page from cache */
+              }, 200);
+            })
           </script>
 <!-- End of page scripts 'index.html' -->
 <!--#include file="/parts/foot.html" -->

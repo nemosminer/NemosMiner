@@ -1,5 +1,5 @@
 <#
-Copyright (c) 2018-2022 Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
 NemosMiner is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@ Version:        4.3.1.2
 Version date:   20 October 2022
 #>
 
-# Try running this script as:  http://127.0.0.1:3999/scripts/demo.ps1?message=Hello%20World!
+Write-Host "Stop-APIServer"
 
-param($Parameters)
-Write-Output $Parameters.message
+Stop-APIServer

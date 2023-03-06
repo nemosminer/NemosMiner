@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.1.1
-Version date:   04 March 2023
+Version:        4.3.1.2
+Version date:   06 March 2023
 #>
 
 # Window handling
@@ -746,6 +746,13 @@ Function Stop-Mining {
         $Timestamp = (Get-Date).AddSeconds(30)
         While (-not $Quick -and ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running -or $_.Status -eq [MinerStatus]::DryRun }) -and (Get-Date) -le $Timestamp) { 
             Start-Sleep -Seconds 1
+        }
+
+        #Stop all running miners
+        $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running -or $_.Status -eq [MinerStatus]::DryRun } | ForEach-Object { 
+            $_.SetStatus([MinerStatus]::Idle)
+            $_.Info = ""
+            $_.WorkersRunning = @()
         }
 
         $Variables.CoreRunspace.Close()
@@ -3090,7 +3097,7 @@ Function Copy-Object {
         $Copy += $CurrentObjectCopy
     })
 
-    return $Copy
+    Return $Copy
 }
 
 Function Initialize-Autoupdate { 
