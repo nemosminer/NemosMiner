@@ -10,7 +10,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Autolykos2", "kHeavyHash");   Fee = @(0.025); MinMemGiB = $MinerPools[0].Autolykos2.DAGSizeGiB + 0.77;   Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("CGN1", "CGN2");                            Arguments = " --algo=autolykos2" }
     [PSCustomObject]@{ Algorithms = @("Chukwa");                     Fee = @(0.025); MinMemGiB = 2.0;                                           Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("CGN1", "CGN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=trtl_chukwa" }
     [PSCustomObject]@{ Algorithms = @("Chukwa2");                    Fee = @(0.025); MinMemGiB = 2.0;                                           Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("CGN1", "CGN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=trtl_chukwa2" }
-    [PSCustomObject]@{ Algorithms = @("CryptonightCcx");             Fee = @(0.025); MinMemGiB = 2.0;                                           Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("CGN1", "CGN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" } # SRBMinerMulti-v2.1.0 is fastest
+    [PSCustomObject]@{ Algorithms = @("CryptonightCcx");             Fee = @(0.025); MinMemGiB = 2.0;                                           Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("CGN1", "CGN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" } # SRBMinerMulti-v2.2.0 is fastest
     [PSCustomObject]@{ Algorithms = @("CryptonightHeavy");           Fee = @(0.025); MinMemGiB = 2.0;                                           Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("CGN1", "CGN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_heavy --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
     [PSCustomObject]@{ Algorithms = @("CryptonightHaven");           Fee = @(0.025); MinMemGiB = 2.0;                                           Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("CGN1", "CGN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_haven --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
     [PSCustomObject]@{ Algorithms = @("CryptonightHeavyTube");       Fee = @(0.025); MinMemGiB = 2.0;                                           Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("CGN1", "CGN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_saber --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
@@ -43,8 +43,12 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("X16rt");                      Fee = @(0.025); MinMemGiB = 2.0;                                           MinerSet = 0; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("CGN1", "CGN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=x16rt" } # FPGA
 ) 
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithms[0]).PoolPorts -and (-not $_.Algorithms[1] -or $MinerPools[1].$Algorithm1.PoolPorts) } | Where-Object { -not $_.ExcludePools[0] -or $MinerPools[0].($_.Algorithms[0]).BaseName -notin $_.ExcludePools[0] } | Where-Object { -not $_.ExcludePools[1] -or $MinerPools[1].$Algorithm1.BaseName -notin $_.ExcludePools[1] }) { 
+$Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).BaseName -notin $_.ExcludePools[0] -and $MinerPools[1].($_.Algorithms[1]).BaseName -notin $_.ExcludePools[1] }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).PoolPorts -and (-not $_.Algorithms[1] -or $MinerPools[1].($_.Algorithms[1]).PoolPorts) }
+$Algorithms = $Algorithms | Where-Object { -not $_.Algorithms[1] -or ($MinerPools[0].($_.Algorithms[0]).PoolPorts[0] -and $MinerPools[1].($_.Algorithms[1]).PoolPorts[0]) -or ($MinerPools[0].($_.Algorithms[0]).PoolPorts[1] -and $MinerPools[1].($_.Algorithms[1]).PoolPorts[1]) }
 
+If ($Algorithms) { 
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Model -EQ $_.Model
@@ -108,3 +112,5 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         }
     }
 }
+
+$Error.Clear()

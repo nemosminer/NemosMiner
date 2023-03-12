@@ -121,3 +121,5 @@ If ($Algorithms) {
         }
     }
 }
+
+$Error.Clear()

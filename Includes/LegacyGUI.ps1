@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           LegacyGUI.psm1
-Version:        4.3.1.2
-Version date:   06 March 2023
+Version:        4.3.1.3
+Version date:   12 March 2023
 #>
 
 [Void] [System.Reflection.Assembly]::LoadWithPartialName(“System.Windows.Forms”)
@@ -231,6 +231,7 @@ $LaunchedMinersDGV.Add_RowPrePaint(
                     Default                      { [System.Drawing.Color]::FromArgb(255, 255, 255, 255) }
                 }
             }
+            Remove-Variable Row
         }
     }
 )
@@ -377,6 +378,7 @@ $MinersDGV.Add_RowPrePaint(
                     Default                      { [System.Drawing.Color]::FromArgb(255, 255, 255, 255) }
                 }
             }
+            Remove-Variable Row
         }
     }
 )
@@ -499,6 +501,7 @@ $WorkersDGV.Add_RowPrePaint(
                     Default   { [System.Drawing.Color]::FromArgb(255, 255, 255, 255) }
                 }
             }
+            Remove-Variable Row
         }
     }
 )
@@ -638,6 +641,7 @@ $SwitchingDGV.Add_RowPrePaint(
                     Default    { [System.Drawing.Color]::FromArgb(255, 255, 255, 255) }
                 }
             }
+            Remove-Variable Row
         }
     }
 )
@@ -876,6 +880,7 @@ Function Update-TabControl {
                         $I++
                     }
                 }
+                Remove-Variable Pool
 
                 $I = 0
                 $ChartArea.AxisX.CustomLabels.Clear()
@@ -886,6 +891,7 @@ Function Update-TabControl {
                             $EarningsChart.Series[$Pool].Points[$I].ToolTip = "$($ToolTip[$I])`nTotal: {0:N$($Config.DecimalsMax)} $($Config.Currency)" -f $Daysum[$I]
                         }
                     }
+                    Remove-Variable Pool
                     $I++
                 }
 
@@ -1286,6 +1292,7 @@ $ContextMenuStrip.Add_ItemClicked(
                                 Remove-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
                                 $Worker.Hashrate = [Double]::NaN
                             }
+                            Remove-Variable Worker
                             # Also clear power usage
                             Remove-Stat -Name "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms[1])" })_PowerUsage"
                             $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
@@ -1363,6 +1370,7 @@ $ContextMenuStrip.Add_ItemClicked(
                                     Set-Stat -Name $Stat_Name -Value $Parameters.Value -FaultDetection $false | Out-Null
                                 }
                             }
+                            Remove-Variable Algorithm
                         }
                     }
                     $ContextMenuStrip.Visible = $false
@@ -1389,6 +1397,7 @@ $ContextMenuStrip.Add_ItemClicked(
                                 Disable-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
                                 $Worker.Hashrate = [Double]::NaN
                             }
+                            Remove-Variable Worker
                             $_.Disabled = $true
                             $_.Reasons += "Disabled by user"
                             $_.Reasons = $_.Reasons | Sort-Object -Unique
@@ -1425,6 +1434,7 @@ $ContextMenuStrip.Add_ItemClicked(
                                     If (-not $_.Reasons) { $_.Available = $true }
                                 }
                             }
+                            Remove-Variable WatchdogTimer
                         }
                     }
                     $ContextMenuStrip.Visible = $false
@@ -1525,6 +1535,7 @@ $ContextMenuStrip.Add_ItemClicked(
                                     If (-not $_.Reasons) { $_.Available = $true }
                                 }
                             }
+                            Remove-Variable WatchdogTimer
                         }
                     }
                     $ContextMenuStrip.Visible = $false

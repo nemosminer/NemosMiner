@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           BalancesTracker.ps1
-Version:        4.3.1.2
-Version date:   06 March 2023
+Version:        4.3.1.3
+Version date:   12 March 2023
 #>
 
 Do {
@@ -45,6 +45,7 @@ Do {
         $Variables.BalanceData = (Get-Content $Filename | ConvertFrom-Json)
         If ($Variables.BalanceData.Count -gt ($PoolData.Count / 2)) { Break }
     }
+    Remove-Variable FileName
     If ($Variables.BalanceData -isnot [Array]) { $Variables.BalanceData = @() }
     $Variables.BalanceData | ForEach-Object { $_.DateTime = [DateTime]$_.DateTime }
 
@@ -348,6 +349,7 @@ Do {
                 $PoolChartData.$_ += ($PoolEarnings.Group | Where-Object Pool -EQ $_ | ForEach-Object { [Double]$_.DailyEarnings * $Variables.Rates.($_.Currency).BTC } | Measure-Object -Sum).Sum
             }
         }
+        Remove-Variable PoolEarnings
 
         $EarningsChartData = [PSCustomObject]@{ 
             Labels = @(

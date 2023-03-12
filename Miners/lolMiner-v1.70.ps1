@@ -1,6 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -in @("AMD", "INTEL", "NVIDIA"))) { Return }
 
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.69/lolMiner_v1.69_Win64.zip"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.70/lolMiner_v1.70_Win64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\lolminer.exe"
 $DeviceEnumerator = "Bus"
@@ -53,7 +53,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("CuckarooM29");                Type = "NVIDIA"; Fee = @(0.01);       MinMemGiB = 6.0;                                           Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @();                  Arguments = " --algo C29M" }
 #   [PSCustomObject]@{ Algorithms = @("Cuckatoo31");                 Type = "NVIDIA"; Fee = @(0.02);       MinMemGiB = 4.0;                                           Minerset = 3; WarmupTimes = @(60, 60); ExcludeGPUArchitecture = @();                  Arguments = " --algo C31" } # ASIC
 #   [PSCustomObject]@{ Algorithms = @("Cuckatoo32");                 Type = "NVIDIA"; Fee = @(0.02);       MinMemGiB = 4.0;                                           Minerset = 3; WarmupTimes = @(60, 60); ExcludeGPUArchitecture = @();                  Arguments = " --algo C32" } # ASIC
-    [PSCustomObject]@{ Algorithms = @("Equihash1254");               Type = "NVIDIA"; Fee = @(0.015);      MinMemGiB = 3.0;                                           Minerset = 1; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @();                  Arguments = " --coin ZEL" } # MiniZ-v2.0c3 is fastest, but has 2% miner fee
+    [PSCustomObject]@{ Algorithms = @("Equihash1254");               Type = "NVIDIA"; Fee = @(0.015);      MinMemGiB = 3.0;                                           Minerset = 1; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @();                  Arguments = " --coin ZEL" } # MiniZ-v2.0c4 is fastest, but has 2% miner fee
     [PSCustomObject]@{ Algorithms = @("Equihash1445");               Type = "NVIDIA"; Fee = @(0.01);       MinMemGiB = 3.0;                                           Minerset = 1; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @();                  Arguments = " --coin $(If ($MinerPools[0].Equihash1445.Currency -in @("BTCZ", "BTG", "EXCC", "XSG")) { $MinerPools[0].Equihash1445.Currency } Else { "AUTO144_5" })" } # FPGA
     [PSCustomObject]@{ Algorithms = @("Equihash1927");               Type = "NVIDIA"; Fee = @(0.01);       MinMemGiB = 3.0;                                           MinerSet = 1; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @();                  Arguments = " --coin $(If ($MinerPools[0].Equihash1927.Currency -in @("YEC", "ZCL", "ZER")) { $MinerPools[0].Equihash1927.Currency } Else { "AUTO192_7" })" } # FPGA
     [PSCustomObject]@{ Algorithms = @("Equihash2109");               Type = "NVIDIA"; Fee = @(0.01);       MinMemGiB = 2.0;                                           Minerset = 2; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @();                  Arguments = " --algo EQUI210_9" }
@@ -130,3 +130,5 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         }
     }
 }
+
+$Error.Clear()

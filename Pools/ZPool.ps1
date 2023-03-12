@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool.ps1
-Version:        4.3.1.2
-Version date:   06 March 2023
+Version:        4.3.1.3
+Version date:   12 March 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -60,11 +60,10 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
         $Algorithm = $_
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $Currency = "$($Request.$_.currency)".Trim()
+        If ($Algorithm_Norm -eq "FiroPow" -and $Currency -eq "SCC") { $Algorithm_Norm = "FiroPowSCC" } # SCC firo variant
 
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
         $Fee = $Request.$_.Fees / 100
-
-        If ($Algorithm_Norm -eq "FiroPow" -and $Currency -eq "SCC") { $Algorithm_Norm = "FiroPowSCC" } # SCC firo variant
 
         # Add coin name
         If ($Request.$_.CoinName -and $Currency) { 

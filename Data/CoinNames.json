@@ -58,6 +58,7 @@
   "BHD": "Bithold",
   "BIN": "Binarium",
   "BITC": "BitCash",
+  "BLACK": "Blackchain",
   "BLAS": "Blakestar2",
   "BLAST": "Blast",
   "BLOC": "Bloc",
@@ -438,6 +439,7 @@
   "SAP": "Methuselah",
   "SAROS": "Soros",
   "SATO": "SatoshiCrypto",
+  "SATOX": "Satox",
   "SC": "SiaCoin",
   "SCASH": "SafeCash",
   "SCC": "StakeCubeCoin",
@@ -458,6 +460,7 @@
   "SMLY": "SmileyCoin",
   "SONO": "Sono",
   "SOV": "Sovereign",
+  "SPB": "Spiderbyte",
   "SPDR": "Spider",
   "SPK": "Sparkspay",
   "SPLD": "SplendidCoin",
@@ -476,6 +479,7 @@
   "SXC": "SexCoin",
   "SYS": "SysCoin",
   "TAJ": "TajCoin",
+  "TCC": "TaichiCoin",
   "TCR": "TecraCoin",
   "TDC": "TideCoin",
   "TENT": "TentCoin",
@@ -611,5 +615,5 @@
   "ZP": "ZenProtocol",
   "ZUR": "ZurCoin",
   "ZYON": "BitZyon",
-  "SATOX": "Satox"
+  "LTRM": "Litoreum"
 }

@@ -1,6 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "NVIDIA")) { Return }
 
-$Uri = "https://github.com/rigelminer/rigel/releases/download/1.3.8/rigel-1.3.8-win.zip"
+$Uri = "https://github.com/rigelminer/rigel/releases/download/1.3.9/rigel-1.3.9-win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\Rigel.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -17,7 +17,12 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("NexaPow");                    Fee = @(0.02);  MinMemGiB = 3.0;                                           Tuning = " --mt2"; Minerset = 1; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  nexapow" }
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithms[0]).PoolPorts -and (-not $_.Algorithms[1] -or $MinerPools[1].($_.Algorithms[1]).PoolPorts) } | Where-Object { -not $_.ExcludePools[0] -or $MinerPools[0].($_.Algorithms[0]).BaseName -notin $_.ExcludePools[0] } | Where-Object { -not $_.ExcludePools[1] -or $MinerPools[1].($_.Algorithms[1]).BaseName -notin $_.ExcludePools[1] }) { 
+$Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).BaseName -notin $_.ExcludePools[0] -and $MinerPools[1].($_.Algorithms[1]).BaseName -notin $_.ExcludePools[1] }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).PoolPorts -and (-not $_.Algorithms[1] -or $MinerPools[1].($_.Algorithms[1]).PoolPorts) }
+$Algorithms = $Algorithms | Where-Object { -not $_.Algorithms[1] -or ($MinerPools[0].($_.Algorithms[0]).PoolPorts[0] -and $MinerPools[1].($_.Algorithms[1]).PoolPorts[0]) -or ($MinerPools[0].($_.Algorithms[0]).PoolPorts[1] -and $MinerPools[1].($_.Algorithms[1]).PoolPorts[1]) }
+
+If ($Algorithms) { 
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
@@ -53,7 +58,8 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     If ($MinerPools[$Index].$Algorithm.WorkerName) { $Arguments += " --worker [$($Index + 1)]$($MinerPools[$Index].$Algorithm.WorkerName)" }
                     $Index ++
                 }
-                $Arguments += If ($MinerPools[0].$Algorithm.PoolPorts[1] -or $MinerPools[1].$Algorithm.PoolPorts[1]) { " --no-strict-ssl" } # Parameter cannot be used multiple times
+                Remove-Variable Algorithm
+                $Arguments += If ($MinerPools[0].($_.Algorithms[0]).PoolPorts[1] -or ($MinerPools[1].($_.Algorithms[1]) -and $MinerPools[1].($_.Algorithms[1]).PoolPorts[1])) { " --no-strict-ssl" } # Parameter cannot be used multiple times
 
                 # Apply tuning parameters
                 If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
@@ -77,3 +83,5 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         }
     }
 }
+
+$Error.Clear()

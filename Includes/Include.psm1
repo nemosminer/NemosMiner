@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.1.2
-Version date:   06 March 2023
+Version:        4.3.1.3
+Version date:   12 March 2023
 #>
 
 # Window handling
@@ -170,7 +170,7 @@ Class Miner {
     [Double]$Earning_Accuracy # derived from pool and stats
     [DateTime]$EndTime
     [String[]]$EnvVars = @()
-    [DateTime]$FirstValidDataSampleDate = 0
+    [DateTime]$ValidDataSampleTimestamp = 0
     [Double[]]$Hashrates_Live = @()
     [String]$Info
     [Boolean]$KeepRunning = $false # do not stop miner even if not best (MinInterval)
@@ -334,7 +334,6 @@ Class Miner {
     }
 
     [MinerStatus]GetStatus() { 
-        # If ($this.Status -eq [MinerStatus]::DryRun) { Return [MinerStatus]::DryRun }
         If ($this.Process.State -eq [MinerStatus]::Running -and $this.ProcessId -and (Get-Process -Id $this.ProcessId -ErrorAction Ignore).ProcessName) { # Use ProcessName, some crashed miners are dead, but may still be found by their processId
             Return [MinerStatus]::Running
         }
@@ -380,15 +379,13 @@ Class Miner {
         $this.EndTime = (Get-Date).ToUniversalTime()
 
         If ($this.ProcessId) { 
-            If (Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue) { 
-                Stop-Process -Id $this.ProcessId -Force
-            }
+            Stop-Process -Id $this.ProcessId -Force -ErrorAction SilentlyContinue
             $this.ProcessId = $null
         }
 
         If ($this.Process) { 
             If ($this.Process | Get-Job) { 
-                $this.Process | Get-Job | Receive-Job | Out-Null
+                $this.Process | Get-Job | Stop-Job | Receive-Job | Out-Null
                 $this.Process | Get-Job | Remove-Job -Force
             }
             $this.Active += $this.Process.PSEndTime - $this.Process.PSBeginTime
@@ -465,6 +462,7 @@ Class Miner {
                 $TotalPowerUsage += [Double]$Device.ConfiguredPowerUsage
             }
         }
+        Remove-Variable Device
         Return $TotalPowerUsage
     }
 
@@ -605,7 +603,7 @@ Function Start-IdleDetection {
 
     $PowerShell = [PowerShell]::Create()
     $PowerShell.Runspace = $Variables.IdleRunspace
-    $PowerShell.AddScript(
+    [Void]$PowerShell.AddScript(
         { 
             # Set the starting directory
             Set-Location (Split-Path $MyInvocation.MyCommand.Path)
@@ -686,16 +684,19 @@ namespace PInvoke.Win32 {
             }
         }
     ) | Out-Null
-    $PowerShell.BeginInvoke() | Out-Null
 
-    $Variables.IdleRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
+    $Variables.IdleRunspace | Add-Member -Force @{ Name = "IdleRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = $((Get-Date).ToUniversalTime()) }
+
 }
 
 Function Stop-IdleDetection { 
 
     If ($Variables.IdleRunspace) { 
         $Variables.IdleRunspace.Close()
-        If ($Variables.IdleRunspace.PowerShell) { $Variables.IdleRunspace.PowerShell.Dispose() }
+        If ($Variables.IdleRunspace.PowerShell) { 
+            $Variables.IdleRunspace.EndInvoke($Variables.IdleRunspace.Handle) | Out-Null
+            $Variables.IdleRunspace.PowerShell.Dispose()
+        }
         $Variables.IdleRunspace.Dispose()
         $Variables.Remove("IdleRunspace")
         Write-Message -Level Verbose "Stopped idle detection."
@@ -725,9 +726,9 @@ Function Start-Mining {
 
         $PowerShell = [PowerShell]::Create()
         $PowerShell.Runspace = $Variables.CoreRunspace
-        $PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1") | Out-Null
+        [Void]$PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1") | Out-Null
 
-        $Variables.CoreRunspace | Add-Member -Force @{ Name = "CoreRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = $((Get-Date).ToUniversalTime())  }
+        $Variables.CoreRunspace | Add-Member -Force @{ Name = "CoreRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = $((Get-Date).ToUniversalTime()) }
 
         $Variables.Summary = "Mining processes are running."
     }
@@ -756,7 +757,10 @@ Function Stop-Mining {
         }
 
         $Variables.CoreRunspace.Close()
-        If ($Variables.CoreRunspace.PowerShell) { $Variables.CoreRunspace.PowerShell.Dispose() }
+        If ($Variables.CoreRunspace.PowerShell) { 
+            $Variables.CoreRunspace.EndInvoke($Variables.CoreRunspace.Handle) | Out-Null
+            $Variables.CoreRunspace.PowerShell.Dispose()
+        }
         $Variables.CoreRunspace.Dispose()
         $Variables.Remove("CoreRunspace")
     }
@@ -784,11 +788,11 @@ Function Start-Brain {
         [String[]]$Brains
     )
 
-    If (Test-Path -Path ".\Brains" -PathType Container) { 
+    If ($Brains -and (Test-Path -Path ".\Brains" -PathType Container)) { 
 
         # Starts Brains if necessary
         $BrainsStarted = @()
-        $Brains | Select-Object | Sort-Object | ForEach-Object { 
+        $Brains | ForEach-Object { 
             If ($Config.PoolsConfig.$_.BrainConfig -and -not $Variables.Brains.$_) { 
                 $BrainScript = ".\Brains\$($_).ps1"
                 If (Test-Path -Path $BrainScript -PathType Leaf) { 
@@ -807,11 +811,9 @@ Function Start-Brain {
                         $Variables.BrainData = [PSCustomObject]@{ }
                     }
 
-                    # $Variables.BrainRunspacePool.CleanupInterval = New-TimeSpan -Seconds (10 * $Config.Interval)
-
                     $PowerShell = [PowerShell]::Create()
                     $PowerShell.RunspacePool = $Variables.BrainRunspacePool
-                    $PowerShell.AddScript($BrainScript) | Out-Null
+                    [Void]$PowerShell.AddScript($BrainScript) | Out-Null
                     $Variables.Brains.$_ = @{ Name = $_; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = $((Get-Date).ToUniversalTime()) }
                     $BrainsStarted += $_
                 }
@@ -878,10 +880,10 @@ Function Start-BalancesTracker {
 
                 $PowerShell = [PowerShell]::Create()
                 $PowerShell.Runspace = $Variables.BalancesTrackerRunspace
-                $PowerShell.AddScript("$($Variables.MainPath)\Includes\BalancesTracker.ps1") | Out-Null
-                $PowerShell.BeginInvoke() | Out-Null
+                [Void]$PowerShell.AddScript("$($Variables.MainPath)\Includes\BalancesTracker.ps1") | Out-Null
 
-                $Variables.BalancesTrackerRunspace | Add-Member -Force @{ PowerShell = $PowerShell }
+                $Variables.BalancesTrackerRunspace | Add-Member -Force @{ Name = "BalancesTrackerRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = $((Get-Date).ToUniversalTime()) }
+
             }
             Catch { 
                 Write-Message -Level Error "Failed to start Balances Tracker [$Error[0]]."
@@ -898,7 +900,10 @@ Function Stop-BalancesTracker {
     If ($Variables.BalancesTrackerRunspace) { 
 
         $Variables.BalancesTrackerRunspace.Close()
-        If ($Variables.BalancesTrackerRunspace.PowerShell) { $Variables.BalancesTrackerRunspace.PowerShell.Dispose() }
+        If ($Variables.BalancesTrackerRunspace.PowerShell) { 
+            $Variables.BalancesTrackerRunspace.EndInvoke($Variables.BalancesTrackerRunspace.Handle) | Out-Null
+            $Variables.BalancesTrackerRunspace.PowerShell.Dispose()
+        }
         $Variables.BalancesTrackerRunspace.Dispose()
         $Variables.Remove("BalancesTrackerRunspace")
 
@@ -1025,7 +1030,7 @@ Function Get-Rate {
     If (-not $RatesCache.Values) { $RatesCache = [PSCustomObject]@{ } }
     $RatesValues = $RatesCache.Values
     $AllCurrencies = $RatesCache.Currencies
-    # Use stored currencies from last run to get mor
+    # Use stored currencies from last run
     If (-not $Variables.BalancesCurrencies -and $Config.BalancesTrackerPollInterval) { $Variables.BalancesCurrencies = $AllCurrencies }
 
     $Variables.AllCurrencies = @(@($Config.Currency) + @($Config.Wallets.Keys) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies)) -replace "mBTC", "BTC" | Sort-Object -Unique
@@ -1054,7 +1059,7 @@ Function Get-Rate {
 
             If ($RatesValues) { 
                 $Currencies = ($RatesValues.BTC | Get-Member -MemberType NoteProperty).Name
-                $Currencies | Where-Object { $_ -ne "BTC" } | ForEach-Object { 
+                $Currencies | Select-Object | Where-Object { $_ -ne "BTC" } | ForEach-Object { 
                     $Currency = $_
                     $RatesValues | Add-Member $Currency ($RatesValues.BTC.PSObject.Copy()) -Force
                     ($RatesValues.$Currency | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
@@ -1152,12 +1157,11 @@ Function Write-Message {
             # This lets us ensure only one thread is trying to write to the file at a time. 
             $Mutex = New-Object System.Threading.Mutex($false, $Variables.Branding.ProductLabel)
 
-            $LogFile = "$($Variables.MainPath)\Logs\$($Variables.Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd").log"
-
             # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
             If ($Mutex.WaitOne(1000)) { 
+                $LogFile = "$($Variables.MainPath)\Logs\$($Variables.Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd").log"
                 $Message | Out-File -FilePath $LogFile -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-                $Mutex.ReleaseMutex()
+                [Void]$Mutex.ReleaseMutex()
             }
             Else { 
                 Write-Error -Message "Log file is locked, unable to write message to $($LogFile)."
@@ -1306,7 +1310,7 @@ Function Get-RandomDonationPoolsConfig {
         Switch -regex ($_) { 
             "^MiningDutch$|^MiningPoolHub$|^ProHashing$" { 
                 If ($Variables.DonationRandom."$($_)UserName") { 
-                    # not all devs have a known MiningDutch or ProHashing account
+                    # not all devs have a known HashCryptos, MiningDutch or ProHashing account
                     $PoolConfig.UserName = $Variables.DonationRandom."$($_)UserName"
                     $PoolConfig.Variant = $Config.PoolsConfig.$_.Variant
                     $DonationRandomPoolsConfig.$_ = $PoolConfig
@@ -1586,7 +1590,7 @@ Function Get-SortedObject {
                 }
             }
             Default { 
-                $SortedObject = ($Object | Sort-Object)
+                $SortedObject = $Object | Sort-Object
             }
         }
     }
@@ -2238,6 +2242,7 @@ Function Get-GPUArchitectureNvidia {
                 Return $GPUArchitecture.Name
             }
         }
+        Remove-Variable GPUArchitecture
 
         ForEach ($GPUArchitecture in $GPUArchitectureDB_Nvidia.PSObject.Properties) { 
             $Model_Match = $GPUArchitecture.Value.Model -join "|"
@@ -2245,6 +2250,7 @@ Function Get-GPUArchitectureNvidia {
                 Return $GPUArchitecture.Name
             }
         }
+        Remove-Variable GPUArchitecture
     } 
     Catch { 
         If ($Error.Count) { $Error.RemoveAt(0) }
@@ -2645,13 +2651,13 @@ Function Get-Combination {
     $Combination = [PSCustomObject]@{ }
 
     For ($I = 0; $I -lt $Value.Count; $I++) { 
-        $Combination | Add-Member @{ [Math]::Pow(2, $i) = $Value[$i] }
+        $Combination | Add-Member @{ [Math]::Pow(2, $I) = $Value[$I] }
     }
 
     $Combination_Keys = ($Combination | Get-Member -MemberType NoteProperty).Name
 
     For ($I = $SizeMin; $I -le $SizeMax; $I++) { 
-        $X = [Math]::Pow(2, $i) - 1
+        $X = [Math]::Pow(2, $I) - 1
 
         While ($X -le [Math]::Pow(2, $Value.Count) - 1) { 
             [PSCustomObject]@{ Combination = $Combination_Keys | Where-Object { $_ -band $X } | ForEach-Object { $Combination.$_ } }
@@ -2869,7 +2875,7 @@ Function Get-Algorithm {
     )
 
     If (-not (Test-Path -Path Variable:Global:Algorithms -ErrorAction SilentlyContinue)) { 
-        $Global:Algorithms = Get-Content ".\Data\Algorithms.json" | ConvertFrom-Json
+        $Global:Algorithms = Get-Content ".\Data\Algorithms.json" | ConvertFrom-Json -ErrorAction Stop
     }
 
     $Algorithm = (Get-Culture).TextInfo.ToTitleCase($Algorithm.ToLower() -replace '-|_|/| ')
@@ -2918,7 +2924,6 @@ Function Add-CoinName {
        Return
     }
     Else { 
-
         # Get mutex. Mutexes are shared across all threads and processes. 
         # This lets us ensure only one thread is trying to write to the file at a time. 
         $Mutex = New-Object System.Threading.Mutex($false, "$($PWD -replace '[^A-Z0-9]')_CoinData")
@@ -2936,8 +2941,7 @@ Function Add-CoinName {
                 $Global:CoinNames | Add-Member $Currency ((Get-Culture).TextInfo.ToTitleCase($CoinName.Trim().ToLower()) -replace '[^A-Z0-9\$\.]' -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin') -Force
                 $Global:CoinNames | ConvertTo-Json | Out-File -Path ".\Data\CoinNames.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
             }
-
-            $Mutex.ReleaseMutex()
+            [Void]$Mutex.ReleaseMutex()
         }
     }
 }
@@ -2949,36 +2953,11 @@ Function Get-CoinName {
         [String]$Currency
     )
 
-    If (-not (Test-Path -Path Variable:Global:CoinNames -ErrorAction SilentlyContinue)) { 
-        $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
-    }
-
-    If ($Global:CoinNames.$Currency) { 
-       Return $Global:CoinNames.$Currency
-    }
     If ($Currency) { 
-        $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
         If ($Global:CoinNames.$Currency) { 
             Return $Global:CoinNames.$Currency
         }
-    }
-    Return $null
-}
-Function Get-Currency { 
 
-    Param(
-        [Parameter(Mandatory = $false)]
-        [String]$CoinName
-    )
-
-    If (-not (Test-Path -Path Variable:Global:CoinNames -ErrorAction SilentlyContinue)) { 
-        $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
-    }
-
-    If ($Global:CoinNames.$Currency) { 
-       Return $Global:CoinNames.$Currency
-    }
-    If ($Currency) { 
         $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
         If ($Global:CoinNames.$Currency) { 
             Return $Global:CoinNames.$Currency
@@ -2998,14 +2977,16 @@ Function Get-EquihashCoinPers {
         [String]$DefaultCommand = ""
     )
 
-    If (-not (Test-Path -Path Variable:Global:EquihashCoinPers -ErrorAction SilentlyContinue)) { 
+    If ($Currency) { 
+        If ($Global:EquihashCoinPers.$Currency) { 
+            Return "$($Command)$($Global:EquihashCoinPers.$Currency)"
+        }
+
         $Global:EquihashCoinPers = Get-Content -Path ".\Data\EquihashCoinPers.json" | ConvertFrom-Json
+        If ($Global:EquihashCoinPers.$Currency) { 
+            Return "$($Command)$($Global:EquihashCoinPers.$Currency)"
+        }
     }
-
-    If ($Global:EquihashCoinPers.$Currency) { 
-        Return "$($Command)$($Global:EquihashCoinPers.$Currency)"
-    }
-
     Return $DefaultCommand
 }
 
@@ -3016,15 +2997,12 @@ Function Get-AlgorithmFromCurrency {
         [String]$Currency
     )
 
-    If (-not (Test-Path -Path Variable:Global:CurrencyAlgorithm -ErrorAction SilentlyContinue)) { 
-        $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
-    }
-
-    If ($Global:CurrencyAlgorithm.$Currency) { 
-       Return $Global:CurrencyAlgorithm.$Currency
-    }
     If ($Currency) { 
-        # $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
+        If ($Global:CurrencyAlgorithm.$Currency) { 
+            Return $Global:CurrencyAlgorithm.$Currency
+        }
+
+        $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
         If ($Global:CurrencyAlgorithm.$Currency) { 
             Return $Global:CurrencyAlgorithm.$Currency
         }
@@ -3148,7 +3126,7 @@ Function Start-LogReader {
             }
         }
         Else { 
-            Invoke-CreateProcess -BinaryPath $Variables.LogViewerExe -ArgumentList $Variables.LogViewerConfig -WorkingDirectory (Split-Path $Variables.LogViewerExe) -MinerWindowStyle "Normal" -Priority "-2" -EnvBlock $null -LogFile $null -JobName "Snaketail" | Out-Null
+            [Void](Invoke-CreateProcess -BinaryPath $Variables.LogViewerExe -ArgumentList $Variables.LogViewerConfig -WorkingDirectory (Split-Path $Variables.LogViewerExe) -MinerWindowStyle "Normal" -Priority "-2" -EnvBlock $null -LogFile $null -JobName "Snaketail")
         }
     }
 }
@@ -3268,6 +3246,7 @@ Function Update-ConfigFile {
         Write-Message -Level Warn "Available mining locations have changed ($OldRegion -> $($Config.Region)). Please verify your configuration."
     }
     # Extend MinDataSampleAlgoMultiplier
+    If ($Config.MinDataSampleAlgoMultiplier.DynexSolve -eq $null) { $Config.MinDataSampleAlgoMultiplier | Add-Member "DynexSolve" 3 }
     If ($Config.MinDataSampleAlgoMultiplier.Ghostrider -eq $null) { $Config.MinDataSampleAlgoMultiplier | Add-Member "GhostRider" 3 }
     If ($Config.MinDataSampleAlgoMultiplier.Mike -eq $null) { $Config.MinDataSampleAlgoMultiplier | Add-Member "Mike" 3 }
     # Remove AHashPool config data
@@ -3455,6 +3434,7 @@ Function Update-DAGData {
                 }
             }
         }
+        Remove-Variable Algorithm
 
         # Add default '*' (equal to highest)
         $Variables.DAGdata.Currency."*" = @{ 
@@ -3467,6 +3447,7 @@ Function Update-DAGData {
         $Variables.DAGdata | Get-SortedObject | ConvertTo-Json | Out-File -FilePath ".\Data\DagData.json" -Force -Encoding utf8NoBOM
     }
 }
+
 Function Get-DAGsize { 
 
     Param(
@@ -3611,9 +3592,11 @@ Function Out-DataTable {
                 }
                 $DataRow.Item($Property.Name) = If ($Property.GetType().IsArray) { $Property.Value | ConvertTo-Xml -As String -NoTypeInformation -Depth 1 } Else { $Property.Value }
             }
+            Remove-Variable Property
             $DataTable.Rows.Add($DataRow)
             $First = $false
         }
+        Remove-Variable Object
     }
     End { 
         Return @(,($DataTable))

@@ -40,3 +40,5 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         }
     }
 }
+
+$Error.Clear()

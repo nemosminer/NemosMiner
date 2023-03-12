@@ -39,6 +39,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
             $_ | Add-Member Intensity $Intensity -Force
             $_.PsObject.Copy()
         }
+        Remove-Variable Intensity
     }
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
@@ -127,3 +128,5 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         }
     }
 }
+
+$Error.Clear()

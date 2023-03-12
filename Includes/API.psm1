@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.3.1.2
-Version date:   06 March 2023
+Version:        4.3.1.3
+Version date:   12 March 2023
 #>
 
 Function Start-APIServer { 
@@ -60,7 +60,7 @@ Function Start-APIServer {
 
             $PowerShell = [PowerShell]::Create()
             $PowerShell.Runspace = $Variables.APIRunspace
-            $PowerShell.AddScript(
+            [Void]$PowerShell.AddScript(
                 { 
                     (Get-Process -Id $PID).PriorityClass = "Normal"
 
@@ -159,6 +159,7 @@ Function Start-APIServer {
                                         $Pool.Available = $false
                                         $Data += "$($Pool.Algorithm)@$($Pool.BaseName)`n"
                                     }
+                                    Remove-Variable Pool
                                     $Message = "$($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" }) disabled."
                                     Write-Message -Level Verbose "Web GUI: $Message"
                                     $Data += "`n$Message"
@@ -187,6 +188,7 @@ Function Start-APIServer {
                                         If (-not $Pool.Reasons) { $Pool.Available = $true }
                                         $Data += "$($Pool.Algorithm)@$($Pool.BaseName)`n"
                                     }
+                                    Remove-Variable Pool
                                     $Message = "$($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" }) enabled."
                                     Write-Message -Level Verbose "Web GUI: $Message"
                                     $Data += "`n$Message"
@@ -238,6 +240,7 @@ Function Start-APIServer {
                                                     Else { $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
                                                 }
                                             }
+                                            Remove-Variable DeviceName
                                             Write-Message -Level Verbose "Web GUI: Device$(If ($Values.Count -ne 1) { "s" } ) '$($Values -join ', ')' disabled. Configuration file '$($Variables.ConfigFile)' updated."
                                         }
                                         Catch { 
@@ -248,6 +251,7 @@ Function Start-APIServer {
                                         $Data = "No configuration change"
                                     }
                                 }
+                                Remove-Variable Key
                                 $Data = "<pre>$Data</pre>"
                                 Break
                             }
@@ -278,6 +282,7 @@ Function Start-APIServer {
                                         $Data = "No configuration change"
                                     }
                                 }
+                                Remove-Variable Key
                                 $Data = "<pre>$Data</pre>"
                                 Break
                             }
@@ -416,8 +421,10 @@ Function Start-APIServer {
                                             $Data += "$($_.Name) ($($_.Algorithms -join " & "))`n"
                                             ForEach ($Worker in $_.Workers) { 
                                                 Disable-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
-                                                $Worker.Hashrate = [Double]::NaN
+                                                $W
+                                                orker.Hashrate = [Double]::NaN
                                             }
+                                            Remove-Variable Worker
                                             $_.Disabled = $true
                                             $_.Reasons += "Disabled by user"
                                             $_.Reasons = $_.Reasons | Sort-Object -Unique
@@ -464,6 +471,7 @@ Function Start-APIServer {
                                                 Enable-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
                                                 $Worker.Hashrate = [Double]::NaN
                                             }
+                                            Remove-Variable Worker
                                             $_.Disabled = $false
                                             $_.Reasons = @($_.Reasons | Where-Object { $_ -ne "Disabled by user" } | Sort-Object -Unique)
                                             If (-not $_.Reasons) { $_.Available = $true }
@@ -530,6 +538,7 @@ Function Start-APIServer {
                                                 Remove-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
                                                 $Worker.Hashrate = [Double]::NaN
                                             }
+                                            Remove-Variable Worker
                                             # Also clear power usage
                                             Remove-Stat -Name "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms[1])" })_PowerUsage"
                                             $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
@@ -608,6 +617,7 @@ Function Start-APIServer {
                                                     Set-Stat -Name $Stat_Name -Value $Parameters.Value -FaultDetection $false | Out-Null
                                                 }
                                             }
+                                            Remove-Variable Algorithm
                                         }
                                         Write-Message -Level Verbose "Web GUI: Marked $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" }) as failed."
                                         $Data += "`n$(If ($Miners.Count -eq 1) { "The miner is" } Else { "$($Miners.Count) miners are" }) $(If ($Parameters.Value -eq 0) { "marked as failed" } ElseIf ($Parameters.Value -eq -1) { "disabled" } Else { "set to value $($Parameters.Value)" } )." 
@@ -647,6 +657,7 @@ Function Start-APIServer {
                                         }
                                     }
                                 }
+                                Remove-Variable Miner
                                 ForEach ($Pool in ($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
                                     If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object PoolName -EQ $Pool.Name | Where-Object Algorithm -EQ $Pool.Algorithm)) {
                                         # Remove Watchdog timers
@@ -661,6 +672,7 @@ Function Start-APIServer {
                                         }
                                     }
                                 }
+                                Remove-Variable Pool
                                 $Data = $Data | Sort-Object -Unique
                                 If ($WatchdogTimers) { 
                                     $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."

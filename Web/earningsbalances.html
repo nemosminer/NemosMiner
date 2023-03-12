@@ -1,141 +1,152 @@
 <!--#include file="/parts/head.html" -->
-          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 id="title" data-navbaractive="navearningsbalances">Earnings Chart</h2>
+          <div id="earnings">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+              <h2 id="title" data-navbaractive="navearningsbalances">Earnings Chart</h2>
+            </div>
+            <table class="alert alert-info table" role="alert">
+              <tr>
+                <td>
+                  Consolidated earnings of the last 30 active mining days. The data is taken from the pools APIs and may not yet include results from recent mining.
+                </td>
+                <td data-halign="right" style="padding-top: 0.8rem">
+                  Grey scale <input type="checkbox" class="toggle-switch" id="useColor" name="useColor"> Colors
+                </td>
+              </tr>
+            </table>
+            <canvas style="top:-30px;" id="EarningsChart" role="img"></canvas>
+            <br>
           </div>
-          <table class="alert alert-info table" role="alert">
-            <tr>
-              <td>Consolidated earnings of the last 30 active mining days. The data is taken from the pools APIs and may not yet include results from recent mining.</td>
-              <td data-halign="right" style="padding-top: 0.7rem">
-                Grey scale <input type="checkbox" class="toggle-switch" id="useColor" name="useColor"> Colors
-              </td>
-            </tr>
-          </table>
-          <canvas style=" top:-30px;" id="EarningsChart" role="img"></canvas>
-
-          <br>
-          <div id="balances" style="display:none">
+          <div id="balances" style="display:none;">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
               <h2>Balances</h2>
             </div>
             <div id="balanceboxes" class="card-deck"></div>
             <script id="poolbalance_template" type="text/x-handlebars-template">
-            <div class="card m-3 rounded {{#if total}}text-white bg-primary{{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}300px{{/if}}">
-            <div class="card-header text-center">
-            {{#if total}}
+              <div class="card m-3 rounded {{#if total}}text-white bg-primary{{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}300px{{/if}}">
+              <div class="card-header text-center">
                 <br>
-                <h4 {{#if outdated}}title="Some pool balances are outdated.&#10;Totals may not include recent earnings."{{/if}}>{{{name}}}</h4>
-                <table class="center" style="width: 100%">
-                <br>
-                <tr>
-                    <th style="text-align:center"><h5>Earnings last hour</h5></th>
-                    <th style="text-align:center"><h5>Earnings last 6 hours</h5></th>
-                    <th style="text-align:center"><h5>Earnings last 24 hours</h5></th>
-                    <th style="text-align:center"><h5>Earnings last 7 days</h5></th>
-                    <th style="text-align:center"><h5>Earnings last 30 days</h5></th>
-                    <th style="text-align:center"><h5>Balances</h5></th>
-                </tr>
-                <tr>
-                    <td style="text-align:center">
-                    {{#each growth1}}
-                        <br>{{@key}}: {{formatCurrency this}}
-                    {{/each}}
-                    </td>
-                    <td style="text-align:center">
-                    {{#each growth6}}
-                        <br>{{@key}}: {{formatCurrency this}}
-                    {{/each}}
-                    </td>
-                    <td style="text-align:center">
-                    {{#each growth24}}
-                        <br>{{@key}}: {{formatCurrency this}}
-                    {{/each}}
-                    </td>
-                    <td style="text-align:center">
-                    {{#each growth168}}
-                        <br>{{@key}}: {{formatCurrency this}}
-                    {{/each}}
-                    </td>
-                    <td style="text-align:center">
-                    {{#each growth720}}
-                        <br>{{@key}}: {{formatCurrency this}}
-                    {{/each}}
-                    </td>
-                    <td style="text-align:center">
-                    {{#each allbalances}}
-                        <br>{{@key}}: {{formatCurrency this}}
-                    {{/each}}
-                    </td>
-                </tr>
-                </table>
-                <br>
-            {{else}}
-                <br>
-                <h5><a href="{{uri}}" target="_blank">{{name}}</a></h5>
-                <div title="{{{title}}}">
-                <!-- <div title="Data last collected from pool"> -->
-                    {{{updated}}}<br>
-                </div>
-                {{#if showsums}}
-                <div title="{{formatCurrency growth1 rate}} {{maincurrency}} last 1 hour">
-                    <br>{{formatCurrency growth1}} {{currency}} last 1 hour
-                </div>
-                <div title="{{formatCurrency growth6 rate}} {{maincurrency}} last 6 hrs">
-                    {{formatCurrency growth6}} {{currency}} last 6 hrs
-                </div>
-                <div title="{{formatCurrency growth24 rate}} {{maincurrency}} last 24 hrs">
-                    {{formatCurrency growth24}} {{currency}} last 24 hrs
-                </div>
-                <div title="{{formatCurrency growth168 rate}} {{maincurrency}} last 7 days">
-                    {{formatCurrency growth168}} {{currency}} last 7 days
-                </div>
-                <div title="{{formatCurrency growth720 rate}} {{maincurrency}} last 30 days">
-                    {{formatCurrency growth720}} {{currency}} last 30 days
-                </div>
+                {{#if total}}
+                  <h4 {{#if outdated}}title="Some pool balances are outdated.&#10;Totals may not include recent earnings."{{/if}}>{{{name}}}</h4>
+                  <table class="center" style="width: 100%">
+                    <br>
+                    <tr>
+                      <th style="text-align:center"><h5>Earnings last hour</h5></th>
+                      <th style="text-align:center"><h5>Earnings last 6 hours</h5></th>
+                      <th style="text-align:center"><h5>Earnings last 24 hours</h5></th>
+                      <th style="text-align:center"><h5>Earnings last 7 days</h5></th>
+                      <th style="text-align:center"><h5>Earnings last 30 days</h5></th>
+                      <th style="text-align:center"><h5>Balances</h5></th>
+                    </tr>
+                    <tr>
+                      <td style="text-align:center">
+                        {{#each growth1}}
+                          <br>
+                          {{@key}}: {{formatCurrency this}}
+                        {{/each}}
+                      </td>
+                      <td style="text-align:center">
+                        {{#each growth6}}
+                          <br>
+                          {{@key}}: {{formatCurrency this}}
+                        {{/each}}
+                      </td>
+                      <td style="text-align:center">
+                        {{#each growth24}}
+                          <br>
+                          {{@key}}: {{formatCurrency this}}
+                        {{/each}}
+                      </td>
+                      <td style="text-align:center">
+                        {{#each growth168}}
+                          <br>
+                          {{@key}}: {{formatCurrency this}}
+                        {{/each}}
+                      </td>
+                      <td style="text-align:center">
+                        {{#each growth720}}
+                          <br>
+                          {{@key}}: {{formatCurrency this}}
+                        {{/each}}
+                      </td>
+                      <td style="text-align:center">
+                        {{#each allbalances}}
+                          <br>
+                          {{@key}}: {{formatCurrency this}}
+                        {{/each}}
+                      </td>
+                    </tr>
+                  </table>
+                  <br>
+                {{else}}
+                  <h5><a href="{{uri}}" target="_blank">{{name}}</a></h5>
+                  <div title="{{{title}}}">
+                  <!-- <div title="Data last collected from pool"> -->
+                      {{{updated}}}<br>
+                  </div>
+                  {{#if showsums}}
+                    <div title="{{formatCurrency growth1 rate}} {{maincurrency}} last 1 hour">
+                      <br>{{formatCurrency growth1}} {{currency}} last 1 hour
+                    </div>
+                    <div title="{{formatCurrency growth6 rate}} {{maincurrency}} last 6 hrs">
+                      {{formatCurrency growth6}} {{currency}} last 6 hrs
+                    </div>
+                    <div title="{{formatCurrency growth24 rate}} {{maincurrency}} last 24 hrs">
+                      {{formatCurrency growth24}} {{currency}} last 24 hrs
+                    </div>
+                    <div title="{{formatCurrency growth168 rate}} {{maincurrency}} last 7 days">
+                      {{formatCurrency growth168}} {{currency}} last 7 days
+                    </div>
+                    <div title="{{formatCurrency growth720 rate}} {{maincurrency}} last 30 days">
+                        {{formatCurrency growth720}} {{currency}} last 30 days
+                    </div>
+                  {{/if}}
+                  {{#if showaverages}}
+                    <br/>
+                    <div title="avg. {{formatCurrency avghourlygrowth rate}} {{maincurrency}} in 1h">
+                      avg. {{formatCurrency avghourlygrowth}} {{currency}} in 1h
+                    </div>
+                    <div title="avg. {{formatCurrency avgdailygrowth rate}} {{maincurrency}} in 24 hrs">
+                      avg. {{formatCurrency avgdailygrowth}} {{currency}} in 24 hrs
+                    </div>
+                    <div title="avg. {{formatCurrency avgweeklygrowth rate}} {{maincurrency}} in 7 days">
+                      avg. {{formatCurrency avgweeklygrowth}} {{currency}} in 7 days
+                    </div>
+                  {{/if}}
                 {{/if}}
-                {{#if showaverages}}
-                <br/>
-                <div title="avg. {{formatCurrency avghourlygrowth rate}} {{maincurrency}} in 1h">
-                    avg. {{formatCurrency avghourlygrowth}} {{currency}} in 1h
-                </div>
-                <div title="avg. {{formatCurrency avgdailygrowth rate}} {{maincurrency}} in 24 hrs">
-                    avg. {{formatCurrency avgdailygrowth}} {{currency}} in 24 hrs
-                </div>
-                <div title="avg. {{formatCurrency avgweeklygrowth rate}} {{maincurrency}} in 7 days">
-                    avg. {{formatCurrency avgweeklygrowth}} {{currency}} in 7 days
-                </div>
-                {{/if}}
-            {{/if}}
-            </div>
-            {{#if total}}
-            {{else}}
-            <div class="card-body text-center">
-                <p title="{{#if balanceinmaincurrency}}{{maincurrency}}: {{formatCurrency balanceinmaincurrency}}{{/if}}" class="card-text currencies">
-                {{#each balances}}
+              </div>
+              {{#if total}}
+              {{else}}
+                <div class="card-body text-center">
+                  <p title="{{#if balanceinmaincurrency}}{{maincurrency}}: {{formatCurrency balanceinmaincurrency}}{{/if}}" class="card-text currencies">
+                  {{#each balances}}
                     <b>{{@key}}: {{formatCurrency this}}</b>
                     <br/>
-                {{/each}}
-                <p>
-                <p class="card-text currencies">
-                <div class="payout text-center">
+                  {{/each}}
+                  <p>
+                  <p class="card-text currencies">
+                  <div class="payout text-center">
                     {{#if payoutthreshold}}
-                    <div title="{{percentage}}% of {{convertRate payoutthreshold rates payoutthresholdcurrency maincurrency}} {{maincurrency}}">
-                    Payout threshold<br/><b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{payoutthresholdcurrency}}</b>
-                    </div>
+                      <div title="{{percentage}}% of {{convertRate payoutthreshold rates payoutthresholdcurrency maincurrency}} {{maincurrency}}">
+                        Payout threshold<br/>
+                        <b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{payoutthresholdcurrency}}</b>
+                      </div>
                     {{else}}
-                    <div title="Threshold can not be determined">
-                    Payout threshold<br/><b>Unknown {{payoutthresholdcurrency}}</b>
-                    </div>
+                      <div title="Threshold can not be determined">
+                        Payout threshold<br/>
+                        <b>Unknown {{payoutthresholdcurrency}}</b>
+                      </div>
                     {{/if}}
                     <br/>
                     <div title="Projection is based on the current daily average earnings">
-                    Projected paydate<br/><b>{{paydate}}</b>
+                      Projected paydate<br/>
+                      <b>{{paydate}}</b>
                     </div>
+                  </div>
+                  </p>
                 </div>
-                </p>
-            </div>
-            {{/if}}
-        </div>
-        </script>
+              {{/if}}
+            </script>
+            <br>
           </div>
           <br>
 
@@ -143,7 +154,7 @@
           <script type="text/javascript">
             var canvas = document.getElementById('EarningsChart');
             canvas.width = window.innerWidth;
-            canvas.height = (window.innerHeight * 0.30);
+            canvas.height = (window.innerHeight * 0.4);
 
             //get stored variables
             var useColor = JSON.parse(localStorage.getItem('useColor'));
@@ -311,65 +322,65 @@
             }
 
             Handlebars.registerHelper('convertRate', function(value, rates, from, to) {
-            if (value >= 0) { 
+              if (value >= 0) { 
                 value *= rates[from][to];
                 return formatDecimals(value);
-            } else {
+              } else {
                 return;
-            }
+              }
             });
 
             Handlebars.registerHelper('formatCurrency', function(value, rate) {
-            if (value >= 0) { 
-                if (rate > 0) value *= rate;
-                return formatDecimals(value);
-            } else {
-                return;
-            }
+              if (value >= 0) { 
+                  if (rate > 0) value *= rate;
+                  return formatDecimals(value);
+              } else {
+                  return;
+              }
             });
 
             function updatePoolBalances() {
-            var data_sum = {
-                balances: {},
-                growth1: {},
-                growth6: {},
-                growth24: {},
-                growth168: {},
-                growth720: {},
-            };
-            var totals = {
-                name: "Totals of all pools",
-                growth1: {},
-                growth6: {},
-                growth24: {},
-                growth168: {},
-                growth720: {},
-                allbalances: {},
-                total: true,
-                outdated: false,
-                maincurrency: config.Currency
-            };
-            currencies = [config.Currency].concat(config.ExtraCurrencies)
+              var data_sum = {
+                  balances: {},
+                  growth1: {},
+                  growth6: {},
+                  growth24: {},
+                  growth168: {},
+                  growth720: {},
+              };
+              var totals = {
+                  name: "Totals of all pools",
+                  growth1: {},
+                  growth6: {},
+                  growth24: {},
+                  growth168: {},
+                  growth720: {},
+                  allbalances: {},
+                  total: true,
+                  outdated: false,
+                  maincurrency: config.Currency
+              };
+              currencies = [config.Currency].concat(config.ExtraCurrencies)
 
-            if (config.UsemBTC == true) currencies[currencies.indexOf('BTC')] = 'mBTC'
+              if (config.UsemBTC == true) currencies[currencies.indexOf('BTC')] = 'mBTC'
 
-            var rates = {};
-            // get rates
-            $.ajax({
+              var rates = {};
+              // get rates
+              $.ajax({
                 async: false,
                 dataType: 'json',
                 timeout: 10,
                 url: '/rates',
                 success: function(result) {
-                rates = result;
-                sessionStorage.setItem('rates', JSON.stringify(rates));
+                  rates = result;
+                  sessionStorage.setItem('rates', JSON.stringify(rates));
 
-                $.ajax({
+                  $.ajax({
                     async: false,
                     dataType: 'json',
                     url: '/balances',
                     success: function(result) {
-                    if (result != null) { 
+                      if (result != null) { 
                         document.getElementById('balances').style.display = 'block';
                         $('#balanceboxes').empty();
 
@@ -378,133 +389,133 @@
                         var footer = new RegExp('-.+|=.+');
 
                         $.each(currencies, function(cindex, currency) {
-                        data_sum['balances'][currency]  = 0;
-                        data_sum['growth1'][currency]   = 0;
-                        data_sum['growth6'][currency]   = 0;
-                        data_sum['growth24'][currency]  = 0;
-                        data_sum['growth168'][currency] = 0;
-                        data_sum['growth720'][currency] = 0;
+                          data_sum['balances'][currency]  = 0;
+                          data_sum['growth1'][currency]   = 0;
+                          data_sum['growth6'][currency]   = 0;
+                          data_sum['growth24'][currency]  = 0;
+                          data_sum['growth168'][currency] = 0;
+                          data_sum['growth720'][currency] = 0;
                         });
 
                         $.each(result, function(index, item) {
-                        if (config.UsemBTC && item.Currency == 'BTC') {
+                          if (config.UsemBTC && item.Currency == 'BTC') {
                             var currency = 'mBTC';
-                        } else {
+                          } else {
                             var currency = item.Currency;
-                        }
+                          }
 
-                        if (config.UsemBTC && item.PayoutThresholdCurrency == 'BTC') {
+                          if (config.UsemBTC && item.PayoutThresholdCurrency == 'BTC') {
                             item.PayoutThresholdCurrency = 'mBTC';
                             var factor = 0.001;
-                        } else {
+                          } else {
                             var factor = 1;
-                        }
+                          }
 
-                        if (config.BalancesShowInAllCurrencies || footer.test(item.Pool)) {
+                          if (config.BalancesShowInAllCurrencies || footer.test(item.Pool)) {
                             item.Currencies = [currency].concat(currencies);
-                        } else if (config.BalancesShowInMainCurrency || footer.test(item.Pool)) {
+                          } else if (config.BalancesShowInMainCurrency || footer.test(item.Pool)) {
                             item.Currencies = [currency].concat(config.Currency);
-                        } else {
+                          } else {
                             item.Currencies = [currency];
-                        }
+                          }
 
-                        if (!(footer.test(item.Pool))) {
+                          if (!(footer.test(item.Pool))) {
 
                             if (rates[item.Currency]) currencyrate = rates[item.Currency][config.Currency];
 
                             // Payout threshold currency is different from asset currency
                             if (rates[item.Currency] && [item.PayoutThresholdCurrency]) {
-                            var percentage = (item.Balance / item.PayoutThreshold * rates[item.Currency][item.PayoutThresholdCurrency] * 100);
+                              var percentage = (item.Balance / item.PayoutThreshold * rates[item.Currency][item.PayoutThresholdCurrency] * 100);
                             } else { 
-                            var percentage = (item.Balance / item.PayoutThreshold * 100);
+                              var percentage = (item.Balance / item.PayoutThreshold * 100);
                             }
 
                             var data = {
-                            name: item.Pool + ' (' + item.Currency + ')',
-                            uri: item.Uri,
-                            updated: formatDate(item.LastUpdated),
-                            balances: {},
-                            growth1: item.Growth1,
-                            growth6: item.Growth6,
-                            growth24: item.Growth24,
-                            growth168: item.Growth168,
-                            growth720: item.Growth720,
-                            avghourlygrowth: item.AvgHourlyGrowth,
-                            avgdailygrowth: item.AvgDailyGrowth,
-                            avgweeklygrowth: item.AvgWeeklyGrowth,
-                            payoutthreshold: parseFloat(item.PayoutThreshold) / factor,
-                            payoutthresholdcurrency: item.PayoutThresholdCurrency,
-                            rate: currencyrate,
-                            rates: rates,
-                            currency: currency,
-                            maincurrency: config.Currency,
-                            percentage: (percentage * factor).toFixed(2),
-                            paydate: formatDate(item.ProjectedPayDate),
-                            showaverages: config.BalancesShowAverages,
-                            showsums: config.BalancesShowSums,
-                            title: "Data last collected from pool"
+                              name: item.Pool + ' (' + item.Currency + ')',
+                              uri: item.Uri,
+                              updated: formatDate(item.LastUpdated),
+                              balances: {},
+                              growth1: item.Growth1,
+                              growth6: item.Growth6,
+                              growth24: item.Growth24,
+                              growth168: item.Growth168,
+                              growth720: item.Growth720,
+                              avghourlygrowth: item.AvgHourlyGrowth,
+                              avgdailygrowth: item.AvgDailyGrowth,
+                              avgweeklygrowth: item.AvgWeeklyGrowth,
+                              payoutthreshold: parseFloat(item.PayoutThreshold) / factor,
+                              payoutthresholdcurrency: item.PayoutThresholdCurrency,
+                              rate: currencyrate,
+                              rates: rates,
+                              currency: currency,
+                              maincurrency: config.Currency,
+                              percentage: (percentage * factor).toFixed(2),
+                              paydate: formatDate(item.ProjectedPayDate),
+                              showaverages: config.BalancesShowAverages,
+                              showsums: config.BalancesShowSums,
+                              title: "Data last collected from pool"
                             };
 
                             // Add warning symbol if data was not updated in last poll, add one minute to ensure completion of balance poll
                             if ((new Date() - new Date(item.LastUpdated)) / 1000 > parseInt(config.BalancesTrackerPollInterval + 1) * 60) {
-                            outdatedicon = ' &#9888;&#65039;';
-                            data.title = "Outdated balance data"
-                            data.updated += outdatedicon;
+                              outdatedicon = ' &#9888;&#65039;';
+                              data.title = "Outdated balance data"
+                              data.updated += outdatedicon;
                             }
 
                             // Convert balance to other currencies
                             if (rates[item.Currency]) {
-                            $.each(item.Currencies, function(cindex, currency) {
+                              $.each(item.Currencies, function(cindex, currency) {
                                 if (rates[currency]) data['balances'][currency] = item.Balance * rates[item.Currency][currency];
-                            });
-                            data.balanceinmaincurrency = item.Balance * rates[item.Currency][config.Currency];
+                              });
+                              data.balanceinmaincurrency = item.Balance * rates[item.Currency][config.Currency];
                             } else { 
-                            if (config.BalancesShowInAllCurrencies) {
+                              if (config.BalancesShowInAllCurrencies) {
                                 data['balances']['Exchange rates unknown'] = "";
-                            }
-                            data['balances'][item.Currency] = item.Balance;
+                              }
+                              data['balances'][item.Currency] = item.Balance;
                             }
 
                             // build totals
                             $.each(currencies, function(cindex, currency) {
-                            if (rates[item.Currency] && rates[currency]) {
-                                data_sum['growth1'][currency]   += item.Growth1 * rates[item.Currency][currency];
-                                data_sum['growth6'][currency]   += item.Growth6 * rates[item.Currency][currency];
-                                data_sum['growth24'][currency]  += item.Growth24 * rates[item.Currency][currency];
-                                data_sum['growth168'][currency] += item.Growth168 * rates[item.Currency][currency];
-                                data_sum['growth720'][currency] += item.Growth720 * rates[item.Currency][currency];
-                                data_sum['balances'][currency]  += item.Balance * rates[item.Currency][currency];
-                            }
+                              if (rates[item.Currency] && rates[currency]) {
+                                  data_sum['growth1'][currency]   += item.Growth1 * rates[item.Currency][currency];
+                                  data_sum['growth6'][currency]   += item.Growth6 * rates[item.Currency][currency];
+                                  data_sum['growth24'][currency]  += item.Growth24 * rates[item.Currency][currency];
+                                  data_sum['growth168'][currency] += item.Growth168 * rates[item.Currency][currency];
+                                  data_sum['growth720'][currency] += item.Growth720 * rates[item.Currency][currency];
+                                  data_sum['balances'][currency]  += item.Balance * rates[item.Currency][currency];
+                              }
                             });
 
                             $('#balanceboxes').append(template(data));
-                        }
+                          }
                         });
 
                         if (outdatedicon) {
-                        totals['name'] = totals['name'] + outdatedicon;
-                        totals.outdated = true;
+                          totals['name'] = totals['name'] + outdatedicon;
+                          totals.outdated = true;
                         }
 
                         if (!(config.BalancesShowInAllCurrencies)) currencies = [config.Currency];
 
                         $.each(currencies, function(cindex, currency) {
-                        if (rates[currency]) {
+                          if (rates[currency]) {
                             totals['growth1'][currency]     = data_sum['growth1'][currency];
                             totals['growth6'][currency]     = data_sum['growth6'][currency];
                             totals['growth24'][currency]    = data_sum['growth24'][currency];
                             totals['growth168'][currency]   = data_sum['growth168'][currency];
                             totals['growth720'][currency]   = data_sum['growth720'][currency];
                             totals['allbalances'][currency] = data_sum['balances'][currency];
-                        }
+                          }
                         });
 
                         $('#balanceboxes').append(template(totals));
+                      }
                     }
-                    }
-                });
+                  });
                 }
-            });
+              });
             }
 
             function updateEarningsChart() {

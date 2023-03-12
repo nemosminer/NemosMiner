@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.3.1.2
-Version date:   06 March 2023
+Version:        4.3.1.3
+Version date:   12 March 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -117,6 +117,7 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
                 Last24DriftPercent    = If ($BasePrice -gt 0) { ($AlgoData.$Algo.estimate_current - $BasePrice) / $BasePrice } Else { 0 }
             }
         }
+        Remove-Variable Algo
 
         If ($PoolVariant -match "Plus$") {
             # Created here for performance optimization, minimize # of lookups
@@ -144,6 +145,7 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
                 }
                 $AlgoData.$Name | Add-Member @{ Plus_Price = $Price } -Force
             }
+            Remove-Variable Name
         }
 
         ($AlgoData | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 

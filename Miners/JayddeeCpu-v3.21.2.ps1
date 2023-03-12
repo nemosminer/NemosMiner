@@ -20,7 +20,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "m7m";           Minerset = 1; WarmupTimes = @(45, 80); Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
     [PSCustomObject]@{ Algorithm = "SHA3d";         MinerSet = 3; WarmupTimes = @(45, 40); Arguments = " --algo SHA3d" } # FPGA
     [PSCustomObject]@{ Algorithm = "ScryptN11";     Minerset = 3; WarmupTimes = @(45, 40); Arguments = " --algo scrypt(N,1,1)" } # GPU
-    [PSCustomObject]@{ Algorithm = "ScryptN2";      Minerset = 1; WarmupTimes = @(45, 60); Arguments = " --algo scrypt --param-n 1048576" }
+    [PSCustomObject]@{ Algorithm = "ScryptN2";      Minerset = 1; WarmupTimes = @(90, 60); Arguments = " --algo scrypt --param-n 1048576" }
     [PSCustomObject]@{ Algorithm = "VertHash";      MinerSet = 0; WarmupTimes = @(45, 40); Arguments = " --algo verthash --data-file ..\.$($Variables.VerthashDatPath)" }
     [PSCustomObject]@{ Algorithm = "YespowerARWN";  Minerset = 2; WarmupTimes = @(45, 40); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "ARWN"' } # Arrowana
     [PSCustomObject]@{ Algorithm = "YespowerIc";    Minerset = 2; WarmupTimes = @(45, 60); Arguments = ' --algo yespower --param-n 2048 --param-r 32 --param-key "IsotopeC"' }
@@ -69,3 +69,5 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         }
     }
 }
+
+$Error.Clear()

@@ -10,10 +10,25 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+
+ChangeLog NemosMiner 4.3.1.3 12.03.2023
+=======================================
+
+Enhancements:
+- Core: MinDataSampleAlgoMultiplier for algorithm 'DynexSolve' set to 3
+- Core: Minor code optimizations
+
+Miner updates:
+- lolMiner-v1.70
+- MiniZ-v2.0c4
+- Rigel-v1.3.9
+- SRBMinerMulti-v2.2.0
+
+
 ChangeLog NemosMiner 4.3.1.2 06.03.2023
 =======================================
 
-Enhancement:
+Enhancements:
 - Web GUI: Moved 'Balances' to 'Earnings and Balances' page
 - Web GUI: Moved 'System log' to 'System Status' page
 - Web GUI / System Status: Optimize 'Status' columm text
@@ -23,7 +38,7 @@ Fixes:
 - Core: '<Ctrl><Alt>P' no longer triggers a 'Core cycle is stuck - restarting...' message
 - Web GUI / Devices: Could not enable disabled devices (button not getting enabled)
 
-Miner changes:
+Miner updates:
 - JayddeeCpu-v3.21.2
 - lolMiner-v1.69
 

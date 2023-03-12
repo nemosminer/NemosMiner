@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.3.1.2
-Version date:   06 March 2023
+Version:        4.3.1.3
+Version date:   12 March 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -37,7 +37,7 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PoolConfig = $Variables.PoolsConfig.$Name
 
 $Headers = @{ "Cache-Control" = "no-cache" }
-# $Useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"
+$Useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"
 
 If ($PoolConfig.UserName) { 
     If ($PoolVariant -match "Coins$") { 
@@ -72,10 +72,10 @@ If ($PoolConfig.UserName) {
                 $CoinName = ""
             }
 
-            $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ($_.profit / $Divisor) -FaultDetection $false
-
             # Temp fix
             $Regions = If ($Current.host_list.split(";").count -eq 1) { @("n/a") } Else { $PoolConfig.Region }
+
+            $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ($_.profit / $Divisor) -FaultDetection $false
 
             # Temp fix for pool API errors
             Switch ($Algorithm_Norm) { 
@@ -141,9 +141,10 @@ If ($PoolConfig.UserName) {
             $Algorithm_Norm = Get-Algorithm $_.algo
             $Port = $Current.algo_switch_port
 
+            $Regions = If ($Current.all_host_list.split(";").count -eq 1) { @("n/a") } Else { $PoolConfig.Region }
+
             $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $false
 
-            $Regions = If ($Current.all_host_list.split(";").count -eq 1) { @("n/a") } Else { $PoolConfig.Region }
 
             # Temp fix for pool API errors
             Switch ($Algorithm_Norm) { 

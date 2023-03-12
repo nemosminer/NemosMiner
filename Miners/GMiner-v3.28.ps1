@@ -8,7 +8,7 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithms = @("Autolykos2");   Type = "AMD"; Fee = @(0.01);  MinMemGiB = $MinerPools[0].Autolykos2.DAGSizeGiB + 0.77;   Tuning = ""; Minerset = 2; WarmupTimes = @(30, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 1 --algo autolykos2 --cuda 0 --opencl 1" } # Algorithm not yet supported
 #   [PSCustomObject]@{ Algorithms = @("Cuckatoo32");   Type = "AMD"; Fee = @(0.05);  MinMemGiB = 8.0;                                           Tuning = ""; Minerset = 3; WarmupTimes = @(30, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 1 --algo cuckatoo32 --cuda 0 --opencl 1" } # ASIC
-    [PSCustomObject]@{ Algorithms = @("Equihash1254"); Type = "AMD"; Fee = @(0.02);  MinMemGiB = 1.8;                                           Tuning = ""; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 1 --algo equihash125_4 --cuda 0 --opencl 1" } # lolMiner-v1.69 is fastest
+    [PSCustomObject]@{ Algorithms = @("Equihash1254"); Type = "AMD"; Fee = @(0.02);  MinMemGiB = 1.8;                                           Tuning = ""; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 1 --algo equihash125_4 --cuda 0 --opencl 1" } # lolMiner-v1.70 is fastest
     [PSCustomObject]@{ Algorithms = @("Equihash1445"); Type = "AMD"; Fee = @(0.02);  MinMemGiB = 1.8;                                           Tuning = ""; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludePools = @(@("ProHashing"), @()); Arguments = " --nvml 1 --algo equihash144_5 $(Get-EquihashCoinPers -Command "--pers " -Currency $MinerPools[0].Equihash1445.Currency -DefaultCommand "--pers auto") --cuda 0 --opencl 1" } # FPGA
     [PSCustomObject]@{ Algorithms = @("Equihash2109"); Type = "AMD"; Fee = @(0.02);  MinMemGiB = 2.8;                                           Tuning = ""; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 1 --algo equihash210_9 --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithms = @("Ethash");       Type = "AMD"; Fee = @(0.01);  MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.77;       Tuning = ""; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 1 --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
@@ -20,7 +20,7 @@ $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithms = @("Cuckatoo32");                 Type = "NVIDIA"; Fee = @(0.05);  MinMemGiB = 8.0;                                           Tuning = " --mt 2"; Minerset = 3; WarmupTimes = @(30, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo cuckatoo32 --cuda 1 --opencl 0" } # ASIC
     [PSCustomObject]@{ Algorithms = @("Cuckaroo30CTX");              Type = "NVIDIA"; Fee = @(0.05);  MinMemGiB = 8.0;                                           Tuning = " --mt 2"; Minerset = 2; WarmupTimes = @(30, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo cortex --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithms = @("Cuckoo29");                   Type = "NVIDIA"; Fee = @(0.02);  MinMemGiB = 6.0;                                           Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(30, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo aeternity --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("Equihash1254");               Type = "NVIDIA"; Fee = @(0.02);  MinMemGiB = 3.0;                                           Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo equihash125_4 --cuda 1 --opencl 0" } # MiniZ-v2.0c3 is fastest
+    [PSCustomObject]@{ Algorithms = @("Equihash1254");               Type = "NVIDIA"; Fee = @(0.02);  MinMemGiB = 3.0;                                           Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo equihash125_4 --cuda 1 --opencl 0" } # MiniZ-v2.0c4 is fastest
     [PSCustomObject]@{ Algorithms = @("Equihash1445");               Type = "NVIDIA"; Fee = @(0.02);  MinMemGiB = 2.1;                                           Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@("ProHashing"), @()); Arguments = " --nvml 0 --algo equihash144_5 $(Get-EquihashCoinPers -Command "--pers " -Currency $MinerPools[0].Equihash1445.Currency -DefaultCommand "--pers auto") --cuda 1 --opencl 0" } # FPGA
     [PSCustomObject]@{ Algorithms = @("Equihash2109");               Type = "NVIDIA"; Fee = @(0.02);  MinMemGiB = 1.0;                                           Tuning = " --mt 2"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo equihash210_9 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithms = @("EtcHash");                    Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB + 0.57;      Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo etchash --cuda 1 --opencl 0" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
@@ -35,8 +35,12 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("ProgPowSero");                Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = $MinerPools[0].ProgPowSero.DAGSizeGiB + 0.57;  Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo sero --cuda 1 --opencl 0" }
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithms[0]).PoolPorts -and (-not $_.Algorithms[1] -or $MinerPools[1].($_.Algorithms[1]).PoolPorts) } | Where-Object { -not $_.ExcludePools[0] -or $MinerPools[0].($_.Algorithms[0]).BaseName -notin $_.ExcludePools[0] } | Where-Object { -not $_.ExcludePools[1] -or $MinerPools[1].($_.Algorithms[1]).BaseName -notin $_.ExcludePools[1] }) { 
+$Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).BaseName -notin $_.ExcludePools[0] -and $MinerPools[1].($_.Algorithms[1]).BaseName -notin $_.ExcludePools[1] }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).PoolPorts -and (-not $_.Algorithms[1] -or $MinerPools[1].($_.Algorithms[1]).PoolPorts) }
+$Algorithms = $Algorithms | Where-Object { -not $_.Algorithms[1] -or ($MinerPools[0].($_.Algorithms[0]).PoolPorts[0] -and $MinerPools[1].($_.Algorithms[1]).PoolPorts[0]) -or ($MinerPools[0].($_.Algorithms[0]).PoolPorts[1] -and $MinerPools[1].($_.Algorithms[1]).PoolPorts[1]) }
 
+If ($Algorithms) { 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model
@@ -98,3 +102,5 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         }
     }
 }
+
+$Error.Clear()
