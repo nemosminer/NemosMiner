@@ -18,22 +18,46 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           LegacyGUI.psm1
-Version:        4.3.1.3
-Version date:   12 March 2023
+Version:        4.3.2.0
+Version date:   19 March 2023
 #>
 
-[Void] [System.Reflection.Assembly]::LoadWithPartialName(“System.Windows.Forms”)
-[Void] [System.Reflection.Assembly]::LoadWithPartialName(“System.Drawing”)
+[Void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
+[Void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
+
+#--- For High DPI, Call SetProcessDPIAware(need P/Invoke) and EnableVisualStyles ---
+Add-Type -TypeDefinition @'
+using System.Runtime.InteropServices;
+public class ProcessDPI {
+    [DllImport("user32.dll", SetLastError=true)]
+    public static extern bool SetProcessDPIAware();      
+}
+'@
+$null = [ProcessDPI]::SetProcessDPIAware()
+[System.Windows.Forms.Application]::EnableVisualStyles()
+
+Function Set-DataGridViewDoubleBuffer {
+    Param (
+        [Parameter(Mandatory = $true)][System.Windows.Forms.DataGridView]$Grid,
+        [Parameter(Mandatory = $true)][boolean]$Enabled
+    )
+
+    $Type = $Grid.GetType();
+    $PropInfo = $Type.GetProperty("DoubleBuffered", ("Instance", "NonPublic"))
+    $PropInfo.SetValue($Grid, $Enabled, $null)
+}
 
 $LegacyGUIForm = New-Object System.Windows.Forms.Form
-$LegacyGUIForm.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
-
+#--- For High DPI, First Call SuspendLayout(),After that, Set AutoScaleDimensions, AutoScaleMode ---
+# SuspendLayout() is Very important to correctly size and position all controls!
+$LegacyGUIForm.SuspendLayout()
+$LegacyGUIForm.AutoScaleDimensions = New-Object System.Drawing.SizeF(96, 96)
+$LegacyGUIForm.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::DPI
 $LegacyGUIForm.Icon = New-Object System.Drawing.Icon ("$($Variables.MainPath)\Data\NM.ICO")
+$LegacyGUIForm.MaximizeBox = $true
 $LegacyGUIForm.MinimumSize = [System.Drawing.Size]::new(800, 600) # best to keep under 800x600
 $LegacyGUIForm.Text = $Variables.Branding.ProductLabel
-$LegacyGUIForm.MaximizeBox = $true
 $LegacyGUIForm.TopMost = $false
-$LegacyGUIForm.FormWindowState
 
 # Form Controls
 $LegacyGUIControls = @()
@@ -61,12 +85,12 @@ $WatchdogTimersPage.Text = "Watchdog Timers"
 $WatchdogTimersPage.ToolTipText = "List of all watchdog timers"
 
 $ButtonStart = New-Object System.Windows.Forms.Button
-$ButtonStart.Text = "Start mining"
-$ButtonStart.Width = 100
-$ButtonStart.Height = 30
-$ButtonStart.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ButtonStart.Visible = $true
 $ButtonStart.Enabled = (-not $Config.Autostart)
+$ButtonStart.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$ButtonStart.Height = 24
+$ButtonStart.Text = "Start mining"
+$ButtonStart.Visible = $true
+$ButtonStart.Width = 100
 $ButtonStart.Add_Click(
     { 
         If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace -eq "Idle") { 
@@ -78,12 +102,12 @@ $ButtonStart.Add_Click(
 $LegacyGUIControls += $ButtonStart
 
 $ButtonPause = New-Object System.Windows.Forms.Button
-$ButtonPause.Text = "Pause mining"
-$ButtonPause.Width = 100
-$ButtonPause.Height = 30
-$ButtonPause.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ButtonPause.Visible = $true
 $ButtonPause.Enabled = $Config.Autostart
+$ButtonPause.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$ButtonPause.Height = 24
+$ButtonPause.Text = "Pause mining"
+$ButtonPause.Visible = $true
+$ButtonPause.Width = 100
 $ButtonPause.Add_Click(
     { 
         If ($Variables.NewMiningStatus -ne "Paused") { 
@@ -95,12 +119,12 @@ $ButtonPause.Add_Click(
 $LegacyGUIControls += $ButtonPause
 
 $ButtonStop = New-Object System.Windows.Forms.Button
-$ButtonStop.Text = "Stop mining"
-$ButtonStop.Width = 100
-$ButtonStop.Height = 30
-$ButtonStop.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ButtonStop.Visible = $true
 $ButtonStop.Enabled = $Config.Autostart
+$ButtonStop.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$ButtonStop.Height = 24
+$ButtonStop.Text = "Stop mining"
+$ButtonStop.Visible = $true
+$ButtonStop.Width = 100
 $ButtonStop.Add_Click(
     { 
         If ($Variables.NewMiningStatus -ne "Idle") { 
@@ -111,49 +135,49 @@ $ButtonStop.Add_Click(
 )
 $LegacyGUIControls += $ButtonStop
 
-$CopyrightLabel = New-Object System.Windows.Forms.LinkLabel
-$CopyrightLabel.Size = New-Object System.Drawing.Size(350, 20)
-$CopyrightLabel.LinkColor = [System.Drawing.Color]::Blue
-$CopyrightLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$CopyrightLabel.ActiveLinkColor = [System.Drawing.Color]::Blue
-$CopyrightLabel.TextAlign = "MiddleRight"
-$CopyrightLabel.Text = "Copyright (c) 2018-$((Get-Date).Year) Nemo, MrPlus && UselessGuru"
-$CopyrightLabel.Add_Click({ Start-Process "https://github.com/Minerx117/NemosMiner/blob/master/LICENSE" })
-$LegacyGUIControls += $CopyrightLabel
-
 $EditConfigLink = New-Object System.Windows.Forms.LinkLabel
-$EditConfigLink.Size = New-Object System.Drawing.Size(350, 20)
-$EditConfigLink.LinkColor = [System.Drawing.Color]::Blue
-$EditConfigLink.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $EditConfigLink.ActiveLinkColor = [System.Drawing.Color]::Blue
+$EditConfigLink.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$EditConfigLink.LinkColor = [System.Drawing.Color]::Blue
 $EditConfigLink.TextAlign = "MiddleLeft"
+$EditConfigLink.Size = New-Object System.Drawing.Size(380, 20)
 $EditConfigLink.Add_Click({ If ($EditConfigLink.Tag -eq "WebGUI") { Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/configedit.html" } Else { Edit-File $Variables.ConfigFile } })
 $LegacyGUIControls += $EditConfigLink
 
+$CopyrightLabel = New-Object System.Windows.Forms.LinkLabel
+$CopyrightLabel.ActiveLinkColor = [System.Drawing.Color]::Blue
+$CopyrightLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$CopyrightLabel.LinkColor = [System.Drawing.Color]::Blue
+$CopyrightLabel.Size = New-Object System.Drawing.Size(380, 20)
+$CopyrightLabel.Text = "Copyright (c) 2018-$((Get-Date).Year) Nemo, MrPlus && UselessGuru"
+$CopyrightLabel.TextAlign = "MiddleRight"
+$CopyrightLabel.Add_Click({ Start-Process "https://github.com/Minerx117/NemosMiner/blob/master/LICENSE" })
+$LegacyGUIControls += $CopyrightLabel
+
 $MiningStatusLabel = New-Object System.Windows.Forms.Label
 $MiningStatusLabel.AutoSize = $false
-$MiningStatusLabel.Height = 30
-$MiningStatusLabel.Location = [System.Drawing.Point]::new(14, 6)
-$MiningStatusLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 12)
-$MiningStatusLabel.TextAlign = "MiddleLeft"
-$MiningStatusLabel.ForeColor = [System.Drawing.Color]::Black
 $MiningStatusLabel.BackColor = [System.Drawing.Color]::Transparent
-$MiningStatusLabel.Visible = $true
+$MiningStatusLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 12)
+$MiningStatusLabel.ForeColor = [System.Drawing.Color]::Black
+$MiningStatusLabel.Height = 20
+$MiningStatusLabel.Location = [System.Drawing.Point]::new(12, 6)
 $MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
+$MiningStatusLabel.TextAlign = "MiddleLeft"
+$MiningStatusLabel.Visible = $true
+$MiningStatusLabel.Width = 480
 $LegacyGUIControls += $MiningStatusLabel
 
 $MiningSummaryLabel = New-Object System.Windows.Forms.Label
-$MiningSummaryLabel.Tag = ""
 $MiningSummaryLabel.AutoSize = $false
-$MiningSummaryLabel.Height = 47
-$MiningSummaryLabel.Location = [System.Drawing.Point]::new(16, 42)
-$MiningSummaryLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$MiningSummaryLabel.TextAlign = "MiddleLeft"
-$MiningSummaryLabel.BorderStyle = 'None'
-$MiningSummaryLabel.BackColor = [System.Drawing.SystemColors]::Control
-$MiningSummaryLabel.Visible = $true
-$MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Black
 $MiningSummaryLabel.BackColor = [System.Drawing.Color]::Transparent
+$MiningSummaryLabel.BorderStyle = 'None'
+$MiningSummaryLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Black
+$MiningSummaryLabel.Height = 60
+$MiningSummaryLabel.Location = [System.Drawing.Point]::new(12, ($MiningStatusLabel.Height + 14))
+$MiningSummaryLabel.Tag = ""
+$MiningSummaryLabel.TextAlign = "MiddleLeft"
+$MiningSummaryLabel.Visible = $true
 $LegacyGUIControls += $MiningSummaryLabel
 
 # Miner context menu items
@@ -177,40 +201,41 @@ $ContextMenuStrip.Enabled = $false
 # CheckBox Column for DataGridView
 $CheckBoxColumn = New-Object System.Windows.Forms.DataGridViewCheckBoxColumn
 $CheckBoxColumn.HeaderText = ""
-$CheckBoxColumn.ReadOnly = $false
 $CheckBoxColumn.Name = "CheckBoxColumn"
+$CheckBoxColumn.ReadOnly = $false
 
 # Run Page Controls
 $RunPageControls = @()
 
 $LaunchedMinersLabel = New-Object System.Windows.Forms.Label
 $LaunchedMinersLabel.AutoSize = $false
-$LaunchedMinersLabel.Width = 600
-$LaunchedMinersLabel.Height = 16
-$LaunchedMinersLabel.Location = [System.Drawing.Point]::new(6, 8)
 $LaunchedMinersLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$LaunchedMinersLabel.Height = 20
+$LaunchedMinersLabel.Location = [System.Drawing.Point]::new(6, 6)
+$LaunchedMinersLabel.Width = 600
 $RunPageControls += $LaunchedMinersLabel
 
 $LaunchedMinersDGV = New-Object System.Windows.Forms.DataGridView
-$LaunchedMinersDGV.Name = "LaunchedMinersDGV"
-$LaunchedMinersDGV.Location = [System.Drawing.Point]::new(8, 34)
-$LaunchedMinersDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
-$LaunchedMinersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
-$LaunchedMinersDGV.AutoSizeColumnsMode = "Fill"
-$LaunchedMinersDGV.ColumnHeadersHeightSizeMode = "AutoSize"
-$LaunchedMinersDGV.RowHeadersVisible = $false
 $LaunchedMinersDGV.AllowUserToAddRows = $false
 $LaunchedMinersDGV.AllowUserToDeleteRows = $false
 $LaunchedMinersDGV.AllowUserToOrderColumns = $true
 $LaunchedMinersDGV.AllowUserToResizeColumns = $true
 $LaunchedMinersDGV.AllowUserToResizeRows = $false
-$LaunchedMinersDGV.ScrollBars = "None"
-$LaunchedMinersDGV.ReadOnly = $true
-$LaunchedMinersDGV.EnableHeadersVisualStyles = $false
+$LaunchedMinersDGV.AutoSizeColumnsMode = "Fill"
 $LaunchedMinersDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
 $LaunchedMinersDGV.ColumnHeadersDefaultCellStyle.SelectionBackColor = [System.Drawing.SystemColors]::MenuBar
-$LaunchedMinersDGV.SelectionMode = "FullRowSelect"
+$LaunchedMinersDGV.ColumnHeadersHeightSizeMode = "AutoSize"
 $LaunchedMinersDGV.ContextMenuStrip = $ContextMenuStrip
+$LaunchedMinersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
+$LaunchedMinersDGV.EnableHeadersVisualStyles = $false
+$LaunchedMinersDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
+$LaunchedMinersDGV.Height = 0
+$LaunchedMinersDGV.Location = [System.Drawing.Point]::new(6, ($LaunchedMinersLabel.Height + 6))
+$LaunchedMinersDGV.Name = "LaunchedMinersDGV"
+$LaunchedMinersDGV.ReadOnly = $true
+$LaunchedMinersDGV.RowHeadersVisible = $false
+$LaunchedMinersDGV.ScrollBars = "None"
+$LaunchedMinersDGV.SelectionMode = "FullRowSelect"
 $LaunchedMinersDGV.Add_MouseUP(
     { 
         If ($_.Button -eq [System.Windows.Forms.MouseButtons]::Right) { 
@@ -223,139 +248,141 @@ $LaunchedMinersDGV.Add_RowPrePaint(
         If ($Config.UseColorForMinerStatus) { 
             ForEach ($Row in $LaunchedMinersDGV.Rows) { 
                 $Row.DefaultCellStyle.Backcolor = Switch -RegEx ($Row.DataBoundItem.Status) { 
-                    "^Benchmarking|^Power usage" { [System.Drawing.Color]::FromArgb(255, 250, 230, 212) }
-                    "^Failed"                    { [System.Drawing.Color]::FromArgb(255, 255, 230, 230) }
-                    "^Mining"                    { [System.Drawing.Color]::FromArgb(255, 232, 250, 232) }
-                    "^Stopping"                  { [System.Drawing.Color]::FromArgb(255, 245, 255, 245) }
-                    "^Warming"                   { [System.Drawing.Color]::FromArgb(255, 253, 246, 241) }
-                    Default                      { [System.Drawing.Color]::FromArgb(255, 255, 255, 255) }
+                    "^Benchmarking|^Measuring" { [System.Drawing.Color]::FromArgb(255, 250, 230, 212) }
+                    "^Failed"                  { [System.Drawing.Color]::FromArgb(255, 255, 230, 230) }
+                    "^Mining"                  { [System.Drawing.Color]::FromArgb(255, 232, 250, 232) }
+                    "^Stopping"                { [System.Drawing.Color]::FromArgb(255, 245, 255, 245) }
+                    "^Warming"                 { [System.Drawing.Color]::FromArgb(255, 253, 246, 241) }
+                    Default                    { [System.Drawing.Color]::FromArgb(255, 255, 255, 255) }
                 }
             }
             Remove-Variable Row
         }
     }
 )
+Set-DataGridViewDoubleBuffer -Grid $LaunchedMinersDGV -Enabled $true
 $RunPageControls += $LaunchedMinersDGV
 
 $SystemLogLabel = New-Object System.Windows.Forms.Label
 $SystemLogLabel.AutoSize = $false
-$SystemLogLabel.Width = 600
-$SystemLogLabel.Height = 16
 $SystemLogLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$SystemLogLabel.Height = 20
 $SystemLogLabel.Text = "System Log"
+$SystemLogLabel.Width = 600
 $RunPageControls += $SystemLogLabel
 
 $Variables.TextBoxSystemLog = New-Object System.Windows.Forms.TextBox
-$Variables.TextBoxSystemLog.MultiLine = $true
-$Variables.TextBoxSystemLog.Scrollbars = "Vertical"
-$Variables.TextBoxSystemLog.WordWrap = $true
-$Variables.TextBoxSystemLog.Text = ""
 $Variables.TextBoxSystemLog.AutoSize = $true
-$Variables.TextBoxSystemLog.ReadOnly = $true
+$Variables.TextBoxSystemLog.Font = [System.Drawing.Font]::new("Consolas", 9)
 $Variables.TextBoxSystemLog.MultiLine = $true
-$Variables.TextBoxSystemLog.Font = [System.Drawing.Font]::new("Consolas", 10)
+$Variables.TextBoxSystemLog.ReadOnly = $true
+$Variables.TextBoxSystemLog.Scrollbars = "Vertical"
+$Variables.TextBoxSystemLog.Text = ""
+$Variables.TextBoxSystemLog.WordWrap = $true
 $RunPageControls += $Variables.TextBoxSystemLog
 
 # Earnings Page Controls
 $EarningsPageControls = @()
 
 $EarningsChart = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
-$EarningsChart.BackColor = [System.Drawing.Color]::FromArgb(255, 240, 240, 240) #"#F0F0F0"
-$EarningsChart.Location = [System.Drawing.Point]::new(-10, -5) 
+$EarningsChart.BackColor = [System.Drawing.Color]::FromArgb(255, 240, 240, 240)
+$EarningsChart.BringToBack()
+$EarningsChart.Location = [System.Drawing.Point]::new(-10, -5)
 $EarningsPageControls += $EarningsChart
 
-$EarningsLabel = New-Object System.Windows.Forms.Label
-$EarningsLabel.AutoSize = $false
-$EarningsLabel.Width = 600
-$EarningsLabel.Height = 16
-$EarningsLabel.Location = [System.Drawing.Point]::new(8, 146)
-$EarningsLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$EarningsPageControls += $EarningsLabel
+$BalancesLabel = New-Object System.Windows.Forms.Label
+$BalancesLabel.AutoSize = $false
+$BalancesLabel.BringToFront()
+$BalancesLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$BalancesLabel.Height = 20
+$BalancesLabel.Width = 600
+$EarningsPageControls += $BalancesLabel
 
-$EarningsDGV = New-Object System.Windows.Forms.DataGridView
-$EarningsDGV.Name = "EarningsDGV"
-$EarningsDGV.Location = [System.Drawing.Point]::new(8, 167)
-$EarningsDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
-$EarningsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
-$EarningsDGV.AutoSizeColumnsMode = "Fill"
-$EarningsDGV.ColumnHeadersHeightSizeMode = "AutoSize"
-$EarningsDGV.RowHeadersVisible = $false
-$EarningsDGV.AllowUserToAddRows = $false
-$EarningsDGV.AllowUserToDeleteRows = $false
-$EarningsDGV.AllowUserToOrderColumns = $true
-$EarningsDGV.AllowUserToResizeColumns = $true
-$EarningsDGV.AllowUserToResizeRows = $false
-$EarningsDGV.ScrollBars = "None"
-$EarningsDGV.ReadOnly = $true
-$EarningsDGV.EnableHeadersVisualStyles = $false
-$EarningsDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
-$EarningsDGV.Add_DataSourceChanged({ Form_Resize })
-$EarningsPageControls += $EarningsDGV
+$BalancesDGV = New-Object System.Windows.Forms.DataGridView
+$BalancesDGV.AllowUserToAddRows = $false
+$BalancesDGV.AllowUserToDeleteRows = $false
+$BalancesDGV.AllowUserToOrderColumns = $true
+$BalancesDGV.AllowUserToResizeColumns = $true
+$BalancesDGV.AllowUserToResizeRows = $false
+$BalancesDGV.AutoSizeColumnsMode = "Fill"
+$BalancesDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
+$BalancesDGV.ColumnHeadersHeightSizeMode = "AutoSize"
+$BalancesDGV.DataBindings.DefaultDataSourceUpdateMode = 0
+$BalancesDGV.EnableHeadersVisualStyles = $false
+$BalancesDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
+$BalancesDGV.Height = 0
+$BalancesDGV.Location = [System.Drawing.Point]::new(8, 187)
+$BalancesDGV.Name = "EarningsDGV"
+$BalancesDGV.ReadOnly = $true
+$BalancesDGV.RowHeadersVisible = $false
+$BalancesDGV.ScrollBars = "None"
+Set-DataGridViewDoubleBuffer -Grid $BalancesDGV -Enabled $true
+$EarningsPageControls += $BalancesDGV
 
 # Miner page Controls
 $MinersPageControls = @()
 
 $RadioButtonMinersBest = New-Object System.Windows.Forms.RadioButton
-$RadioButtonMinersBest.Text = "Best Miners"
 $RadioButtonMinersBest.AutoSize = $false
-$RadioButtonMinersBest.Width = 140
-$RadioButtonMinersBest.Height = 20
-$RadioButtonMinersBest.Location = [System.Drawing.Point]::new(0, 8)
-$RadioButtonMinersBest.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
 $RadioButtonMinersBest.Checked = $true
+$RadioButtonMinersBest.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$RadioButtonMinersBest.Height = 22
+$RadioButtonMinersBest.Location = [System.Drawing.Point]::new(0, 0)
+$RadioButtonMinersBest.Text = "Best Miners"
+$RadioButtonMinersBest.Width = 110
 $RadioButtonMinersBest.Add_Click({ Update-TabControl })
 
 $RadioButtonMinersUnavailable = New-Object System.Windows.Forms.RadioButton
-$RadioButtonMinersUnavailable.Text = "Unavailable Miners"
 $RadioButtonMinersUnavailable.AutoSize = $false
-$RadioButtonMinersUnavailable.Width = 140
-$RadioButtonMinersUnavailable.Height = 20
-$RadioButtonMinersUnavailable.Location = [System.Drawing.Point]::new(105, 8)
-$RadioButtonMinersUnavailable.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
+$RadioButtonMinersUnavailable.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$RadioButtonMinersUnavailable.Height = 22
+$RadioButtonMinersUnavailable.Location = [System.Drawing.Point]::new($RadioButtonMinersBest.Width, 0)
+$RadioButtonMinersUnavailable.Text = "Unavailable Miners"
+$RadioButtonMinersUnavailable.Width = 154
 $RadioButtonMinersUnavailable.Add_Click({ Update-TabControl })
 
 $RadioButtonMiners = New-Object System.Windows.Forms.RadioButton
-$RadioButtonMiners.Text = "All Miners"
 $RadioButtonMiners.AutoSize = $false
+$RadioButtonMiners.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$RadioButtonMiners.Height = 22
+$RadioButtonMiners.Location = [System.Drawing.Point]::new(($RadioButtonMinersBest.Width + $RadioButtonMinersUnavailable.Width), 0)
+$RadioButtonMiners.Text = "All Miners"
 $RadioButtonMiners.Width = 100
-$RadioButtonMiners.Height = 20
-$RadioButtonMiners.Location = [System.Drawing.Point]::new(245, 8)
-$RadioButtonMiners.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
 $RadioButtonMiners.Add_Click({ Update-TabControl })
 
 $MinersLabel = New-Object System.Windows.Forms.Label
 $MinersLabel.AutoSize = $false
-$MinersLabel.Width = 600
-$MinersLabel.Height = 18
-$MinersLabel.Location = [System.Drawing.Point]::new(6, 8)
 $MinersLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$MinersLabel.Height = 20
+$MinersLabel.Location = [System.Drawing.Point]::new(6, 6)
+$MinersLabel.Width = 600
 $MinersPageControls += $MinersLabel
 
 $MinersPanel = New-Object System.Windows.Forms.Panel
-$MinersPanel.Height = 24
-$MinersPanel.Location = [System.Drawing.Point]::new(8, 26)
+$MinersPanel.Height = 22
+$MinersPanel.Location = [System.Drawing.Point]::new(8, ($MinersLabel.Height + 6))
 $MinersPanel.Controls.Add($RadioButtonMiners)
 $MinersPanel.Controls.Add($RadioButtonMinersUnavailable)
 $MinersPanel.Controls.Add($RadioButtonMinersBest)
 $MinersPageControls += $MinersPanel
 
 $MinersDGV = New-Object System.Windows.Forms.DataGridView
-$MinersDGV.Name = "MinersDGV"
-$MinersDGV.Location = [System.Drawing.Point]::new(8, 60)
-$MinersDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
-$MinersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
-$MinersDGV.AutoSizeColumnsMode = "Fill"
-$MinersDGV.ColumnHeadersHeightSizeMode = "AutoSize"
-$MinersDGV.RowHeadersVisible = $false
-$MinersDGV.ColumnHeadersVisible = $true
 $MinersDGV.AllowUserToAddRows = $false
 $MinersDGV.AllowUserToOrderColumns = $true
 $MinersDGV.AllowUserToResizeColumns = $true
 $MinersDGV.AllowUserToResizeRows = $false
-$MinersDGV.ReadOnly = $true
-$MinersDGV.EnableHeadersVisualStyles = $false
+$MinersDGV.AutoSizeColumnsMode = "Fill"
 $MinersDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
 $MinersDGV.ColumnHeadersDefaultCellStyle.SelectionBackColor = [System.Drawing.SystemColors]::MenuBar
+$MinersDGV.ColumnHeadersHeightSizeMode = "AutoSize"
+$MinersDGV.ColumnHeadersVisible = $true
+$MinersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
+$MinersDGV.EnableHeadersVisualStyles = $false
+$MinersDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
+$MinersDGV.Location = [System.Drawing.Point]::new(6, ($MinersLabel.Height + $MinersPanel.Height + 10))
+$MinersDGV.Name = "MinersDGV"
+$MinersDGV.ReadOnly = $true
+$MinersDGV.RowHeadersVisible = $false
 $MinersDGV.SelectionMode = "FullRowSelect"
 $MinersDGV.ContextMenuStrip = $ContextMenuStrip
 $MinersDGV.Add_MouseUP(
@@ -370,87 +397,88 @@ $MinersDGV.Add_RowPrePaint(
         If ($Config.UseColorForMinerStatus) { 
             ForEach ($Row in $MinersDGV.Rows) { 
                 $Row.DefaultCellStyle.Backcolor = Switch -RegEx ($Row.DataBoundItem.Status) { 
-                    "^Benchmarking|^Power usage" { [System.Drawing.Color]::FromArgb(255, 250, 230, 212) }
-                    "^Failed"                    { [System.Drawing.Color]::FromArgb(255, 255, 230, 230) }
-                    "^Mining"                    { [System.Drawing.Color]::FromArgb(255, 232, 250, 232) }
-                    "^Stopping"                  { [System.Drawing.Color]::FromArgb(255, 245, 255, 245) }
-                    "^Warming"                   { [System.Drawing.Color]::FromArgb(255, 253, 246, 241) }
-                    Default                      { [System.Drawing.Color]::FromArgb(255, 255, 255, 255) }
+                    "^Benchmarking|^Measuring" { [System.Drawing.Color]::FromArgb(255, 250, 230, 212) }
+                    "^Failed"                  { [System.Drawing.Color]::FromArgb(255, 255, 230, 230) }
+                    "^Mining"                  { [System.Drawing.Color]::FromArgb(255, 232, 250, 232) }
+                    "^Stopping"                { [System.Drawing.Color]::FromArgb(255, 245, 255, 245) }
+                    "^Warming"                 { [System.Drawing.Color]::FromArgb(255, 253, 246, 241) }
+                    Default                    { [System.Drawing.Color]::FromArgb(255, 255, 255, 255) }
                 }
             }
             Remove-Variable Row
         }
     }
 )
+Set-DataGridViewDoubleBuffer -Grid $MinersDGV -Enabled $true
 $MinersPageControls += $MinersDGV
 
 # Pools page Controls
 $PoolsPageControls = @()
 
 $RadioButtonPoolsBest = New-Object System.Windows.Forms.RadioButton
+$RadioButtonPoolsBest.AutoSize = $false
+$RadioButtonPoolsBest.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$RadioButtonPoolsBest.Height = 22
+$RadioButtonPoolsBest.Location = [System.Drawing.Point]::new(0, 0)
 $RadioButtonPoolsBest.Tag = ""
 $RadioButtonPoolsBest.Text = "Best Pools"
-$RadioButtonPoolsBest.AutoSize = $false
-$RadioButtonPoolsBest.Width = 140
-$RadioButtonPoolsBest.Height = 20
-$RadioButtonPoolsBest.Location = [System.Drawing.Point]::new(0, 8)
-$RadioButtonPoolsBest.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
+$RadioButtonPoolsBest.Width = 100
 $RadioButtonPoolsBest.Checked = $true
 $RadioButtonPoolsBest.Add_Click({ Update-TabControl })
 
 $RadioButtonPoolsUnavailable = New-Object System.Windows.Forms.RadioButton
+$RadioButtonPoolsUnavailable.AutoSize = $false
+$RadioButtonPoolsUnavailable.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$RadioButtonPoolsUnavailable.Height = 22
+$RadioButtonPoolsUnavailable.Location = [System.Drawing.Point]::new($RadioButtonPoolsBest.Width, 0)
 $RadioButtonPoolsUnavailable.Tag = ""
 $RadioButtonPoolsUnavailable.Text = "Unavailable Pools"
-$RadioButtonPoolsUnavailable.AutoSize = $false
-$RadioButtonPoolsUnavailable.Width = 140
-$RadioButtonPoolsUnavailable.Height = 20
-$RadioButtonPoolsUnavailable.Location = [System.Drawing.Point]::new(105, 8)
-$RadioButtonPoolsUnavailable.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
+$RadioButtonPoolsUnavailable.Width = 150
 $RadioButtonPoolsUnavailable.Add_Click({ Update-TabControl })
 
 $RadioButtonPools = New-Object System.Windows.Forms.RadioButton
+$RadioButtonPools.AutoSize = $false
+$RadioButtonPools.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$RadioButtonPools.Height = 22
+$RadioButtonPools.Location = [System.Drawing.Point]::new(($RadioButtonPoolsBest.Width + $RadioButtonPoolsUnavailable.Width), 0)
 $RadioButtonPools.Tag = ""
 $RadioButtonPools.Text = "All Pools"
-$RadioButtonPools.AutoSize = $false
 $RadioButtonPools.Width = 100
-$RadioButtonPools.Height = 20
-$RadioButtonPools.Location = [System.Drawing.Point]::new(250, 8)
-$RadioButtonPools.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 8)
 $RadioButtonPools.Add_Click({ Update-TabControl })
 
 $PoolsLabel = New-Object System.Windows.Forms.Label
 $PoolsLabel.AutoSize = $false
-$PoolsLabel.Width = 600
-$PoolsLabel.Height = 18
-$PoolsLabel.Location = [System.Drawing.Point]::new(6, 8)
 $PoolsLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$PoolsLabel.Location = [System.Drawing.Point]::new(6, 6)
+$PoolsLabel.Height = 20
+$PoolsLabel.Width = 600
 $PoolsPageControls += $PoolsLabel
 
 $PoolsPanel = New-Object System.Windows.Forms.Panel
-$PoolsPanel.Height = 24
-$PoolsPanel.Location = [System.Drawing.Point]::new(8, 26)
+$PoolsPanel.Height = 22
+$PoolsPanel.Location = [System.Drawing.Point]::new(8, ($PoolsLabel.Height + 6))
 $PoolsPanel.Controls.Add($RadioButtonPools)
 $PoolsPanel.Controls.Add($RadioButtonPoolsUnavailable)
 $PoolsPanel.Controls.Add($RadioButtonPoolsBest)
 $PoolsPageControls += $PoolsPanel
 
 $PoolsDGV = New-Object System.Windows.Forms.DataGridView
-$PoolsDGV.Name = "PoolsDGV"
-$PoolsDGV.Location = [System.Drawing.Point]::new(8, 60)
-$PoolsDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
-$PoolsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
-$PoolsDGV.AutoSizeColumnsMode = "Fill"
-$PoolsDGV.ColumnHeadersHeightSizeMode = "AutoSize"
-$PoolsDGV.RowHeadersVisible = $false
-$PoolsDGV.ColumnHeadersVisible = $true
 $PoolsDGV.AllowUserToAddRows = $false
 $PoolsDGV.AllowUserToOrderColumns = $true
 $PoolsDGV.AllowUserToResizeColumns = $true
 $PoolsDGV.AllowUserToResizeRows = $false
-$PoolsDGV.ReadOnly = $true
-$PoolsDGV.EnableHeadersVisualStyles = $false
+$PoolsDGV.AutoSizeColumnsMode = "Fill"
 $PoolsDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
 $PoolsDGV.ColumnHeadersDefaultCellStyle.SelectionBackColor = [System.Drawing.SystemColors]::MenuBar
+$PoolsDGV.ColumnHeadersHeightSizeMode = "AutoSize"
+$PoolsDGV.ColumnHeadersVisible = $true
+$PoolsDGV.DataBindings.DefaultDataSourceUpdateMode = 0
+$PoolsDGV.EnableHeadersVisualStyles = $false
+$PoolsDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
+$PoolsDGV.Location = [System.Drawing.Point]::new(6, ($PoolsLabel.Height + $PoolsPanel.Height + 10))
+$PoolsDGV.Name = "PoolsDGV"
+$PoolsDGV.ReadOnly = $true
+$PoolsDGV.RowHeadersVisible = $false
 $PoolsDGV.SelectionMode = "FullRowSelect"
 $PoolsDGV.ContextMenuStrip = $ContextMenuStrip
 $PoolsDGV.Add_MouseUP(
@@ -460,6 +488,7 @@ $PoolsDGV.Add_MouseUP(
         }
     }
 )
+Set-DataGridViewDoubleBuffer -Grid $PoolsDGV -Enabled $true
 $PoolsPageControls += $PoolsDGV
 
 # Monitoring Page Controls
@@ -467,28 +496,28 @@ $RigMonitorPageControls = @()
 
 $WorkersLabel = New-Object System.Windows.Forms.Label
 $WorkersLabel.AutoSize = $false
-$WorkersLabel.Width = 600
-$WorkersLabel.Height = 18
-$WorkersLabel.Location = [System.Drawing.Point]::new(6, 8)
 $WorkersLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$WorkersLabel.Height = 20
+$WorkersLabel.Location = [System.Drawing.Point]::new(6, 6)
+$WorkersLabel.Width = 600
 $RigMonitorPageControls += $WorkersLabel
 
 $WorkersDGV = New-Object System.Windows.Forms.DataGridView
-$WorkersDGV.Location = [System.Drawing.Point]::new(8, 32)
-$WorkersDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
-$WorkersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
-$WorkersDGV.AutoSizeColumnsMode = "Fill"
-$WorkersDGV.ColumnHeadersHeightSizeMode = "AutoSize"
-$WorkersDGV.AutoSizeRowsMode = "AllCells"
-$WorkersDGV.DefaultCellStyle= @{ WrapMode = "True" }
-$WorkersDGV.RowHeadersVisible = $false
 $WorkersDGV.AllowUserToAddRows = $false
-$WorkersDGV.ColumnHeadersVisible = $true
 $WorkersDGV.AllowUserToOrderColumns = $true
 $WorkersDGV.AllowUserToResizeColumns = $true
 $WorkersDGV.AllowUserToResizeRows = $false
-$WorkersDGV.ReadOnly = $true
+$WorkersDGV.AutoSizeColumnsMode = "Fill"
+$WorkersDGV.AutoSizeRowsMode = "AllCells"
+$WorkersDGV.ColumnHeadersHeightSizeMode = "AutoSize"
+$WorkersDGV.ColumnHeadersVisible = $true
+$WorkersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
+$WorkersDGV.DefaultCellStyle= @{ WrapMode = "True" }
 $WorkersDGV.EnableHeadersVisualStyles = $false
+$WorkersDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
+$WorkersDGV.Location = [System.Drawing.Point]::new(6, ($WorkersLabel.Height + 8))
+$WorkersDGV.ReadOnly = $true
+$WorkersDGV.RowHeadersVisible = $false
 $WorkersDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
 $WorkersDGV.Add_RowPrePaint(
     { 
@@ -505,27 +534,27 @@ $WorkersDGV.Add_RowPrePaint(
         }
     }
 )
+Set-DataGridViewDoubleBuffer -Grid $WorkersDGV -Enabled $true
 $RigMonitorPageControls += $WorkersDGV
 
 # Switching Page Controls
 $SwitchingPageControls = @()
 
-
 $SwitchingLogLabel = New-Object System.Windows.Forms.Label
 $SwitchingLogLabel.AutoSize = $false
-$SwitchingLogLabel.Width = 600
-$SwitchingLogLabel.Height = 18
-$SwitchingLogLabel.Location = [System.Drawing.Point]::new(6, 8)
 $SwitchingLogLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$SwitchingLogLabel.Height = 20
+$SwitchingLogLabel.Location = [System.Drawing.Point]::new(6, 6)
+$SwitchingLogLabel.Width = 600
 $SwitchingPageControls += $SwitchingLogLabel
 
 $SwitchingLogClearButton = New-Object System.Windows.Forms.Button
-$SwitchingLogClearButton.Text = "Clear Switching Log"
-$SwitchingLogClearButton.Location = [System.Drawing.Point]::new(6, 30)
-$SwitchingLogClearButton.Width = 180
-$SwitchingLogClearButton.Height = 28
 $SwitchingLogClearButton.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$SwitchingLogClearButton.Height = 24
+$SwitchingLogClearButton.Location = [System.Drawing.Point]::new(6, ($SwitchingLogLabel.Height + 8))
+$SwitchingLogClearButton.Text = "Clear Switching Log"
 $SwitchingLogClearButton.Visible = $true
+$SwitchingLogClearButton.Width = 160
 $SwitchingLogClearButton.Add_Click(
     { 
         Get-ChildItem -Path ".\Logs\switchinglog.csv" -File | Remove-Item -Force
@@ -539,50 +568,50 @@ $SwitchingLogClearButton.Add_Click(
 $SwitchingPageControls += $SwitchingLogClearButton
 
 $CheckShowSwitchingCPU = New-Object System.Windows.Forms.CheckBox
+$CheckShowSwitchingCPU.AutoSize = $false
+$CheckShowSwitchingCPU.Checked = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "CPU#*")
+$CheckShowSwitchingCPU.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$CheckShowSwitchingCPU.Height = 20
+$CheckShowSwitchingCPU.Location = [System.Drawing.Point]::new(($SwitchingLogClearButton.Width + 40), ($SwitchingLogLabel.Height + 10))
 $CheckShowSwitchingCPU.Tag = "CPU"
 $CheckShowSwitchingCPU.Text = "CPU"
-$CheckShowSwitchingCPU.AutoSize = $false
-$CheckShowSwitchingCPU.Width = 60
-$CheckShowSwitchingCPU.Height = 20
-$CheckShowSwitchingCPU.Location = [System.Drawing.Point]::new(248, 34)
-$CheckShowSwitchingCPU.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$CheckShowSwitchingCPU.Checked = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "CPU#*")
+$CheckShowSwitchingCPU.Width = 70
 $SwitchingPageControls += $CheckShowSwitchingCPU
 $CheckShowSwitchingCPU | ForEach-Object { $_.Add_Click({ CheckBoxSwitching_Click($this) }) }
 
 $CheckShowSwitchingAMD = New-Object System.Windows.Forms.CheckBox
+$CheckShowSwitchingAMD.AutoSize = $false
+$CheckShowSwitchingAMD.Checked = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "GPU#*" | Where-Object Vendor -EQ "AMD")
+$CheckShowSwitchingAMD.Height = 20
+$CheckShowSwitchingAMD.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$CheckShowSwitchingAMD.Location = [System.Drawing.Point]::new(($SwitchingLogClearButton.Width + 40 + $CheckShowSwitchingCPU.Width), ($SwitchingLogLabel.Height + 10))
 $CheckShowSwitchingAMD.Tag = "AMD"
 $CheckShowSwitchingAMD.Text = "AMD"
-$CheckShowSwitchingAMD.AutoSize = $false
-$CheckShowSwitchingAMD.Width = 60
-$CheckShowSwitchingAMD.Height = 20
-$CheckShowSwitchingAMD.Location = [System.Drawing.Point]::new(318, 34)
-$CheckShowSwitchingAMD.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$CheckShowSwitchingAMD.Checked = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "GPU#*" | Where-Object Vendor -EQ "AMD")
+$CheckShowSwitchingAMD.Width = 70
 $SwitchingPageControls += $CheckShowSwitchingAMD
 $CheckShowSwitchingAMD | ForEach-Object { $_.Add_Click({ CheckBoxSwitching_Click($this) }) }
 
 $CheckShowSwitchingINTEL = New-Object System.Windows.Forms.CheckBox
+$CheckShowSwitchingINTEL.AutoSize = $false
+$CheckShowSwitchingINTEL.Checked = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "GPU#*" | Where-Object Vendor -EQ "INTEL")
+$CheckShowSwitchingINTEL.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$CheckShowSwitchingINTEL.Height = 20
+$CheckShowSwitchingINTEL.Location = [System.Drawing.Point]::new(($SwitchingLogClearButton.Width + 40 + $CheckShowSwitchingCPU.Width + $CheckShowSwitchingAMD.Width), ($SwitchingLogLabel.Height + 10))
 $CheckShowSwitchingINTEL.Tag = "INTEL"
 $CheckShowSwitchingINTEL.Text = "INTEL"
-$CheckShowSwitchingINTEL.AutoSize = $false
-$CheckShowSwitchingINTEL.Width = 70
-$CheckShowSwitchingINTEL.Height = 20
-$CheckShowSwitchingINTEL.Location = [System.Drawing.Point]::new(390, 34)
-$CheckShowSwitchingINTEL.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$CheckShowSwitchingINTEL.Checked = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "GPU#*" | Where-Object Vendor -EQ "INTEL")
+$CheckShowSwitchingINTEL.Width = 77
 $SwitchingPageControls += $CheckShowSwitchingINTEL
 $CheckShowSwitchingINTEL | ForEach-Object { $_.Add_Click({ CheckBoxSwitching_Click($this) }) }
 
 $CheckShowSwitchingNVIDIA = New-Object System.Windows.Forms.CheckBox
+$CheckShowSwitchingNVIDIA.AutoSize = $false
+$CheckShowSwitchingNVIDIA.Checked = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "GPU#*" | Where-Object Vendor -EQ "NVIDIA")
+$CheckShowSwitchingNVIDIA.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$CheckShowSwitchingNVIDIA.Height = 20
+$CheckShowSwitchingNVIDIA.Location = [System.Drawing.Point]::new(($SwitchingLogClearButton.Width + 40 + $CheckShowSwitchingCPU.Width + $CheckShowSwitchingAMD.Width + $CheckShowSwitchingINTEL.Width), ($SwitchingLogLabel.Height + 10))
 $CheckShowSwitchingNVIDIA.Tag = "NVIDIA"
 $CheckShowSwitchingNVIDIA.Text = "NVIDIA"
-$CheckShowSwitchingNVIDIA.AutoSize = $false
-$CheckShowSwitchingNVIDIA.Width = 70
-$CheckShowSwitchingNVIDIA.Height = 20
-$CheckShowSwitchingNVIDIA.Location = [System.Drawing.Point]::new(464, 34)
-$CheckShowSwitchingNVIDIA.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$CheckShowSwitchingNVIDIA.Checked = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "GPU#*" | Where-Object Vendor -EQ "NVIDIA")
+$CheckShowSwitchingNVIDIA.Width = 80
 $SwitchingPageControls += $CheckShowSwitchingNVIDIA
 $CheckShowSwitchingNVIDIA | ForEach-Object { $_.Add_Click({ CheckBoxSwitching_Click($this) }) }
 
@@ -612,23 +641,22 @@ Function CheckBoxSwitching_Click {
 
     $SwitchingLogClearButton.Enabled = [Boolean]$SwitchingDGV.Columns
 }
-$WatchdogTimersPageControls += $WatchdogTimersRemoveButton
 
 $SwitchingDGV = New-Object System.Windows.Forms.DataGridView
-$SwitchingDGV.Name = "SwitchingDGV"
-$SwitchingDGV.Location = [System.Drawing.Point]::new(8, 62)
-$SwitchingDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
-$SwitchingDGV.DataBindings.DefaultDataSourceUpdateMode = 0
-$SwitchingDGV.ColumnHeadersHeightSizeMode = "AutoSize"
-$SwitchingDGV.AutoSizeColumnsMode = "Fill"
-$SwitchingDGV.RowHeadersVisible = $false
-$SwitchingDGV.ColumnHeadersVisible = $true
 $SwitchingDGV.AllowUserToAddRows = $false
 $SwitchingDGV.AllowUserToOrderColumns = $true
 $SwitchingDGV.AllowUserToResizeColumns = $true
 $SwitchingDGV.AllowUserToResizeRows = $false
-$SwitchingDGV.ReadOnly = $true
+$SwitchingDGV.AutoSizeColumnsMode = "Fill"
+$SwitchingDGV.ColumnHeadersHeightSizeMode = "AutoSize"
+$SwitchingDGV.ColumnHeadersVisible = $true
+$SwitchingDGV.DataBindings.DefaultDataSourceUpdateMode = 0
 $SwitchingDGV.EnableHeadersVisualStyles = $false
+$SwitchingDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
+$SwitchingDGV.Location = [System.Drawing.Point]::new(6, ($SwitchingLogLabel.Height + $SwitchingLogClearButton.Height + 12))
+$SwitchingDGV.Name = "SwitchingDGV"
+$SwitchingDGV.ReadOnly = $true
+$SwitchingDGV.RowHeadersVisible = $false
 $SwitchingDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
 $SwitchingDGV.Add_RowPrePaint(
     { 
@@ -645,6 +673,7 @@ $SwitchingDGV.Add_RowPrePaint(
         }
     }
 )
+Set-DataGridViewDoubleBuffer -Grid $SwitchingDGV -Enabled $true
 $SwitchingPageControls += $SwitchingDGV
 
 # Watchdog Page Controls
@@ -652,19 +681,19 @@ $WatchdogTimersPageControls = @()
 
 $WatchdogTimersLabel = New-Object System.Windows.Forms.Label
 $WatchdogTimersLabel.AutoSize = $false
-$WatchdogTimersLabel.Width = 600
-$WatchdogTimersLabel.Height = 18
-$WatchdogTimersLabel.Location = [System.Drawing.Point]::new(6, 8)
 $WatchdogTimersLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$WatchdogTimersLabel.Height = 20
+$WatchdogTimersLabel.Location = [System.Drawing.Point]::new(6, 6)
+$WatchdogTimersLabel.Width = 600
 $WatchdogTimersPageControls += $WatchdogTimersLabel
 
 $WatchdogTimersRemoveButton = New-Object System.Windows.Forms.Button
-$WatchdogTimersRemoveButton.Text = "Remove all Watchdog Timers"
-$WatchdogTimersRemoveButton.Location = [System.Drawing.Point]::new(6, 30)
-$WatchdogTimersRemoveButton.Width = 220
-$WatchdogTimersRemoveButton.Height = 28
 $WatchdogTimersRemoveButton.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$WatchdogTimersRemoveButton.Height = 24
+$WatchdogTimersRemoveButton.Location = [System.Drawing.Point]::new(6, ($WatchdogTimersLabel.Height + 8))
+$WatchdogTimersRemoveButton.Text = "Remove all Watchdog Timers"
 $WatchdogTimersRemoveButton.Visible = $true
+$WatchdogTimersRemoveButton.Width = 220
 $WatchdogTimersRemoveButton.Add_Click(
     { 
         $Variables.WatchDogTimers = @()
@@ -679,21 +708,22 @@ $WatchdogTimersRemoveButton.Add_Click(
 $WatchdogTimersPageControls += $WatchdogTimersRemoveButton
 
 $WatchdogTimersDGV = New-Object System.Windows.Forms.DataGridView
-$WatchdogTimersDGV.Name = "WatchdogTimersDGV"
-$WatchdogTimersDGV.Location = [System.Drawing.Point]::new(8, 62)
-$WatchdogTimersDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
-$WatchdogTimersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
-$WatchdogTimersDGV.AutoSizeColumnsMode = "Fill"
-$WatchdogTimersDGV.ColumnHeadersHeightSizeMode = "AutoSize"
-$WatchdogTimersDGV.RowHeadersVisible = $false
-$WatchdogTimersDGV.ColumnHeadersVisible = $true
 $WatchdogTimersDGV.AllowUserToAddRows = $false
 $WatchdogTimersDGV.AllowUserToOrderColumns = $true
 $WatchdogTimersDGV.AllowUserToResizeColumns = $true
 $WatchdogTimersDGV.AllowUserToResizeRows = $false
-$WatchdogTimersDGV.ReadOnly = $true
-$WatchdogTimersDGV.EnableHeadersVisualStyles = $false
+$WatchdogTimersDGV.AutoSizeColumnsMode = "Fill"
 $WatchdogTimersDGV.ColumnHeadersDefaultCellStyle.BackColor = [System.Drawing.SystemColors]::MenuBar
+$WatchdogTimersDGV.ColumnHeadersHeightSizeMode = "AutoSize"
+$WatchdogTimersDGV.ColumnHeadersVisible = $true
+$WatchdogTimersDGV.DataBindings.DefaultDataSourceUpdateMode = 0
+$WatchdogTimersDGV.EnableHeadersVisualStyles = $false
+$WatchdogTimersDGV.Font = [System.Drawing.Font]::new("Segoe UI", 9)
+$WatchdogTimersDGV.Location = [System.Drawing.Point]::new(6, ($WatchdogTimersLabel.Height + $WatchdogTimersRemoveButton.Height + 12))
+$WatchdogTimersDGV.Name = "WatchdogTimersDGV"
+$WatchdogTimersDGV.ReadOnly = $true
+$WatchdogTimersDGV.RowHeadersVisible = $false
+Set-DataGridViewDoubleBuffer -Grid $WatchdogTimersDGV -Enabled $true
 $WatchdogTimersPageControls += $WatchdogTimersDGV
 
 $LegacyGUIForm.Controls.AddRange(@($LegacyGUIControls))
@@ -706,13 +736,15 @@ $SwitchingPage.Controls.AddRange(@($SwitchingPageControls))
 $WatchdogTimersPage.Controls.AddRange(@($WatchdogTimersPageControls))
 
 $TabControl = New-Object System.Windows.Forms.TabControl
-$TabControl.Location = [System.Drawing.Point]::new(14, 100)
 $TabControl.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$TabControl.Location = [System.Drawing.Point]::new(6, ($MiningStatusLabel.Height + $MiningSummaryLabel.Height + 20))
 $TabControl.Name = "TabControl"
 $TabControl.ShowToolTips = $true
 $TabControl.Controls.AddRange(@($RunPage, $EarningsPage, $MinersPage, $PoolsPage, $RigMonitorPage, $SwitchingPage, $WatchdogTimersPage))
 $TabControl.Add_Click({ Update-TabControl })
 $LegacyGUIForm.Controls.Add($TabControl)
+
+$LegacyGUIForm.ResumeLayout()
 
 Function Update-TabControl { 
 
@@ -738,7 +770,6 @@ Function Update-TabControl {
             $ContextMenuStripItem3.Visible = $true
             $ContextMenuStripItem4.Text = "Disable"
             $ContextMenuStripItem4.Visible = $true
-            # $ContextMenuStripItem5.Text = "Remove Watchdog Timer"
             $ContextMenuStripItem5.Visible = $false
 
             If ($Variables.TextBoxSystemLog.SelectionLength) { 
@@ -755,15 +786,16 @@ Function Update-TabControl {
                 If (-not ($ContextMenuStrip.Visible -and $ContextMenuStrip.Enabled)) { 
                     $LaunchedMinersLabel.Text = "Launched Miners - Updated $((Get-Date).ToString())"
 
+                    $LaunchedMinersDGV.BeginInit()
                     $LaunchedMinersDGV.DataSource = $Variables.MinersBest_Combo | Select-Object @(
                         @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join "; " } }
                         @{ Name = "Miner"; Expression = { $_.Name } }
                         @{ Name = "Status"; Expression = { $_.StatusMessage -replace " \{.+", "" } }, 
-                        @{ Name = "Account(s)"; Expression = { ($_.Workers.Pool.User | Select-Object -Unique | ForEach-Object { $_ -split '\.' | Select-Object -First 1 } | Select-Object -Unique) -join ' & ' } }
                         @{ Name = "Earning`n$($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) {"{0:n$($Config.DecimalsMax)}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }
                         @{ Name = "Power Cost`n$($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.PowerCost)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Powercost * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }
                         @{ Name = "Profit`n$($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }
                         @{ Name = "Power Usage"; Expression = { If (-not $_.MeasurePowerUsage) { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W"} } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } } }
+                        @{ Name = "Algorithm(s)"; Expression = { $_.Algorithms -join ' & ' } }, 
                         @{ Name = "Pool(s)"; Expression = { $_.WorkersRunning.Pool.Name -join ' & ' } }
                         @{ Name = "Hashrate(s)"; Expression = { If (-not $_.Benchmark) { ($_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } } }
                         @{ Name = "Running Time`n(hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [math]::floor(((Get-Date).ToUniversalTime() - $_.BeginTime).TotalDays * 24), ((Get-Date).ToUniversalTime() - $_.BeginTime) } }
@@ -775,23 +807,25 @@ Function Update-TabControl {
                         $LaunchedMinersDGV.Columns[0].FillWeight = 80
                         $LaunchedMinersDGV.Columns[1].FillWeight = 160
                         $LaunchedMinersDGV.Columns[2].FillWeight = 60
-                        $LaunchedMinersDGV.Columns[3].FillWeight = 150
-                        $LaunchedMinersDGV.Columns[4].FillWeight = 50; $LaunchedMinersDGV.Columns[4].DefaultCellStyle.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[4].HeaderCell.Style.Alignment = "MiddleRight"
-                        $LaunchedMinersDGV.Columns[5].FillWeight = 60; $LaunchedMinersDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"
-                        $LaunchedMinersDGV.Columns[6].FillWeight = 50; $LaunchedMinersDGV.Columns[6].DefaultCellStyle.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[6].HeaderCell.Style.Alignment = "MiddleRight"
-                        $LaunchedMinersDGV.Columns[7].FillWeight = 50; $LaunchedMinersDGV.Columns[7].DefaultCellStyle.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[7].HeaderCell.Style.Alignment = "MiddleRight"
+                        $LaunchedMinersDGV.Columns[3].FillWeight = 55; $LaunchedMinersDGV.Columns[3].DefaultCellStyle.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[3].HeaderCell.Style.Alignment = "MiddleRight"
+                        $LaunchedMinersDGV.Columns[4].FillWeight = 55; $LaunchedMinersDGV.Columns[4].DefaultCellStyle.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[4].HeaderCell.Style.Alignment = "MiddleRight"
+                        $LaunchedMinersDGV.Columns[5].FillWeight = 55; $LaunchedMinersDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"
+                        $LaunchedMinersDGV.Columns[6].FillWeight = 55; $LaunchedMinersDGV.Columns[6].DefaultCellStyle.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[6].HeaderCell.Style.Alignment = "MiddleRight"
+                        $LaunchedMinersDGV.Columns[7].FillWeight = 90
                         $LaunchedMinersDGV.Columns[8].FillWeight = 100
                         $LaunchedMinersDGV.Columns[9].FillWeight = 75; $LaunchedMinersDGV.Columns[9].DefaultCellStyle.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[9].HeaderCell.Style.Alignment = "MiddleRight"
-                        $LaunchedMinersDGV.Columns[10].FillWeight = 75
+                        $LaunchedMinersDGV.Columns[10].FillWeight = 65
                         $LaunchedMinersDGV.Columns[11].FillWeight = 65
                     }
 
+                    $LaunchedMinersDGV.Columns[4].Visible = $Variables.CalculatePowerCost
                     $LaunchedMinersDGV.Columns[5].Visible = $Variables.CalculatePowerCost
                     $LaunchedMinersDGV.Columns[6].Visible = $Variables.CalculatePowerCost
-                    $LaunchedMinersDGV.Columns[7].Visible = $Variables.CalculatePowerCost
 
                     $LaunchedMinersDGV.ClearSelection()
+
                     Form_Resize # To fully show lauched miners gridview
+                    $LaunchedMinersDGV.EndInit()
                 }
             }
             Else { 
@@ -817,8 +851,6 @@ Function Update-TabControl {
             }
 
             If (Test-Path -Path ".\Data\EarningsChartData.json" -PathType Leaf) { 
-                $LaunchedMinersLabel.Text = "Launched Miners - Updated $((Get-Date).ToString())"
-
                 $Datasource = Get-Content -Path ".\Data\EarningsChartData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 
                 $ChartTitle = New-Object System.Windows.Forms.DataVisualization.Charting.Title
@@ -853,7 +885,7 @@ Function Update-TabControl {
                 $EarningsChart.Series.Clear()
 
                 $Color = @(255, 255, 255, 255) #"FFFFFF"
-                $EarningsChart.BringToFront()
+                $EarningsChart.BringToBack()
 
                 $DaySum = @(0) * $DataSource.Labels.Count
                 $ToolTip = $DataSource.Labels | ConvertTo-Json | ConvertFrom-Json
@@ -899,8 +931,10 @@ Function Update-TabControl {
             }
 
             If ($Variables.Balances) { 
-                $EarningsDGV.DataSource = $Variables.Balances.Values | Select-Object @(
-                    @{ Name = "Pool"; Expression = { "$($_.Pool) [$($_.Currency)]" } }, 
+                $BalancesLabel.Text = "Balances data - Updated $(($Variables.Balances.Values.LastUpdated | Sort-Object | Select-Object -Last 1).ToString())"
+                $MinersDGV.BeginInit()
+                $BalancesDGV.DataSource = $Variables.Balances.Values | Select-Object @(
+                    @{ Name = "Pool [Currency]"; Expression = { "$($_.Pool) [$($_.Currency)]" } }, 
                     @{ Name = "Balance ($($Config.Currency))"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ($_.Balance * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
                     @{ Name = "Avg. $($Config.Currency)/day"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ($_.AvgDailyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
                     @{ Name = "$($Config.Currency) in 1h"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ($_.Growth1 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
@@ -910,20 +944,22 @@ Function Update-TabControl {
                     @{ Name = "Payout Threshold"; Expression = { If ($_.PayoutThresholdCurrency -eq "BTC" -and $Config.UsemBTC) { $PayoutThresholdCurrency = "mBTC"; $mBTCfactor = 1000 } Else { $PayoutThresholdCurrency = $_.PayoutThresholdCurrency; $mBTCfactor = 1 }; "{0:P2} of {1} {2} " -f ($_.Balance / $_.PayoutThreshold * $Variables.Rates.($_.Currency).($_.PayoutThresholdCurrency)), ($_.PayoutThreshold * $mBTCfactor), $PayoutThresholdCurrency } }
                 ) | Sort-Object Pool | Out-DataTable
 
-                $EarningsDGV.ClearSelection()
+                $BalancesDGV.ClearSelection()
 
-                If ($EarningsDGV.Columns) { 
-                    $EarningsDGV.Columns[0].FillWeight = 140
-                    $EarningsDGV.Columns[1].FillWeight = 90; $EarningsDGV.Columns[1].DefaultCellStyle.Alignment = "MiddleRight"; $EarningsDGV.Columns[1].HeaderCell.Style.Alignment = "MiddleRight"
-                    $EarningsDGV.Columns[2].FillWeight = 90; $EarningsDGV.Columns[2].DefaultCellStyle.Alignment = "MiddleRight"; $EarningsDGV.Columns[2].HeaderCell.Style.Alignment = "MiddleRight"
-                    $EarningsDGV.Columns[3].FillWeight = 75; $EarningsDGV.Columns[3].DefaultCellStyle.Alignment = "MiddleRight"; $EarningsDGV.Columns[3].HeaderCell.Style.Alignment = "MiddleRight"
-                    $EarningsDGV.Columns[4].FillWeight = 75; $EarningsDGV.Columns[4].DefaultCellStyle.Alignment = "MiddleRight"; $EarningsDGV.Columns[4].HeaderCell.Style.Alignment = "MiddleRight"
-                    $EarningsDGV.Columns[5].FillWeight = 75; $EarningsDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $EarningsDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"
-                    $EarningsDGV.Columns[6].FillWeight = 80
-                    $EarningsDGV.Columns[7].FillWeight = 100
+                If ($BalancesDGV.Columns) { 
+                    $BalancesDGV.Columns[0].FillWeight = 140
+                    $BalancesDGV.Columns[1].FillWeight = 90; $BalancesDGV.Columns[1].DefaultCellStyle.Alignment = "MiddleRight"; $BalancesDGV.Columns[1].HeaderCell.Style.Alignment = "MiddleRight"
+                    $BalancesDGV.Columns[2].FillWeight = 90; $BalancesDGV.Columns[2].DefaultCellStyle.Alignment = "MiddleRight"; $BalancesDGV.Columns[2].HeaderCell.Style.Alignment = "MiddleRight"
+                    $BalancesDGV.Columns[3].FillWeight = 75; $BalancesDGV.Columns[3].DefaultCellStyle.Alignment = "MiddleRight"; $BalancesDGV.Columns[3].HeaderCell.Style.Alignment = "MiddleRight"
+                    $BalancesDGV.Columns[4].FillWeight = 75; $BalancesDGV.Columns[4].DefaultCellStyle.Alignment = "MiddleRight"; $BalancesDGV.Columns[4].HeaderCell.Style.Alignment = "MiddleRight"
+                    $BalancesDGV.Columns[5].FillWeight = 75; $BalancesDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $BalancesDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"
+                    $BalancesDGV.Columns[6].FillWeight = 80
+                    $BalancesDGV.Columns[7].FillWeight = 100
                 }
+                Form_Resize # To fully show lauched miners gridview
+                $BalancesDGV.EndInit()
             }
-            Else { $EarningsLabel.Text = "Waiting for data..." }
+            Else { $BalancesLabel.Text = "Waiting for balances data..." }
         }
         "Miners" { 
             $ContextMenuStripItem1.Text = "Re-Benchmark"
@@ -931,9 +967,9 @@ Function Update-TabControl {
             $ContextMenuStripItem2.Text = "Re-Measure Power Usage"
             $ContextMenuStripItem2.Visible = $true
             $ContextMenuStripItem3.Text = "Mark as failed"
-            $ContextMenuStripItem3.Visible = $true
+            $ContextMenuStripItem4.Visible = (-not $RadioButtonMinersUnavailable.Checked)
             $ContextMenuStripItem4.Text = "Disable"
-            $ContextMenuStripItem4.Visible = $true
+            $ContextMenuStripItem4.Visible = (-not $RadioButtonMinersUnavailable.Checked)
             $ContextMenuStripItem5.Text = "Remove Watchdog Timer"
             $ContextMenuStripItem5.Visible = -not $RadioButtonMinersBest.Checked
 
@@ -947,6 +983,7 @@ Function Update-TabControl {
                     Else { $DataSource = $Variables.Miners }
 
                     $SortBy = If ($Variables.CalculatePowerCost -and -not $Config.IgnorePowerCost) { "Profit" } Else {"Earning" }
+                    $MinersDGV.BeginInit()
                     $MinersDGV.DataSource = $DataSource | Select-Object @(
                         @{ Name = "Best"; Expression = { $_.Best } }, 
                         @{ Name = "Miner"; Expression = { $_.Name } }, 
@@ -983,14 +1020,13 @@ Function Update-TabControl {
                     }
 
                     $MinersDGV.ClearSelection()
+                    $MinersDGV.EndInit()
                 }
             }
             Else { $MinersLabel.Text = "Waiting for data..." }
         }
         "Pools" { 
-            # $ContextMenuStripItem1.Text = "Enable Algorithm @ Pool"
             $ContextMenuStripItem1.Visible = $false
-            # $ContextMenuStripItem2.Text = "Disable Algorithm @ Pool"
             $ContextMenuStripItem2.Visible = $false
             $ContextMenuStripItem3.Text = "Reset Pool Stat Data"
             $ContextMenuStripItem3.Visible = $true
@@ -1007,6 +1043,7 @@ Function Update-TabControl {
                     ElseIf ($RadioButtonPoolsUnavailable.checked) { $DataSource = $Variables.Pools | Where-Object { -not $_.Available } }
                     Else { $DataSource = $Variables.Pools }
 
+                    $PoolsDGV.BeginInit()
                     $PoolsDGV.DataSource = $DataSource | Select-Object @(
                         @{ Name = "Algorithm"; Expression = { $_.Algorithm } }
                         @{ Name = "Coin Name"; Expression = { $_.CoinName } }
@@ -1037,6 +1074,7 @@ Function Update-TabControl {
                     }
 
                     $PoolsDGV.ClearSelection()
+                    $PoolsDGV.EndInit()
                 }
             }
             Else { 
@@ -1054,6 +1092,7 @@ Function Update-TabControl {
                     $WorkersLabel.Text = "Worker Status - Updated $($Variables.WorkersLastUpdated.ToString())"
 
                     $nl = "`n" # Must use variable, cannot join with '`n' directly
+                    $WorkersDGV.BeginInit()
                     $WorkersDGV.DataSource = $Variables.Workers | Select-Object @(
                         @{ Name = "Worker"; Expression = { $_.worker } }, 
                         @{ Name = "Status"; Expression = { $_.status } }, 
@@ -1071,13 +1110,13 @@ Function Update-TabControl {
 
                     If ($WorkersDGV.Columns) { 
                         $WorkersDGV.Columns[0].FillWeight = 70
-                        $WorkersDGV.Columns[1].FillWeight = 40
+                        $WorkersDGV.Columns[1].FillWeight = 60
                         $WorkersDGV.Columns[2].FillWeight = 80
                         $WorkersDGV.Columns[3].FillWeight = 70
                         $WorkersDGV.Columns[4].FillWeight = 40
                         $WorkersDGV.Columns[5].FillWeight = 65; $WorkersDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"
                         $WorkersDGV.Columns[6].FillWeight = 65; $WorkersDGV.Columns[6].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[6].HeaderCell.Style.Alignment = "MiddleRight"
-                        $WorkersDGV.Columns[7].FillWeight = 175
+                        $WorkersDGV.Columns[7].FillWeight = 150
                         $WorkersDGV.Columns[8].FillWeight = 95
                         $WorkersDGV.Columns[9].FillWeight = 75
                         $WorkersDGV.Columns[10].FillWeight = 65; $WorkersDGV.Columns[10].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[10].HeaderCell.Style.Alignment = "MiddleRight"
@@ -1085,6 +1124,7 @@ Function Update-TabControl {
                     }
 
                     $WorkersDGV.ClearSelection()
+                    $WorkersDGV.EndInit()
                 }
                 Else { $WorkersLabel.Text = "Worker Status - no workers" }
             }
@@ -1113,6 +1153,7 @@ Function Update-TabControl {
                 If ($Variables.WatchdogTimers) { 
                     $WatchdogTimersLabel.Text = "Watchdog Timers - Updated $((Get-Date).ToString())"
 
+                    $WatchdogTimersDGV.BeginInit()
                     $WatchdogTimersDGV.DataSource = $Variables.WatchdogTimers | Sort-Object MinerName, Kicked | Select-Object @(
                         @{ Name = "Name"; Expression = { $_.MinerName } }, 
                         @{ Name = "Algorithms"; Expression = { $_.Algorithm } }, 
@@ -1132,6 +1173,7 @@ Function Update-TabControl {
                     }
 
                     $WatchdogTimersDGV.ClearSelection()
+                    $WatchdogTimersDGV.EndInit()
                 }
                 Else { $WatchdogTimersLabel.Text = "Watchdog Timers - no data" }
             }
@@ -1148,29 +1190,33 @@ Function Update-TabControl {
 $LegacyGUIForm.Add_SizeChanged({ Form_Resize })
 
 Function Form_Resize { 
+    $TabControl.Width = $LegacyGUIForm.Width - 42
+    $TabControl.Height = $LegacyGUIForm.Height - $MiningStatusLabel.Height - $MiningSummaryLabel.Height - 120
 
-    $TabControl.Width = $LegacyGUIForm.Width - 44
-    $TabControl.Height = $LegacyGUIForm.Height - 168
+    $ButtonStart.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - $ButtonPause.Width - $ButtonStart.Width - 60), 6)
+    $ButtonPause.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - $ButtonPause.Width - 50), 6)
+    $ButtonStop.Location =  [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - 40), 6)
 
-    $MiningStatusLabel.Width = $LegacyGUIForm.Width - 346
+    $MiningSummaryLabel.Width = $Variables.TextBoxSystemLog.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $BalancesDGV.Width = $MinersPanel.Width = $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $WatchdogTimersDGV.Width = $TabControl.Width - 26
 
-    $ButtonStart.Location = [System.Drawing.Point]::new($LegacyGUIForm.Width - 336, 12)
-    $ButtonPause.Location = [System.Drawing.Point]::new($LegacyGUIForm.Width - 236, 12)
-    $ButtonStop.Location = [System.Drawing.Point]::new($LegacyGUIForm.Width - 136, 12)
-
-    $MiningSummaryLabel.Width = $Variables.TextBoxSystemLog.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $EarningsDGV.Width = $MinersPanel.Width = $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $WatchdogTimersDGV.Width = $TabControl.Width - 24
-
-    $EarningsDGV.Height = ($EarningsDGV.Rows.Height | Measure-Object -Sum).Sum + $EarningsDGV.ColumnHeadersHeight
-    If ($EarningsDGV.Height -gt $TabControl.Height / 2) { 
-        $EarningsDGV.Height = $TabControl.Height / 2
-        $EarningsDGV.ScrollBars = "Vertical"
+    If ($BalancesDGV.Rows.Count -gt 0) { 
+        $BalancesDGVHeight = ($BalancesDGV.Rows.Height | Measure-Object -Sum).Sum + $BalancesDGV.ColumnHeadersHeight
     }
     Else { 
-        $EarningsDGV.ScrollBars = "None"
+        $BalancesDGVHeight = 0
     }
-    $EarningsChart.Height = (($TabControl.Height - $EarningsLabel.Height - $EarningsDGV.Height - 36), 0 | Measure-Object -Maximum).Maximum
-    $EarningsLabel.Location = [System.Drawing.Point]::new(6, ($EarningsChart.Height - 6))
-    $EarningsDGV.Location = [System.Drawing.Point]::new(8, ($EarningsChart.Height + $EarningsLabel.Height))
+    If ($BalancesDGVHeight -gt $TabControl.Height / 2) { 
+        $BalancesDGVHeight = $TabControl.Height / 2
+        $BalancesDGV.ScrollBars = "Vertical"
+    }
+    Else { 
+        $BalancesDGV.ScrollBars = "None"
+    }
+    $EarningsChart.Height = (($TabControl.Height - $BalancesLabel.Height - $BalancesDGVHeight - 40), 0 | Measure-Object -Maximum).Maximum
+    $BalancesLabel.Location = [System.Drawing.Point]::new(6, ($EarningsChart.Height - 20))
+    $BalancesLabel.BringToFront()
+    $BalancesDGV.Location = [System.Drawing.Point]::new(8, ($EarningsChart.Height + $BalancesLabel.Height - 20))
+    If ($BalancesDGVHeight -gt 0) { $BalancesDGV.Height = $BalancesDGVHeight + 12 }
 
     $LaunchedMinersDGV.Height = $LaunchedMinersDGV.RowTemplate.Height * $Variables.MinersBest_Combo.Count + $LaunchedMinersDGV.ColumnHeadersHeight
     If ($LaunchedMinersDGV.Height -gt $TabControl.Height / 2) { 
@@ -1181,23 +1227,23 @@ Function Form_Resize {
         $LaunchedMinersDGV.ScrollBars = "None"
     }
 
-    $SystemLogLabel.Location = [System.Drawing.Point]::new(6, ($LaunchedMinersLabel.Height + $LaunchedMinersDGV.Height + 28))
-    $Variables.TextBoxSystemLog.Location = [System.Drawing.Point]::new(0, ($LaunchedMinersLabel.Height + $LaunchedMinersDGV.Height + $SystemLogLabel.Height + 32))
-    $Variables.TextBoxSystemLog.Height = ($TabControl.Height - $LaunchedMinersLabel.Height - $LaunchedMinersDGV.Height - $SystemLogLabel.Height - 60)
-    $Variables.TextBoxSystemLog.Width = $TabControl.Width - 8
+    $SystemLogLabel.Location = [System.Drawing.Point]::new(6, ($LaunchedMinersLabel.Height + $LaunchedMinersDGV.Height + 25))
+    $Variables.TextBoxSystemLog.Location = [System.Drawing.Point]::new(0, ($LaunchedMinersLabel.Height + $LaunchedMinersDGV.Height + $SystemLogLabel.Height + 24))
+    $Variables.TextBoxSystemLog.Height = ($TabControl.Height - $LaunchedMinersLabel.Height - $LaunchedMinersDGV.Height - $SystemLogLabel.Height - 68)
+    $Variables.TextBoxSystemLog.Width = $TabControl.Width - 10
 
-    $PoolsDGV.Height = $TabControl.Height - $PoolsPanel.Height - 72
+    $MinersDGV.Height = $TabControl.Height - $MinersPanel.Height - $MinersPanel.Height - 58
 
-    $MinersDGV.Height = $TabControl.Height - $MinersPanel.Height - 72
+    $PoolsDGV.Height = $TabControl.Height - $PoolsPanel.Height - $PoolsPanel.Height - 58
 
-    $WorkersDGV.Height = $TabControl.Height - 68
+    $WorkersDGV.Height = $TabControl.Height - $WorkersLabel.Height - 58
 
-    $SwitchingDGV.Height = $TabControl.Height - 98
+    $SwitchingDGV.Height = $TabControl.Height - $SwitchingLogLabel.Height - $SwitchingLogClearButton.Height - 64
 
-    $WatchdogTimersDGV.Height = $TabControl.Height - 98
+    $WatchdogTimersDGV.Height = $TabControl.Height - $WatchdogTimersLabel.Height - $WatchdogTimersRemoveButton.Height - 64
 
-    $EditConfigLink.Location = [System.Drawing.Point]::new(14, $LegacyGUIForm.Height - 66)
-    $CopyrightLabel.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - 382), $LegacyGUIForm.Height - 66)
+    $EditConfigLink.Location = [System.Drawing.Point]::new(14, $LegacyGUIForm.Height - 90)
+    $CopyrightLabel.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - 608), $LegacyGUIForm.Height - 90)
 }
 
 $LegacyGUIForm.Add_Load(
@@ -1273,12 +1319,12 @@ $ContextMenuStrip.Add_ItemClicked(
                 "Re-Benchmark" { 
                     $This.SourceControl.SelectedRows | ForEach-Object { 
                         If ($This.SourceControl.Name -eq "LaunchedMinersDGV") { 
-                            $SelectedMinerName = $_.Cells[1].Value -split " " | Select-Object -Index 0
-                            $SelectedMinerAlgorithms = @(($_.Cells[1].Value -split " {" | Select-Object -Index 1) -split " & " -replace "{", "" -replace "@.+", "")
+                            $SelectedMinerName = $_.Cells[1].Value
+                            $SelectedMinerAlgorithms = @($_.Cells[7].Value -split " & ")
                         }
                         ElseIf ($This.SourceControl.Name -eq "MinersDGV") { 
-                            $SelectedMinerName = $_.Cells[0].Value
-                            $SelectedMinerAlgorithms = @($_.Cells[6].Value -split " & ")
+                            $SelectedMinerName = $_.Cells[1].Value
+                            $SelectedMinerAlgorithms = @($_.Cells[8].Value -split " & ")
                         }
                         $Variables.Miners | Where-Object Name -EQ $SelectedMinerName | Where-Object { [String]$_.Algorithms -eq [String]$SelectedMinerAlgorithms } | ForEach-Object { 
                             If ($_.Earning -eq 0) { $_.Available = $true }
@@ -1287,7 +1333,7 @@ $ContextMenuStrip.Add_ItemClicked(
                             $_.Disabled = $false
                             $_.Benchmark = $true
                             $_.Restart = $true
-                            $Data += "`n$($_.Name) ($($_.Algorithms -join " & "))"
+                            $Data += "$($_.Name) ($($_.Algorithms -join " & "))"
                             ForEach ($Worker in $_.Workers) { 
                                 Remove-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
                                 $Worker.Hashrate = [Double]::NaN
@@ -1308,19 +1354,19 @@ $ContextMenuStrip.Add_ItemClicked(
                     If ($Data) { 
                         $Data = $Data | Sort-Object -Unique
                         Write-Message -Level Verbose "GUI: Re-benchmark triggered for $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
-                        $Data += "`n`n$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-benchmark."
+                        $Data += "`n$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-benchmark."
                         Update-TabControl
                     }
                 }
                 "Re-Measure Power Usage" { 
                     $This.SourceControl.SelectedRows | ForEach-Object { 
                         If ($This.SourceControl.Name -eq "LaunchedMinersDGV") { 
-                            $SelectedMinerName = $_.Cells[1].Value -split " " | Select-Object -Index 0
-                            $SelectedMinerAlgorithms = @(($_.Cells[1].Value -split " {" | Select-Object -Index 1) -split " & " -replace "{", "" -replace "@.+", "")
+                            $SelectedMinerName = $_.Cells[1].Value
+                            $SelectedMinerAlgorithms = @($_.Cells[7].Value -split " & ")
                         }
                         ElseIf ($This.SourceControl.Name -eq "MinersDGV") { 
-                            $SelectedMinerName = $_.Cells[0].Value
-                            $SelectedMinerAlgorithms = @($_.Cells[6].Value -split " & ")
+                            $SelectedMinerName = $_.Cells[1].Value
+                            $SelectedMinerAlgorithms = @($_.Cells[8].Value -split " & ")
                         }
                         $Variables.Miners | Where-Object Name -EQ $SelectedMinerName | Where-Object { [String]$_.Algorithms -eq [String]$SelectedMinerAlgorithms } | ForEach-Object { 
                             If ($_.Earning -eq 0) { $_.Available = $true }
@@ -1330,7 +1376,7 @@ $ContextMenuStrip.Add_ItemClicked(
                             }
                             $_.PowerUsage = [Double]::NaN
                             $Stat_Name = "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms)" })"
-                            $Data += "`n$Stat_Name"
+                            $Data += "$Stat_Name`n"
                             Remove-Stat -Name "$($Stat_Name)_PowerUsage"
                             $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
                             If ($_.Status -eq "Disabled") { $_.Status = "Idle" }
@@ -1340,23 +1386,23 @@ $ContextMenuStrip.Add_ItemClicked(
                     If ($Data) { 
                         $Data = $Data | Sort-Object -Unique
                         Write-Message -Level Verbose "GUI: Re-measure power usage triggered for $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
-                        $Data += "`n`n$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-measure power usage."
+                        $Data += "`n$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-measure power usage."
                         Update-TabControl
                     }
                 }
                 "Mark as failed" { 
                     $This.SourceControl.SelectedRows | ForEach-Object { 
                         If ($This.SourceControl.Name -eq "LaunchedMinersDGV") { 
-                            $SelectedMinerName = $_.Cells[1].Value -split " " | Select-Object -Index 0
-                            $SelectedMinerAlgorithms = @(($_.Cells[1].Value -split " {" | Select-Object -Index 1) -split " & " -replace "{", "" -replace "@.+", "")
+                            $SelectedMinerName = $_.Cells[1].Value
+                            $SelectedMinerAlgorithms = @($_.Cells[7].Value -split " & ")
                         }
                         ElseIf ($This.SourceControl.Name -eq "MinersDGV") { 
-                            $SelectedMinerName = $SelectedMiner.Cells[0].Value
-                            $SelectedMinerAlgorithms = @($SelectedMiner.Cells[6].Value -split " & ")
+                            $SelectedMinerName = $_.Cells[1].Value
+                            $SelectedMinerAlgorithms = @($_.Cells[8].Value -split " & ")
                         }
                         $Variables.Miners | Where-Object Name -EQ $SelectedMinerName | Where-Object { [String]$_.Algorithms -eq [String]$SelectedMinerAlgorithms } | ForEach-Object { 
                             If ($Parameters.Value -le 0 -and $Parameters.Type -eq "Hashrate") { $_.Available = $false; $_.Disabled = $true }
-                            $Data += "`n$($_.Name) ($($_.Algorithms -join " & "))"
+                            $Data += "$($_.Name) ($($_.Algorithms -join " & "))"
                             ForEach ($Algorithm in $_.Algorithms) { 
                                 $Stat_Name = "$($_.Name)_$($Algorithm)_$($Parameters.Type)"
                                 If ($Parameters.Value -eq 0) { # Miner failed
@@ -1377,22 +1423,22 @@ $ContextMenuStrip.Add_ItemClicked(
                     If ($Data) { 
                         $Data = $Data | Sort-Object -Unique
                         Write-Message -Level Verbose "GUI: Marked $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" }) as failed."
-                        $Data += "`n`n$(If ($Data.Count -eq 1) { "The miner is" } Else { "$($Data.Count) miners are " }) marked as failed."
+                        $Data += "`n$(If ($Data.Count -eq 1) { "The miner is" } Else { "$($Data.Count) miners are " }) marked as failed."
                         Update-TabControl
                     }
                 }
                 "Disable" { 
                     $This.SourceControl.SelectedRows | ForEach-Object { 
                         If ($This.SourceControl.Name -eq "LaunchedMinersDGV") { 
-                            $SelectedMinerName = $_.Cells[1].Value -split " " | Select-Object -Index 0
-                            $SelectedMinerAlgorithms = @(($_.Cells[1].Value -split " {" | Select-Object -Index 1) -split " & " -replace "{", "" -replace "@.+", "")
+                            $SelectedMinerName = $_.Cells[1].Value
+                            $SelectedMinerAlgorithms = @($_.Cells[7].Value -split " & ")
                         }
                         ElseIf ($This.SourceControl.Name -eq "MinersDGV") { 
-                            $SelectedMinerName = $SelectedMiner.Cells[0].Value
-                            $SelectedMinerAlgorithms = @($SelectedMiner.Cells[6].Value -split " & ")
+                            $SelectedMinerName = $_.Cells[1].Value
+                            $SelectedMinerAlgorithms = @($_.Cells[8].Value -split " & ")
                         }
                         $Variables.Miners | Where-Object Name -eq $SelectedMinerName | Where-Object { [String]$_.Algorithms -eq [String]$SelectedMinerAlgorithms } | ForEach-Object { 
-                            $Data += "`n$($_.Name) ($($_.Algorithms -join " & "))"
+                            $Data += "$($_.Name) ($($_.Algorithms -join " & "))"
                             ForEach ($Worker in $_.Workers) { 
                                 Disable-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
                                 $Worker.Hashrate = [Double]::NaN
@@ -1408,26 +1454,21 @@ $ContextMenuStrip.Add_ItemClicked(
                     If ($Data) { 
                         $Data = $Data | Sort-Object -Unique
                         Write-Message -Level Verbose "GUI: Disabled $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
-                        $Data += "`n`n$(If ($Data.Count -eq 1) { "The miner is" } Else { "$($Data.Count) miners are " }) disabled."
+                        $Data += "`n$(If ($Data.Count -eq 1) { "The miner is" } Else { "$($Data.Count) miners are " }) disabled."
                         Update-TabControl
                     }
                 }
                 "Remove Watchdog Timer" { 
-                    $Counter = 0
-                    $This.SourceControl.SelectedRows | ForEach-Object { 
-                        If ($This.SourceControl.Name -eq "LaunchedMinersDGV") { 
-                            $SelectedMinerName = $_.Cells[1].Value -split " " | Select-Object -Index 0
-                            $SelectedMinerAlgorithms = @(($_.Cells[1].Value -split " {" | Select-Object -Index 1) -split " & " -replace "{", "" -replace "@.+", "")
-                        }
-                        ElseIf ($This.SourceControl.Name -eq "MinersDGV") { 
-                            $SelectedMinerName = $_.Cells[0].Value
-                            $SelectedMinerAlgorithms = @($_.Cells[6].Value -split " & ")
+                    If ($This.SourceControl.Name -eq "MinersDGV") { 
+                        $This.SourceControl.SelectedRows | ForEach-Object { 
+                            $SelectedMinerName = $_.Cells[1].Value
+                            $SelectedMinerAlgorithms = @($_.Cells[8].Value -split " & ")
                         }
                         If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $SelectedMinerName | Where-Object { $_.Algorithm -in $SelectedMinerAlgorithms })) {
                             # Remove Watchdog timers
                             $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
                             ForEach ($WatchdogTimer in $WatchdogTimers) { 
-                                $Data += "`n$($WatchdogTimer.MinerName) {$($WatchdogTimer.Algorithm -join ', ')}"
+                                $Data += "$($WatchdogTimer.MinerName) {$($WatchdogTimer.Algorithm -join ', ')}"
                                 # Update miner
                                 $Variables.Miners | Where-Object Name -EQ $electedMinerName | Where-Object { [String]$_.Algorithm -eq [String]$SelectedMinerAlgorithms } | ForEach-Object { 
                                     $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Miner suspended by watchdog *" })
@@ -1442,7 +1483,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "$($Data.Count) miner $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`n`n$Message"
+                        $Data += "`n$Message"
                     }
                     Else { 
                         $Data = "No matching watchdog timers found."
@@ -1452,56 +1493,13 @@ $ContextMenuStrip.Add_ItemClicked(
         }
         ElseIf ($This.SourceControl.Name -match "PoolsDGV") { 
             Switch ($_.ClickedItem.Text) { 
-                # "Enable Algorithm @ Pool" { 
-                #     $This.SourceControl.SelectedRows | ForEach-Object { 
-                #         $SelectedPoolName = $_.Cells[5].Value
-                #         $SelectedPoolAlgorithm = $_.Cells[0].Value
-                #         $Variables.Pools | Where-Object Name -EQ $SelectedPoolName | Where-Object Algorithm -EQ $SelectedPoolAlgorithm | ForEach-Object { 
-                #             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
-                #             $Data += "`n$($Stat_Name)"
-                #             Enable-Stat -Name "$($Stat_Name)_Profit"
-                #             $_.Disabled = $false
-                #             $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Disabled by user" } | Sort-Object -Unique)
-                #             If (-not $_.Reasons) { $_.Available = $true }
-                #         }
-                #     }
-                #     $ContextMenuStrip.Visible = $false
-                #     If ($Data) { 
-                #         $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "Pool" } Else { "pools" }) enabled."
-                #         Write-Message -Level Verbose "GUI: $Message"
-                #         $Data += "`n`n$Message"
-                #         Update-TabControl
-                #     }
-                # }
-                # "Disable Algorithm @ Pool" { 
-                #     $This.SourceControl.SelectedRows | ForEach-Object { 
-                #         $SelectedPoolName = $_.Cells[5].Value
-                #         $SelectedPoolAlgorithm = $_.Cells[0].Value
-                #         $Variables.Pools | Where-Object Name -EQ $SelectedPoolName | Where-Object Algorithm -EQ $SelectedPoolAlgorithm | ForEach-Object { 
-                #             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
-                #             $Data += "`n$($Stat_Name)"
-                #             Disable-Stat -Name "$($Stat_Name)_Profit"
-                #             $_.Disabled = $false
-                #             $_.Reasons += "Disabled by user"
-                #             $_.Reasons = $_.Reasons | Sort-Object -Unique
-                #             $_.Available = $false
-                #         }
-                #     }
-                #     $ContextMenuStrip.Visible = $false
-                #     If ($Data) { 
-                #         $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "Pool" } Else { "pools" }) disabled."
-                #         Write-Message -Level Verbose "GUI: $Message"
-                #         $Data += "`n`n$Message"
-                #         Update-TabControl
-                #     }
-                # }
                 "Reset Pool Stat Data" { 
                     $This.SourceControl.SelectedRows | ForEach-Object { 
                         $SelectedPoolName = $_.Cells[5].Value
                         $SelectedPoolAlgorithm = $_.Cells[0].Value
                         $Variables.Pools | Where-Object Name -EQ $SelectedPoolName | Where-Object Algorithm -EQ $SelectedPoolAlgorithm | ForEach-Object { 
                             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
-                            $Data += "`n$($Stat_Name)"
+                            $Data += "$($Stat_Name)"
                             Remove-Stat -Name "$($Stat_Name)_Profit"
                             $_.Reasons = [String[]]@()
                             $_.Price = $_.Price_Bias = $_.StablePrice = $_.Accuracy = [Double]::Nan
@@ -1514,12 +1512,11 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "Pool stats for $($Data.Count) $(If ($Data.Count -eq 1) { "pool" } Else { "pools" }) reset."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`n`n$Message"
+                        $Data += "`n$Message"
                         Update-TabControl
                     }
                 }
                 "Remove Watchdog Timer" { 
-                    $Counter = 0
                     $This.SourceControl.SelectedRows | ForEach-Object { 
                         $SelectedPoolName = $_.Cells[5].Value
                         $SelectedPoolAlgorithm = $_.Cells[0].Value
@@ -1527,7 +1524,7 @@ $ContextMenuStrip.Add_ItemClicked(
                             # Remove Watchdog timers
                             $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
                             ForEach ($WatchdogTimer in $WatchdogTimers) { 
-                                $Data += "`n$($WatchdogTimer.PoolName) {$($WatchdogTimer.Algorithm -join ', ')}"
+                                $Data += "$($WatchdogTimer.PoolName) {$($WatchdogTimer.Algorithm -join ', ')}"
                                 # Update pools
                                 $Variables.Pools | Where-Object Name -EQ $SelectedPoolName | Where-Object Algorithm -EQ $SelectedPoolAlgorithm | ForEach-Object { 
                                     $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Algorithm@Pool suspended by watchdog" })
@@ -1543,7 +1540,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "$($Data.Count) miner $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`n`n$Message"
+                        $Data += "`n$Message"
                     }
                     Else { 
                         $Data = "No matching watchdog timers found."

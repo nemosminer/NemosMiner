@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.1.3
-Version date:   12 March 2023
+Version:        4.3.2.0
+Version date:   19 March 2023
 #>
 
 # Window handling
@@ -55,7 +55,7 @@ Class Device {
     [Int]$Bus_Platform_Index
     [Int]$Bus_Vendor_Index
     [PSCustomObject]$CIM
-    [Version]$CUDAVersion = $null
+    [Version]$CUDAVersion
     [Double]$ConfiguredPowerUsage = 0 # Workaround if device does not expose power usage
     [PSCustomObject]$CpuFeatures
     [Int]$Id
@@ -2878,10 +2878,10 @@ Function Get-Algorithm {
         $Global:Algorithms = Get-Content ".\Data\Algorithms.json" | ConvertFrom-Json -ErrorAction Stop
     }
 
-    $Algorithm = (Get-Culture).TextInfo.ToTitleCase($Algorithm.ToLower() -replace '-|_|/| ')
+    $Algorithm = $Algorithm -replace "[^a-z0-9]+"
 
     If ($Global:Algorithms.$Algorithm) { Return $Global:Algorithms.$Algorithm }
-    Else { Return $Algorithm }
+    Else { Return (Get-Culture).TextInfo.ToTitleCase($Algorithm.ToLower()) }
 }
 
 Function Get-Region { 

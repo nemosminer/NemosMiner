@@ -11,6 +11,24 @@ Known issues:
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
 
+ChangeLog NemosMiner 4.3.2.0 20.03.2023
+=======================================
+
+Fixes:
+- Core: CUDAVersion property not set on Nvidia devices
+
+Enhancements:
+- Core: Minor performance optimizations
+- Legacy GUI: Make it DPI aware and remove font fuzzyness
+- Legacy GUI: Improve display speed
+
+Miner updates:
+- JayddeeCpu-v3.21.5
+- lolMiner-v1.71
+- EvrProgPow-v1p3p0 (new)
+- SRBMinerMulti-v2.2.2
+
+
 ChangeLog NemosMiner 4.3.1.3 12.03.2023
 =======================================
 
@@ -31,7 +49,7 @@ ChangeLog NemosMiner 4.3.1.2 06.03.2023
 Enhancements:
 - Web GUI: Moved 'Balances' to 'Earnings and Balances' page
 - Web GUI: Moved 'System log' to 'System Status' page
-- Web GUI / System Status: Optimize 'Status' columm text
+- Web GUI / System Status: Optimize 'Status' column text
 
 Fixes:
 - BalanceTracker 'MiningPoolHub': Reduce number of API calls (Regression from 4.2.3.0)

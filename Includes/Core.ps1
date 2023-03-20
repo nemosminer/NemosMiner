@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.3.1.3
-Version date:   12 March 2023
+Version:        4.3.2.0
+Version date:   19 March 2023
 #>
 
 using module .\Include.psm1
@@ -86,9 +86,10 @@ Do {
         }
 
         $Miners = $Variables.Miners.Clone() # Much faster
-        If ([String]$Variables.EnabledDevices.Name -ne [String]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName).Name) { 
+        If (Compare-Object @($Variables.EnabledDevices.Name | Select-Object) @(($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName).Name | Select-Object)) { 
             $Variables.EnabledDevices = [Device[]]@($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | ForEach-Object { Copy-Object $_ })
         }
+
         If ($Variables.EnabledDevices) { 
             # For GPUs set type equal to vendor
             $Variables.EnabledDevices | Where-Object Type -EQ "GPU" | ForEach-Object { $_.Type = $_.Vendor }
@@ -1029,9 +1030,11 @@ Do {
         $Miners | ForEach-Object { 
             If ($_.Reasons -and $_.Status -ne [MinerStatus]::Disabled) { 
                 $_.Status = "Unavailable"
+                $_.StatusMessage = $null
             }
             ElseIf ($_.Status -eq "Unavailable")  { 
                 $_.Status = "Idle"
+                $_.StatusMessage = $null
             }
         }
 
@@ -1226,7 +1229,8 @@ Do {
         Start-Sleep -Milliseconds 250
 
         Do { 
-            ForEach ($Miner in $Variables.RunningMiners) { 
+            $Variables.RunningMiners | Select-Object | ForEach-Object { 
+                $Miner = $_
                 If ($Miner.Status -ne [MinerStatus]::DryRun) { 
                     If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
                         # Miner crashed
@@ -1262,7 +1266,7 @@ Do {
                             If ($Miner.ValidDataSampleTimestamp -eq [DateTime]0) { $Miner.ValidDataSampleTimestamp = $Sample.Date.AddSeconds($Miner.WarmupTimes[1])}
                             If ([Int]($Sample.Date - $Miner.ValidDataSampleTimestamp).TotalSeconds -ge 0) { 
                                 $Miner.Data += $Samples
-                                $Miner.StatusMessage = "$(If ($Miner.Benchmark -or $Miner.MeasurePowerUsage) { "$($(If ($Miner.Benchmark) { "Benchmarking" }), $(If ($Miner.Benchmark -and $Miner.MeasurePowerUsage) { "and" }), $(If ($Miner.MeasurePowerUsage) { "Power usage measuring" }) -join ' ')" } Else { "Mining" }) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
+                                $Miner.StatusMessage = "$(If ($Miner.Benchmark -or $Miner.MeasurePowerUsage) { "$($(If ($Miner.Benchmark) { "Benchmarking" }), $(If ($Miner.Benchmark -and $Miner.MeasurePowerUsage) { " and " }), $(If ($Miner.MeasurePowerUsage) { "Measuring power usage" }) -join '')" } Else { "Mining " }) {$(($Miner.Workers.Pool | ForEach-Object { (($_.Algorithm | Select-Object), ($_.Name | Select-Object)) -join '@' }) -join ' & ')}"
                                 $Miner.Devices | ForEach-Object { $_.Status = $Miner.StatusMessage }
                                 Write-Message -Level Verbose "$($Miner.Name) data sample retrieved [$(($Sample.Hashrate.PSObject.Properties.Name | ForEach-Object { "$($_): $(($Sample.Hashrate.$_ | ConvertTo-Hash) -replace ' ')$(If ($Config.BadShareRatioThreshold) { " / Shares Total: $($Sample.Shares.$_[3]), Rejected: $($Sample.Shares.$_[1]), Ignored: $($Sample.Shares.$_[2])" })" }) -join ' & ')$(If ($Sample.PowerUsage) { " / Power usage: $($Sample.PowerUsage.ToString("N2"))W" })] ($($Miner.Data.Count) Sample$(If ($Miner.Data.Count -ne 1) { "s" }))."
                             }
@@ -1291,7 +1295,7 @@ Do {
                     }
                 }
             }
-            Remove-Variable Miner
+            Remove-Variable Miner -ErrorAction Ignore
 
             $Variables.RunningMiners = @($Variables.RunningMiners | Where-Object { $_-notin $Variables.FailedMiners })
             $Variables.BenchmarkingOrMeasuringMiners = @($Variables.RunningMiners | Where-Object { $_.Activated -gt 0 -and ($_.Benchmark -or $_.MeasurePowerUsage) })
@@ -1341,11 +1345,13 @@ Do {
 
 } While ($Variables.NewMiningStatus -eq "Running")
 
-#Stop all running miners
-$Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running -or $_.Status -eq [MinerStatus]::DryRun } | ForEach-Object { 
-    $_.SetStatus([MinerStatus]::Idle)
-    $_.Info = ""
-    $_.WorkersRunning = @()
+If ($Variables.NewMiningStatus -ne "Running")  { 
+    #Stop all running miners
+    $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running -or $_.Status -eq [MinerStatus]::DryRun } | ForEach-Object { 
+        $_.SetStatus([MinerStatus]::Idle)
+        $_.Info = ""
+        $_.WorkersRunning = @()
+    }
 }
 
 $Variables.RestartCycle = $true

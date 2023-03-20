@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.3.1.3
-Version date:   12 March 2023
+Version:        4.3.2.0
+Version date:   19 March 2023
 #>
 
 [CmdletBinding()]
@@ -291,7 +291,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.3.1.3"
+    Version      = [System.Version]"4.3.2.0"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -481,7 +481,7 @@ $Variables.DriverVersion.OpenCL | Add-Member "NVIDIA" ((($Variables.Devices | Wh
 
 $Variables.DriverVersion | Add-Member "CUDA" $($Variables.CUDAVersionTable.($Variables.CUDAVersionTable.Keys | Sort-Object | Where-Object { $_ -le ([System.Version]$Variables.DriverVersion.OpenCL.NVIDIA).Major } | Select-Object -Last 1))
 
-$Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "NVIDIA" } | ForEach-Object { $_ | Add-Member CUDAVersion $Variables.DriverVersion.CUDA }
+$Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "NVIDIA" } | ForEach-Object { $_.CUDAVersion = [Version]$Variables.DriverVersion.CUDA }
 
 # Driver version changed
 If ((Get-Content -Path ".\Cache\DriverVersion.json" | ConvertFrom-Json | ConvertTo-Json -Compress) -ne ($Variables.DriverVersion | ConvertTo-Json -Compress)) { 
@@ -970,6 +970,7 @@ While ($true) {
         }
     }
     Else { 
+        Remove-Variable LegacyGUI -ErrorAction Ignore
         [Void](MainLoop)
         Start-Sleep -Milliseconds 100
     }

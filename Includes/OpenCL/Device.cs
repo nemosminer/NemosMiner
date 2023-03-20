@@ -371,24 +371,17 @@ namespace OpenCl
         public string Name
         {
             get {
-                try {
-                    string Name_AMD = Cl.GetInfoString(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_BOARD_NAME_AMD);
+                string Vendor = Cl.GetInfoString(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_VENDOR);
 
-                    return Name_AMD;
-                }
-                catch (OpenClException) {
-                }
-
-                try {
-                    string Vendor = Cl.GetInfoString(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_VENDOR);
-
-                    if(Vendor == "NVIDIA Corporation") {
-                        string Name_NV = Cl.GetInfoString(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_NAME);
-
-                        return Name_NV;
+                if (Vendor.IndexOf("Advanced Micro Devices", StringComparison.OrdinalIgnoreCase) >= 0) {
+                    try {
+                        string Name_AMD = Cl.GetInfoString(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_BOARD_NAME_AMD);
+                        if (!String.IsNullOrEmpty(Name_AMD)) {
+                            return Name_AMD;
+                        }
                     }
-                }
-                catch (OpenClException) {
+                    catch (OpenClException) {
+                    }
                 }
 
                 return Cl.GetInfoString(NativeMethods.clGetDeviceInfo, this.handle, CL_DEVICE_NAME);

@@ -209,7 +209,7 @@
                 if (config.UseColorForMinerStatus == true ) {
                   $(".statuscolorizer").each(function () {
                     switch(this.innerText) {
-                      case this.innerText.match(/^Benchmarking|^Power usage/)?.input:
+                      case this.innerText.match(/^Benchmarking|^Measuring/)?.input:
                         $(this).parent('tr').addClass('miner-measuring');
                         break;
                       case this.innerText.match(/^Disabled/)?.input:
