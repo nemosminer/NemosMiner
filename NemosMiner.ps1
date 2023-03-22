@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.3.2.0
-Version date:   19 March 2023
+Version:        4.3.2.1
+Version date:   22 March 2023
 #>
 
 [CmdletBinding()]
@@ -291,7 +291,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.3.2.0"
+    Version      = [System.Version]"4.3.2.1"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -395,9 +395,7 @@ Catch {
     Add-Type -Path ".\Includes\CPUID.cs" -OutputAssembly ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
     Add-Type -Path ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
 }
-Add-Type -AssemblyName System.Windows.Forms
-[System.Windows.Forms.Application]::EnableVisualStyles()
-[Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms.DataVisualization") | Out-Null
+
 Import-Module NetSecurity -ErrorAction SilentlyContinue
 Import-Module Defender -ErrorAction SilentlyContinue -SkipEditionCheck
 

@@ -1232,6 +1232,10 @@ Do {
             $Variables.RunningMiners | Select-Object | ForEach-Object { 
                 $Miner = $_
                 If ($Miner.Status -ne [MinerStatus]::DryRun) { 
+                    If ($DebugMinerGetData) { 
+                        $Miner.GetMinerData()
+                    }
+
                     If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
                         # Miner crashed
                         $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."
@@ -1342,6 +1346,11 @@ Do {
     [System.GC]::Collect()
 
     $Variables.RestartCycle = $true
+    $Mem = [System.GC]::GetTotalMemory("forcefullcollection")
+    If ($Mem -gt 402006024) { 
+        Write-Message -Level Info "Memory limit reached ($Mem) - respawning core."
+        Break
+    }
 
 } While ($Variables.NewMiningStatus -eq "Running")
 

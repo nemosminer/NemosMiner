@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.2.0
-Version date:   19 March 2023
+Version:        4.3.2.1
+Version date:   22 March 2023
 #>
 
 # Window handling
@@ -278,7 +278,7 @@ Class Miner {
         Else { 
             $this.StatusMessage = "Starting $($this.Info)"
             Write-Message -Level Info "Starting miner '$($this.Name) $($this.Info)'..."
-            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.WindowStyle -Priority $this.ProcessPriority -EnvBlock $this.EnvVars -JobName $this.Name -LogFile $this.LogFile
+            $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.WindowStyle -Priority $this.ProcessPriority -EnvBlock $this.EnvVars -WindowTitle "$($this.Devices.Name -join ","): $($this.Name) $($this.Info)" -JobName $this.Name -LogFile $this.LogFile
         }
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
 
@@ -2693,14 +2693,16 @@ Function Invoke-CreateProcess {
         [Parameter(Mandatory = $false)]
         [String]$StartF = 0x00000081, # STARTF_USESHOWWINDOW, STARTF_FORCEOFFFEEDBACK
         [Parameter(Mandatory = $false)]
+        [String]$WindowTitle, 
+        [Parameter(Mandatory = $false)]
         [String]$JobName, 
         [Parameter(Mandatory = $false)]
         [String]$LogFile
     )
 
-    $Job = Start-ThreadJob -Name $JobName -StreamingHost $Null -ArgumentList $BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $MinerWindowStyle, $StartF, $PID { 
+    $Job = Start-ThreadJob -Name $JobName -StreamingHost $Null -ArgumentList $BinaryPath, $ArgumentList, $WorkingDirectory, $WindowTitle, $EnvBlock, $CreationFlags, $MinerWindowStyle, $StartF, $PID { 
     # $Job = Start-Job -Name $JobName -ArgumentList $BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $MinerWindowStyle, $StartF, $PID { 
-        Param($BinaryPath, $ArgumentList, $WorkingDirectory, $EnvBlock, $CreationFlags, $MinerWindowStyle, $StartF, $ControllerProcessID)
+        Param($BinaryPath, $ArgumentList, $WorkingDirectory, $WindowTitle, $EnvBlock, $CreationFlags, $MinerWindowStyle, $StartF, $ControllerProcessID)
 
         $ControllerProcess = Get-Process -Id $ControllerProcessID
         If ($null -eq $ControllerProcess) { Return }
@@ -2720,7 +2722,7 @@ public struct PROCESS_INFORMATION
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
 public struct STARTUPINFO
 { 
-    public uint cb; public string lpReserved; public string lpDesktop; public string lpTitle;
+    public uint cb; public string lpReserved; public string lpDesktop; [MarshalAs(UnmanagedType.LPWStr)] public string lpTitle;
     public uint dwX; public uint dwY; public uint dwXSize; public uint dwYSize; public uint dwXCountChars;
     public uint dwYCountChars; public uint dwFillAttribute; public uint dwFlags; public short wShowWindow;
     public short cbReserved2; public IntPtr lpReserved2; public IntPtr hStdInput; public IntPtr hStdOutput;
@@ -2758,6 +2760,7 @@ public static class Kernel32
         $StartupInfo = New-Object STARTUPINFO
         $StartupInfo.dwFlags = $StartF # StartupInfo.dwFlag
         $StartupInfo.wShowWindow = $ShowWindow # StartupInfo.ShowWindow
+        # $StartupInfo.lpTitle = [System.Runtime.InteropServices.Marshal]::StringToBSTR($WindowTitle)
         $StartupInfo.cb = [System.Runtime.InteropServices.Marshal]::SizeOf($StartupInfo) # Struct Size
 
         # ProcessInfo Struct

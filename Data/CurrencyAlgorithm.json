@@ -11,6 +11,7 @@
   "ARRR": "Equihash",
   "ARW": "Equihash1927",
   "ATH": "Ethash",
+  "AUR": "Qubit",
   "AVN": "MinotaurX",
   "AVS": "Ethash",
   "BBC": "Ghostrider",
@@ -111,6 +112,7 @@
   "LCC": "MinotaurX",
   "LOG": "Skein2",
   "LTC": "Scrypt",
+  "LTRM": "Ghostrider",
   "LTZ": "Equihash1445",
   "MAZA": "MinotaurX",
   "MBC": "Yespower2b",
@@ -216,5 +218,5 @@
   "ZEN": "Equihash",
   "ZER": "Equihash1927",
   "ZOC": "Neoscrypt",
-  "LTRM": "Ghostrider"
+  "SPACE": "SHA256"
 }

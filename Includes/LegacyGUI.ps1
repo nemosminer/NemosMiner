@@ -18,11 +18,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           LegacyGUI.psm1
-Version:        4.3.2.0
-Version date:   19 March 2023
+Version:        4.3.2.1
+Version date:   22 March 2023
 #>
 
+[Void] [System.Windows.Forms.Application]::EnableVisualStyles()
 [Void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
+[Void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms.DataVisualization")
 [Void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
 
 #--- For High DPI, Call SetProcessDPIAware(need P/Invoke) and EnableVisualStyles ---
@@ -84,6 +86,32 @@ $WatchdogTimersPage = New-Object System.Windows.Forms.TabPage
 $WatchdogTimersPage.Text = "Watchdog Timers"
 $WatchdogTimersPage.ToolTipText = "List of all watchdog timers"
 
+$MiningStatusLabel = New-Object System.Windows.Forms.Label
+$MiningStatusLabel.AutoSize = $false
+$MiningStatusLabel.BackColor = [System.Drawing.Color]::Transparent
+$MiningStatusLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 12)
+$MiningStatusLabel.ForeColor = [System.Drawing.Color]::Black
+$MiningStatusLabel.Height = 20
+$MiningStatusLabel.Location = [System.Drawing.Point]::new(6, 10)
+$MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
+$MiningStatusLabel.TextAlign = "MiddleLeft"
+$MiningStatusLabel.Visible = $true
+$MiningStatusLabel.Width = 480
+$LegacyGUIControls += $MiningStatusLabel
+
+$MiningSummaryLabel = New-Object System.Windows.Forms.Label
+$MiningSummaryLabel.AutoSize = $false
+$MiningSummaryLabel.BackColor = [System.Drawing.Color]::Transparent
+$MiningSummaryLabel.BorderStyle = 'None'
+$MiningSummaryLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Black
+$MiningSummaryLabel.Height = 80
+$MiningSummaryLabel.Location = [System.Drawing.Point]::new(6, $MiningStatusLabel.Bottom)
+$MiningSummaryLabel.Tag = ""
+$MiningSummaryLabel.TextAlign = "MiddleLeft"
+$MiningSummaryLabel.Visible = $true
+$LegacyGUIControls += $MiningSummaryLabel
+
 $ButtonStart = New-Object System.Windows.Forms.Button
 $ButtonStart.Enabled = (-not $Config.Autostart)
 $ButtonStart.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -139,46 +167,22 @@ $EditConfigLink = New-Object System.Windows.Forms.LinkLabel
 $EditConfigLink.ActiveLinkColor = [System.Drawing.Color]::Blue
 $EditConfigLink.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $EditConfigLink.LinkColor = [System.Drawing.Color]::Blue
+$CopyrightLabel.Location = [System.Drawing.Point]::new(6, ($LegacyGUIForm.Bottom - 26))
 $EditConfigLink.TextAlign = "MiddleLeft"
-$EditConfigLink.Size = New-Object System.Drawing.Size(380, 20)
+$EditConfigLink.Size = New-Object System.Drawing.Size(380, 26)
 $EditConfigLink.Add_Click({ If ($EditConfigLink.Tag -eq "WebGUI") { Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/configedit.html" } Else { Edit-File $Variables.ConfigFile } })
 $LegacyGUIControls += $EditConfigLink
 
 $CopyrightLabel = New-Object System.Windows.Forms.LinkLabel
 $CopyrightLabel.ActiveLinkColor = [System.Drawing.Color]::Blue
 $CopyrightLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$CopyrightLabel.Location = [System.Drawing.Point]::new(6, ($LegacyGUIForm.Bottom - 26))
 $CopyrightLabel.LinkColor = [System.Drawing.Color]::Blue
-$CopyrightLabel.Size = New-Object System.Drawing.Size(380, 20)
+$CopyrightLabel.Size = New-Object System.Drawing.Size(380, 26)
 $CopyrightLabel.Text = "Copyright (c) 2018-$((Get-Date).Year) Nemo, MrPlus && UselessGuru"
 $CopyrightLabel.TextAlign = "MiddleRight"
 $CopyrightLabel.Add_Click({ Start-Process "https://github.com/Minerx117/NemosMiner/blob/master/LICENSE" })
 $LegacyGUIControls += $CopyrightLabel
-
-$MiningStatusLabel = New-Object System.Windows.Forms.Label
-$MiningStatusLabel.AutoSize = $false
-$MiningStatusLabel.BackColor = [System.Drawing.Color]::Transparent
-$MiningStatusLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 12)
-$MiningStatusLabel.ForeColor = [System.Drawing.Color]::Black
-$MiningStatusLabel.Height = 20
-$MiningStatusLabel.Location = [System.Drawing.Point]::new(12, 6)
-$MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
-$MiningStatusLabel.TextAlign = "MiddleLeft"
-$MiningStatusLabel.Visible = $true
-$MiningStatusLabel.Width = 480
-$LegacyGUIControls += $MiningStatusLabel
-
-$MiningSummaryLabel = New-Object System.Windows.Forms.Label
-$MiningSummaryLabel.AutoSize = $false
-$MiningSummaryLabel.BackColor = [System.Drawing.Color]::Transparent
-$MiningSummaryLabel.BorderStyle = 'None'
-$MiningSummaryLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Black
-$MiningSummaryLabel.Height = 60
-$MiningSummaryLabel.Location = [System.Drawing.Point]::new(12, ($MiningStatusLabel.Height + 14))
-$MiningSummaryLabel.Tag = ""
-$MiningSummaryLabel.TextAlign = "MiddleLeft"
-$MiningSummaryLabel.Visible = $true
-$LegacyGUIControls += $MiningSummaryLabel
 
 # Miner context menu items
 $ContextMenuStrip = New-Object System.Windows.Forms.ContextMenuStrip
@@ -737,9 +741,11 @@ $WatchdogTimersPage.Controls.AddRange(@($WatchdogTimersPageControls))
 
 $TabControl = New-Object System.Windows.Forms.TabControl
 $TabControl.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$TabControl.Location = [System.Drawing.Point]::new(6, ($MiningStatusLabel.Height + $MiningSummaryLabel.Height + 20))
+$TabControl.Location = [System.Drawing.Point]::new(6, $MiningSummaryLabel.Bottom)
 $TabControl.Name = "TabControl"
 $TabControl.ShowToolTips = $true
+$TabControl.Height = $LegacyGUIForm.ClientSize.Height - $MiningStatusLabel.ClientSize.Height - $MiningSummaryLabel.ClientSize.Height - 120
+$TabControl.Width = $LegacyGUIForm.Width - 42
 $TabControl.Controls.AddRange(@($RunPage, $EarningsPage, $MinersPage, $PoolsPage, $RigMonitorPage, $SwitchingPage, $WatchdogTimersPage))
 $TabControl.Add_Click({ Update-TabControl })
 $LegacyGUIForm.Controls.Add($TabControl)
@@ -1191,7 +1197,7 @@ $LegacyGUIForm.Add_SizeChanged({ Form_Resize })
 
 Function Form_Resize { 
     $TabControl.Width = $LegacyGUIForm.Width - 42
-    $TabControl.Height = $LegacyGUIForm.Height - $MiningStatusLabel.Height - $MiningSummaryLabel.Height - 120
+    $TabControl.Height = $LegacyGUIForm.ClientSize.Height - $TabControl.Top - $EditConfigLink.Height
 
     $ButtonStart.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - $ButtonPause.Width - $ButtonStart.Width - 60), 6)
     $ButtonPause.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - $ButtonPause.Width - 50), 6)
@@ -1201,22 +1207,27 @@ Function Form_Resize {
 
     If ($BalancesDGV.Rows.Count -gt 0) { 
         $BalancesDGVHeight = ($BalancesDGV.Rows.Height | Measure-Object -Sum).Sum + $BalancesDGV.ColumnHeadersHeight
-    }
-    Else { 
-        $BalancesDGVHeight = 0
-    }
-    If ($BalancesDGVHeight -gt $TabControl.Height / 2) { 
-        $BalancesDGVHeight = $TabControl.Height / 2
-        $BalancesDGV.ScrollBars = "Vertical"
+        If ($BalancesDGVHeight -gt $TabControl.Height / 2) { 
+            $EarningsChart.Height = $TabControl.Height / 2
+            $BalancesDGV.ScrollBars = "Vertical"
+            $BalancesLabel.Location = [System.Drawing.Point]::new(6, ($TabControl.Height / 2 - 30))
+        }
+        Else { 
+            $EarningsChart.Height = $TabControl.Height - $BalancesDGVHeight - 46
+            $BalancesDGV.ScrollBars = "None"
+            $BalancesLabel.Location = [System.Drawing.Point]::new(6, ($EarningsChart.Bottom - 20))
+        }
     }
     Else { 
         $BalancesDGV.ScrollBars = "None"
+        $BalancesLabel.Location = [System.Drawing.Point]::new(6, ($TabControl.Height - $BalancesLabel.Height - 50))
+        $EarningsChart.Height = $BalancesLabel.Top + 36
     }
-    $EarningsChart.Height = (($TabControl.Height - $BalancesLabel.Height - $BalancesDGVHeight - 40), 0 | Measure-Object -Maximum).Maximum
-    $BalancesLabel.Location = [System.Drawing.Point]::new(6, ($EarningsChart.Height - 20))
+    $BalancesDGV.Location = [System.Drawing.Point]::new(8, $BalancesLabel.Bottom)
+    $BalancesDGV.Height = $TabControl.Height - $BalancesLabel.Bottom - 46
+
     $BalancesLabel.BringToFront()
-    $BalancesDGV.Location = [System.Drawing.Point]::new(8, ($EarningsChart.Height + $BalancesLabel.Height - 20))
-    If ($BalancesDGVHeight -gt 0) { $BalancesDGV.Height = $BalancesDGVHeight + 12 }
+    $BalancesDGV.BringToFront()
 
     $LaunchedMinersDGV.Height = $LaunchedMinersDGV.RowTemplate.Height * $Variables.MinersBest_Combo.Count + $LaunchedMinersDGV.ColumnHeadersHeight
     If ($LaunchedMinersDGV.Height -gt $TabControl.Height / 2) { 
@@ -1232,9 +1243,9 @@ Function Form_Resize {
     $Variables.TextBoxSystemLog.Height = ($TabControl.Height - $LaunchedMinersLabel.Height - $LaunchedMinersDGV.Height - $SystemLogLabel.Height - 68)
     $Variables.TextBoxSystemLog.Width = $TabControl.Width - 10
 
-    $MinersDGV.Height = $TabControl.Height - $MinersPanel.Height - $MinersPanel.Height - 58
+    $MinersDGV.Height = $TabControl.Height - $MinersLabel.Height - $MinersPanel.Height - 60
 
-    $PoolsDGV.Height = $TabControl.Height - $PoolsPanel.Height - $PoolsPanel.Height - 58
+    $PoolsDGV.Height = $TabControl.Height - $PoolsLabel.Height - $PoolsPanel.Height - 60
 
     $WorkersDGV.Height = $TabControl.Height - $WorkersLabel.Height - 58
 
@@ -1242,8 +1253,8 @@ Function Form_Resize {
 
     $WatchdogTimersDGV.Height = $TabControl.Height - $WatchdogTimersLabel.Height - $WatchdogTimersRemoveButton.Height - 64
 
-    $EditConfigLink.Location = [System.Drawing.Point]::new(14, $LegacyGUIForm.Height - 90)
-    $CopyrightLabel.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - 608), $LegacyGUIForm.Height - 90)
+    $EditConfigLink.Location = [System.Drawing.Point]::new($TabControl.Left, ($LegacyGUIForm.ClientSize.Height - $EditConfigLink.Height))
+    $CopyrightLabel.Location = [System.Drawing.Point]::new(($TabControl.Width - $CopyrightLabel.Width), ($LegacyGUIForm.ClientSize.Height - $EditConfigLink.Height))
 }
 
 $LegacyGUIForm.Add_Load(
@@ -1354,7 +1365,7 @@ $ContextMenuStrip.Add_ItemClicked(
                     If ($Data) { 
                         $Data = $Data | Sort-Object -Unique
                         Write-Message -Level Verbose "GUI: Re-benchmark triggered for $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
-                        $Data += "`n$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-benchmark."
+                        $Data += "`n`n$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-benchmark."
                         Update-TabControl
                     }
                 }
@@ -1386,7 +1397,7 @@ $ContextMenuStrip.Add_ItemClicked(
                     If ($Data) { 
                         $Data = $Data | Sort-Object -Unique
                         Write-Message -Level Verbose "GUI: Re-measure power usage triggered for $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
-                        $Data += "`n$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-measure power usage."
+                        $Data += "`n`n$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-measure power usage."
                         Update-TabControl
                     }
                 }
@@ -1423,7 +1434,7 @@ $ContextMenuStrip.Add_ItemClicked(
                     If ($Data) { 
                         $Data = $Data | Sort-Object -Unique
                         Write-Message -Level Verbose "GUI: Marked $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" }) as failed."
-                        $Data += "`n$(If ($Data.Count -eq 1) { "The miner is" } Else { "$($Data.Count) miners are " }) marked as failed."
+                        $Data += "`n`n$(If ($Data.Count -eq 1) { "The miner is" } Else { "$($Data.Count) miners are " }) marked as failed."
                         Update-TabControl
                     }
                 }
@@ -1454,7 +1465,7 @@ $ContextMenuStrip.Add_ItemClicked(
                     If ($Data) { 
                         $Data = $Data | Sort-Object -Unique
                         Write-Message -Level Verbose "GUI: Disabled $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
-                        $Data += "`n$(If ($Data.Count -eq 1) { "The miner is" } Else { "$($Data.Count) miners are " }) disabled."
+                        $Data += "`n`n$(If ($Data.Count -eq 1) { "The miner is" } Else { "$($Data.Count) miners are " }) disabled."
                         Update-TabControl
                     }
                 }
@@ -1483,7 +1494,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "$($Data.Count) miner $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`n$Message"
+                        $Data += "`n`n$Message"
                     }
                     Else { 
                         $Data = "No matching watchdog timers found."
@@ -1512,7 +1523,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "Pool stats for $($Data.Count) $(If ($Data.Count -eq 1) { "pool" } Else { "pools" }) reset."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`n$Message"
+                        $Data += "`n`n$Message"
                         Update-TabControl
                     }
                 }
@@ -1540,7 +1551,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "$($Data.Count) miner $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`n$Message"
+                        $Data += "`n`n$Message"
                     }
                     Else { 
                         $Data = "No matching watchdog timers found."
@@ -1552,3 +1563,6 @@ $ContextMenuStrip.Add_ItemClicked(
         If ($Data.Count -ge 1) { [Void][System.Windows.Forms.MessageBox]::Show([String]$Data, "$($Variables.Branding.ProductLabel) $($_.ClickedItem.Text)", [System.Windows.Forms.MessageBoxButtons]::OK) }
     }
 )
+
+
+# $LegacyGUIform.ShowDialog() | Out-Null

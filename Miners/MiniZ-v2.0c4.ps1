@@ -53,7 +53,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
             # Temp fix https://bitcointalk.org/index.php?topic=4767892.msg61406193#msg61406193
             $MinMemGiB = If ($MinerPools[0].($_.Algorithm).DAGSizeGiB -and $MinerPools[0].($_.Algorithm).DAGSizeGiB_-lt 7) { 7 } Else { $_.MinMemGiB }
 
-            If ($AvailableMiner_Devices = ($Miner_Devices | Where-Object MemoryGiB -ge $MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture)) { 
+            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -ge $MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
 
                 $Arguments = $_.Arguments
                 $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
