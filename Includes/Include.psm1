@@ -151,6 +151,7 @@ Enum MinerStatus {
 
 Class Miner { 
     [Int]$Activated = 0
+    [TimeSpan]$Active = [TimeSpan]::Zero
     [String[]]$Algorithms # derived from workers
     [String]$API
     [String]$Arguments
@@ -207,13 +208,12 @@ Class Miner {
     [Worker[]]$Workers = @()
     [Worker[]]$WorkersRunning = @()
     [String]$Version
-    [Int[]]$WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+    [Int[]]$WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
     [String]$WindowStyle = "minimized"
 
     hidden [PSCustomObject[]]$Data = $null
     hidden [System.Management.Automation.Job]$DataReaderJob = $null
     hidden [System.Management.Automation.Job]$Process = $null
-    hidden [TimeSpan]$Active = [TimeSpan]::Zero
 
     [String[]]GetProcessNames() { 
         Return @(([IO.FileInfo]($this.Path | Split-Path -Leaf)).BaseName)
@@ -334,7 +334,7 @@ Class Miner {
     }
 
     [MinerStatus]GetStatus() { 
-        If ($this.Process.State -eq [MinerStatus]::Running -and $this.ProcessId -and (Get-Process -Id $this.ProcessId -ErrorAction Ignore).ProcessName) { # Use ProcessName, some crashed miners are dead, but may still be found by their processId
+        If ($this.Process.State -eq [MinerStatus]::Running -and $this.ProcessId -and (Get-Process -Id $this.ProcessId -ErrorAction Ignore).ProcessName) { # Use ProcessName, some crashed miners are dead but may still be found by their processId
             Return [MinerStatus]::Running
         }
         ElseIf ($this.Status -eq [MinerStatus]::Running) { 
@@ -550,7 +550,6 @@ Class Miner {
         $this.Earning_Bias = ($this.Workers.Earning_Bias | Measure-Object -Sum).Sum
 
         If ($this.Workers[0].Hashrate -eq 0) { # Allow 0 hashrate on secondary algorithm
-            # $this.Status = [MinerStatus]::Failed
             $this.Available = $false
             $this.Earning = [Double]::NaN
             $this.Earning_Bias = [Double]::NaN
@@ -594,6 +593,11 @@ Function Start-IdleDetection {
 
     # Function tracks how long the system has been idle and controls the paused state
     $Variables.IdleRunspace = [runspacefactory]::CreateRunspace()
+    # Set apartment state if available
+    If ($Variables.IdleRunspace.ApartmentState) {
+        $Variables.IdleRunspace.ApartmentState = "STA"
+    }
+    $Variables.IdleRunspace.ThreadOptions = "ReuseThread"      
     $Variables.IdleRunspace.Open()
     Get-Variable -Scope Global | Where-Object Name -in @("Config", "Variables") | ForEach-Object { 
         $Variables.IdleRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
@@ -685,7 +689,7 @@ namespace PInvoke.Win32 {
         }
     ) | Out-Null
 
-    $Variables.IdleRunspace | Add-Member -Force @{ Name = "IdleRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = $((Get-Date).ToUniversalTime()) }
+    $Variables.IdleRunspace | Add-Member -Force @{ Name = "IdleRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
 
 }
 
@@ -693,10 +697,7 @@ Function Stop-IdleDetection {
 
     If ($Variables.IdleRunspace) { 
         $Variables.IdleRunspace.Close()
-        If ($Variables.IdleRunspace.PowerShell) { 
-            $Variables.IdleRunspace.EndInvoke($Variables.IdleRunspace.Handle) | Out-Null
-            $Variables.IdleRunspace.PowerShell.Dispose()
-        }
+        If ($Variables.IdleRunspace.PowerShell) { $Variables.IdleRunspace.PowerShell.Dispose() }
         $Variables.IdleRunspace.Dispose()
         $Variables.Remove("IdleRunspace")
         Write-Message -Level Verbose "Stopped idle detection."
@@ -718,6 +719,11 @@ Function Start-Mining {
         $Variables.CycleStarts = @()
 
         $Variables.CoreRunspace = [RunspaceFactory]::CreateRunspace()
+        # Set apartment state if available
+        If ($Variables.CoreRunspace.ApartmentState) {
+            $Variables.CoreRunspace.ApartmentState = "STA"
+        }
+        $Variables.CoreRunspace.ThreadOptions = "ReuseThread"
         $Variables.CoreRunspace.Open()
         Get-Variable -Scope Global | Where-Object Name -in @("Config", "Stats", "Variables") | ForEach-Object { 
             $Variables.CoreRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
@@ -728,7 +734,7 @@ Function Start-Mining {
         $PowerShell.Runspace = $Variables.CoreRunspace
         [Void]$PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1") | Out-Null
 
-        $Variables.CoreRunspace | Add-Member -Force @{ Name = "CoreRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = $((Get-Date).ToUniversalTime()) }
+        $Variables.CoreRunspace | Add-Member -Force @{ Name = "CoreRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
 
         $Variables.Summary = "Mining processes are running."
     }
@@ -757,10 +763,7 @@ Function Stop-Mining {
         }
 
         $Variables.CoreRunspace.Close()
-        If ($Variables.CoreRunspace.PowerShell) { 
-            $Variables.CoreRunspace.EndInvoke($Variables.CoreRunspace.Handle) | Out-Null
-            $Variables.CoreRunspace.PowerShell.Dispose()
-        }
+        If ($Variables.CoreRunspace.PowerShell) { $Variables.CoreRunspace.PowerShell.Dispose() }
         $Variables.CoreRunspace.Dispose()
         $Variables.Remove("CoreRunspace")
     }
@@ -814,7 +817,7 @@ Function Start-Brain {
                     $PowerShell = [PowerShell]::Create()
                     $PowerShell.RunspacePool = $Variables.BrainRunspacePool
                     [Void]$PowerShell.AddScript($BrainScript) | Out-Null
-                    $Variables.Brains.$_ = @{ Name = $_; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = $((Get-Date).ToUniversalTime()) }
+                    $Variables.Brains.$_ = @{ Name = $_; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
                     $BrainsStarted += $_
                 }
             }
@@ -882,7 +885,7 @@ Function Start-BalancesTracker {
                 $PowerShell.Runspace = $Variables.BalancesTrackerRunspace
                 [Void]$PowerShell.AddScript("$($Variables.MainPath)\Includes\BalancesTracker.ps1") | Out-Null
 
-                $Variables.BalancesTrackerRunspace | Add-Member -Force @{ Name = "BalancesTrackerRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = $((Get-Date).ToUniversalTime()) }
+                $Variables.BalancesTrackerRunspace | Add-Member -Force @{ Name = "BalancesTrackerRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
 
             }
             Catch { 
@@ -900,10 +903,7 @@ Function Stop-BalancesTracker {
     If ($Variables.BalancesTrackerRunspace) { 
 
         $Variables.BalancesTrackerRunspace.Close()
-        If ($Variables.BalancesTrackerRunspace.PowerShell) { 
-            $Variables.BalancesTrackerRunspace.EndInvoke($Variables.BalancesTrackerRunspace.Handle) | Out-Null
-            $Variables.BalancesTrackerRunspace.PowerShell.Dispose()
-        }
+        If ($Variables.BalancesTrackerRunspace.PowerShell) { $Variables.BalancesTrackerRunspace.PowerShell.Dispose() }
         $Variables.BalancesTrackerRunspace.Dispose()
         $Variables.Remove("BalancesTrackerRunspace")
 
@@ -958,14 +958,14 @@ Function Initialize-Application {
     $Variables.Regions = Get-Content -Path ".\Data\Regions.json" | ConvertFrom-Json
     If (-not $Variables.Regions) { 
         Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\Regions.json' is not a valid JSON file. Please restore it from your original download."
-        $WscriptShell.Popup("File '.\Data\Regions.json' is not a valid JSON file.`nPlease restore it from your original download.", 4112) | Out-Null
+        $WscriptShell.Popup("File '.\Data\Regions.json' is not a valid JSON file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
         Exit
     }
     # Load FIAT currencies list
     $Variables.FIATcurrencies = Get-Content -Path ".\Data\FIATcurrencies.json" | ConvertFrom-Json
     If (-not $Variables.FIATcurrencies) { 
         Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\FIATcurrencies.json' is not a valid JSON file. Please restore it from your original download."
-        $WscriptShell.Popup("Terminating Error - Cannot continue! File '.\Data\FIATcurrencies.json' is not a valid JSON file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
+        $WscriptShell.Popup("File '.\Data\FIATcurrencies.json' is not a valid JSON file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
         Exit
     }
     # Load DAG data, if not available it will get recreated
@@ -982,14 +982,6 @@ Function Initialize-Application {
     # Load EarningsChart data to make it available early in Web GUI
     If (Test-Path -Path ".\Data\EarningsChartData.json" -PathType Leaf) { $Variables.EarningsChartData = Get-Content ".\Data\EarningsChartData.json" | ConvertFrom-Json }
 
-    # Load pool data
-    $Variables.PoolData = Get-Content -Path ".\Data\PoolData.json" | ConvertFrom-Json -AsHashtable | Get-SortedObject
-    $Variables.PoolVariants = @(($Variables.PoolData.Keys | ForEach-Object { $Variables.PoolData.$_.Variant.Keys -replace " External$| Internal$" }) | Sort-Object -Unique)
-    If (-not $Variables.PoolVariants) { 
-        Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\PoolData.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file. Please restore it from your original download."
-        $WscriptShell.Popup("File '.\Data\PoolData.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
-        Exit
-    }
     # Keep only the last 10 files
     Get-ChildItem -Path ".\Logs\$($Variables.Branding.ProductLabel)_*.log" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse
     Get-ChildItem -Path ".\Logs\SwitchingLog_*.csv" -File | Sort-Object LastWriteTime | Select-Object -SkipLast 10 | Remove-Item -Force -Recurse
@@ -997,11 +989,11 @@ Function Initialize-Application {
 
     If ([Net.ServicePointManager]::SecurityProtocol -notmatch [Net.SecurityProtocolType]::Tls12) { [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12 }
 
-    # Set process priority to BelowNormal to avoid hashrate drops on systems with weak CPUs
-    (Get-Process -Id $PID).PriorityClass = "BelowNormal"
-
     If ($Config.Proxy -eq "") { $PSDefaultParameterValues.Remove("*:Proxy") }
     Else { $PSDefaultParameterValues["*:Proxy"] = $Config.Proxy }
+
+    # Set process priority to BelowNormal to avoid hashrate drops on systems with weak CPUs
+    (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 }
 
 Function Get-DefaultAlgorithm { 
@@ -1138,12 +1130,10 @@ Function Write-Message {
         If ($Level -in $Config.LogToScreen) { 
             # Update status text box in legacy GUI, scroll to end if no text is selected
             If ($Variables.TextBoxSystemLog.AppendText) { 
-                If ($Variables.TextBoxSystemLog.SelectionLength) { 
-                    $SelectionLength = $Variables.TextBoxSystemLog.SelectionLength
+                If ($SelectionLength = $Variables.TextBoxSystemLog.SelectionLength) { 
                     $SelectionStart = $Variables.TextBoxSystemLog.SelectionStart
                     $Variables.TextBoxSystemLog.Lines += $Message
-                    $Variables.TextBoxSystemLog.SelectionLength = $SelectionLength
-                    $Variables.TextBoxSystemLog.SelectionStart = $SelectionStart
+                    $Variables.TextBoxSystemLog.Select($SelectionStart, $SelectionLength)
                     $Variables.TextBoxSystemLog.ScrollToCaret()
                 }
                 Else { 
@@ -1157,14 +1147,15 @@ Function Write-Message {
             # This lets us ensure only one thread is trying to write to the file at a time. 
             $Mutex = New-Object System.Threading.Mutex($false, $Variables.Branding.ProductLabel)
 
+            $Variables.LogFile = "$($Variables.MainPath)\Logs\$($Variables.Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd").log"
+
             # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
             If ($Mutex.WaitOne(1000)) { 
-                $LogFile = "$($Variables.MainPath)\Logs\$($Variables.Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd").log"
-                $Message | Out-File -FilePath $LogFile -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+                $Message | Out-File -FilePath $Variables.LogFile -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
                 [Void]$Mutex.ReleaseMutex()
             }
             Else { 
-                Write-Error -Message "Log file is locked, unable to write message to $($LogFile)."
+                Write-Error -Message "Log file is locked, unable to write message to '$($LogFile)'."
             }
         }
     }
@@ -1303,7 +1294,7 @@ Function Get-RandomDonationPoolsConfig {
     $Variables.DonationRandom = $Variables.DonationData | Get-Random
     $DonationRandomPoolsConfig = [Ordered]@{ }
     (Get-ChildItem .\Pools\*.ps1 -File).BaseName | Sort-Object -Unique | ForEach-Object { 
-        $PoolConfig = $Config.PoolsConfig.$_ | ConvertTo-Json -depth 99 -Compress | ConvertFrom-Json -AsHashTable
+        $PoolConfig = $Config.PoolsConfig.$_ | ConvertTo-Json -Depth 99 -Compress | ConvertFrom-Json -AsHashTable
         $PoolConfig.EarningsAdjustmentFactor = 1
         $PoolConfig.Region = $Config.PoolsConfig.$_.Region
         $PoolConfig.WorkerName = "$($Variables.Branding.ProductLabel)-$($Variables.Branding.Version.ToString())-donate$($Config.Donation)"
@@ -1365,12 +1356,8 @@ Function Read-Config {
     }
 
     # Load the configuration
-    $Local:Config = @{}
     If (Test-Path -Path $ConfigFile -PathType Leaf) { 
-        # $ConfigTemp = Get-Content $ConfigFile | ConvertFrom-Json -AsHashtable -ErrorAction Ignore | Select-Object
-        # $ConfigTemp.Keys | ForEach-Object { $Local:Config.$_ = $ConfigTemp.$_ }
-        # $Local:Config = Get-Content $ConfigFile | ConvertFrom-Json -AsHashtable -ErrorAction Ignore | Select-Object
-        New-Variable Config ([Hashtable]::Synchronized((Get-Content $ConfigFile | ConvertFrom-Json -AsHashtable -ErrorAction Ignore | Select-Object))) -Scope "Local" -Force -ErrorAction Stop
+        $Local:Config = Get-Content $ConfigFile | ConvertFrom-Json -AsHashtable -ErrorAction Ignore | Select-Object
         If ($Local:Config.Keys.Count -eq 0 -or $Local:Config -isnot [Hashtable]) { 
             $CorruptConfigFile = "$($ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").corrupt"
             Move-Item -Path $ConfigFile $CorruptConfigFile -Force
@@ -1380,6 +1367,7 @@ Function Read-Config {
             $Variables.FreshConfigText = "$Message`n`nUse the configuration editor ('http://127.0.0.1:$($Local:Config.APIPort)') to change your settings and apply the configuration.`n`n`Start making money by clicking 'Start mining'.`n`nHappy Mining!"
         }
         Else { 
+            $Variables.ConfigFileTimestamp = (Get-Item -Path $Variables.ConfigFile).LastWriteTime
             $Variables.AllCommandLineParameters.Keys | Sort-Object | ForEach-Object { 
                 If ($_ -in $Local:Config.Keys) { 
                     # Upper / lower case conversion of variable keys (Web GUI is case sensitive)
@@ -1412,25 +1400,17 @@ Function Read-Config {
         $Local:Config = Get-DefaultConfig
     }
 
-    # Build custom pools configuration, create case insensitive hashtable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
-    If ($Variables.PoolsConfigFile -and (Test-Path -Path $Variables.PoolsConfigFile -PathType Leaf)) { 
-        Try { 
-            $Variables.PoolsConfigData = Get-Content $Variables.PoolsConfigFile | ConvertFrom-Json -AsHashTable | Get-SortedObject
-        }
-        Catch { 
-            $Variables.PoolsConfigData = [Ordered]@{}
-            Write-Message -Level Warn "Pools configuration file '$($Variables.PoolsConfigFile)' is corrupt and will be ignored."
-        }
-    }
-
     # Build in memory pool config
     $PoolsConfig = @{ }
     (Get-ChildItem .\Pools\*.ps1 -File).BaseName | Sort-Object -Unique | ForEach-Object { 
         $PoolName = $_
-        If ($PoolConfig = $Variables.PoolData.$PoolName) { 
-            If ($CustomPoolConfig = $Variables.PoolsConfigData.$PoolName) { 
-                # Merge default config data with custom pool config
-                $PoolConfig = Merge-Hashtable -HT1 $PoolConfig -HT2 $CustomPoolConfig -Unique $true
+        If ($DefaultPoolConfig = $Variables.PoolData.$PoolName) { 
+            If ($PoolConfig = $Config.PoolsConfig.$PoolName) { 
+                # Merge default config data with use pool config
+                $PoolConfig = Merge-Hashtable -HT1 $DefaultPoolConfig -HT2 $PoolConfig -Unique $true
+            }
+            Else { 
+                $PoolConfig = $DefaultPoolConfig
             }
 
             If (-not $PoolConfig.EarningsAdjustmentFactor) {
@@ -1438,13 +1418,13 @@ Function Read-Config {
             }
             If ($PoolConfig.EarningsAdjustmentFactor -le 0 -or $PoolConfig.EarningsAdjustmentFactor -gt 10) { 
                 $PoolConfig.EarningsAdjustmentFactor = $Local:Config.EarningsAdjustmentFactor
-                Write-Message -Level Warn "Earnings adjustment factor (value: $($PoolConfig.EarningsAdjustmentFactor)) for pool '$PoolName' is not within supported range (0 - 10); using default value $($PoolConfig.EarningsAdjustmentFactor)."
+                Write-Message -Level Warn "Earnings adjustment factor (value: $($PoolConfig.EarningsAdjustmentFactor)) for pool '$PoolName' is not within supported range (0 - 10); using configured value $($PoolConfig.EarningsAdjustmentFactor)."
             }
 
             If (-not $PoolConfig.WorkerName) { $PoolConfig.WorkerName = $Local:Config.WorkerName }
             If (-not $PoolConfig.BalancesKeepAlive) { $PoolConfig.BalancesKeepAlive = $PoolData.$PoolName.BalancesKeepAlive }
 
-            $PoolConfig.Region = $PoolConfig.Region | Where-Object { (Get-Region $_) -notin @($PoolConfig.ExcludeRegion) }
+            $PoolConfig.Region = $DefaultPoolConfig.Region | Where-Object { (Get-Region $_) -notin @($PoolConfig.ExcludeRegion) }
 
             Switch ($PoolName) { 
                 "Hiveon" { 
@@ -1483,13 +1463,12 @@ Function Read-Config {
                 }
             }
             If ($PoolConfig.Algorithm) { $PoolConfig.Algorithm = @($PoolConfig.Algorithm -replace " " -split ",") }
+            $PoolsConfig.$PoolName = $PoolConfig
         }
-        $PoolsConfig.$PoolName = $PoolConfig
     }
     $Local:Config.PoolsConfig = $PoolsConfig
-    # Must update existing thread safe variable. Reassingment breaks updates to instances in other threads
+    # Must update existing thread safe variable. Reassignment breaks updates to instances in other threads
     $Local:Config.Keys | ForEach-Object { $Global:Config.$_ = $Local:Config.$_ }
-
 }
 
 Function Write-Config { 
@@ -1511,7 +1490,6 @@ Function Write-Config {
     }
 
     $Config.Remove("ConfigFile")
-    $Config.Remove("PoolsConfig")
     "$Header$($Config | Get-SortedObject | ConvertTo-Json -Depth 10)" | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM
 }
 
@@ -1524,11 +1502,6 @@ Function Edit-File {
     )
 
     $FileWriteTime = (Get-Item -Path $FileName).LastWriteTime
-    If (-not $FileWriteTime) { 
-        If ($FileName -eq $Variables.PoolsConfigFile -and (Test-Path -Path ".\Data\PoolsConfig-Template.json" -PathType Leaf)) { 
-            Copy-Item ".\Data\PoolsConfig-Template.json" $FileName
-        }
-    }
 
     If (-not ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)"))) { 
         Notepad.exe $FileName
@@ -1551,11 +1524,11 @@ Function Edit-File {
     }
 
     If ($FileWriteTime -ne (Get-Item -Path $FileName).LastWriteTime) { 
-        Write-Message -Level Verbose "Saved '$(($FileName))'. Changes will become active in next cycle."
-        Return "Saved '$(($FileName))'`nChanges will become active in next cycle."
+        Write-Message -Level Verbose "Saved '$FileName'. Changes will become active in next cycle."
+        Return "Saved '$FileName'.`nChanges will become active in next cycle."
     }
     Else { 
-        Return "No changes to '$(($FileName))' made."
+        Return "No changes to '$FileName' made."
     }
 }
 
@@ -3178,6 +3151,10 @@ Function Update-ConfigFile {
                 If ($Config.$_) { $Config.PoolBalancesUpdateInterval = $Config.$_ }
                 $Config.Remove($_)
             }
+            "PoolsConfigFile" { 
+                $Config.PoolsConfig = Get-Content $Config.$_ | ConvertFrom-Json -AsHashtable -ErrorAction Ignore | Select-Object
+                $Config.Remove($_)
+            }
             "PricePenaltyFactor" { $Config.EarningsAdjustmentFactor = $Config.$_; $Config.Remove($_) }
             "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
             "RunningMinerGainPct" { $Config.MinerSwitchingThreshold = $Config.$_; $Config.Remove($_) }
@@ -3219,7 +3196,6 @@ Function Update-ConfigFile {
                 $PoolsConfig.$_.PSObject.Members.Remove("Wallet")
             }
         }
-        $PoolsConfig | ConvertTo-Json | Out-File -FilePath $Variables.PoolsConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
     }
 
     # Rename MPH to MiningPoolHub

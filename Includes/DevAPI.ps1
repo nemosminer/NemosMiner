@@ -18,7 +18,7 @@ $Variables.BalanceData = Get-Content "C:\Users\Stephan\Desktop\NemosMiner\Logs\B
 # Load stats, required for stat management
 Get-Stat | Out-Null
 
-$Config = Read-Config -ConfigFile $Variables.ConfigFile
+Read-Config -ConfigFile $Variables.ConfigFile
 
 $Request = $Request.Substring(42)
 $Path = $Request -replace "\?.+"
@@ -124,7 +124,7 @@ Switch ($Path) {
     "/functions/config/set" { 
         Try { 
             Write-Config -ConfigFile $Variables.ConfigFile -Config ($Key | ConvertFrom-Json -AsHashtable)
-            $Config = Read-Config -ConfigFile $Variables.ConfigFile
+            Read-Config -ConfigFile $Variables.ConfigFile
             $Variables.Devices | Select-Object | Where-Object { $_.State -ne [DeviceState]::Unsupported } | ForEach-Object { 
                 If ($_.Name -in @($Config.ExcludeDeviceName)) { 
                     $_.State = [DeviceState]::Disabled

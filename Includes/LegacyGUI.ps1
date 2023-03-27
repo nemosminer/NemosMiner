@@ -745,7 +745,7 @@ $TabControl.Location = [System.Drawing.Point]::new(6, $MiningSummaryLabel.Bottom
 $TabControl.Name = "TabControl"
 $TabControl.ShowToolTips = $true
 $TabControl.Height = $LegacyGUIForm.ClientSize.Height - $MiningStatusLabel.ClientSize.Height - $MiningSummaryLabel.ClientSize.Height - 120
-$TabControl.Width = $LegacyGUIForm.Width - 42
+$TabControl.Width = $LegacyGUIForm.ClientSize.Width - 12
 $TabControl.Controls.AddRange(@($RunPage, $EarningsPage, $MinersPage, $PoolsPage, $RigMonitorPage, $SwitchingPage, $WatchdogTimersPage))
 $TabControl.Add_Click({ Update-TabControl })
 $LegacyGUIForm.Controls.Add($TabControl)
@@ -761,9 +761,9 @@ Function Update-TabControl {
     $SelectionStart = $Variables.TextBoxSystemLog.SelectionStart
     $TextLength = $Variables.TextBoxSystemLog.TextLength
     $Variables.TextBoxSystemLog.Lines = @($Variables.TextBoxSystemLog.Lines | Select-Object -Last 100)
-    $Variables.TextBoxSystemLog.SelectionStart = $SelectionStart - $TextLength + $Variables.TextBoxSystemLog.TextLength
-    If ($Variables.TextBoxSystemLog.SelectionStart -gt 0) { 
-        $Variables.TextBoxSystemLog.SelectionLength = $SelectionLength
+    $SelectionStart = $SelectionStart - $TextLength + $Variables.TextBoxSystemLog.TextLength
+    If ($SelectionStart -gt 0) { 
+        $Variables.TextBoxSystemLog.Select($SelectionStart, $SelectionLength)
     }
 
     Switch ($TabControl.SelectedTab.Text) { 
@@ -810,7 +810,7 @@ Function Update-TabControl {
                     ) | Sort-Object "Device(s)" | Out-DataTable
 
                     If ($LaunchedMinersDGV.Columns) { 
-                        $LaunchedMinersDGV.Columns[0].FillWeight = 80
+                        $LaunchedMinersDGV.Columns[0].FillWeight = 30 + ($Variables.MinersBest_Combo | ForEach-Object { $_.DeviceNames.Count } | Measure-Object -Maximum).Maximum * 20
                         $LaunchedMinersDGV.Columns[1].FillWeight = 160
                         $LaunchedMinersDGV.Columns[2].FillWeight = 60
                         $LaunchedMinersDGV.Columns[3].FillWeight = 55; $LaunchedMinersDGV.Columns[3].DefaultCellStyle.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[3].HeaderCell.Style.Alignment = "MiddleRight"
@@ -860,31 +860,31 @@ Function Update-TabControl {
                 $Datasource = Get-Content -Path ".\Data\EarningsChartData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 
                 $ChartTitle = New-Object System.Windows.Forms.DataVisualization.Charting.Title
-                $ChartTitle.Text = "Earnings of the past $($DataSource.Labels.Count) active days"
-                $ChartTitle.Font = [System.Drawing.Font]::new("Arial", 10)
                 $ChartTitle.Alignment = "TopCenter"
+                $ChartTitle.Font = [System.Drawing.Font]::new("Arial", 10)
+                $ChartTitle.Text = "Earnings of the past $($DataSource.Labels.Count) active days"
                 $EarningsChart.Titles.Clear()
                 $EarningsChart.Titles.Add($ChartTitle)
 
                 $ChartArea = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
-                $ChartArea.BackColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"#2B3232" 
-                $ChartArea.BackSecondaryColor = [System.Drawing.Color]::FromArgb(255, 180, 180, 180) #"#777E7E"
-                $ChartArea.BackGradientStyle = 3
-                $ChartArea.AxisX.LabelStyle.Enabled = $true
                 $ChartArea.AxisX.Enabled = 0
-                $ChartArea.AxisX.Minimum = 0
-                $ChartArea.AxisX.Maximum = $Datasource.Labels.Count + 1
                 $ChartArea.AxisX.Interval = 1
+                $ChartArea.AxisY.IsMarginVisible = $false
                 $ChartArea.AxisY.LabelAutoFitStyle = 16
+                $ChartArea.AxisX.LabelStyle.Enabled = $true
+                $ChartArea.AxisX.Maximum = $Datasource.Labels.Count + 1
+                $ChartArea.AxisX.Minimum = 0
                 $ChartArea.AxisX.IsMarginVisible = $false
                 $ChartArea.AxisX.MajorGrid.Enabled = $false
+                $ChartArea.AxisY.Interval = [Math]::Ceiling(($Datasource.DaySum | Measure-Object -Maximum).Maximum / 4)
+                $ChartArea.AxisY.LabelAutoFitStyle = $ChartArea.AxisY.labelAutoFitStyle - 4
                 $ChartArea.AxisY.MajorGrid.Enabled = $true
                 $ChartArea.AxisY.MajorGrid.LineColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"#FFFFFF"
-                $ChartArea.AxisY.IsMarginVisible = $false
-                $ChartArea.AxisY.LabelAutoFitStyle = $ChartArea.AxisY.labelAutoFitStyle - 4
-                $ChartArea.AxisY.Interval = [Math]::Ceiling(($Datasource.DaySum | Measure-Object -Maximum).Maximum / 4)
                 $ChartArea.AxisY.Title = $Config.Currency
                 $ChartArea.AxisY.ToolTip = "Total Earnings per day"
+                $ChartArea.BackColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"#2B3232" 
+                $ChartArea.BackGradientStyle = 3
+                $ChartArea.BackSecondaryColor = [System.Drawing.Color]::FromArgb(255, 180, 180, 180) #"#777E7E"
 
                 $EarningsChart.ChartAreas.Clear()
                 $EarningsChart.ChartAreas.Add($ChartArea)
@@ -1014,7 +1014,7 @@ Function Update-TabControl {
                     If ($MinersDGV.Columns) { 
                         $MinersDGV.Columns[0].FillWeight = 0
                         $MinersDGV.Columns[1].FillWeight = 160
-                        $MinersDGV.Columns[2].FillWeight = 80
+                        $MinersDGV.Columns[2].FillWeight = 25 + ($DataSource | ForEach-Object { $_.DeviceNames.Count } | Measure-Object -Maximum).Maximum * 25
                         $MinersDGV.Columns[3].FillWeight = 60
                         $MinersDGV.Columns[4].FillWeight = 55; $MinersDGV.Columns[4].DefaultCellStyle.Alignment = "MiddleRight"; $MinersDGV.Columns[4].HeaderCell.Style.Alignment = "MiddleRight"
                         $MinersDGV.Columns[5].FillWeight = 60; $MinersDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $MinersDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"
@@ -1066,17 +1066,17 @@ Function Update-TabControl {
                     ) | Sort-Object Algorithm | Out-DataTable
 
                     If ($PoolsDGV.Columns) { 
-                        $PoolsDGV.Columns[0].FillWeight = 100
-                        $PoolsDGV.Columns[1].FillWeight = 90
-                        $PoolsDGV.Columns[2].FillWeight = 60
-                        $PoolsDGV.Columns[3].FillWeight = 90; $PoolsDGV.Columns[3].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[3].HeaderCell.Style.Alignment = "MiddleRight"
-                        $PoolsDGV.Columns[4].FillWeight = 60; $PoolsDGV.Columns[4].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[4].HeaderCell.Style.Alignment = "MiddleRight"
-                        $PoolsDGV.Columns[5].FillWeight = 100
-                        $PoolsDGV.Columns[6].FillWeight = 200
-                        $PoolsDGV.Columns[7].FillWeight = 60; $PoolsDGV.Columns[7].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[7].HeaderCell.Style.Alignment = "MiddleRight"
-                        $PoolsDGV.Columns[8].FillWeight = 60; $PoolsDGV.Columns[8].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[8].HeaderCell.Style.Alignment = "MiddleRight"
-                        $PoolsDGV.Columns[9].FillWeight = 60; $PoolsDGV.Columns[9].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[9].HeaderCell.Style.Alignment = "MiddleRight"
-                        $PoolsDGV.Columns[10].FillWeight = 60; $PoolsDGV.Columns[10].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[10].HeaderCell.Style.Alignment = "MiddleRight"
+                        $PoolsDGV.Columns[0].FillWeight = 80
+                        $PoolsDGV.Columns[1].FillWeight = 70
+                        $PoolsDGV.Columns[2].FillWeight = 40
+                        $PoolsDGV.Columns[3].FillWeight = 55; $PoolsDGV.Columns[3].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[3].HeaderCell.Style.Alignment = "MiddleRight"
+                        $PoolsDGV.Columns[4].FillWeight = 45; $PoolsDGV.Columns[4].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[4].HeaderCell.Style.Alignment = "MiddleRight"
+                        $PoolsDGV.Columns[5].FillWeight = 80
+                        $PoolsDGV.Columns[6].FillWeight = 140
+                        $PoolsDGV.Columns[7].FillWeight = 40; $PoolsDGV.Columns[7].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[7].HeaderCell.Style.Alignment = "MiddleRight"
+                        $PoolsDGV.Columns[8].FillWeight = 40; $PoolsDGV.Columns[8].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[8].HeaderCell.Style.Alignment = "MiddleRight"
+                        $PoolsDGV.Columns[9].FillWeight = 50; $PoolsDGV.Columns[9].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[9].HeaderCell.Style.Alignment = "MiddleRight"
+                        $PoolsDGV.Columns[10].FillWeight = 40; $PoolsDGV.Columns[10].DefaultCellStyle.Alignment = "MiddleRight"; $PoolsDGV.Columns[10].HeaderCell.Style.Alignment = "MiddleRight"
                     }
 
                     $PoolsDGV.ClearSelection()
@@ -1174,7 +1174,7 @@ Function Update-TabControl {
                         $WatchdogTimersDGV.Columns[1].FillWeight = 100
                         $WatchdogTimersDGV.Columns[2].FillWeight = 100
                         $WatchdogTimersDGV.Columns[3].FillWeight = 60
-                        $WatchdogTimersDGV.Columns[4].FillWeight = 100
+                        $WatchdogTimersDGV.Columns[4].FillWeight = 30 + ($Variables.WatchdogTimers | ForEach-Object { $_.DeviceNames.Count } | Measure-Object -Maximum).Maximum * 30
                         $WatchdogTimersDGV.Columns[5].FillWeight = 100
                     }
 
@@ -1193,24 +1193,23 @@ Function Update-TabControl {
 
     $LegacyGUIForm.Cursor = [System.Windows.Forms.Cursors]::Normal
 }
-$LegacyGUIForm.Add_SizeChanged({ Form_Resize })
 
 Function Form_Resize { 
-    $TabControl.Width = $LegacyGUIForm.Width - 42
+    $TabControl.Width = $LegacyGUIForm.ClientSize.Width - 12
     $TabControl.Height = $LegacyGUIForm.ClientSize.Height - $TabControl.Top - $EditConfigLink.Height
 
     $ButtonStart.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - $ButtonPause.Width - $ButtonStart.Width - 60), 6)
     $ButtonPause.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - $ButtonPause.Width - 50), 6)
     $ButtonStop.Location =  [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - 40), 6)
 
-    $MiningSummaryLabel.Width = $Variables.TextBoxSystemLog.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $BalancesDGV.Width = $MinersPanel.Width = $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $WatchdogTimersDGV.Width = $TabControl.Width - 26
+    $MiningSummaryLabel.Width = $Variables.TextBoxSystemLog.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $BalancesDGV.Width = $MinersPanel.Width = $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $WatchdogTimersDGV.Width = $TabControl.Width - 30
 
     If ($BalancesDGV.Rows.Count -gt 0) { 
         $BalancesDGVHeight = ($BalancesDGV.Rows.Height | Measure-Object -Sum).Sum + $BalancesDGV.ColumnHeadersHeight
         If ($BalancesDGVHeight -gt $TabControl.Height / 2) { 
             $EarningsChart.Height = $TabControl.Height / 2
             $BalancesDGV.ScrollBars = "Vertical"
-            $BalancesLabel.Location = [System.Drawing.Point]::new(6, ($TabControl.Height / 2 - 30))
+            $BalancesLabel.Location = [System.Drawing.Point]::new(6, ($TabControl.Height / 2 - 20))
         }
         Else { 
             $EarningsChart.Height = $TabControl.Height - $BalancesDGVHeight - 46
@@ -1241,7 +1240,7 @@ Function Form_Resize {
     $SystemLogLabel.Location = [System.Drawing.Point]::new(6, ($LaunchedMinersLabel.Height + $LaunchedMinersDGV.Height + 25))
     $Variables.TextBoxSystemLog.Location = [System.Drawing.Point]::new(0, ($LaunchedMinersLabel.Height + $LaunchedMinersDGV.Height + $SystemLogLabel.Height + 24))
     $Variables.TextBoxSystemLog.Height = ($TabControl.Height - $LaunchedMinersLabel.Height - $LaunchedMinersDGV.Height - $SystemLogLabel.Height - 68)
-    $Variables.TextBoxSystemLog.Width = $TabControl.Width - 10
+    $Variables.TextBoxSystemLog.Width = $TabControl.Width - 18
 
     $MinersDGV.Height = $TabControl.Height - $MinersLabel.Height - $MinersPanel.Height - 60
 
@@ -1267,8 +1266,11 @@ $LegacyGUIForm.Add_Load(
             If ($WindowSettings.Top -gt 0) { $LegacyGUIForm.Top = $WindowSettings.Top }
             If ($WindowSettings.Left -gt 0) { $LegacyGUIForm.Left = $WindowSettings.Left }
         }
-
         If ($Config.LegacyGUIStartMinimized) { $LegacyGUIForm.WindowState = [System.Windows.Forms.FormWindowState]::Minimized }
+
+        # To be done after loading window size to avoid double invocation
+        $LegacyGUIForm.Add_ResizeEnd({ Form_Resize })
+        Form_Resize
 
         $TimerUI = New-Object System.Windows.Forms.Timer
         $TimerUI.Interval = 250
@@ -1282,7 +1284,7 @@ $LegacyGUIForm.Add_Load(
                 }
                 ElseIf ($EditConfigLink.Tag -ne "Edit-File") { 
                     $EditConfigLink.Tag = "Edit-File"
-                    $EditConfigLink.Text = "Edit configuration file '$($Variables.ConfigFile)' in notepad."
+                    $EditConfigLink.Text = "Edit configuration file '$($Variables.ConfigFile)' in notepad"
                 }
                 [Void](MainLoop)
             }
@@ -1563,6 +1565,3 @@ $ContextMenuStrip.Add_ItemClicked(
         If ($Data.Count -ge 1) { [Void][System.Windows.Forms.MessageBox]::Show([String]$Data, "$($Variables.Branding.ProductLabel) $($_.ClickedItem.Text)", [System.Windows.Forms.MessageBoxButtons]::OK) }
     }
 )
-
-
-# $LegacyGUIform.ShowDialog() | Out-Null

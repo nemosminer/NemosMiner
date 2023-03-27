@@ -1,6 +1,6 @@
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
 
-$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.21.5/cpuminer-opt-3.21.5-windows.zip"
+$Uri = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.22.1/cpuminer-opt-3.22.1-windows.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
 
@@ -65,7 +65,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
             PrerequisiteURI  = $PrerequisiteURI
             Type             = ($AvailableMiner_Devices.Type | Select-Object -Unique)
             URI              = $Uri
-            WarmupTimes      = $_.WarmupTimes # First value: seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+            WarmupTimes      = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
         }
     }
 }

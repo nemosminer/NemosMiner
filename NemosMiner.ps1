@@ -170,15 +170,13 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$PoolAPITimeout = 20, # Time (in seconds) until it aborts the pool request (useful if a pool's API is stuck). Note: do not set this value too small or NM will not be able to get any pool data
     [Parameter(Mandatory = $false)]
-    [String]$PoolsConfigFile = ".\Config\PoolsConfig.json", # PoolsConfig file name
-    [Parameter(Mandatory = $false)]
     [String[]]$PoolName = @("Hiveon", "MiningDutch", "MiningPoolHub", "NiceHash", "NLPool", "ProHashing", "ZergPoolCoins", "ZPool"), 
     [Parameter(Mandatory = $false)]
     [Int]$PoolTimeout = 20, # Time (in seconds) until it aborts the pool request (useful if a pool's API is stuck). Note: do not set this value too small or NM will not be able to get any pool data
     [Parameter(Mandatory = $false)]
     [Hashtable]$PowerPricekWh = @{"00:00" = 0.26; "12:00" = 0.3 }, # Price of power per kW⋅h (in $Currency, e.g. CHF), valid from HH:mm (24hr format)
     [Parameter(Mandatory = $false)]
-    [Hashtable]$PowerUsage = @{ }, # Static power usage per device in W, e.g. @{ "GPU#03" = 25, "GPU#04 = 55" } (in case HWiNFO cannot read power usage)
+    [Hashtable]$PowerUsage = @{ }, # Static power usage per device in watt, e.g. @{ "GPU#03" = 25, "GPU#04 = 55" } (in case HWiNFO cannot read power usage)
     [Parameter(Mandatory = $false)]
     [Double]$PowerUsageIdleSystemW = 60, # Watt, Powerusage of idle system. Part of profit calculation.
     [Parameter(Mandatory = $false)]
@@ -328,6 +326,16 @@ $Variables.AllCommandLineParameters = [Ordered]@{ }
 $MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -ne "ConfigFile" } | Where-Object { Get-Variable $_ } | Sort-Object | ForEach-Object { 
     $Variables.AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly
     If ($MyInvocation.MyCommandLineParameters.$_ -is [Switch]) { $Variables.AllCommandLineParameters.$_ = [Boolean]$Variables.AllCommandLineParameters.$_ }
+}
+        $Variables.LogFile = "$($Variables.MainPath)\Logs\$($Variables.Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd").log"
+
+# Load pool data before reading config
+$Variables.PoolData = Get-Content -Path ".\Data\PoolData.json" | ConvertFrom-Json -AsHashtable | Get-SortedObject
+$Variables.PoolVariants = @(($Variables.PoolData.Keys | ForEach-Object { $Variables.PoolData.$_.Variant.Keys -replace " External$| Internal$" }) | Sort-Object -Unique)
+If (-not $Variables.PoolVariants) { 
+    Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\PoolData.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file. Please restore it from your original download."
+    $WscriptShell.Popup("File '.\Data\PoolData.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
+    Exit
 }
 
 # Read configuration
@@ -968,7 +976,6 @@ While ($true) {
         }
     }
     Else { 
-        Remove-Variable LegacyGUI -ErrorAction Ignore
         [Void](MainLoop)
         Start-Sleep -Milliseconds 100
     }

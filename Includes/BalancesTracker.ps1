@@ -238,17 +238,17 @@ Do {
                 }
                 Else { 
                     # Only calculate if current balance data
-                    If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-1) })   { $Growth1 =   [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-1) } | Sort-Object Date | Select-Object -First 1).Earnings) }
-                    If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-6) })   { $Growth6 =   [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-6) } | Sort-Object Date | Select-Object -First 1).Earnings) }
-                    If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-24) })  { $Growth24 =  [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-24) } | Sort-Object Date | Select-Object -First 1).Earnings) }
+                    If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-1) })   { $Growth1 =   [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-1) }   | Sort-Object Date | Select-Object -First 1).Earnings) }
+                    If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-6) })   { $Growth6 =   [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-6) }   | Sort-Object Date | Select-Object -First 1).Earnings) }
+                    If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-24) })  { $Growth24 =  [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-24) }  | Sort-Object Date | Select-Object -First 1).Earnings) }
                     If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-168) }) { $Growth168 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-168) } | Sort-Object Date | Select-Object -First 1).Earnings) }
                     If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-720) }) { $Growth720 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-720) } | Sort-Object Date | Select-Object -First 1).Earnings) }
                 }
 
 
-                $AvgHourlyGrowth = If ($PoolBalanceObjects | Where-Object { $_.DateTime -lt $Now.AddHours(-1) }) { [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalHours) } Else { $Growth1 }
-                $AvgDailyGrowth = If ($PoolBalanceObjects | Where-Object { $_.DateTime -lt $Now.AddDays(-1) }) { [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalDays) } Else { $Growth24 }
-                $AvgWeeklyGrowth = If ($PoolBalanceObjects | Where-Object { $_.DateTime -lt $Now.AddDays(-7) }) { [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalDays * 7) } Else { $Growth168 }
+                $AvgHourlyGrowth = If ($PoolBalanceObjects | Where-Object { $_.DateTime -lt $Now.AddHours(-1) }) { [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalHours) }    Else { $Growth1 }
+                $AvgDailyGrowth =  If ($PoolBalanceObjects | Where-Object { $_.DateTime -lt $Now.AddDays(-1) })  { [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalDays) }     Else { $Growth24 }
+                $AvgWeeklyGrowth = If ($PoolBalanceObjects | Where-Object { $_.DateTime -lt $Now.AddDays(-7) })  { [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalDays * 7) } Else { $Growth168 }
 
                 If ($PoolBalanceObjects | Where-Object { $_.DateTime.Date -eq $Now.Date }) { 
                     $GrowthToday = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime.Date -eq $Now.Date } | Sort-Object Date | Select-Object -First 1).Earnings)
@@ -363,6 +363,10 @@ Do {
 
         $Variables.EarningsChartData = $EarningsChartData 
         $Variables.EarningsChartData | ConvertTo-Json | Out-File -FilePath ".\Data\EarningsChartData.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+
+        # Keep earnings for max. 1 year
+        $OldestEarningsDate = (Get-Date).AddYears(-1).ToString("yyyy-MM-dd")
+        $Earnings = $Earnings | Where-Object Date -ge $OldestEarningsDate
 
         # At least 31 days are needed for Growth720
         If ($Variables.BalanceData.Count -gt 1) { 
