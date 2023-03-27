@@ -10,9 +10,32 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.3.3.0 27.03.2023
+=======================================
+
+Changes:
+- Core: Merge Config & PoolsConfig file
+
+Enhancements:
+- BalancesTracker: Keep Earnings data for 365 days
+- Core: Minor performance optimizations
+
+Fixes:
+- Core: Not updating miner names when $MinerInstancePerDeviceModel changing from $false
+- Web GUI / Balances Data: 'Remove Entry' button not updating balances data file
+
+Miner updates:
+- GMiner-v3.31
+- JayddeeCpu-v3.22.1
+- lolMiner-v1.72
+- Rigel-v1.3.10
+
 
 ChangeLog NemosMiner 4.3.2.1 22.03.2023
 =======================================
+
+Changes:
+- TeamBlackMiner API: Make v1.40 default
 
 Enhancements:
 - Core: Minor performance optimizations

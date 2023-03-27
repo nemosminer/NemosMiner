@@ -166,6 +166,7 @@
   "SMLY": "MyriadGroestl",
   "SONO": "Sonoa",
   "SOV": "X16r",
+  "SPACE": "SHA256",
   "SPB": "Scrypt",
   "SPK": "Neoscrypt",
   "SPRX": "Yespower",
@@ -188,6 +189,7 @@
   "VECO": "Yespower",
   "VEGI": "HMQ1725",
   "VGC": "X16rv2",
+  "VHH": "Yespower",
   "VIVO": "Neoscrypt",
   "VKAX": "Mike",
   "VRSC": "VerusHash",
@@ -218,5 +220,5 @@
   "ZEN": "Equihash",
   "ZER": "Equihash1927",
   "ZOC": "Neoscrypt",
-  "SPACE": "SHA256"
+  "DEM": "SHA256"
 }

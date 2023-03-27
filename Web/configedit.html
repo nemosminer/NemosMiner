@@ -2,12 +2,11 @@
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h2 id="title" data-navbaractive="navconfigedit">Edit Configuration</h2>
           </div>
-          <div id="configfilenames" class="alert alert-info" role="alert">&ensp;</div>
+          <div id="configfilename" class="alert alert-info" role="alert">&ensp;</div>
           <form id="configuration">
             <input name="submit" type="submit" id="save-button" value="Save configuration" class="btn btn-success" alt="Submit" title="Save configuration&#10;It will become active in next cycle.">
             <input name="reset" type="reset" id="reset-button" value="Reset" class="btn btn-warning" alt="Reset" title="Reset configuration data to previous values">
             <button type="button" class="btn btn-primary" id="btn-editconfig" name="btn-editconfig" title="Edit Config file&#10;It will become active in next cycle.">Edit Config file</button>
-            <button type="button" class="btn btn-primary" id="btn-editpoolsconfig" name="btn-editpoolsconfig" title="Edit PoolsConfig file&#10;It will become active in next cycle.">Edit PoolsConfig file</button>
             <div>
               <br>
             </div>
@@ -473,7 +472,6 @@
               //Edit config file
               $('#btn-editconfig').click(function () {
                 document.getElementById('btn-editconfig').disabled = true;
-                document.getElementById('btn-editpoolsconfig').disabled = true;
                 $('.modal-body').load('/functions/file/edit?FileName=' + encodeURIComponent(configfile), function () {
                   if (this.outerText) {
                     $('.modal-title').text('Edit Config file');
@@ -485,23 +483,6 @@
                     })
                   }
                   document.getElementById('btn-editconfig').disabled = false;
-                  document.getElementById('btn-editpoolsconfig').disabled = false;
-                });
-              });
-
-              //Edit poolsconfig file
-              $('#btn-editpoolsconfig').click(function () {
-                document.getElementById('btn-editconfig').disabled = true;
-                document.getElementById('btn-editpoolsconfig').disabled = true;
-                $('.modal-body').load('/functions/file/edit?FileName=' + encodeURIComponent(poolsconfigfile), function () {
-                  if (this.outerText) {
-                    $('.modal-title').text('Edit PoolsConfig file');
-                    $('#myModal').modal({ 
-                      show: true
-                    });
-                  }
-                  document.getElementById('btn-editconfig').disabled = false;
-                  document.getElementById('btn-editpoolsconfig').disabled = false;
                 });
               });
 
@@ -522,15 +503,7 @@
                 url: '/configfile',
                 success: function (result) {
                   configfile = result;
-                  $.ajax({
-                    async: false,
-                    dataType: 'text',
-                    url: '/poolsconfigfile',
-                    success: function (result) {
-                      poolsconfigfile = result;
-                      $('#configfilenames').text("Current configuration files: '" + configfile + "' & '" + poolsconfigfile + "'");
-                    }
-                  });
+                  $('#configfilename').text("Current configuration file: '" + configfile + "'");
                 }
               });
 

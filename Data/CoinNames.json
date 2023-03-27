@@ -461,6 +461,7 @@
   "SMLY": "SmileyCoin",
   "SONO": "Sono",
   "SOV": "Sovereign",
+  "SPACE": "Mvc",
   "SPB": "Spiderbyte",
   "SPDR": "Spider",
   "SPK": "Sparkspay",
@@ -616,5 +617,5 @@
   "ZP": "ZenProtocol",
   "ZUR": "ZurCoin",
   "ZYON": "BitZyon",
-  "SPACE": "Mvc"
+  "VHH": "Volkshash"
 }

@@ -1,9 +1,9 @@
-Note: NemosMiner will automatically update existing config files during updates. Changed config items will get renamed / removed or converted as needed.
+Note: NemosMiner will automatically update existing configuration files during updates. Changed configuration items will get renamed / removed or converted as needed.
 It is recommended to review the updated configuration after an update.
 
 
-New Config Items
-================
+New Configuration Items
+=======================
 
 # If set API will log all requests to this file, to disable leave empty
   "APILogfile": "", 
@@ -315,13 +315,14 @@ New Config Items
 # If true launch Web GUI (default: true, to disable add ' -Webgui:false' to your NemosMiner start file)
   "WebGUI" = $true,
 
-Removed Config Items
-====================
+Removed Configuration Items
+===========================
   "APIKey": "", (Replaced with ProHashingAPIKey & ProHashingAPIKey)
   "EstimateCorrection": false, obsolete. Accuracy & Bias reduce prices which in turn avoids pools with high price fluctuation
   "GPUCount": 1, obsolete
   "HideConsole": false, obsolete
   "MarginOfError": 0,4, obsolete
+  "PoolsConfigFile": "", obsolete. PoolsConfig moved to normal config file
   "SelGPUDSTM": "0 1", obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "SelGPUCC": "0,1", obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "SSL": not supported until a later release
@@ -333,13 +334,13 @@ Removed Config Items
   "Wallet": [BTC Address]; replaced with "Wallets.BTC"
   "WebGUIUseColor"": Replaced with "UseColorForMinerStatus". Setting works in web and legacy GUI
 
-Renamed config items (same functionality)
-=========================================
+Renamed configuration items (same functionality)
+================================================
   "BalancesTrackerIgnorePool" renamed to "BalancesTrackerExcludePool"
   "Donate" renamed to "Donation"
   "MineWhenIdle" renamed to "IdleDetection"
   "RunningMinerGainPct" renamed to "MinerSwitchingThreshold" 
 
-NiceHash pool Config:
-=====================
+NiceHash pool configuration:
+============================
 - Added "IsInternal" flag (lower fee of 2% instad of 5%), see .\Config.PoolsConfig-NiceHashInternal.json for an example

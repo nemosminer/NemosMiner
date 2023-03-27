@@ -5,7 +5,6 @@
           <div id="configrunning" class="alert alert-info" role="alert">This is the full configuration NemosMiner is currently using</div>
           <div id="toolbar">
             <button type="button" class="btn btn-primary" id="btn-editconfig" name="btn-editconfig" title="Edit configuration file&#10;It will become active in next cycle.">Edit Config file</button>
-            <button type="button" class="btn btn-primary" id="btn-editpoolsconfig" name="btn-editpoolsconfig" title="Edit pools config file&#10;It will become active in next cycle.">Edit PoolsConfig file</button>
           </div>
           <br>
 
@@ -18,7 +17,6 @@
               //Edit config file
               $('#btn-editconfig').click(function () {
                 document.getElementById('btn-editconfig').disabled = true;
-                document.getElementById('btn-editpoolsconfig').disabled = true;
                 $('.modal-body').load('/functions/file/edit?FileName=' + encodeURIComponent(configfile), function () {
                   if (this.outerText) {
                     $('.modal-title').text('Edit Config file');
@@ -30,23 +28,6 @@
                     })
                   }
                   document.getElementById('btn-editconfig').disabled = false;
-                  document.getElementById('btn-editpoolsconfig').disabled = false;
-                });
-              });
-
-              //Edit poolsconfig file
-              $('#btn-editpoolsconfig').click(function () {
-                document.getElementById('btn-editconfig').disabled = true;
-                document.getElementById('btn-editpoolsconfig').disabled = true;
-                $('.modal-body').load('/functions/file/edit?FileName=' + encodeURIComponent(poolsconfigfile), function () {
-                  if (this.outerText) {
-                    $('.modal-title').text('Edit PoolsConfig file');
-                    $('#myModal').modal({ 
-                      show: true
-                    });
-                  }
-                  document.getElementById('btn-editconfig').disabled = false;
-                  document.getElementById('btn-editpoolsconfig').disabled = false;
                 });
               });
 
@@ -57,15 +38,7 @@
                 url: '/configfile',
                 success: function (result) {
                   configfile = result;
-                  $.ajax({
-                    async: false,
-                    dataType: 'text',
-                    url: '/poolsconfigfile',
-                    success: function (result) {
-                      poolsconfigfile = result;
-                      $('#configrunning').text("This is the full configuration NemosMiner is currently using. (Current configuration files: '" + configfile + "' & '" + poolsconfigfile + "')");
-                    }
-                  });
+                  $('#configrunning').text("This is the full configuration NemosMiner is currently using. (Current configuration file: '" + configfile + "')");
                 }
               });
 
