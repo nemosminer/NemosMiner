@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.3.0
-Version date:   22 March 2023
+Version:        4.3.3.1
+Version date:   02 April 2023
 #>
 
 # Window handling
@@ -257,8 +257,8 @@ Class Miner {
 
     hidden StopDataReader() { 
         # Before stopping read data
-        If ($this.DataReaderJob.HasMoreData) { $this.Data += @($this.DataReaderJob | Receive-Job | Select-Object -Property Date, Hashrate, Shares, PowerUsage) }
-        $this.DataReaderJob | Get-Job | Stop-Job | Receive-Job | Out-Null
+        If ($this.DataReaderJob.HasMoreData) { $this.Data += @($this.DataReaderJob | Stop-Job | Receive-Job) }
+        $this.DataReaderJob | Get-Job | Remove-Job | Out-Null
         $this.DataReaderJob = $null
     }
 
@@ -350,12 +350,15 @@ Class Miner {
             "DryRun" { 
                 $this.Status = [MinerStatus]::DryRun
                 $this.StartMining()
+                Break
             }
             "Running" { 
                 $this.StartMining()
+                Break
             }
             "Idle" { 
                 $this.StopMining()
+                Break
             }
             Default { 
                 $this.Status = [MinerStatus]::Failed
@@ -593,11 +596,6 @@ Function Start-IdleDetection {
 
     # Function tracks how long the system has been idle and controls the paused state
     $Variables.IdleRunspace = [runspacefactory]::CreateRunspace()
-    # Set apartment state if available
-    If ($Variables.IdleRunspace.ApartmentState) {
-        $Variables.IdleRunspace.ApartmentState = "STA"
-    }
-    $Variables.IdleRunspace.ThreadOptions = "ReuseThread"      
     $Variables.IdleRunspace.Open()
     Get-Variable -Scope Global | Where-Object Name -in @("Config", "Variables") | ForEach-Object { 
         $Variables.IdleRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
@@ -719,11 +717,6 @@ Function Start-Mining {
         $Variables.CycleStarts = @()
 
         $Variables.CoreRunspace = [RunspaceFactory]::CreateRunspace()
-        # Set apartment state if available
-        If ($Variables.CoreRunspace.ApartmentState) {
-            $Variables.CoreRunspace.ApartmentState = "STA"
-        }
-        $Variables.CoreRunspace.ThreadOptions = "ReuseThread"
         $Variables.CoreRunspace.Open()
         Get-Variable -Scope Global | Where-Object Name -in @("Config", "Stats", "Variables") | ForEach-Object { 
             $Variables.CoreRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
@@ -1116,11 +1109,11 @@ Function Write-Message {
 
     # Write to console
     Switch ($Level) { 
-        "Error"   { Write-Host $Message -ForegroundColor "Red" }
-        "Warn"    { Write-Host $Message -ForegroundColor "Magenta" }
-        "Info"    { Write-Host $Message -ForegroundColor "White" }
-        "Verbose" { Write-Host $Message -ForegroundColor "Yello" }
-        "Debug"   { Write-Host $Message -ForegroundColor "Blue" }
+        "Error"   { Write-Host $Message -ForegroundColor "Red"; Break }
+        "Warn"    { Write-Host $Message -ForegroundColor "Magenta"; Break }
+        "Info"    { Write-Host $Message -ForegroundColor "White"; Break }
+        "Verbose" { Write-Host $Message -ForegroundColor "Yello"; Break }
+        "Debug"   { Write-Host $Message -ForegroundColor "Blue"; Break }
     }
 
     $Message = "$Date $($Level.ToUpper()): $Message"
@@ -1162,7 +1155,7 @@ Function Write-Message {
     Catch { }
 }
 
-Function Update-MonitoringData { 
+Function Write-MonitoringData { 
 
     # Updates a remote monitoring server, sending this worker's data and pulling data about other workers
 
@@ -1174,18 +1167,18 @@ Function Update-MonitoringData {
     # reveal someone's windows username or other system information they might not want sent
     # For the ones that can be an array, comma separate them
     $Data = @(
-        $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | Sort-Object DeviceName | ForEach-Object { 
+        $Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::DryRun -or $_.Status -eq [MinerStatus]::Running } | Sort-Object DeviceName | ForEach-Object { 
             [PSCustomObject]@{ 
                 Algorithm      = $_.WorkersRunning.Pool.Algorithm -join ','
                 Currency       = $Config.Currency
                 CurrentSpeed   = $_.Hashrates_Live
-                Earning        = $_.Earning
-                EstimatedSpeed = $_.Workers.Hashrate
+                Earning        = ($_.WorkersRunning.Earning | Measure-Object -Sum).Sum
+                EstimatedSpeed = $_.WorkersRunning.Hashrate
                 Name           = $_.Name
                 Path           = Resolve-Path -Relative $_.Path
                 Pool           = $_.WorkersRunning.Pool.Name -join ','
-                Profit         = $_.Profit
-                Type           = $_.Type -join ','
+                Profit         = If ($_.Profit) { $_.Profit } ElseIf ($Variables.CalculatePowerCost) { ($_.WorkersRunning.Profit | Measure-Object -Sum).Sum - ($_.PowerUsage_Live * $Variables.PowerCostBTCperW) } Else { [Double]::Nan }
+                Type           = $_.Type
             }
         }
     )
@@ -1315,7 +1308,6 @@ Function Get-RandomDonationPoolsConfig {
                     $PoolConfig.Wallets = $Variables.DonationRandom.Wallets | ConvertTo-Json | ConvertFrom-Json -AsHashtable
                     $DonationRandomPoolsConfig.$_ = $PoolConfig
                 }
-                Break
             }
         }
     }
@@ -1356,8 +1348,9 @@ Function Read-Config {
     }
 
     # Load the configuration
+    $Local:Config = @{}
     If (Test-Path -Path $ConfigFile -PathType Leaf) { 
-        $Local:Config = Get-Content $ConfigFile | ConvertFrom-Json -AsHashtable -ErrorAction Ignore | Select-Object
+        New-Variable Config ([Hashtable]((Get-Content $ConfigFile | ConvertFrom-Json -AsHashtable -ErrorAction Ignore | Select-Object))) -Scope "Local" -Force -ErrorAction Stop
         If ($Local:Config.Keys.Count -eq 0 -or $Local:Config -isnot [Hashtable]) { 
             $CorruptConfigFile = "$($ConfigFile)_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").corrupt"
             Move-Item -Path $ConfigFile $CorruptConfigFile -Force
@@ -1400,17 +1393,37 @@ Function Read-Config {
         $Local:Config = Get-DefaultConfig
     }
 
+    # Build custom pools configuration, create case insensitive hashtable (https://stackoverflow.com/questions/24054147/powershell-hash-tables-double-key-error-a-and-a)
+    If ($Variables.PoolsConfigFile -and (Test-Path -Path $Variables.PoolsConfigFile -PathType Leaf)) { 
+        Try { 
+            $Variables.PoolsConfigData = Get-Content $Variables.PoolsConfigFile | ConvertFrom-Json -AsHashTable | Get-SortedObject
+            $Variables.PoolsConfigFileTimestamp = (Get-Item -Path $Variables.PoolsConfigFile).LastWriteTime
+        }
+        Catch { 
+            $Variables.PoolsConfigData = [Ordered]@{}
+            Write-Message -Level Warn "Pools configuration file '$($Variables.PoolsConfigFile)' is corrupt and will be ignored."
+        }
+    }
+
+    # Load pool data
+    If (-not $Variables.PoolData) { 
+        $Variables.PoolData = Get-Content -Path ".\Data\PoolData.json" | ConvertFrom-Json -AsHashtable | Get-SortedObject
+        $Variables.PoolVariants = @(($Variables.PoolData.Keys | ForEach-Object { $Variables.PoolData.$_.Variant.Keys -replace " External$| Internal$" }) | Sort-Object -Unique)
+        If (-not $Variables.PoolVariants) { 
+            Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\PoolData.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file. Please restore it from your original download."
+            $WscriptShell.Popup("File '.\Data\PoolData.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
+            Exit
+        }
+    }
+
     # Build in memory pool config
     $PoolsConfig = @{ }
     (Get-ChildItem .\Pools\*.ps1 -File).BaseName | Sort-Object -Unique | ForEach-Object { 
         $PoolName = $_
-        If ($DefaultPoolConfig = $Variables.PoolData.$PoolName) { 
-            If ($PoolConfig = $Config.PoolsConfig.$PoolName) { 
-                # Merge default config data with use pool config
-                $PoolConfig = Merge-Hashtable -HT1 $DefaultPoolConfig -HT2 $PoolConfig -Unique $true
-            }
-            Else { 
-                $PoolConfig = $DefaultPoolConfig
+        If ($PoolConfig = $Variables.PoolData.$PoolName) { 
+            If ($CustomPoolConfig = $Variables.PoolsConfigData.$PoolName) { 
+                # Merge default config data with custom pool config
+                $PoolConfig = Merge-Hashtable -HT1 $PoolConfig -HT2 $CustomPoolConfig -Unique $true
             }
 
             If (-not $PoolConfig.EarningsAdjustmentFactor) {
@@ -1418,13 +1431,13 @@ Function Read-Config {
             }
             If ($PoolConfig.EarningsAdjustmentFactor -le 0 -or $PoolConfig.EarningsAdjustmentFactor -gt 10) { 
                 $PoolConfig.EarningsAdjustmentFactor = $Local:Config.EarningsAdjustmentFactor
-                Write-Message -Level Warn "Earnings adjustment factor (value: $($PoolConfig.EarningsAdjustmentFactor)) for pool '$PoolName' is not within supported range (0 - 10); using configured value $($PoolConfig.EarningsAdjustmentFactor)."
+                Write-Message -Level Warn "Earnings adjustment factor (value: $($PoolConfig.EarningsAdjustmentFactor)) for pool '$PoolName' is not within supported range (0 - 10); using default value $($PoolConfig.EarningsAdjustmentFactor)."
             }
 
             If (-not $PoolConfig.WorkerName) { $PoolConfig.WorkerName = $Local:Config.WorkerName }
             If (-not $PoolConfig.BalancesKeepAlive) { $PoolConfig.BalancesKeepAlive = $PoolData.$PoolName.BalancesKeepAlive }
 
-            $PoolConfig.Region = $DefaultPoolConfig.Region | Where-Object { (Get-Region $_) -notin @($PoolConfig.ExcludeRegion) }
+            $PoolConfig.Region = $PoolConfig.Region | Where-Object { (Get-Region $_) -notin @($PoolConfig.ExcludeRegion) }
 
             Switch ($PoolName) { 
                 "Hiveon" { 
@@ -1434,14 +1447,17 @@ Function Read-Config {
                             $PoolConfig.Wallets.$_ = $Local:Config.Wallets.$_
                         }
                     }
+                    Break
                 }
                 "MiningDutch" { 
                     If ((-not $PoolConfig.PayoutCurrency) -or $PoolConfig.PayoutCurrency -eq "[Default]") { $PoolConfig.PayoutCurrency = $Local:Config.PayoutCurrency }
                     If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Local:Config.MiningDutchUserName }
                     If (-not $PoolConfig.Wallets) { $PoolConfig.Wallets = @{ "$($PoolConfig.PayoutCurrency)" = $($Local:Config.Wallets.($PoolConfig.PayoutCurrency)) } }
+                    Break
                 }
                 "MiningPoolHub" { 
                     If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Local:Config.MiningPoolHubUserName }
+                    Break
                 }
                 "NiceHash" { 
                     If (-not $PoolConfig.Variant."Nicehash Internal".Wallets.BTC) { 
@@ -1451,10 +1467,12 @@ Function Read-Config {
                         If ($Local:Config.NiceHashWallet -and -not $Local:Config.NiceHashWalletIsInternal) { $PoolConfig.Variant."NiceHash External".Wallets = @{ "BTC" = $Local:Config.NiceHashWallet } }
                         ElseIf ($Local:Config.Wallets.BTC) { $PoolConfig.Variant."NiceHash External".Wallets = @{ "BTC" = $Local:Config.Wallets.BTC } }
                     }
+                    Break
                 }
                 "ProHashing" { 
                     If (-not $PoolConfig.UserName) { $PoolConfig.UserName = $Local:Config.ProHashingUserName }
                     If (-not $PoolConfig.MiningMode) { $PoolConfig.MiningMode = $Local:Config.ProHashingMiningMode }
+                    Break
                 }
                 Default { 
                     If ((-not $PoolConfig.PayoutCurrency) -or $PoolConfig.PayoutCurrency -eq "[Default]") { $PoolConfig.PayoutCurrency = $Local:Config.PayoutCurrency }
@@ -1463,8 +1481,8 @@ Function Read-Config {
                 }
             }
             If ($PoolConfig.Algorithm) { $PoolConfig.Algorithm = @($PoolConfig.Algorithm -replace " " -split ",") }
-            $PoolsConfig.$PoolName = $PoolConfig
         }
+        $PoolsConfig.$PoolName = $PoolConfig
     }
     $Local:Config.PoolsConfig = $PoolsConfig
     # Must update existing thread safe variable. Reassignment breaks updates to instances in other threads
@@ -1490,6 +1508,7 @@ Function Write-Config {
     }
 
     $Config.Remove("ConfigFile")
+    $Config.Remove("PoolsConfig")
     "$Header$($Config | Get-SortedObject | ConvertTo-Json -Depth 10)" | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM
 }
 
@@ -1502,6 +1521,11 @@ Function Edit-File {
     )
 
     $FileWriteTime = (Get-Item -Path $FileName).LastWriteTime
+    If (-not $FileWriteTime) { 
+        If ($FileName -eq $Variables.PoolsConfigFile -and (Test-Path -Path ".\Data\PoolsConfig-Template.json" -PathType Leaf)) { 
+            Copy-Item ".\Data\PoolsConfig-Template.json" $FileName
+        }
+    }
 
     If (-not ($NotepadProcess = (Get-CimInstance CIM_Process | Where-Object CommandLine -Like "*\Notepad.exe* $($FileName)"))) { 
         Notepad.exe $FileName
@@ -1518,7 +1542,7 @@ Function Edit-File {
                     [Win32]::ShowWindowAsync($MainWindowHandle, 9) | Out-Null # SW_RESTORE
                 }
             }
-            Start-Sleep -MilliSeconds 100
+            Start-Sleep -Milliseconds 100
         }
         Catch { }
     }
@@ -1550,6 +1574,7 @@ Function Get-SortedObject {
                         $SortedObject | Add-Member $_ (Get-SortedObject $Object.$_)
                     }
                 }
+                Break
             }
             "Hashtable|OrderedDictionary|SyncHashtable" { 
                 $SortedObject = [Ordered]@{ }
@@ -1561,6 +1586,7 @@ Function Get-SortedObject {
                         $SortedObject.$_ = (Get-SortedObject $Object.$_)
                     }
                 }
+                Break
             }
             Default { 
                 $SortedObject = $Object | Sort-Object
@@ -2310,10 +2336,10 @@ Function Get-Device {
                     Bus    = $null
                     Vendor = $(
                         Switch -Regex ($Device_CIM.Manufacturer) { 
-                            "Advanced Micro Devices" { "AMD" }
-                            "Intel" { "INTEL" }
-                            "NVIDIA" { "NVIDIA" }
-                            "AMD" { "AMD" }
+                            "Advanced Micro Devices" { "AMD"; Break }
+                            "Intel" { "INTEL"; Break }
+                            "NVIDIA" { "NVIDIA"; Break }
+                            "AMD" { "AMD"; Break }
                             Default { $Device_CIM.Manufacturer -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce|Radeon|Intel' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
                         }
                     )
@@ -2370,10 +2396,10 @@ Function Get-Device {
                     )
                     Vendor = $(
                         Switch -Regex ([String]$Device_CIM.AdapterCompatibility) { 
-                            "Advanced Micro Devices" { "AMD" }
-                            "Intel" { "INTEL" }
-                            "NVIDIA" { "NVIDIA" }
-                            "AMD" { "AMD" }
+                            "Advanced Micro Devices" { "AMD"; Break }
+                            "Intel" { "INTEL"; Break }
+                            "NVIDIA" { "NVIDIA"; Break }
+                            "AMD" { "AMD"; Break }
                             Default { $Device_CIM.AdapterCompatibility -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce|Radeon|Intel' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
                         }
                     )
@@ -2432,8 +2458,8 @@ Function Get-Device {
                         Model  = $Device_OpenCL.Name
                         Type   = $(
                             Switch -Regex ([String]$Device_OpenCL.Type) { 
-                                "CPU" { "CPU" }
-                                "GPU" { "GPU" }
+                                "CPU" { "CPU"; Break }
+                                "GPU" { "GPU"; Break }
                                 Default { [String]$Device_OpenCL.Type -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce|Radeon|Intel' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
                             }
                         )
@@ -2444,10 +2470,10 @@ Function Get-Device {
                         )
                         Vendor = $(
                             Switch -Regex ([String]$Device_OpenCL.Vendor) { 
-                                "Advanced Micro Devices" { "AMD" }
-                                "Intel" { "INTEL" }
-                                "NVIDIA" { "NVIDIA" }
-                                "AMD" { "AMD" }
+                                "Advanced Micro Devices" { "AMD"; Break }
+                                "Intel" { "INTEL"; Break }
+                                "NVIDIA" { "NVIDIA"; Break }
+                                "AMD" { "AMD"; Break }
                                 Default { [String]$Device_OpenCL.Vendor -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce|Radeon|Intel' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
                             }
                         )
@@ -2721,8 +2747,8 @@ public static class Kernel32
 
         $ShowWindow = $(
             Switch ($MinerWindowStyle) { 
-                "hidden" { "0x0000" } # SW_HIDE
-                "normal" { "0x0001" } # SW_SHOWNORMAL
+                "hidden" { "0x0000"; Break } # SW_HIDE
+                "normal" { "0x0001"; Break } # SW_SHOWNORMAL
                 Default  { "0x0007" } # SW_SHOWMINNOACTIVE
             }
         )
@@ -3151,10 +3177,6 @@ Function Update-ConfigFile {
                 If ($Config.$_) { $Config.PoolBalancesUpdateInterval = $Config.$_ }
                 $Config.Remove($_)
             }
-            "PoolsConfigFile" { 
-                $Config.PoolsConfig = Get-Content $Config.$_ | ConvertFrom-Json -AsHashtable -ErrorAction Ignore | Select-Object
-                $Config.Remove($_)
-            }
             "PricePenaltyFactor" { $Config.EarningsAdjustmentFactor = $Config.$_; $Config.Remove($_) }
             "ReadPowerUsage" { $Config.CalculatePowerCost = $Config.$_; $Config.Remove($_) }
             "RunningMinerGainPct" { $Config.MinerSwitchingThreshold = $Config.$_; $Config.Remove($_) }
@@ -3196,6 +3218,7 @@ Function Update-ConfigFile {
                 $PoolsConfig.$_.PSObject.Members.Remove("Wallet")
             }
         }
+        $PoolsConfig | ConvertTo-Json | Out-File -FilePath $Variables.PoolsConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
     }
 
     # Rename MPH to MiningPoolHub
@@ -3213,13 +3236,13 @@ Function Update-ConfigFile {
         $OldRegion = $Config.Region
         # Write message about new mining regions
         $Config.Region = Switch ($Config.Region) { 
-            "Brazil"       { "USA West" }
-            "Europe East"  { "Europe" }
-            "Europe North" { "Europe" }
-            "HongKong"     { "Asia" }
-            "India"        { "Asia" }
-            "Russia"       { "Europe" }
-            "US"           { "USA West" }
+            "Brazil"       { "USA West"; Break }
+            "Europe East"  { "Europe"; Break }
+            "Europe North" { "Europe"; Break }
+            "HongKong"     { "Asia"; Break }
+            "India"        { "Asia"; Break }
+            "Russia"       { "Europe"; Break }
+            "US"           { "USA West"; Break }
             Default        { "Europe" }
         }
         Write-Message -Level Warn "Available mining locations have changed ($OldRegion -> $($Config.Region)). Please verify your configuration."
@@ -3445,6 +3468,7 @@ Function Get-DAGsize {
             While (-not (Test-Prime ($Size / $Mix_Bytes))) { 
                 $Size -= 2 * $Mix_Bytes
             }
+            Break
         }
         "ERG" { 
             # https://github.com/RainbowMiner/RainbowMiner/issues/2102
@@ -3457,6 +3481,7 @@ Function Get-DAGsize {
                 }
             }
             $Size *= 31
+            Break
         }
         "EVR" { 
             $Dataset_Bytes_Init = 3 * [Math]::Pow(2, 30) # 3GB
@@ -3466,6 +3491,7 @@ Function Get-DAGsize {
             While (-not (Test-Prime ($Size / $Mix_Bytes))) { 
                 $Size -= 2 * $Mix_Bytes
             }
+            Break
         }
         Default { 
             $Dataset_Bytes_Init = [Math]::Pow(2, 30) # 1GB
@@ -3491,7 +3517,7 @@ Function Get-Epoch {
     )
 
     Switch ($Currency) { 
-        "ERG"   { $Blockheight -= 416768 } # Epoch 0 starts @ 417792
+        "ERG"   { $Blockheight -= 416768; Break } # Epoch 0 starts @ 417792
         Default { }
     }
 
@@ -3547,12 +3573,16 @@ Function Out-DataTable {
 
     [CmdletBinding()]
     Param(
-        [Parameter(Position = 0, Mandatory = $true, ValueFromPipeline = $true )]
+        [Parameter(
+            Position = 0,
+            Mandatory = $true,
+            ValueFromPipeline = $true
+        )]
         [PSObject[]]$InputObject
     )
 
     Begin { 
-        $DataTable = New-Object Data.datatable
+        $DataTable = New-Object Data.DataTable
         $First = $true
     }
     Process { 
@@ -3562,23 +3592,16 @@ Function Out-DataTable {
                 If ($First) { 
                     $Col = New-Object Data.DataColumn
                     $Col.ColumnName = $Property.Name.ToString()
-                    If ($Property.Value) { 
-                        If ($Property.Value -isnot [System.DBNull]) { 
-                            $Col.DataType = [System.Type]::GetType($Property.TypeNameOfValue).Name
-                        }
-                    }
                     $DataTable.Columns.Add($Col)
                 }
-                $DataRow.Item($Property.Name) = If ($Property.GetType().IsArray) { $Property.Value | ConvertTo-Xml -As String -NoTypeInformation -Depth 1 } Else { $Property.Value }
+                $DataRow.Item($Property.Name) = $Property.Value
             }
-            Remove-Variable Property
             $DataTable.Rows.Add($DataRow)
             $First = $false
         }
-        Remove-Variable Object
     }
     End { 
-        Return @(,($DataTable))
+        Return @(, ($DataTable))
     }
 }
 

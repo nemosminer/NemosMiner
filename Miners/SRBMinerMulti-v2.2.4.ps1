@@ -1,6 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "CPU" -or $_.Type -eq "INTEL" -or ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0") -or ($_.Type -eq "NVIDIA" -and $_.OpenCL.DriverVersion -ge "510.00") })) { Return }
 
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/2.2.3/SRBMiner-Multi-2-2-3-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/2.2.4/SRBMiner-Multi-2-2-4-win64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -32,7 +32,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("CryptonightUpx");               Type = "AMD"; Fee = @(0.0085);       MinMemGiB = 1;                                            MinerSet = 0; WarmupTimes = @(60, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm cryptonight_upx") }
     [PSCustomObject]@{ Algorithms = @("CurveHash");                    Type = "AMD"; Fee = @(0.0085);       MinMemGiB = 2;                                            Minerset = 1; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm curvehash") }
     [PSCustomObject]@{ Algorithms = @("DynamoCoin");                   Type = "AMD"; Fee = @(0.01);         MinMemGiB = 1;                                            MinerSet = 0; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm dynamo") }
-    [PSCustomObject]@{ Algorithms = @("DynexSolve");                   Type = "AMD"; Fee = @(0.03);         MinMemGiB = 3;                                            MinerSet = 2; WarmupTimes = @(30, 45); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm dynex") }
+    [PSCustomObject]@{ Algorithms = @("DynexSolve");                   Type = "AMD"; Fee = @(0.025);        MinMemGiB = 3;                                            MinerSet = 2; WarmupTimes = @(45, 45); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm dynex") }
     [PSCustomObject]@{ Algorithms = @("EtcHash");                      Type = "AMD"; Fee = @(0.0065);       MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB + 1.24;     MinerSet = 0; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm etchash") } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithms = @("EtcHash", "Blake3");            Type = "AMD"; Fee = @(0.0065, 0.01); MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB + 1.24;     MinerSet = 0; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm etchash", " --algorithm blake3_alephium") }
     [PSCustomObject]@{ Algorithms = @("EtcHash", "Blake3IronFish");    Type = "AMD"; Fee = @(0.0065, 0.01); MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB + 1.24;     MinerSet = 0; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm etchash", " --algorithm blake3_ironfish") }
@@ -164,7 +164,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Autolykos2", "SHA512256d");     Type = "INTEL"; Fee = @(0.0065, 0.01); MinMemGiB = $MinerPools[0].Autolykos2.DAGSizeGiB + 1.24;  MinerSet = 0; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --disable-cpu --disable-gpu-amd --disable-nvidia --algorithm autolykos2", " --algorithm sha512_256d_radiant") }
     [PSCustomObject]@{ Algorithms = @("Blake3");                       Type = "INTEL"; Fee = @(0.0085);       MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --disable-cpu --disable-gpu-amd --disable-nvidia --algorithm blake3_alephium") }
     [PSCustomObject]@{ Algorithms = @("Blake3IronFish");               Type = "INTEL"; Fee = @(0.0085);       MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --disable-cpu --disable-gpu-amd --disable-nvidia --algorithm blake3_ironfish") }
-    [PSCustomObject]@{ Algorithms = @("DynexSolve");                   Type = "INTEL"; Fee = @(0.0065);       MinMemGiB = 3;                                            MinerSet = 2; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --disable-cpu --disable-gpu-amd --disable-nvidia --algorithm dynex") }
+    [PSCustomObject]@{ Algorithms = @("DynexSolve");                   Type = "INTEL"; Fee = @(0.025);        MinMemGiB = 3;                                            MinerSet = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --disable-cpu --disable-gpu-amd --disable-nvidia --algorithm dynex") }
     [PSCustomObject]@{ Algorithms = @("EtcHash");                      Type = "INTEL"; Fee = @(0.0065);       MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB + 1.24;     MinerSet = 0; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --disable-cpu --disable-gpu-amd --disable-nvidia --algorithm etchash") }
 #   [PSCustomObject]@{ Algorithms = @("EtcHash", "Blake3");            Type = "INTEL"; Fee = @(0.0065, 0.01); MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB + 1.24;     MinerSet = 0; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --disable-cpu --disable-gpu-amd --disable-nvidia --algorithm etchash", " --algorithm blake3_alephium") }
 #   [PSCustomObject]@{ Algorithms = @("EtcHash", "Blake3IronFish");    Type = "INTEL"; Fee = @(0.0065, 0.01); MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB + 1.24;     MinerSet = 0; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --disable-cpu --disable-gpu-amd --disable-nvidia --algorithm etchash", " --algorithm blake3_ironfish") }
@@ -195,7 +195,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Blake3");                       Type = "NVIDIA"; Fee = @(0.0085);       MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @()); Arguments = @(" --disable-cpu --disable-gpu-amd --disable-gpu-intel --algorithm blake3_alephium") }
     [PSCustomObject]@{ Algorithms = @("Blake3IronFish");               Type = "NVIDIA"; Fee = @(0.0085);       MinMemGiB = 2;                                            Minerset = 2; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @()); Arguments = @(" --disable-cpu --disable-gpu-amd --disable-gpu-intel --algorithm blake3_ironfish") }
     [PSCustomObject]@{ Algorithms = @("DynamoCoin");                   Type = "NVIDIA"; Fee = @(0.01);         MinMemGiB = 1;                                            Minerset = 2; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @()); Arguments = @(" --disable-cpu --disable-gpu-amd --disable-gpu-intel --algorithm dynamo") } # Algorithm 'dynamo' supports only 'pool' mode (yiimp stratum compatibility removed)
-    [PSCustomObject]@{ Algorithms = @("DynexSolve");                   Type = "NVIDIA"; Fee = @(0.03);         MinMemGiB = 3;                                            Minerset = 2; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @()); Arguments = @(" --disable-cpu --disable-gpu-amd --disable-gpu-intel --algorithm dynex") }
+    [PSCustomObject]@{ Algorithms = @("DynexSolve");                   Type = "NVIDIA"; Fee = @(0.025);        MinMemGiB = 3;                                            Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @()); Arguments = @(" --disable-cpu --disable-gpu-amd --disable-gpu-intel --algorithm dynex") }
     [PSCustomObject]@{ Algorithms = @("EtcHash");                      Type = "NVIDIA"; Fee = @(0.0065);       MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB + 1.24;     MinerSet = 0; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @()); Arguments = @(" --disable-cpu --disable-gpu-amd --disable-gpu-intel --algorithm etchash") } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithms = @("EtcHash", "Blake3");            Type = "NVIDIA"; Fee = @(0.0065, 0.01); MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB + 1.24;     MinerSet = 0; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @()); Arguments = @(" --disable-cpu --disable-gpu-amd --disable-gpu-intel --algorithm etchash", " --algorithm blake3_alephium") }
     [PSCustomObject]@{ Algorithms = @("EtcHash", "Blake3IronFish");    Type = "NVIDIA"; Fee = @(0.0065, 0.01); MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB + 1.24;     MinerSet = 0; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @()); Arguments = @(" --disable-cpu --disable-gpu-amd --disable-gpu-intel --algorithm etchash", " --algorithm blake3_ironfish") }
@@ -256,7 +256,7 @@ If ($Algorithms) {
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1)
 
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
@@ -265,7 +265,7 @@ If ($Algorithms) {
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or $_.MemoryGiB -gt $MinMemGiB } | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
 
                 $Arguments = ""
-                $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) + @(If ($_.Algorithms[1]) { "$($_.Algorithms[0])&$($_.Algorithms[1])" }) + @($_.GpuDualMaxLoss) | Select-Object) -join '-' -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })$(If ($_.GpuDualMaxLoss) { "-$($_.$GpuDualMaxLoss)" })" -replace ' '
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algorithm") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
@@ -273,11 +273,11 @@ If ($Algorithms) {
                 $Index = 0
                 ForEach ($Algorithm in $_.Algorithms) { 
                     $Arguments += Switch ($MinerPools[$Index].$Algorithm.Protocol) { 
-                        "minerproxy"   { " --esm 0" }
-                        "ethproxy"     { " --esm 0" }
-                        "ethstratum1"  { " --esm 1" }
-                        "ethstratum2"  { " --esm 2" }
-                        "ethstratumnh" { " --esm 2" }
+                        "minerproxy"   { " --esm 0"; Break }
+                        "ethproxy"     { " --esm 0"; Break }
+                        "ethstratum1"  { " --esm 1"; Break }
+                        "ethstratum2"  { " --esm 2"; Break }
+                        "ethstratumnh" { " --esm 2"; Break }
                     }
                     $Arguments += "$($_.Arguments[$Index]) --pool $($MinerPools[$Index].$Algorithm.Host):$($MinerPools[$Index].$Algorithm.PoolPorts | Select-Object -Last 1) --wallet $($MinerPools[$Index].$Algorithm.User)"
                     $Arguments += " --password $($MinerPools[$Index].$Algorithm.Pass)$(If ($MinerPools[$Index].$Algorithm.BaseName -eq "ProHashing" -and $Algorithm -eq "Ethash") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[$Index].$Algorithm.DAGSizeGiB))" })"
@@ -319,7 +319,7 @@ If ($Algorithms) {
                     Port             = $MinerAPIPort
                     PrerequisitePath = $PrerequisitePath
                     PrerequisiteURI  = $PrerequisiteURI
-                    Type             = ($AvailableMiner_Devices.Type | Select-Object -Unique)
+                    Type             = $_.Type
                     URI              = $Uri
                     WarmupTimes      = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
                 }
@@ -327,5 +327,3 @@ If ($Algorithms) {
         }
     }
 }
-
-$Error.Clear()

@@ -42,10 +42,11 @@ $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).Poo
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).BaseName -notin $_.ExcludePools[0] -and (-not $_.Algorithms[1] -or $MinerPools[1].($_.Algorithms[1]).BaseName -notin $_.ExcludePools[1]) }
 
 If ($Algorithms) { 
+
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Select-Object -First 1 -ExpandProperty Id) + 1)
+        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1)
 
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
@@ -54,28 +55,28 @@ If ($Algorithms) {
                 $Algorithm0 = $_.Algorithms[0]
                 $Algorithm1 = $_.Algorithms[1]
                 $Arguments = $_.Arguments
-                $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) + @(If ($Algorithm1) { "$($Algorithm0)&$($_.Algorithms[1])" }) | Select-Object) -join '-' -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)$(If ($Algorithm1) { "-$($Algorithm0)&$($Algorithm1)" })" -replace ' '
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo", "cuda", "opencl", "pers", "proto") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $Arguments += " --server $($MinerPools[0].($Algorithm0).Host):$($MinerPools[0].($Algorithm0).PoolPorts | Select-Object -Last 1)"
-                $Arguments += Switch ($MinerPools[0].($Algorithm0).Protocol) { 
+                $Arguments += " --server $($MinerPools[0].$Algorithm0.Host):$($MinerPools[0].$Algorithm0.PoolPorts | Select-Object -Last 1)"
+                $Arguments += Switch ($MinerPools[0].$Algorithm0.Protocol) { 
                     "ethstratum1"  { " --proto stratum" }
                     "ethstratum2"  { " --proto stratum" }
                     "ethstratumnh" { " --proto stratum" }
                 }
-                If ($MinerPools[0].($Algorithm0).PoolPorts[1]) { $Arguments += " --ssl 1" }
-                $Arguments += " --user $($MinerPools[0].($Algorithm0).User)"
-                $Arguments += " --pass $($MinerPools[0].($Algorithm0).Pass)$(If ($MinerPools[0].($Algorithm0).BaseName -eq "ProHashing" -and $Algorithm0 -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].($_.Algorithm).DAGSizeGiB))" })"
-                If ($MinerPools[0].($Algorithm0).WorkerName) { $Arguments += " --worker $($MinerPools[0].($Algorithm0).WorkerName)" }
+                If ($MinerPools[0].$Algorithm0.PoolPorts[1]) { $Arguments += " --ssl 1" }
+                $Arguments += " --user $($MinerPools[0].$Algorithm0.User)"
+                $Arguments += " --pass $($MinerPools[0].$Algorithm0.Pass)$(If ($MinerPools[0].$Algorithm0.BaseName -eq "ProHashing" -and $Algorithm0 -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].$Algorithm0.DAGSizeGiB))" })"
+                If ($MinerPools[0].$Algorithm0.WorkerName) { $Arguments += " --worker $($MinerPools[0].$Algorithm0.WorkerName)" }
 
                 If ($Algorithm1) { 
-                    $Arguments += " --dserver $($MinerPools[1].($Algorithm1).Host):$($MinerPools[1].($Algorithm1).PoolPorts | Select-Object -Last 1)"
-                    If ($MinerPools[1].($Algorithm1).PoolPorts[1]) { $Arguments += " --dssl 1" }
-                    $Arguments += " --duser $($MinerPools[1].($Algorithm1).User)"
-                    $Arguments += " --dpass $($MinerPools[1].($Algorithm1).Pass)"
-                    If ($MinerPools[1].($Algorithm1).WorkerName) { $Arguments += " --dworker $($MinerPools[1].($Algorithm1).WorkerName)" }
+                    $Arguments += " --dserver $($MinerPools[1].$Algorithm1.Host):$($MinerPools[1].$Algorithm1.PoolPorts | Select-Object -Last 1)"
+                    If ($MinerPools[1].$Algorithm1.PoolPorts[1]) { $Arguments += " --dssl 1" }
+                    $Arguments += " --duser $($MinerPools[1].$Algorithm1.User)"
+                    $Arguments += " --dpass $($MinerPools[1].$Algorithm1.Pass)"
+                    If ($MinerPools[1].$Algorithm1.WorkerName) { $Arguments += " --dworker $($MinerPools[1].$Algorithm1.WorkerName)" }
                 }
 
                 # Apply tuning parameters
@@ -95,7 +96,7 @@ If ($Algorithms) {
                     Name        = $Miner_Name
                     Path        = $Path
                     Port        = $MinerAPIPort
-                    Type        = ($AvailableMiner_Devices.Type | Select-Object -Unique)
+                    Type        = $_.Type
                     URI         = $Uri
                     WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
                 }
@@ -103,5 +104,3 @@ If ($Algorithms) {
         }
     }
 }
-
-$Error.Clear()

@@ -375,6 +375,7 @@
   "ONX": "Onix",
   "ORB": "OrbitCoin",
   "PAC": "PacCoin",
+  "PAPRY": "PaprikaCoin",
   "PASC": "PascalCoin",
   "PBTC": "PhotonicBitcoin",
   "PCOIN": "PioneerCoin",
@@ -525,6 +526,7 @@
   "VEGI": "Veggie",
   "VEIL": "Veil",
   "VGC": "5G-CASH",
+  "VHH": "Volkshash",
   "VIA": "ViaCoin",
   "VIC": "Victorim",
   "VIOG": "Viog",
@@ -617,5 +619,5 @@
   "ZP": "ZenProtocol",
   "ZUR": "ZurCoin",
   "ZYON": "BitZyon",
-  "VHH": "Volkshash"
+  "DIMI": "DiminutiveCoin"
 }

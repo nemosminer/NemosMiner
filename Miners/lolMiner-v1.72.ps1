@@ -73,12 +73,15 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("UbqHash", "kHeavyHash");      Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = $MinerPools[0].UbqHash.DAGSizeGiB + 0.77;      MinerSet = 0; WarmupTimes = @(60, 70); ExcludeGPUArchitecture = @();                  Arguments = " --algo UBQHASH --dualmode KASPADUAL" }
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithms[0]).PoolPorts -and (-not $_.Algorithms[1] -or $MinerPools[1].($_.Algorithms[1]).PoolPorts) }) { 
+$Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).PoolPorts -and (-not $_.Algorithms[1] -or $MinerPools[1].($_.Algorithms[1]).PoolPorts) }
+
+If ($Algorithms) { 
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Type -eq $_.Type | Where-Object Model -EQ $_.Model
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1)
 
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
@@ -89,16 +92,16 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 $Algorithm0 = $_.Algorithms[0]
                 $Algorithm1 = $_.Algorithms[1]
                 $Arguments = $_.Arguments
-                $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) + @(If ($Algorithm1) { "$($Algorithm0)&$($Algorithm1)" }) + @($_.Intensity) | Select-Object) -join '-' -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)$(If ($Algorithm1) { "-$($Algorithm0)&$($Algorithm1)" })" -replace ' '
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo", "coin") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $Arguments += " --pool $($MinerPools[0].($Algorithm0).Host):$(($MinerPools[0].($Algorithm0).PoolPorts | Select-Object -Last 1))"
-                $Arguments += " --user $($MinerPools[0].($Algorithm0).User)$(If ($MinerPools[0].($Algorithm0).WorkerName) { ".$($MinerPools[0].($Algorithm0).WorkerName)" })"
-                $Arguments += " --pass $($MinerPools[0].($Algorithm0).Pass)$(If ($MinerPools[0].($Algorithm0).BaseName -eq "ProHashing" -and $Algorithm0 -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].($_.Algorithm).DAGSizeGiB))" })"
-                $Arguments += If ($MinerPools[0].($Algorithm0).PoolPorts[1]) { " --tls on" } Else { " --tls off" }
-                $Arguments += Switch ($MinerPools[0].($Algorithm0).Protocol) { 
+                $Arguments += " --pool $($MinerPools[0].$Algorithm0.Host):$(($MinerPools[0].$Algorithm0.PoolPorts | Select-Object -Last 1))"
+                $Arguments += " --user $($MinerPools[0].$Algorithm0.User)$(If ($MinerPools[0].$Algorithm0.WorkerName) { ".$($MinerPools[0].$Algorithm0.WorkerName)" })"
+                $Arguments += " --pass $($MinerPools[0].$Algorithm0.Pass)$(If ($MinerPools[0].$Algorithm0.BaseName -eq "ProHashing" -and $Algorithm0 -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].$Algorithm0.DAGSizeGiB))" })"
+                $Arguments += If ($MinerPools[0].$Algorithm0.PoolPorts[1]) { " --tls on" } Else { " --tls off" }
+                $Arguments += Switch ($MinerPools[0].$Algorithm0.Protocol) { 
                     "ethproxy"     { " --ethstratum ETHPROXY" }
                     "ethstratum1"  { " --ethstratum ETHV1" }
                     "ethstratum2"  { " --ethstratum ETHV1" }
@@ -106,10 +109,10 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                 }
 
                 If ($Algorithm1) { 
-                    $Arguments += " --maxdualimpact 5 --dualpool $($MinerPools[1].($Algorithm1).Host):$($MinerPools[1].($Algorithm1).PoolPorts | Select-Object -Last 1)"
-                    $Arguments += " --dualuser $($MinerPools[1].($Algorithm1).User)$(If ($MinerPools[1].($Algorithm1).WorkerName) { ".$($MinerPools[1].($Algorithm1).WorkerName)" })"
-                    $Arguments += " --dualpass $($MinerPools[1].($Algorithm1).Pass)$(If ($MinerPools[1].($Algorithm1).BaseName -eq "ProHashing" -and $Algorithm1 -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].($_.Algorithm).DAGSizeGiB))" })"
-                    $Arguments += If ($MinerPools[1].($Algorithm1).PoolPorts[1]) { " --dualtls on" } Else { " --dualtls off" }
+                    $Arguments += " --maxdualimpact 5 --dualpool $($MinerPools[1].$Algorithm1.Host):$($MinerPools[1].$Algorithm1.PoolPorts | Select-Object -Last 1)"
+                    $Arguments += " --dualuser $($MinerPools[1].$Algorithm1.User)$(If ($MinerPools[1].$Algorithm1.WorkerName) { ".$($MinerPools[1].$Algorithm1.WorkerName)" })"
+                    $Arguments += " --dualpass $($MinerPools[1].$Algorithm1.Pass)$(If ($MinerPools[1].$Algorithm1.BaseName -eq "ProHashing" -and $Algorithm1 -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].$Algorithm1.DAGSizeGiB))" })"
+                    $Arguments += If ($MinerPools[1].$Algorithm1.PoolPorts[1]) { " --dualtls on" } Else { " --dualtls off" }
                 }
 
                 [PSCustomObject]@{ 
@@ -122,7 +125,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     Name        = $Miner_Name
                     Path        = $Path
                     Port        = $MinerAPIPort
-                    Type        = ($AvailableMiner_Devices.Type | Select-Object -Unique)
+                    Type        = $_.Type
                     URI         = $Uri
                     WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
                 }
@@ -130,5 +133,3 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         }
     }
 }
-
-$Error.Clear()

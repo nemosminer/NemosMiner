@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool.ps1
-Version:        4.3.3.0
-Version date:   22 March 2023
+Version:        4.3.3.1
+Version date:   02 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -50,7 +50,7 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
 
         Do {
             Try { 
-                If (-not $AlgoData) { $AlgoData = Invoke-RestMethod -Uri $BrainConfig.PoolstatusUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout }
+                If (-not $AlgoData) { $AlgoData = Invoke-RestMethod -Uri $BrainConfig.PoolStatusUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout }
                 If (-not $CurrenciesData) { 
                     $CurrenciesData = Invoke-RestMethod -Uri $BrainConfig.PoolCurrenciesUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout
                     $CurrenciesDataTimestamp = $CurDate

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.3.3.0
-Version date:   22 March 2023
+Version:        4.3.3.1
+Version date:   02 April 2023
 #>
 
 using module .\Include.psm1
@@ -53,7 +53,7 @@ Do {
         }
 
         # Read config only if config files have changed
-        If ($Variables.ConfigFileTimestamp -ne (Get-Item -Path $Variables.ConfigFile).LastWriteTime) { 
+        If ($Variables.ConfigFileTimestamp -ne (Get-Item -Path $Variables.ConfigFile).LastWriteTime -or $Variables.PoolsConfigFileTimestamp -ne (Get-Item -Path $Variables.PoolsConfigFile).LastWriteTime) { 
             Write-Message -Level Debug "Activating changed configuration..."
             Read-Config -ConfigFile $Variables.ConfigFile
         }
@@ -250,7 +250,7 @@ Do {
                                 $RegValue.PSObject.Properties | Where-Object { $_.Name -match "^Label[0-9]+$" -and (Compare-Object @($_.Value -split ' ' | Select-Object) @($Variables.EnabledDevices.Name) -IncludeEqual -ExcludeDifferent) } | ForEach-Object { 
                                     $DeviceName = ($_.Value -split ' ') | Select-Object -Last 1
                                     Try { 
-                                        $PowerUsageData.Add($DeviceName, $RegValue.($_.Name -replace "Label", "Value"))
+                                        $PowerUsageData[$DeviceName] = $RegValue.($_.Name -replace "Label", "Value")
                                     }
                                     Catch { 
                                         Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [duplicate sensor for $DeviceName] - disabling power usage and profit calculations."
@@ -298,13 +298,13 @@ Do {
                 $Variables.PowerCostBTCperW = [Double](1 / 1000 * 24 * $Variables.PowerPricekWh / $Variables.Rates."BTC".($Config.Currency))
 
                 # Send data to monitoring server
-                If ($Config.ReportToServer) { Update-MonitoringData }
+                If ($Config.ReportToServer) { Write-MonitoringData }
 
                 # Ensure we get the hashrate for running miners prior looking for best miner
                 ForEach ($Miner in $Variables.MinersBest_Combo) { 
                     If ($Miner.DataReaderJob.HasMoreData) { 
                         $Miner.Data = @($Miner.Data | Select-Object -Last ($Miner.MinDataSample * 5)) # Reduce data to MinDataSample * 5
-                        $Miner.Data += @($Miner.DataReaderJob | Receive-Job | Select-Object -Property Date, Hashrate, Shares, PowerUsage)
+                        $Miner.Data += @($Miner.DataReaderJob | Receive-Job)
                     }
 
                     If ($Miner.Status -eq [MinerStatus]::DryRun -or $Miner.Status -eq [MinerStatus]::Running) { 
@@ -647,7 +647,7 @@ Do {
 
                         # Sort best pools
                         $SortedAvailablePools = $Pools | Where-Object Available | Sort-Object { $_.Name -notin $Variables.PoolNameToKeepBalancesAlive }, { - $_.StablePrice * $_.Accuracy }
-                        (($SortedAvailablePools).Algorithm | Select-Object -Unique) | ForEach-Object { 
+                        $SortedAvailablePools.Algorithm | Select-Object -Unique | ForEach-Object { 
                             $SortedAvailablePools | Where-Object Algorithm -EQ $_ | Select-Object -First 1 | ForEach-Object { $_.Best = $true }
                         }
                     }
@@ -665,7 +665,7 @@ Do {
                 Remove-Variable Pools, PoolsDeconfigured, PoolsNew -ErrorAction Ignore
                 [System.GC]::Collect()
 
-                $Variables.PoolsBest = $Variables.Pools | Where-Object Best
+                $Variables.PoolsBest = $Variables.Pools | Where-Object Best | Sort-Object Algorithm
 
                 # Tuning parameters require local admin rights
                 $Variables.UseMinerTweaks = ($Variables.IsLocalAdmin -and $Config.UseMinerTweaks)
@@ -678,13 +678,14 @@ Do {
             While ($Variables.SuspendCycle) { Start-Sleep -Seconds 1 }
 
             # Get new miners
+            $Miners = $Variables.Miners.Clone() # Much faster
             If ($Variables.PoolsBest) { 
                 $AllPools = @{ }
                 $MinerPools = @(@{ }, @{ })
-                $Variables.PoolsBest | Sort-Object Algorithm | ForEach-Object { 
-                    $AllPools | Add-Member @{ $_.Algorithm = $_ }
-                    If ($_.Reasons -ne "Unprofitable primary algorithm")   { $MinerPools[0] | Add-Member @{ $_.Algorithm = $_ } } # Allow unprofitable algos for primary algorithm
-                    If ($_.Reasons -ne "Unprofitable secondary algorithm") { $MinerPools[1] | Add-Member @{ $_.Algorithm = $_ } } # Allow unprofitable algos for secondary algorithm
+                $Variables.PoolsBest | ForEach-Object { 
+                    $AllPools[$_.Algorithm] = $_
+                    If ($_.Reasons -ne "Unprofitable primary algorithm")   { $MinerPools[0][$_.Algorithm] = $_ } # Allow unprofitable algos for primary algorithm
+                    If ($_.Reasons -ne "Unprofitable secondary algorithm") { $MinerPools[1][$_.Algorithm] = $_ } # Allow unprofitable algos for secondary algorithm
                 }
                 $Variables.MinerPools = $MinerPools
 
@@ -693,7 +694,6 @@ Do {
                     Remove-Variable NewMiners -ErrorAction Ignore
                     [System.GC]::Collect()
                     Write-Message -Level Info "Loading miners..."
-                    $Miners = $Variables.Miners.Clone() # Much faster
                     $NewMiners = [Miner[]]@()
                     Get-ChildItem -Path ".\Miners\*.ps1" | ForEach-Object { 
                         & $_
@@ -701,13 +701,13 @@ Do {
                         $_ | Add-Member MinDataSample  ([Int]($Config.MinDataSample * (($_.Algorithms | ForEach-Object { $Config.MinDataSampleAlgoMultiplier.$_ }), 1 | Measure-Object -Maximum).Maximum))
                         $_ | Add-Member ProcessPriority $(If ($_.Type -eq "CPU") { $Config.CPUMinerProcessPriority } Else { $Config.GPUMinerProcessPriority })
                         $_ | Add-Member Workers ([Worker[]]@(ForEach ($Algorithm in $_.Algorithms) { @{ Pool = $AllPools.$Algorithm; Fee = If ($Config.IgnoreMinerFee) { 0 } Else { $_.Fee | Select-Object -Index $_.Algorithms.IndexOf($Algorithm) } } }))
-                        Remove-Variable Algorithm
                         $_.PSObject.Properties.Remove("Fee")
                         Try { 
                             $NewMiners += $_ -as $_.API
                         }
                         Catch { }
                     }
+                    Remove-Variable Algorithm -ErrorAction Ignore
 
                     If ($NewMiners) { # Sometimes there are no miners loaded, keep existing
                         $CompareMiners = Compare-Object -PassThru $Miners $NewMiners -Property Name, Algorithms -IncludeEqual
@@ -856,8 +856,8 @@ Do {
                     $Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { $_.$Bias *= $RunningMinerBonusFactor}
 
                     # Get best miners per algorithm and device
-                    $Variables.MinersMostProfitable = @($Miners | Where-Object Available | Group-Object { [String]$_.DeviceNames }, { [String]$_.Algorithms } | ForEach-Object { $_.Group | Sort-Object -Descending -Property Benchmark, MeasurePowerUsage, KeepRunning, Prioritize, $Bias, Activated, @{ Expression = { $_.WarmupTimes[1] + $_.MinDataSample }; Descending = $true }, Name, @{ Expression = { [String]($_.Algorithms) }; Descending = $false } | Select-Object -First 1 | ForEach-Object { $_.MostProfitable = $true; $_ } })
-                    $Variables.MinersBest = @($Variables.MinersMostProfitable | Group-Object { [String]$_.DeviceNames } | ForEach-Object { $_.Group | Sort-Object -Descending -Property Benchmark, MeasurePowerUsage, KeepRunning, Prioritize, $Bias, Activated, @{ Expression = { $_.WarmupTimes[1] + $_.MinDataSample }; Descending = $true }, Name | Select-Object -First 1 })
+                    $Variables.MinersMostProfitable = @($Miners | Where-Object Available | Group-Object { [String]$_.DeviceNames }, { [String]$_.Algorithms } | ForEach-Object { $_.Group | Sort-Object -Descending -Property Benchmark, MeasurePowerUsage, KeepRunning, Prioritize, $Bias, Activated, @{ Expression = { $_.WarmupTimes[1] + $_.MinDataSample }; Descending = $true }, Name, @{ Expression = { [String]($_.Algorithms) }; Descending = $false } -Top 1 | ForEach-Object { $_.MostProfitable = $true; $_ } })
+                    $Variables.MinersBest = @($Variables.MinersMostProfitable | Group-Object { [String]$_.DeviceNames } | ForEach-Object { $_.Group | Sort-Object -Descending -Property Benchmark, MeasurePowerUsage, KeepRunning, Prioritize, $Bias, Activated, @{ Expression = { $_.WarmupTimes[1] + $_.MinDataSample }; Descending = $true }, Name -Top 1 })
                     $Variables.Miners_Device_Combos = @(Get-Combination @($Variables.MinersBest | Select-Object DeviceNames -Unique) | Where-Object { (Compare-Object ($_.Combination | Select-Object -ExpandProperty DeviceNames -Unique) ($_.Combination | Select-Object -ExpandProperty DeviceNames) | Measure-Object).Count -eq 0 })
 
                     # Get most best miner combination i.e. AMD+NVIDIA+CPU
@@ -873,7 +873,7 @@ Do {
                             }
                         }
                     )
-                    $Variables.MinersBest_Combo = @(($Variables.MinersBest_Combos | Sort-Object -Descending { @($_.Combination | Where-Object { [Double]::IsNaN($_.$Bias) }).Count }, { ($_.Combination | Measure-Object $Bias -Sum).Sum }, { ($_.Combination | Where-Object { $_.$Bias -ne 0 } | Measure-Object).Count } | Select-Object -First 1).Combination)
+                    $Variables.MinersBest_Combo = @(($Variables.MinersBest_Combos | Sort-Object -Descending { @($_.Combination | Where-Object { [Double]::IsNaN($_.$Bias) }).Count }, { ($_.Combination | Measure-Object $Bias -Sum).Sum }, { ($_.Combination | Where-Object { $_.$Bias -ne 0 } | Measure-Object).Count } -Top 1).Combination)
 
                     # Revert running miner bonus
                     $Miners | Where-Object { $_.Status -eq [MinerStatus]::Running } | ForEach-Object { $_.$Bias /= $RunningMinerBonusFactor }
@@ -1012,7 +1012,7 @@ Do {
         $Loops = 0
         While ($StuckMinerProcessIDs = @((Get-CimInstance CIM_Process | Where-Object ExecutablePath | Where-Object { @($Miners.Path | Sort-Object -Unique) -contains $_.ExecutablePath } | Where-Object { $Miners.ProcessID -notcontains $_.ProcessID }).ProcessID)) { 
             $StuckMinerProcessIDs | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction Ignore }
-            Start-Sleep -MilliSeconds 500
+            Start-Sleep -Milliseconds 500
             $Loops ++
             If ($Loops -gt 100) { 
                 $Message = "Cannot stop all miners graciously."
@@ -1047,22 +1047,22 @@ Do {
             $Variables.Miners = [Miner[]]@()
             If (-not $Variables.EnabledDevices) { 
                 Write-Message -Level Warn "No enabled devices - retrying in $($Config.Interval) seconds..."
-                Start-Sleep -Seconds $($Config.Interval)
+                Start-Sleep -Seconds $Config.Interval
                 Write-Message -Level Info "Ending cycle (No enabled devices)."
             }
             ElseIf (-not $Variables.PoolName) { 
                 Write-Message -Level Warn "No configured pools - retrying in $($Config.Interval) seconds..."
-                Start-Sleep -Seconds $($Config.Interval)
+                Start-Sleep -Seconds $Config.Interval
                 Write-Message -Level Info "Ending cycle (No configured pools)."
             }
             ElseIf (-not $Variables.PoolsBest) { 
                 Write-Message -Level Warn "No available pools - retrying in $($Config.Interval) seconds..."
-                Start-Sleep -Seconds $($Config.Interval)
+                Start-Sleep -Seconds $Config.Interval
                 Write-Message -Level Info "Ending cycle (No available pools)."
             }
             Else { 
                 Write-Message -Level Warn "No available miners - retrying in $($Config.Interval) seconds..."
-                Start-Sleep -Seconds $($Config.Interval)
+                Start-Sleep -Seconds $Config.Interval
                 Write-Message -Level Info "Ending cycle (No available miners)."
             }
             Continue
@@ -1260,7 +1260,7 @@ Do {
                         }
                         Catch { }
 
-                        If ($Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object -Property Date, Hashrate, Shares, PowerUsage)) { 
+                        If ($Samples = @($Miner.DataReaderJob | Receive-Job)) { 
                             $Sample = $Samples | Select-Object -Last 1
                             $Miner.Hashrates_Live = $Sample.Hashrate.PSObject.Properties.Value
 
@@ -1335,11 +1335,7 @@ Do {
         $_.InvocationInfo | Format-List -Force >> "Logs\Error.txt"
         Write-Message -Level Error "Error in core detected. Respawning core..."
     }
-
-    [System.GC]::Collect()
-
     $Variables.RestartCycle = $true
-
 } While ($Variables.NewMiningStatus -eq "Running")
 
 If ($Variables.NewMiningStatus -ne "Running")  { 

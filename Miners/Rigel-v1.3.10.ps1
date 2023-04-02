@@ -26,7 +26,7 @@ If ($Algorithms) {
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Model -EQ $_.Model
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Select-Object -First 1 -ExpandProperty Id) + 1)
+        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1)
 
         $Algorithms | ForEach-Object { 
 
@@ -36,7 +36,7 @@ If ($Algorithms) {
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -ge $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
 
                 $Arguments = $_.Arguments
-                $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) + @(If ($_.Algorithms[1]) { "$($_.Algorithms[0])&$($_.Algorithms[1])" }) + @($_.GpuDualMaxLoss) | Select-Object) -join '-' -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })" -replace ' '
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo", "cuda", "opencl", "pers", "proto") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
@@ -44,21 +44,21 @@ If ($Algorithms) {
                 $Index = 0
                 ForEach ($Algorithm in $_.Algorithms) { 
                     $Arguments += Switch ($MinerPools[$Index].$Algorithm.Protocol) { 
-                        "ethproxy"     { " --url [$($Index + 1)]ethproxy"}
-                        "ethstratum1"  { " --url [$($Index + 1)]ethstratum" }
-                        "ethstratum2"  { " --url [$($Index + 1)]stratum" }
-                        "ethstratumnh" { " --url [$($Index + 1)]ethstratum" }
+                        "ethproxy"     { " --url [$($Index + 1)]ethproxy"; Break }
+                        "ethstratum1"  { " --url [$($Index + 1)]ethstratum"; Break }
+                        "ethstratum2"  { " --url [$($Index + 1)]stratum"; Break }
+                        "ethstratumnh" { " --url [$($Index + 1)]ethstratum"; Break }
                         Default        { " --url [$($Index + 1)]stratum" }
                     }
                     $Arguments += If ($MinerPools[$Index].$Algorithm.PoolPorts[1]) { "+ssl://" } Else { "+tcp://" }
                     $Arguments += "$($MinerPools[$Index].$Algorithm.Host):$($MinerPools[$Index].$Algorithm.PoolPorts | Select-Object -Last 1)"
                     $Arguments += " --username [$($Index + 1)]$($MinerPools[$Index].$Algorithm.User)"
-                    $Arguments += " --password [$($Index + 1)]$($MinerPools[$Index].$Algorithm.Pass)$(If ($MinerPools[$Index].$Algorithm.BaseName -eq "ProHashing" -and $_.Algorithms[$Index] -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[$Index].($_.Algorithm).DAGSizeGiB))" })"
+                    $Arguments += " --password [$($Index + 1)]$($MinerPools[$Index].$Algorithm.Pass)$(If ($MinerPools[$Index].$Algorithm.BaseName -eq "ProHashing" -and $_.Algorithms[$Index] -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[$Index].$Algorithm.DAGSizeGiB))" })"
                     If ($MinerPools[$Index].$Algorithm.WorkerName) { $Arguments += " --worker [$($Index + 1)]$($MinerPools[$Index].$Algorithm.WorkerName)" }
                     $Index ++
                 }
                 Remove-Variable Algorithm
-                $Arguments += If ($MinerPools[0].($_.Algorithms[0]).PoolPorts[1] -and (-not $MinerPools[1].($_.Algorithms[1]) -or $MinerPools[1].($_.Algorithms[1]).PoolPorts[1])) { " --no-strict-ssl" } # Parameter cannot be used multiple times
+                $Arguments += If ($MinerPools[0].($_.Algorithms[0]).PoolPorts[1] -or ($_.Algorithms[1] -and $MinerPools[1].($_.Algorithms[1]).PoolPorts[1])) { " --no-strict-ssl" } # Parameter cannot be used multiple times
 
                 # Apply tuning parameters
                 If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
@@ -82,5 +82,3 @@ If ($Algorithms) {
         }
     }
 }
-
-$Error.Clear()

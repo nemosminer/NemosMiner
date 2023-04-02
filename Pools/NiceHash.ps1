@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.3.3.0
-Version date:   22 March 2023
+Version:        4.3.3.1
+Version date:   02 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -41,6 +41,7 @@ $Wallet = $PoolConfig.Variant.$PoolVariant.Wallets.$PayoutCurrency
 $User = "$Wallet.$($PoolConfig.WorkerName -replace "^ID=")"
 
 If ($Wallet) { 
+    $APICallFails = 0
 
     Do {
         Try { 
@@ -61,20 +62,20 @@ If ($Wallet) {
         $Algorithm_Norm = Get-Algorithm $Algorithm
 
         $Currency = Switch ($Algorithm) {
-            "AUTOLYKOS"      { "ERG" }
-            "BEAMV3"         { "BEAM" }
-            "CUCKOOCYCLE"    { "AE" }
-            "EAGLESONG"      { "CKB" }
-            "ETCHASH"        { "ETC" }
-            "GRINCUCKATOO31" { "GRIN" }
-            "GRINCUCKATOO32" { "GRIN" }
-            "HANDSHAKE"      { "HNS" }
-            "KAWPOW"         { "RVN" }
-            "LBRY"           { "LBC" }
-            "OCTOPUS"        { "CFX" }
-            "RandomxMONERO"  { "XMR" }
-            "ZELHASH"        { "FLUX" }
-            "ZHASH"          { "BTG" }
+            "AUTOLYKOS"      { "ERG"; Break }
+            "BEAMV3"         { "BEAM"; Break }
+            "CUCKOOCYCLE"    { "AE"; Break }
+            "EAGLESONG"      { "CKB"; Break }
+            "ETCHASH"        { "ETC"; Break }
+            "GRINCUCKATOO31" { "GRIN"; Break }
+            "GRINCUCKATOO32" { "GRIN"; Break }
+            "HANDSHAKE"      { "HNS"; Break }
+            "KAWPOW"         { "RVN"; Break }
+            "LBRY"           { "LBC"; Break }
+            "OCTOPUS"        { "CFX"; Break }
+            "RandomxMONERO"  { "XMR"; Break }
+            "ZELHASH"        { "FLUX"; Break }
+            "ZHASH"          { "BTG"; Break }
             Default          { "" }
         }
 

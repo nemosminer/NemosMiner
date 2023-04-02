@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.3.3.0
-Version date:   22 March 2023
+Version:        4.3.3.1
+Version date:   02 April 2023
 #>
 
 Function Start-APIServer { 
@@ -49,11 +49,6 @@ Function Start-APIServer {
 
             # Setup runspace to launch the API webserver in a separate thread
             $Variables.APIRunspace = [RunspaceFactory]::CreateRunspace()
-            # Set apartment state if available
-            If ($Variables.APIRunspace.ApartmentState) {
-                $Variables.APIRunspace.ApartmentState = "STA"
-            }
-            $Variables.APIRunspace.ThreadOptions = "ReuseThread"      
             $Variables.APIRunspace.Open()
             Get-Variable -Scope Global | Where-Object Name -in @("Config", "Stats", "Variables") | ForEach-Object { 
                 $Variables.APIRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
@@ -151,7 +146,7 @@ Function Start-APIServer {
                                 $PoolBaseNames = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).BaseName
                                 $Algorithms = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).Algorithm
                                 If ($Pools = @($Variables.Pools | Where-Object { $_.BaseName -in $PoolBaseNames -and $_.Algorithm -in $Algorithms })) { 
-                                    $PoolsConfig = $Config.PoolsConfig
+                                    $PoolsConfig = Get-Content -Path $Config.PoolsConfigFile | ConvertFrom-Json
                                     ForEach ($Pool in $Pools) { 
                                         If ($PoolsConfig.($Pool.BaseName).Algorithm -like "-*") { 
                                             $PoolsConfig.($Pool.BaseName).Algorithm = @($PoolsConfig.($Pool.BaseName).Algorithm += "-$($Pool.Algorithm)" | Sort-Object -Unique)
@@ -168,7 +163,7 @@ Function Start-APIServer {
                                     $Message = "$($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" }) disabled."
                                     Write-Message -Level Verbose "Web GUI: $Message"
                                     $Data += "`n$Message"
-                                    Write-Config -ConfigFile $Variables.ConfigFile -Config $Config
+                                    $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Out-File -FilePath $Variables.PoolsConfigFile -Force -Encoding utf8NoBOM
                                 }
                                 Else { 
                                     $Data = "No matching stats found."
@@ -180,7 +175,7 @@ Function Start-APIServer {
                                 $PoolBaseNames = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).BaseName
                                 $Algorithms = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).Algorithm
                                 If ($Pools = @($Variables.Pools | Where-Object { $_.BaseName -in $PoolBaseNames -and $_.Algorithm -in $Algorithms })) { 
-                                    $PoolsConfig = $Config.PoolsConfig
+                                    $PoolsConfig = Get-Content -Path $Config.PoolsConfigFile | ConvertFrom-Json
                                     ForEach ($Pool in $Pools) { 
                                         If ($PoolsConfig.($Pool.BaseName).Algorithm -like "+*") { 
                                             $PoolsConfig.($Pool.BaseName).Algorithm = @($PoolsConfig.($Pool.BaseName).Algorithm += "+$($Pool.Algorithm)" | Sort-Object -Unique)
@@ -197,7 +192,7 @@ Function Start-APIServer {
                                     $Message = "$($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" }) enabled."
                                     Write-Message -Level Verbose "Web GUI: $Message"
                                     $Data += "`n$Message"
-                                    Write-Config -ConfigFile $Variables.ConfigFile -Config $Config
+                                    $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Out-File -FilePath $Variables.PoolsConfigFile -Force -Encoding utf8NoBOM
                                 }
                                 Else { 
                                     $Data = "No matching stats found."
@@ -883,6 +878,14 @@ Function Start-APIServer {
                             "/pooldata" { 
                                 $Data = ConvertTo-Json -Depth 10 $Variables.PoolData
                                 break
+                            }
+                            "/poolsconfig" { 
+                                $Data = ConvertTo-Json -Depth 10 ($Config.PoolsConfig | Select-Object)
+                                Break
+                            }
+                            "/poolsconfigfile" { 
+                                $Data = $Config.PoolsConfigFile
+                                Break
                             }
                             "/pools" { 
                                 $Data = ConvertTo-Json -Depth 10 @($Variables.Pools | Select-Object | Sort-Object Algorithm, Name, Region)

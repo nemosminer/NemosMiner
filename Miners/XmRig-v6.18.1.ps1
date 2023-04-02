@@ -22,7 +22,7 @@ $DeviceEnumerator = "PlatformId_Index"
 
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cryptonight";          Type = "AMD"; MinMemGiB = 2;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/0" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "AMD"; MinMemGiB = 2;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/ccx" } # SRBMinerMulti-v2.2.0 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "AMD"; MinMemGiB = 2;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/ccx" } # SRBMinerMulti-v2.2.4 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";    Type = "AMD"; MinMemGiB = 2;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/double" }
     [PSCustomObject]@{ Algorithm = "CryptonightFast";      Type = "AMD"; MinMemGiB = 2;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/fast" }
     [PSCustomObject]@{ Algorithm = "CryptonightLite";      Type = "AMD"; MinMemGiB = 1;                                       Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn-lite/0" }
@@ -77,7 +77,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo rx/arq" } # FPGA
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo rx/keva" }
     [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo rx/loki" }
-    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo rx/sfx" } # SRBMinerMulti-v2.2.0 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo rx/sfx" } # SRBMinerMulti-v2.2.4 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo rx/wow" }
     [PSCustomObject]@{ Algorithm = "Uplexa";               Type = "CPU"; Minerset = 0; WarmupTimes = @(45, 0);  Arguments = " --algo rx/upx2" }
 
@@ -110,12 +110,16 @@ $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Uplexa";               Type = "NVIDIA"; MinMemGiB = 0.5;                                    Minerset = 3; WarmupTimes = @(45, 0);  Arguments = " --algo rx/upx2" } # GPUs don't do Randomx and when they do it's a watt-wasting miracle anyway
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 
+$Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm) }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }
+
+If ($Algorithms) { 
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1)
 
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
@@ -124,7 +128,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or $_.MemoryGiB -gt $MinMemGiB }) { 
 
                 $Arguments = $_.Arguments
-                $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' ' -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)" -replace ' '
 
                 If ($_.Type -eq "CPU") { $Arguments += " --threads=$($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1)" }
                 Else { $Arguments += " --no-cpu --opencl --opencl-platform $($AvailableMiner_Devices.PlatformId) --opencl-devices=$(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" }
@@ -146,7 +150,7 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
                     MinerSet    = $_.MinerSet
                     MinerUri    = "http://workers.xmrig.info/worker?url=$([System.Web.HTTPUtility]::UrlEncode("http://127.0.0.1:$($MinerAPIPort)"))?Authorization=Bearer $([System.Web.HTTPUtility]::UrlEncode($Miner_Name))"
                     Name        = $Miner_Name
-                    Type        = ($AvailableMiner_Devices.Type | Select-Object -Unique)
+                    Type        = $_.Type
                     URI         = $Uri
                     WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
                 }
@@ -154,5 +158,3 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         }
     }
 }
-
-$Error.Clear()

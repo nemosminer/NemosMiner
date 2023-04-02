@@ -10,7 +10,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Autolykos2", "kHeavyHash");   Fee = @(0.025); MinMemGiB = $MinerPools[0].Autolykos2.DAGSizeGiB + 0.77;   Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("CGN1", "CGN2");                            Arguments = " --algo=autolykos2" }
     [PSCustomObject]@{ Algorithms = @("Chukwa");                     Fee = @(0.025); MinMemGiB = 2.0;                                           Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("CGN1", "CGN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=trtl_chukwa" }
     [PSCustomObject]@{ Algorithms = @("Chukwa2");                    Fee = @(0.025); MinMemGiB = 2.0;                                           Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("CGN1", "CGN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=trtl_chukwa2" }
-    [PSCustomObject]@{ Algorithms = @("CryptonightCcx");             Fee = @(0.025); MinMemGiB = 2.0;                                           Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("CGN1", "CGN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" } # SRBMinerMulti-v2.2.0 is fastest
+    [PSCustomObject]@{ Algorithms = @("CryptonightCcx");             Fee = @(0.025); MinMemGiB = 2.0;                                           Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("CGN1", "CGN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" } # SRBMinerMulti-v2.2.4 is fastest
     [PSCustomObject]@{ Algorithms = @("CryptonightHeavy");           Fee = @(0.025); MinMemGiB = 2.0;                                           Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("CGN1", "CGN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_heavy --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
     [PSCustomObject]@{ Algorithms = @("CryptonightHaven");           Fee = @(0.025); MinMemGiB = 2.0;                                           Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("CGN1", "CGN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_haven --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
     [PSCustomObject]@{ Algorithms = @("CryptonightHeavyTube");       Fee = @(0.025); MinMemGiB = 2.0;                                           Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("CGN1", "CGN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_saber --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
@@ -48,10 +48,11 @@ $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).Poo
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).BaseName -notin $_.ExcludePools[0] -and (-not $_.Algorithms[1] -or $MinerPools[1].($_.Algorithms[1]).BaseName -notin $_.ExcludePools[1]) }
 
 If ($Algorithms) { 
+
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Model -EQ $_.Model
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1)
 
         $Algorithms | ForEach-Object { 
 
@@ -60,7 +61,7 @@ If ($Algorithms) {
                 $Algorithm0 = $_.Algorithms[0]
                 $Algorithm1 = $_.Algorithms[1]
                 $Arguments = $_.Arguments
-                $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) + @(If ($Algorithm1) { "$($Algorithm0)&$($_.Algorithms[1])" }) | Select-Object) -join '-' -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)$(If ($Algorithm1) { "-$($Algorithm0)&$($Algorithm1)" })" -replace ' '
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo", "autotune", "rig_id") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
@@ -70,7 +71,7 @@ If ($Algorithms) {
                     "ethstratumnh" { " --eth_stratum_mode=nicehash" }
                 }
                 $Arguments += " --user=$($MinerPools[0].$Algorithm0.User)$(If ($MinerPools[0].$Algorithm0.WorkerName) { ".$($MinerPools[0].$Algorithm0.WorkerName)" })"
-                $Arguments += " --pass=$($MinerPools[0].$Algorithm0.Pass)$(If ($MinerPools[0].$Algorithm0.BaseName -eq "ProHashing" -and $Algorithm0 -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].($_.Algorithm).DAGSizeGiB))" })"
+                $Arguments += " --pass=$($MinerPools[0].$Algorithm0.Pass)$(If ($MinerPools[0].$Algorithm0.BaseName -eq "ProHashing" -and $Algorithm0 -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].$Algorithm0.DAGSizeGiB))" })"
 
                 If ($Algorithm1 -eq "kHeavyHash") { 
                     $Arguments += " --kas" 
@@ -111,5 +112,3 @@ If ($Algorithms) {
         }
     }
 }
-
-$Error.Clear()

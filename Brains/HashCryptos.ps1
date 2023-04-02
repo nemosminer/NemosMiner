@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningDutch.ps1
-Version:        4.3.3.0
-Version date:   22 March 2023
+Version:        4.3.3.1
+Version date:   02 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -53,7 +53,7 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
 
         Do {
             Try { 
-                $AlgoData = Invoke-RestMethod -Uri $BrainConfig.PoolstatusUri -Headers $Headers -UserAgent $UserAgent -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout
+                $AlgoData = Invoke-RestMethod -Uri $BrainConfig.PoolStatusUri -Headers $Headers -UserAgent $UserAgent -SkipCertificateCheck -TimeoutSec $BrainConfig.PoolAPITimeout
                 $APICallFails = 0
             }
             Catch { 

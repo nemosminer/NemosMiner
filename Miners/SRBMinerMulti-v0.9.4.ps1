@@ -44,12 +44,15 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Yescrypt";          Fee = @(0.0085); MinMemGiB = 1;                                             Minerset = 0; WarmupTimes = @(90, 30); Arguments = " --disable-cpu -algorithm yescrypt" }
 )
 
-If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }) { 
+$Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }
+
+If ($Algorithms) { 
 
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Model -EQ $_.Model
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1)
 
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
@@ -57,17 +60,17 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -gt $_.MinMemGiB) { 
 
                 $Arguments = $_.Arguments
-                $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) | Select-Object) -join '-' -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)" -replace ' '
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algorithm") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                 $Arguments += Switch ($MinerPools[0].($_.Algorithm).Protocol) { 
-                    "minerproxy"   { " --esm 1" }
-                    "ethproxy"     { " --esm 0" }
-                    "ethstratum1"  { " --esm 1" }
-                    "ethstratum2"  { " --esm 2" }
-                    "ethstratumnh" { " --esm 2" }
+                    "minerproxy"   { " --esm 1"; Break }
+                    "ethproxy"     { " --esm 0"; Break }
+                    "ethstratum1"  { " --esm 1"; Break }
+                    "ethstratum2"  { " --esm 2"; Break }
+                    "ethstratumnh" { " --esm 2"; Break }
                 }
                 $Arguments += " --pool $($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) --wallet $($MinerPools[0].($_.Algorithm).User)"
                 If ($MinerPools[0].($_.Algorithm).WorkerName) { " --worker $($MinerPools[0].($_.Algorithm).WorkerName)" }
@@ -106,5 +109,3 @@ If ($Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet | Whe
         }
     }
 }
-
-$Error.Clear()

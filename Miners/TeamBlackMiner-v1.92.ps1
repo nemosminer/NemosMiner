@@ -54,14 +54,14 @@ If ($Algorithms) {
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices | Sort-Object Id | Select-Object -First 1 -ExpandProperty Id) + 1)
+        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1)
 
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -ge $_.MinMemGiB) { 
 
                 $Arguments = $_.Arguments
-                $Miner_Name = (@($Name) + @($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model" }) + @(If ($_.Algorithms[1]) { "$($_.Algorithms[0])&$($_.Algorithms[1])" }) + @($_.GpuDualMaxLoss) | Select-Object) -join '-' -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })" -replace ' '
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo", "cl-devices", "cuda-devices", "tweak") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
@@ -76,8 +76,8 @@ If ($Algorithms) {
                 If ($MinerPools[0].($_.Algorithms[0]).Pass) { $Arguments += " --server-passwd $($MinerPools[0].($_.Algorithms[0]).Pass)$(If ($MinerPools[0].($_.Algorithms[0]).BaseName -eq "ProHashing" -and $_.Algorithms[0] -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].($_.Algorithms[0]).DAGSizeGiB))" })" }
 
                 $SecondAlgo = Switch ($_.Algorithms[1]) { 
-                    "KawPow"   { "rvn" }
-                    "VertHash" { "vtc" }
+                    "KawPow"   { "rvn"; Break }
+                    "VertHash" { "vtc"; Break }
                     Default    { "" }
                 }
                 If ($SecondAlgo) { 
@@ -112,7 +112,7 @@ If ($Algorithms) {
                     Port             = $MinerAPIPort
                     PrerequisitePath = $PrerequisitePath
                     PrerequisiteURI  = $PrerequisiteURI
-                    Type             = ($AvailableMiner_Devices.Type | Select-Object -Unique)
+                    Type             = $_.Type
                     URI              = $Uri
                     WarmupTimes      = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
                 }
@@ -120,5 +120,3 @@ If ($Algorithms) {
         }
     }
 }
-
-$Error.Clear()

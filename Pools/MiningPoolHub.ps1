@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.3.3.0
-Version date:   22 March 2023
+Version:        4.3.3.1
+Version date:   02 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -41,6 +41,8 @@ $Useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 
 If ($PoolConfig.UserName) { 
     If ($PoolVariant -match "Coins$") { 
+        $APICallFails = 0
+
         Do {
             Try { 
                 $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics" -Headers $Headers -UserAgent $UserAgent -SkipCertificateCheck -TimeoutSec 5
@@ -79,12 +81,12 @@ If ($PoolConfig.UserName) {
 
             # Temp fix for pool API errors
             Switch ($Algorithm_Norm) { 
-                # "Ethash"    { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }) }
-                # "KawPow"    { $Regions = @($PoolConfig.Region | Where-Object { $_ -notin @("europe") }) }
-                # "Lyra2RE2"  { $Current.host_list = $Current.host }
-                "Neoscrypt"   { $Current.host_list = $Current.host }
-                "Skein"       { $Current.host_list = $Current.host }
-                "VertHash"    { $Current.host_list = $Current.host; $Port = 20534 }
+                # "Ethash"    { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }); Break }
+                # "KawPow"    { $Regions = @($PoolConfig.Region | Where-Object { $_ -notin @("europe") }); Break }
+                # "Lyra2RE2"  { $Current.host_list = $Current.host; Break }
+                "Neoscrypt"   { $Current.host_list = $Current.host; Break }
+                "Skein"       { $Current.host_list = $Current.host; Break }
+                "VertHash"    { $Current.host_list = $Current.host; $Port = 20534; Break }
                 # Default     { $Port = $Current.port }
             }
 
@@ -121,6 +123,8 @@ If ($PoolConfig.UserName) {
         }
     }
     Else { 
+        $APICallFails = 0
+
         Do {
             Try { 
                 $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getautoswitchingandprofitsstatistics" -Headers $Headers -UserAgent $UserAgent -SkipCertificateCheck -TimeoutSec 5
@@ -148,11 +152,11 @@ If ($PoolConfig.UserName) {
 
             # Temp fix for pool API errors
             Switch ($Algorithm_Norm) { 
-                # "Ethash"   { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }) }
-                # "KawPow"     { $Regions = @($PoolConfig.Region | Where-Object { $_ -notin @("europe") }) }
-                "Neoscrypt"  { $Current.all_host_list = $Current.host }
-                "Skein"      { $Current.all_host_list = $Current.host }
-                "VertHash"   { $Port = 20534 }
+                # "Ethash"   { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }); Break }
+                # "KawPow"     { $Regions = @($PoolConfig.Region | Where-Object { $_ -notin @("europe") }); Break }
+                "Neoscrypt"  { $Current.all_host_list = $Current.host; Break }
+                "Skein"      { $Current.all_host_list = $Current.host; Break }
+                "VertHash"   { $Port = 20534; Break }
                 # Default    { $Port = $Current.algo_switch_port }
             }
 

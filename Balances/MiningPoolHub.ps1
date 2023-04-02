@@ -18,14 +18,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.3.3.0
-Version date:   22 March 2023
+Version:        4.3.3.1
+Version date:   02 April 2023
 #>
 using module ..\Includes\Include.psm1
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $RetryCount = 3
-$RetryDelay = 3
+$RetryDelay = 6
 
 $Headers = @{ "Cache-Control" = "no-cache" }
 $Useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HashCryptos.ps1
-Version:        4.3.3.0
-Version date:   22 March 2023
+Version:        4.3.3.1
+Version date:   02 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -73,42 +73,42 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
         }
 
         $HostPrefix = Switch ($Algorithm_Norm) { 
-            "Blake2s"       { "stratum3." }
-            "C11"           { "" }
-            "Cryptonight"   { "" }
-            "Equihash2009"  { "stratum4." }
-            "Equihash1927"  { "stratum4." }
-            "Groestl"       { "stratum3." }
-            "KawPow"        { "stratum4." }
-            "Keccak"        { "stratum3." }
-            "Lbry"          { "stratum4." }
-            "Lyra2RE2"      { "stratum3." }
-            "Lyra2RE3"      { "" }
-            "MyriadGroestl" { "stratum3." }
-            "Neoscrypt"     { "stratum1." }
-            "Nist5"         { "" }
-            "Odocrypt"      { "stratum2." }
-            "Phi2"          { "" }
-            "Quark"         { "stratum3." }
-            "Qubit"         { "stratum3." }
-            "Scrypt"        { "stratum2." }
-            "SHA256"        { "stratum1." }
-            "Skein"         { "stratum3." }
-            "SkunkHash"     { "" }
-            "Tribus"        { "stratum4." }
-            "VertHash"      { "stratum3." }
-            "X11"           { "stratum1." }
-            "X11Ghost"      { "stratum3." }
-            "X13"           { "stratum3." }
-            "X13bcd"        { "" }
-            "X16r"          { "" }
-            "X16s"          { "" }
-            "X17"           { "" }
-            "Yescrypt"      { "stratum4." }
-            "YescryptR16"   { "stratum4." }
-            "YescryptR32"   { "stratum4." }
-            "Yespower"      { "stratum4." }
-            "YespowerR16"   { "stratum4." }
+            "Blake2s"       { "stratum3."; Break }
+            "C11"           { ""; Break }
+            "Cryptonight"   { ""; Break }
+            "Equihash2009"  { "stratum4."; Break }
+            "Equihash1927"  { "stratum4."; Break }
+            "Groestl"       { "stratum3."; Break }
+            "KawPow"        { "stratum4."; Break }
+            "Keccak"        { "stratum3."; Break }
+            "Lbry"          { "stratum4."; Break }
+            "Lyra2RE2"      { "stratum3."; Break }
+            "Lyra2RE3"      { ""; Break }
+            "MyriadGroestl" { "stratum3."; Break }
+            "Neoscrypt"     { "stratum1."; Break }
+            "Nist5"         { ""; Break }
+            "Odocrypt"      { "stratum2."; Break }
+            "Phi2"          { ""; Break }
+            "Quark"         { "stratum3."; Break }
+            "Qubit"         { "stratum3."; Break }
+            "Scrypt"        { "stratum2."; Break }
+            "SHA256"        { "stratum1."; Break }
+            "Skein"         { "stratum3."; Break }
+            "SkunkHash"     { ""; Break }
+            "Tribus"        { "stratum4."; Break }
+            "VertHash"      { "stratum3."; Break }
+            "X11"           { "stratum1."; Break }
+            "X11Ghost"      { "stratum3."; Break }
+            "X13"           { "stratum3."; Break }
+            "X13bcd"        { ""; Break }
+            "X16r"          { ""; Break }
+            "X16s"          { ""; Break }
+            "X17"           { ""; Break }
+            "Yescrypt"      { "stratum4."; Break }
+            "YescryptR16"   { "stratum4."; Break }
+            "YescryptR32"   { "stratum4." ; Break}
+            "Yespower"      { "stratum4."; Break }
+            "YespowerR16"   { "stratum4."; Break }
             Default         { "" }
         }
 

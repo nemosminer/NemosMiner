@@ -50,6 +50,7 @@
   "CURVE": "CurveHash",
   "DASH": "X11",
   "DBIX": "Ethash",
+  "DEM": "SHA256",
   "DGB": "Odocrypt",
   "DIME": "Quark",
   "DIN": "Neoscrypt",
@@ -136,6 +137,7 @@
   "OMEGA": "X11",
   "ONION": "X13",
   "ONX": "Yespower",
+  "PAPRY": "KawPow",
   "PGC": "Ethash",
   "PGN": "X21s",
   "PHL": "X16r",
@@ -220,5 +222,5 @@
   "ZEN": "Equihash",
   "ZER": "Equihash1927",
   "ZOC": "Neoscrypt",
-  "DEM": "SHA256"
+  "DIMI": "HMQ1725"
 }
