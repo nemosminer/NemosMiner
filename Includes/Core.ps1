@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.3.3.1
-Version date:   02 April 2023
+Version:        4.3.3.2
+Version date:   05 April 2023
 #>
 
 using module .\Include.psm1
@@ -88,14 +88,14 @@ Do {
 
         If (Compare-Object @($Variables.EnabledDevices.Name | Select-Object) @(($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName).Name | Select-Object)) { 
             $Variables.EnabledDevices = [Device[]]@($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | ForEach-Object { Copy-Object $_ })
+            # For GPUs set type equal to vendor
+            $Variables.EnabledDevices | Where-Object Type -EQ "GPU" | ForEach-Object { $_.Type = $_.Vendor }
         }
 
         If ($Variables.EnabledDevices) { 
-            # For GPUs set type equal to vendor
-            $Variables.EnabledDevices | Where-Object Type -EQ "GPU" | ForEach-Object { $_.Type = $_.Vendor }
             # Remove model information from devices -> will create only one miner instance
-            If (-not $Config.MinerInstancePerDeviceModel) { $Variables.EnabledDevices | ForEach-Object { $_.Model = $_.Vendor } }
-            Else { $Variables.EnabledDevices | ForEach-Object { $_.Model = ($Variables.Devices | Where-Object Name -eq $_.Name).Model } }
+            If ($Config.MinerInstancePerDeviceModel) { $Variables.EnabledDevices | ForEach-Object { $_.Model = ($Variables.Devices | Where-Object Name -eq $_.Name).Model } }
+            Else { $Variables.EnabledDevices | Where-Object Type -EQ "GPU" | ForEach-Object { $_.Model = $_.Vendor } }
 
             If ($Variables.EndCycleTime) { 
                 $Variables.BeginCycleTime = $Variables.EndCycleTime
@@ -297,9 +297,6 @@ Do {
                 $Variables.PowerPricekWh = [Double]($Config.PowerPricekWh.($Config.PowerPricekWh.Keys | Sort-Object | Where-Object { $_ -le (Get-Date -Format HH:mm).ToString() } | Select-Object -Last 1))
                 $Variables.PowerCostBTCperW = [Double](1 / 1000 * 24 * $Variables.PowerPricekWh / $Variables.Rates."BTC".($Config.Currency))
 
-                # Send data to monitoring server
-                If ($Config.ReportToServer) { Write-MonitoringData }
-
                 # Ensure we get the hashrate for running miners prior looking for best miner
                 ForEach ($Miner in $Variables.MinersBest_Combo) { 
                     If ($Miner.DataReaderJob.HasMoreData) { 
@@ -338,8 +335,8 @@ Do {
                                     $LatestMinerSharesData = ($Miner.Data | Select-Object -Last 1).Shares
                                     If ($LatestMinerSharesData.$_ -and $LatestMinerSharesData.$_[1] -gt 0 -and $LatestMinerSharesData.$_[3] -gt [Int](1 / $Config.BadShareRatioThreshold) -and $LatestMinerSharesData.$_[1] / $LatestMinerSharesData.$_[3] -gt $Config.BadShareRatioThreshold) { 
                                         $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' stopped. Reasons: Too many bad shares (Shares Total = $($LatestMinerSharesData.$_[3]), Rejected = $($LatestMinerSharesData.$_[1]))."
-                                        $Miner.Data = @() # Clear data because it may be incorrect caused by miner problem
                                         $Miner.SetStatus([MinerStatus]::Failed)
+                                        $Miner.Data = @() # Clear data because it may be incorrect caused by miner problem
                                     }
                                 }
                             }
@@ -417,6 +414,9 @@ Do {
                     }
                 }
                 Remove-Variable Miner
+
+                # Send data to monitoring server
+                If ($Config.ReportToServer) { Write-MonitoringData }
 
                 # Load unprofitable algorithms
                 Try { 
@@ -1090,7 +1090,6 @@ Do {
 
             If ($Miner.Benchmark -or $Miner.MeasurePowerUsage) { 
                 $DataCollectInterval = 1
-                $Miner.Data = @()
                 $Miner.Earning = [Double]::NaN
                 $Miner.Earning_Bias = [Double]::NaN
                 $Miner.ValidDataSampleTimestamp = [DateTime]0

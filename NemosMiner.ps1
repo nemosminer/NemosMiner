@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.3.3.1
-Version date:   02 April 2023
+Version:        4.3.3.2
+Version date:   05 April 2023
 #>
 
 [CmdletBinding()]
@@ -291,7 +291,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.3.3.1"
+    Version      = [System.Version]"4.3.3.2"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -555,7 +555,7 @@ Function MainLoop {
                     Write-MonitoringData | Out-Null
 
                     If ($Variables.MiningStatus -and $LegacyGUIform) { 
-                        $MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) is stopped"
+                        $MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel) is stopped"
                         $MiningStatusLabel.ForeColor = [System.Drawing.Color]::Red
                         $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Black
                         $MiningSummaryLabel.Text = "Click the 'Start mining' button to make money."
@@ -583,7 +583,7 @@ Function MainLoop {
                     Write-MonitoringData | Out-Null
 
                     If ($LegacyGUIform) { 
-                        $MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) is paused"
+                        $MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel) is paused"
                         $MiningStatusLabel.ForeColor = [System.Drawing.Color]::Blue
                         $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Black
                         $MiningSummaryLabel.Text = "Click the 'Start mining' button to make money."
@@ -608,7 +608,7 @@ Function MainLoop {
                     Start-Mining
 
                     If ($LegacyGUIform) { 
-                        $MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) is running"
+                        $MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel) is running"
                         $MiningStatusLabel.ForeColor = [System.Drawing.Color]::Green
                         $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Black
                         $MiningSummaryLabel.Text = "Starting mining processes..."
@@ -802,7 +802,7 @@ Function MainLoop {
     If ($Variables.RefreshNeeded) { 
         $Variables.RefreshNeeded = $false
 
-        $host.UI.RawUI.WindowTitle = $LegacyGUIForm.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) Runtime: {0:dd} days {0:hh} hrs {0:mm} mins Path: $($Variables.Mainpath)" -f [TimeSpan]((Get-Date).ToUniversalTime() - $Variables.ScriptStartTime)
+        $host.UI.RawUI.WindowTitle = $LegacyGUIForm.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) - Runtime: {0:dd} days {0:hh} hrs {0:mm} mins - Path: $($Variables.Mainpath)" -f [TimeSpan]((Get-Date).ToUniversalTime() - $Variables.ScriptStartTime)
 
         If (-not ($Variables.Miners | Where-Object Status -eq "Running") -and $Variables.Timer) { Write-Host "No miners running. Waiting for next cycle." }
 
@@ -919,7 +919,7 @@ Function MainLoop {
                 [System.Collections.ArrayList]$Miner_Table = @(
                     @{ Label = "Hashrate(s)"; Expression = { (($_.Workers.Hashrate | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ') -replace '\s+', ' ' }; Align = "right" }
                     If ($Config.CalculatePowerCost -and $Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W" } }; Align = "right" } }
-                    @{ Label6 = "Time since last run"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }
+                    @{ Label = "Time since last run"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }
                     @{ Label = "Active (total)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $_.TotalMiningDuration } }
                     @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
                     @{ Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }

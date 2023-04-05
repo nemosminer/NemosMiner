@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.3.1
-Version date:   02 April 2023
+Version:        4.3.3.2
+Version date:   05 April 2023
 #>
 
 # Window handling
@@ -289,7 +289,7 @@ Class Miner {
             DateTime          = (Get-Date -Format o)
             Action            = "Launched"
             Name              = $this.Name
-            Accounts          = ($this.Workers.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
+            Accounts          = ($this.Workers.Pool.User | ForEach-Object { $_ -replace "\.*" } | Select-Object -Unique) -join "; "
             Algorithms        = $this.Workers.Pool.Algorithm -join "; "
             Benchmark         = $this.Benchmark
             CommandLine       = $this.CommandLine
@@ -334,7 +334,8 @@ Class Miner {
     }
 
     [MinerStatus]GetStatus() { 
-        If ($this.Process.State -eq [MinerStatus]::Running -and $this.ProcessId -and (Get-Process -Id $this.ProcessId -ErrorAction Ignore).ProcessName) { # Use ProcessName, some crashed miners are dead but may still be found by their processId
+        # Use ProcessName, some crashed miners are dead but may still be found by their processId
+        If ($this.Process.State -eq [MinerStatus]::Running -and $this.ProcessId -and (Get-Process -Id $this.ProcessId -ErrorAction Ignore).ProcessName) { 
             Return [MinerStatus]::Running
         }
         ElseIf ($this.Status -eq [MinerStatus]::Running) { 
@@ -376,7 +377,6 @@ Class Miner {
             Write-Message -Level Error $this.StatusMessage
         }
 
-        # Stop Miner data reader
         $this.StopDataReader()
 
         $this.EndTime = (Get-Date).ToUniversalTime()
@@ -404,7 +404,7 @@ Class Miner {
             DateTime          = (Get-Date -Format o)
             Action            = If ($this.Status -eq [MinerStatus]::Idle) { "Stopped" } Else { "Failed" }
             Name              = $this.Name
-            Accounts          = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -split "\." | Select-Object -First 1 } | Select-Object -Unique) -join "; "
+            Accounts          = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -replace "\.*" } | Select-Object -Unique) -join "; "
             Algorithms        = $this.WorkersRunning.Pool.Algorithm -join "; "
             Benchmark         = $this.Benchmark
             CommandLine       = ""
@@ -671,7 +671,7 @@ namespace PInvoke.Win32 {
                 If ($IdleSeconds -lt $Config.IdleSec -and $Variables.IdleRunspace.MiningStatus -ne "Idle") { 
                     $Variables.IdleRunspace | Add-Member MiningStatus "Idle" -Force
 
-                    $MiningStatusLabel.Text = "Idle | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
+                    $MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel) is idle"
                     $MiningStatusLabel.ForeColor = [System.Drawing.Color]::Green
                 }
 
@@ -679,7 +679,7 @@ namespace PInvoke.Win32 {
                 If ($IdleSeconds -ge $Config.IdleSec -and $Variables.IdleRunspace.MiningStatus -ne "Running") { 
                     $Variables.IdleRunspace | Add-Member MiningStatus "Running" -Force
 
-                    $MiningStatusLabel.Text = "Running | $($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
+                    $MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel) is running"
                     $MiningStatusLabel.ForeColor = [System.Drawing.Color]::Green
                 }
                 Start-Sleep -Seconds 1

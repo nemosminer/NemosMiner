@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           LegacyGUI.psm1
-Version:        4.3.3.1
-Version date:   02 April 2023
+Version:        4.3.3.2
+Version date:   05 April 2023
 #>
 
 [Void] [System.Windows.Forms.Application]::EnableVisualStyles()
@@ -46,16 +46,16 @@ Function CheckBoxSwitching_Click {
 
         $SwitchingDGV.DataSource = Get-Content ".\Logs\SwitchingLog.csv" | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 1000 | ForEach-Object { $_.Datetime = (Get-Date $_.DateTime).ToString("G"); $_ } | Select-Object @("DateTime", "Action", "Name", "Pools", "Algorithms", "Accounts", "Cycle", "Duration", "DeviceNames", "Type") | Out-DataTable
         If ($SwitchingDGV.Columns) { 
-            $SwitchingDGV.Columns[0].FillWeight = 65
+            $SwitchingDGV.Columns[0].FillWeight = 50
             $SwitchingDGV.Columns[1].FillWeight = 50
-            $SwitchingDGV.Columns[2].FillWeight = 150
-            $SwitchingDGV.Columns[3].FillWeight = 90
-            $SwitchingDGV.Columns[4].FillWeight = 65
-            $SwitchingDGV.Columns[5].FillWeight = 90
+            $SwitchingDGV.Columns[2].FillWeight = 90; $SwitchingDGV.Columns[2].HeaderText = "Miner"
+            $SwitchingDGV.Columns[3].FillWeight = 60 + ($SwitchingDGV.MinersBest_Combo | ForEach-Object { $_.Pools.Count } | Measure-Object -Maximum).Maximum * 40; $SwitchingDGV.Columns[3].HeaderText = "Pool(s)"
+            $SwitchingDGV.Columns[4].FillWeight = 50 + ($SwitchingDGV.MinersBest_Combo | ForEach-Object { $_.Algorithms.Count } | Measure-Object -Maximum).Maximum * 25; $SwitchingDGV.Columns[4].HeaderText = "Algorithm(s)"
+            $SwitchingDGV.Columns[5].FillWeight = 90 + ($SwitchingDGV.MinersBest_Combo | ForEach-Object { $_.Accounts.Count } | Measure-Object -Maximum).Maximum * 50; $SwitchingDGV.Columns[5].HeaderText = "Account(s)"
             $SwitchingDGV.Columns[6].FillWeight = 30; $SwitchingDGV.Columns[6].HeaderText = "Cycles"; $SwitchingDGV.Columns[6].DefaultCellStyle.Alignment = "MiddleRight"; $SwitchingDGV.Columns[6].HeaderCell.Style.Alignment = "MiddleRight"
             $SwitchingDGV.Columns[7].FillWeight = 40
-            $SwitchingDGV.Columns[8].HeaderText = "Device(s)"
-            $SwitchingDGV.Columns[9].FillWeight = 40
+            $SwitchingDGV.Columns[8].FillWeight = 30 + ($SwitchingDGV.MinersBest_Combo | ForEach-Object { $_.DeviceNames.Count } | Measure-Object -Maximum).Maximum * 15; $SwitchingDGV.Columns[8].HeaderText = "Device(s)"
+            $SwitchingDGV.Columns[9].FillWeight = 30
         }
 
         Colorize_SwitchingLog
@@ -444,7 +444,7 @@ Function Update-TabControl {
                         @{ Name = "Algorithm"; Expression = { $_.Algorithm } }
                         @{ Name = "Coin Name"; Expression = { $_.CoinName } }
                         @{ Name = "Currency"; Expression = { $_.Currency } }
-                        @{ Name = "BTC/GH/Day`n(Biased)"; Expression = { "{0:n$($Config.DecimalsMax)}" -f $_.Price_Bias } }
+                        @{ Name = "BTC/GH/Day`n(Biased)"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ($_.Price_Bias * [Math]::Pow(1024, 3)) } }
                         @{ Name = "Accuracy"; Expression = { "{0:p2}" -f $_.Accuracy } }
                         @{ Name = "Pool Name"; Expression = { $_.Name } }
                         @{ Name = "Host"; Expression = { $_.Host } }
@@ -496,9 +496,9 @@ Function Update-TabControl {
                         @{ Name = "Status"; Expression = { $_.status } }, 
                         @{ Name = "Last seen"; Expression = { (Get-TimeSince $_.date) } }, 
                         @{ Name = "Version"; Expression = { $_.version } }, 
-                        @{ Name = "Currency"; Expression = { [String]$Config.Currency } }, 
+                        @{ Name = "Currency"; Expression = { ForEach-Object { $_.data.Currency | Select-Object -Unique } } }, 
                         @{ Name = "Estimated Earning/day"; Expression = { If ($_.Data -ne $null) { "{0:n$($Config.DecimalsMax)}" -f (($_.Data.Earning | Where-Object { -not [Double]::IsNaN($_) } | Measure-Object -Sum).Sum * $Variables.Rates.BTC.($_.data.Currency | Select-Object -Unique)) } } }, 
-                        @{ Name = "Estimated Profit/day"; Expression = { If ($_.Data -ne $null) { "{0:n$($Config.DecimalsMax)}" -f (($_.Data.Profit | Where-Object { -not [Double]::IsNaN($_) } | Measure-Object -Sum).Sum * $Variables.Rates.BTC.($_.data.Currency | Select-Object -Unique)) } } }, 
+                        @{ Name = "Estimated Profit/day"; Expression = { If ($_.Data -ne $null) { " {0:n$($Config.DecimalsMax)}" -f (($_.Data.Profit | Where-Object { -not [Double]::IsNaN($_) } | Measure-Object -Sum).Sum * $Variables.Rates.BTC.($_.data.Currency | Select-Object -Unique)) } } }, 
                         @{ Name = "Miner(s)"; Expression = { $_.data.Name -join $nl } }, 
                         @{ Name = "Pool(s)"; Expression = { ($_.data | ForEach-Object { $_.Pool -split "," -join " & " }) -join $nl } }, 
                         @{ Name = "Algorithm(s)"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join $nl } }, 
@@ -534,10 +534,10 @@ Function Update-TabControl {
             Break
         }
         "Switching Log" { 
-            $CheckShowSwitchingCPU.Enabled = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "CPU#*")
-            $CheckShowSwitchingAMD.Enabled = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "GPU#*" | Where-Object Vendor -EQ "AMD")
-            $CheckShowSwitchingINTEL.Enabled = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "GPU#*" | Where-Object Vendor -EQ "INTEL")
-            $CheckShowSwitchingNVIDIA.Enabled = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Name -Like "GPU#*" | Where-Object Vendor -EQ "NVIDIA")
+            $CheckShowSwitchingCPU.Enabled = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Type -EQ "CPU")
+            $CheckShowSwitchingAMD.Enabled = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Type -EQ "GPU" | Where-Object Vendor -EQ "AMD")
+            $CheckShowSwitchingINTEL.Enabled = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Type -EQ "GPU" | Where-Object Vendor -EQ "INTEL")
+            $CheckShowSwitchingNVIDIA.Enabled = [Boolean]($Variables.Devices | Where-Object { $_.State -NE [DeviceState]::Unsupported } | Where-Object Name -NotIn $Config.ExcludeDeviceName | Where-Object Type -EQ "GPU" | Where-Object Vendor -EQ "NVIDIA")
 
             If (-not $CheckShowSwitchingCPU.Enabled) { $CheckShowSwitchingCPU.Checked = $false }
             If (-not $CheckShowSwitchingAMD.Enabled) { $CheckShowSwitchingAMD.Checked = $false }
@@ -591,14 +591,14 @@ Function Update-TabControl {
 }
 
 Function Form_Resize { 
-    $TabControl.Width = $LegacyGUIForm.ClientSize.Width - 12
+    $TabControl.Width = $LegacyGUIForm.ClientSize.Width - 16
     $TabControl.Height = $LegacyGUIForm.ClientSize.Height - $TabControl.Top - $EditConfigLink.Height
 
     $ButtonStart.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - $ButtonPause.Width - $ButtonStart.Width - 60), 6)
     $ButtonPause.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - $ButtonPause.Width - 50), 6)
     $ButtonStop.Location =  [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - 40), 6)
 
-    $MiningSummaryLabel.Width = $Variables.TextBoxSystemLog.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $BalancesDGV.Width = $MinersPanel.Width = $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $WatchdogTimersDGV.Width = $TabControl.Width - 30
+    $MiningSummaryLabel.Width = $Variables.TextBoxSystemLog.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $BalancesDGV.Width = $MinersPanel.Width = $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $WatchdogTimersDGV.Width = $TabControl.Width - 26
 
     If ($Config.BalancesTrackerPollInterval -gt 0 -and $BalancesDGV.Rows.Count -gt 0) { 
         $BalancesDGVHeight = ($BalancesDGV.Rows.Height | Measure-Object -Sum).Sum + $BalancesDGV.ColumnHeadersHeight
@@ -610,15 +610,15 @@ Function Form_Resize {
         Else { 
             $EarningsChart.Height = $TabControl.Height - $BalancesDGVHeight - 46
             $BalancesDGV.ScrollBars = "None"
-            $BalancesLabel.Location = [System.Drawing.Point]::new(6, ($EarningsChart.Bottom - 20))
+            $BalancesLabel.Location = [System.Drawing.Point]::new(8, ($EarningsChart.Bottom - 20))
         }
     }
     Else { 
         $BalancesDGV.ScrollBars = "None"
-        $BalancesLabel.Location = [System.Drawing.Point]::new(6, ($TabControl.Height - $BalancesLabel.Height - 50))
+        $BalancesLabel.Location = [System.Drawing.Point]::new(8, ($TabControl.Height - $BalancesLabel.Height - 50))
         $EarningsChart.Height = $BalancesLabel.Top + 36
     }
-    $BalancesDGV.Location = [System.Drawing.Point]::new(8, $BalancesLabel.Bottom)
+    $BalancesDGV.Location = [System.Drawing.Point]::new(10, $BalancesLabel.Bottom)
     $BalancesDGV.Height = $TabControl.Height - $BalancesLabel.Bottom - 46
 
     $BalancesLabel.BringToFront()
@@ -633,17 +633,17 @@ Function Form_Resize {
         $LaunchedMinersDGV.ScrollBars = "None"
     }
 
-    $SystemLogLabel.Location = [System.Drawing.Point]::new(6, ($LaunchedMinersLabel.Height + $LaunchedMinersDGV.Height + 25))
-    $Variables.TextBoxSystemLog.Location = [System.Drawing.Point]::new(0, ($LaunchedMinersLabel.Height + $LaunchedMinersDGV.Height + $SystemLogLabel.Height + 24))
+    $SystemLogLabel.Location = [System.Drawing.Point]::new(8, ($LaunchedMinersLabel.Height + $LaunchedMinersDGV.Height + 25))
+    $Variables.TextBoxSystemLog.Location = [System.Drawing.Point]::new(8, ($LaunchedMinersLabel.Height + $LaunchedMinersDGV.Height + $SystemLogLabel.Height + 24))
     $Variables.TextBoxSystemLog.Height = ($TabControl.Height - $LaunchedMinersLabel.Height - $LaunchedMinersDGV.Height - $SystemLogLabel.Height - 68)
-    $Variables.TextBoxSystemLog.Width = $TabControl.Width - 18
+    $Variables.TextBoxSystemLog.Width = $TabControl.Width - 26
     If (-not $Variables.TextBoxSystemLog.SelectionLength) { 
         $Variables.TextBoxSystemLog.ScrollToCaret()
     }
 
-    $MinersDGV.Height = $TabControl.Height - $MinersLabel.Height - $MinersPanel.Height - 60
+    $MinersDGV.Height = $TabControl.Height - $MinersLabel.Height - $MinersPanel.Height - 61
 
-    $PoolsDGV.Height = $TabControl.Height - $PoolsLabel.Height - $PoolsPanel.Height - 60
+    $PoolsDGV.Height = $TabControl.Height - $PoolsLabel.Height - $PoolsPanel.Height - 61
 
     $WorkersDGV.Height = $TabControl.Height - $WorkersLabel.Height - 58
 
@@ -654,6 +654,8 @@ Function Form_Resize {
     $EditConfigLink.Location = [System.Drawing.Point]::new($TabControl.Left, ($LegacyGUIForm.ClientSize.Height - $EditConfigLink.Height))
     $CopyrightLabel.Location = [System.Drawing.Point]::new(($TabControl.Width - $CopyrightLabel.Width), ($LegacyGUIForm.ClientSize.Height - $EditConfigLink.Height))
 }
+
+$Tooltip = New-Object System.Windows.Forms.ToolTip
 
 $LegacyGUIForm = New-Object System.Windows.Forms.Form
 #--- For High DPI, First Call SuspendLayout(),After that, Set AutoScaleDimensions, AutoScaleMode ---
@@ -699,10 +701,10 @@ $MiningStatusLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 12)
 $MiningStatusLabel.ForeColor = [System.Drawing.Color]::Black
 $MiningStatusLabel.Height = 20
 $MiningStatusLabel.Location = [System.Drawing.Point]::new(6, 10)
-$MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version)"
+$MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel)"
 $MiningStatusLabel.TextAlign = "MiddleLeft"
 $MiningStatusLabel.Visible = $true
-$MiningStatusLabel.Width = 480
+$MiningStatusLabel.Width = 360
 $LegacyGUIControls += $MiningStatusLabel
 
 $MiningSummaryLabel = New-Object System.Windows.Forms.Label
@@ -717,6 +719,8 @@ $MiningSummaryLabel.Tag = ""
 $MiningSummaryLabel.TextAlign = "MiddleLeft"
 $MiningSummaryLabel.Visible = $true
 $LegacyGUIControls += $MiningSummaryLabel
+$Variables.TextBoxSystemLog
+$Tooltip.SetToolTip($MiningSummaryLabel, "Color legend:`nBlack: Mining is profitable`nRed: Mining NOT profitable")
 
 $ButtonStart = New-Object System.Windows.Forms.Button
 $ButtonStart.Enabled = (-not $Config.Autostart)
@@ -734,6 +738,7 @@ $ButtonStart.Add_Click(
     }
 )
 $LegacyGUIControls += $ButtonStart
+$Tooltip.SetToolTip($ButtonStart, "Start the mining process.")
 
 $ButtonPause = New-Object System.Windows.Forms.Button
 $ButtonPause.Enabled = $Config.Autostart
@@ -751,6 +756,7 @@ $ButtonPause.Add_Click(
     }
 )
 $LegacyGUIControls += $ButtonPause
+$Tooltip.SetToolTip($ButtonPause, "Pause mining processes.`nBackground processes remain running.")
 
 $ButtonStop = New-Object System.Windows.Forms.Button
 $ButtonStop.Enabled = $Config.Autostart
@@ -768,6 +774,7 @@ $ButtonStop.Add_Click(
     }
 )
 $LegacyGUIControls += $ButtonStop
+$Tooltip.SetToolTip($ButtonStop, "Stop mining processes.`nBackground processes will also stop.")
 
 $EditConfigLink = New-Object System.Windows.Forms.LinkLabel
 $EditConfigLink.ActiveLinkColor = [System.Drawing.Color]::Blue
@@ -778,6 +785,7 @@ $EditConfigLink.TextAlign = "MiddleLeft"
 $EditConfigLink.Size = New-Object System.Drawing.Size(380, 26)
 $EditConfigLink.Add_Click({ If ($EditConfigLink.Tag -eq "WebGUI") { Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/configedit.html" } Else { Edit-File $Variables.ConfigFile } })
 $LegacyGUIControls += $EditConfigLink
+$Tooltip.SetToolTip($EditConfigLink, "Click to the edit configuration")
 
 $CopyrightLabel = New-Object System.Windows.Forms.LinkLabel
 $CopyrightLabel.ActiveLinkColor = [System.Drawing.Color]::Blue
@@ -789,6 +797,7 @@ $CopyrightLabel.Text = "Copyright (c) 2018-$((Get-Date).Year) Nemo, MrPlus && Us
 $CopyrightLabel.TextAlign = "MiddleRight"
 $CopyrightLabel.Add_Click({ Start-Process "https://github.com/Minerx117/NemosMiner/blob/master/LICENSE" })
 $LegacyGUIControls += $CopyrightLabel
+$Tooltip.SetToolTip($CopyrightLabel, "Click to go to the $($Variables.Branding.ProductLabel) Github page")
 
 # Miner context menu items
 $ContextMenuStrip = New-Object System.Windows.Forms.ContextMenuStrip
@@ -1127,6 +1136,7 @@ $Variables.TextBoxSystemLog.Scrollbars = "Vertical"
 $Variables.TextBoxSystemLog.Text = ""
 $Variables.TextBoxSystemLog.WordWrap = $true
 $RunPageControls += $Variables.TextBoxSystemLog
+$Tooltip.SetToolTip($Variables.TextBoxSystemLog, "These are the last 100 lines of the system log")
 
 # Earnings Page Controls
 $EarningsPageControls = @()
@@ -1387,6 +1397,7 @@ $SwitchingLogClearButton.Add_Click(
     }
 )
 $SwitchingPageControls += $SwitchingLogClearButton
+$Tooltip.SetToolTip($SwitchingLogClearButton, "This will clear the switching log '.\Logs\switchinglog.csv'")
 
 $CheckShowSwitchingCPU = New-Object System.Windows.Forms.CheckBox
 $CheckShowSwitchingCPU.AutoSize = $false
@@ -1488,6 +1499,7 @@ $WatchdogTimersRemoveButton.Add_Click(
     }
 )
 $WatchdogTimersPageControls += $WatchdogTimersRemoveButton
+$Tooltip.SetToolTip($WatchdogTimersRemoveButton, "This will remove all watchdog timers.`nWatchdog timers will be recreated in next cycle.")
 
 $WatchdogTimersDGV = New-Object System.Windows.Forms.DataGridView
 $WatchdogTimersDGV.AllowUserToAddRows = $false
@@ -1526,12 +1538,12 @@ $TabControl.Height = $LegacyGUIForm.ClientSize.Height - $MiningStatusLabel.Clien
 $TabControl.Width = $LegacyGUIForm.ClientSize.Width - 12
 $TabControl.Controls.AddRange(@($RunPage, $EarningsPage, $MinersPage, $PoolsPage, $RigMonitorPage, $SwitchingPage, $WatchdogTimersPage))
 $TabControl.Add_Click({ Update-TabControl })
-$LegacyGUIForm.Controls.Add($TabControl)
 
+$LegacyGUIForm.Controls.Add($TabControl)
 $LegacyGUIForm.ResumeLayout()
 $LegacyGUIForm.Add_Load(
     { 
-        If (Test-Path -Path ".\Config\WindowSettings.json" -PathType Leaf) { 
+         If (Test-Path -Path ".\Config\WindowSettings.json" -PathType Leaf) { 
             $WindowSettings = Get-Content -Path ".\Config\WindowSettings.json" | ConvertFrom-Json -AsHashtable
             # Restore window size
             If ($WindowSettings.Width -gt $LegacyGUIForm.MinimumSize.Width) { $LegacyGUIForm.Width = $WindowSettings.Width }
@@ -1539,9 +1551,16 @@ $LegacyGUIForm.Add_Load(
             If ($WindowSettings.Top -gt 0) { $LegacyGUIForm.Top = $WindowSettings.Top }
             If ($WindowSettings.Left -gt 0) { $LegacyGUIForm.Left = $WindowSettings.Left }
         }
-        If ($Config.LegacyGUIStartMinimized) { $LegacyGUIForm.WindowState = [System.Windows.Forms.FormWindowState]::Minimized }
 
-        # To be done after loading window size to avoid double invocation
+        $Global:LegacyGUIFormWindowState = If ($Config.LegacyGUIStartMinimized) { [System.Windows.Forms.FormWindowState]::Minimized } Else { [System.Windows.Forms.FormWindowState]::Normal }
+        $LegacyGUIForm.Add_SizeChanged(
+            { 
+                If ($this.WindowState -ne $Global:LegacyGUIFormWindowState) { 
+                    $Global:LegacyGUIFormWindowState = $this.WindowState
+                    Form_Resize
+                }
+            }
+        )
         $LegacyGUIForm.Add_ResizeEnd({ Form_Resize })
         Form_Resize
 

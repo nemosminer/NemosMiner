@@ -10,6 +10,22 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.3.3.2 nn.04.2023
+=======================================
+
+Enhancements:
+- Legacy GUI: Add more tooltips
+- Legacy GUI: Optimize SwitchingLog table titles and colums widths
+
+Fixes:
+- Core: CPU detected as INTEL device if $MinerInstancePerDeviceModel -eq $false (Regression from 4.3.3.0)
+- Legacy GUI: Fix window size save/restore and element arrangement
+- Legacy GUI: Pools Table 'BTC/GH/Day (Biased)' value was 1024^3 to small
+
+Miner updates:
+- Rigel-v1.3.11
+
+
 ChangeLog NemosMiner 4.3.3.1 02.04.2023
 =======================================
 
@@ -20,7 +36,7 @@ Changes:
 Enhancements:
 - BalancesTracker: Keep Earnings data for 365 days
 - Core: Minor performance optimizations
-- Legacy GUI: Improve table scrolling speed when '$UseColorForMinerStatus' -eq $true
+- Legacy GUI: Improve table scrolling speed when $UseColorForMinerStatus -eq $true
 
 Fixes:
 - Core: Not updating miner names when $MinerInstancePerDeviceModel changing from $false
