@@ -705,7 +705,7 @@ Function Start-Mining {
 
     If (-not $Variables.CoreRunspace) { 
         $Variables.Summary = "Starting mining processes..."
-        Write-Message -Level Info Write-Message -Level Verbose ($Variables.Summary -replace "<br>", " ")
+        Write-Message -Level Verbose ($Variables.Summary -replace "<br>", " ")
 
         $Variables.Timer = $null
         $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
@@ -743,6 +743,8 @@ Function Stop-Mining {
 
     If ($Variables.CoreRunspace) { 
         $Variables.Summary = "Stopping mining processes..."
+        Write-Message -Level Verbose ($Variables.Summary -replace "<br>", " ")
+
         # Give core loop time to shut down gracefully
         $Timestamp = (Get-Date).AddSeconds(30)
         While (-not $Quick -and ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running -or $_.Status -eq [MinerStatus]::DryRun }) -and (Get-Date) -le $Timestamp) { 
@@ -775,87 +777,6 @@ Function Stop-Mining {
     [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
 
     $Error.Clear()
-}
-
-Function Start-Brain2 { 
-
-    Param(
-        [Parameter(Mandatory = $false)]
-        [String[]]$Brains
-    )
-
-    If ($Brains -and (Test-Path -Path ".\Brains" -PathType Container)) { 
-
-        # Starts Brains if necessary
-        $BrainsStarted = @()
-        $Brains | ForEach-Object { 
-            If ($Config.PoolsConfig.$_.BrainConfig -and -not $Variables.Brains.$_) { 
-                $BrainScript = ".\Brains\$($_).ps1"
-                If (Test-Path -Path $BrainScript -PathType Leaf) { 
-                    If (-not $Variables.BrainRunspacePool) { 
-
-                        # https://stackoverflow.com/questions/38102068/sessionstateproxy-variable-with-runspace-pools
-                        $InitialSessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
-
-                        # Create the sessionstate variable entries
-                        (Get-Variable -Scope Global | Where-Object Name -in @("Config", "Stats", "Variables")).Name | ForEach-Object { 
-                            $InitialSessionState.Variables.Add((New-Object System.Management.Automation.Runspaces.SessionStateVariableEntry -ArgumentList $_, (Get-Variable $_ -ValueOnly), $null))
-                        }
-                        $Variables.BrainRunspacePool = [RunspaceFactory]::CreateRunspacePool(1, (Get-Item -Path ".\Brains\*.ps1").Count, $InitialSessionState, $Host)
-                        $Variables.BrainRunspacePool.Open()
-                        $Variables.Brains = @{ }
-                        $Variables.BrainData = [PSCustomObject]@{ }
-                    }
-
-                    $PowerShell = [PowerShell]::Create()
-                    $PowerShell.RunspacePool = $Variables.BrainRunspacePool
-                    [Void]$PowerShell.AddScript($BrainScript)
-                    $Variables.Brains.$_ = @{ Name = $_; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
-                    $BrainsStarted += $_
-                }
-            }
-        }
-
-        If ($BrainsStarted.Count -gt 0) { Write-Message -Level Info "Pool brain backgound job$(If ($BrainsStarted.Count -gt 1) { "s" }) for '$($BrainsStarted -join ", ")' started." }
-    }
-    Else {
-        Write-Message -Level Error "Failed to start Pool brain backgound jobs. Directory '.\Brains' is missing."
-    }
-}
-
-Function Stop-Brain2 { 
-
-    Param(
-        [Parameter(Mandatory = $false)]
-        [String[]]$Brains = $Variables.Brains.Keys
-    )
-
-    If ($Brains) { 
-
-        $BrainsStopped = @()
-
-        $Brains | Where-Object { $Variables.Brains.$_ } | ForEach-Object { 
-            # Stop Brains
-            $Variables.Brains.$_.PowerShell.Dispose()
-            $Variables.Brains.Remove($_)
-            $Variables.BrainData.PSObject.Properties.Remove($_)
-            $BrainsStopped += $_
-        }
-
-        [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
-
-        If ($BrainsStopped.Count -gt 0) { Write-Message -Level Info  "Pool brain backgound job$(If ($BrainsStopped.Count -gt 1) { "s" }) for '$(($BrainsStopped | Sort-Object) -join ", ")' stopped." }
-    }
-
-    If ($Variables.BrainRunspacePool -and -not $Variables.Brains.Keys.Count) { 
-        $Variables.BrainRunspacePool.Close()
-        $Variables.BrainRunspacePool.Dispose()
-        $Variables.Remove("Brains")
-        $Variables.Remove("BrainData")
-        $Variables.Remove("BrainRunspacePool")
-
-        [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
-    }
 }
 
 Function Start-Brain { 

@@ -16,6 +16,7 @@ ChangeLog NemosMiner 4.3.4.0 08.04.2023
 
 Changes:
 - Core: Set '$ErrorActionPreference = "Continue"' to show suppressed error messages
+- Core: Replace Runspace pool with separate runspaces for brains
 
 Enhancements:
 - Pools: Make pools unavailable instead of blocking them when loading pool data
