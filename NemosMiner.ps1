@@ -816,7 +816,7 @@ Function MainLoop {
 
         If ($Variables.Timer) { Clear-Host }
 
-        If (-not ($Variables.Miners | Where-Object Status -eq "Running") -and $Variables.Timer) { Write-Host "No miners running. Waiting for next cycle." }
+        If (-not ($Variables.RunningMiners) -and $Variables.Timer) { Write-Host "No miners running. Waiting for next cycle." }
 
         # Get and display earnings stats
         If ($Variables.Balances -and $Variables.ShowPoolBalances) { 
