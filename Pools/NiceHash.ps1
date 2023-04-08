@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.3.3.2
-Version date:   05 April 2023
+Version:        4.3.4.0
+Version date:   08 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -47,7 +47,7 @@ If ($Wallet) {
         Try { 
             If (-not $Request) { $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec 3 }
             If (-not $RequestAlgodetails) { $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec 3 }
-            $Request.miningAlgorithms | ForEach-Object { $Algorithm = $_.Algorithms; $_ | Add-Member -Force @{ algodetails = $RequestAlgodetails.miningAlgorithms | Where-Object { $_.Algorithms -eq $Algorithm } } }
+            $Request.miningAlgorithms | ForEach-Object { $Algorithm = $_.Algorithm; $_ | Add-Member -Force @{ algodetails = $RequestAlgodetails.miningAlgorithms | Where-Object { $_.Algorithm -eq $Algorithm } } }
         }
         Catch { 
             $APICallFails++
@@ -57,7 +57,7 @@ If ($Wallet) {
 
     If (-not $Request) { Return }
 
-    $Request.miningAlgorithms | Where-Object speed -GT 0 | Where-Object { $_.algodetails.order -gt 0 } | ForEach-Object { 
+    $Request.miningAlgorithms | ForEach-Object { 
         $Algorithm = $_.Algorithm
         $Algorithm_Norm = Get-Algorithm $Algorithm
 
@@ -83,6 +83,10 @@ If ($Wallet) {
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor) -FaultDetection $false
 
+        $Reasons = @()
+        If ($_.algodetails.order -eq 0) { $Reasons += "No orders at pool" }
+        If ($_.speed -eq 0) { $Reasons += "No hashrate at pool" }
+
         [PSCustomObject]@{ 
             Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Minute_5_Fluctuation), 1)) # Use short timespan to counter price spikes
             Algorithm                = [String]$Algorithm_Norm
@@ -99,6 +103,7 @@ If ($Wallet) {
             Price                    = [Double]$Stat.Live
             Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratumnh" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
             Region                   = [String]$PoolConfig.Region
+            Reasons                  = $Reasons
             SendHashrate             = $false
             SSLSelfSignedCertificate = $false
             StablePrice              = [Double]$Stat.Week

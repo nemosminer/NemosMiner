@@ -18,11 +18,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           LegacyGUI.psm1
-Version:        4.3.3.2
-Version date:   05 April 2023
+Version:        4.3.4.0
+Version date:   08 April 2023
 #>
 
-[Void] [System.Windows.Forms.Application]::EnableVisualStyles()
+# [Void] [System.Windows.Forms.Application]::EnableVisualStyles()
 [Void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
 [Void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms.DataVisualization")
 [Void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
@@ -53,7 +53,7 @@ Function CheckBoxSwitching_Click {
             $SwitchingDGV.Columns[4].FillWeight = 50 + ($SwitchingDGV.MinersBest_Combo | ForEach-Object { $_.Algorithms.Count } | Measure-Object -Maximum).Maximum * 25; $SwitchingDGV.Columns[4].HeaderText = "Algorithm(s)"
             $SwitchingDGV.Columns[5].FillWeight = 90 + ($SwitchingDGV.MinersBest_Combo | ForEach-Object { $_.Accounts.Count } | Measure-Object -Maximum).Maximum * 50; $SwitchingDGV.Columns[5].HeaderText = "Account(s)"
             $SwitchingDGV.Columns[6].FillWeight = 30; $SwitchingDGV.Columns[6].HeaderText = "Cycles"; $SwitchingDGV.Columns[6].DefaultCellStyle.Alignment = "MiddleRight"; $SwitchingDGV.Columns[6].HeaderCell.Style.Alignment = "MiddleRight"
-            $SwitchingDGV.Columns[7].FillWeight = 40
+            $SwitchingDGV.Columns[7].FillWeight = 35
             $SwitchingDGV.Columns[8].FillWeight = 30 + ($SwitchingDGV.MinersBest_Combo | ForEach-Object { $_.DeviceNames.Count } | Measure-Object -Maximum).Maximum * 15; $SwitchingDGV.Columns[8].HeaderText = "Device(s)"
             $SwitchingDGV.Columns[9].FillWeight = 30
         }
@@ -271,7 +271,6 @@ Function Update-TabControl {
                 $EarningsChart.Series.Clear()
 
                 $Color = @(255, 255, 255, 255) #"FFFFFF"
-                $EarningsChart.BringToBack()
 
                 $DaySum = @(0) * $DataSource.Labels.Count
                 $ToolTip = $DataSource.Labels.Clone()
@@ -281,7 +280,6 @@ Function Update-TabControl {
                     $Color = (Get-NextColor -Color $Color -Factors -0, -20, -20, -20)
 
                     $EarningsChart.Series.Add($Pool)
-                    $EarningsChart.Series[$Pool].ChartArea = "ChartArea"
                     $EarningsChart.Series[$Pool].ChartType = "StackedColumn"
                     $EarningsChart.Series[$Pool].BorderWidth = 3
                     $EarningsChart.Series[$Pool].Color = [System.Drawing.Color]::FromArgb($Color[0], $Color[1], $Color[2], $Color[3])
@@ -386,7 +384,6 @@ Function Update-TabControl {
                         @{ Name = "Power Cost`n$($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.PowerCost)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Powercost * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }, 
                         @{ Name = "Profit`n$($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }, 
                         @{ Name = "Power Usage"; Expression = { If (-not $_.MeasurePowerUsage) { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W"} } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } } }
-                        @{ Name = "Power Usage"; Expression = { If ($_.MeasurePowerUsage) { "Measuring" } Else { "$($_.PowerUsage.ToString("N2")) W" } } }, 
                         @{ Name = "Algorithm(s)"; Expression = { $_.Algorithms -join ' & ' } }, 
                         @{ Name = "Pool(s)"; Expression = { $_.Workers.Pool.Name -join ' & ' } }, 
                         @{ Name = "Hashrate(s)"; Expression = { If (-not $_.Benchmark) { ($_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } } }
@@ -399,7 +396,7 @@ Function Update-TabControl {
                     $MinersDGV.Columns[7].Visible = $Variables.CalculatePowerCost
 
                     If ($MinersDGV.Columns) { 
-                        $MinersDGV.Columns[0].FillWeight = 0
+                        $MinersDGV.Columns[0].Visible = $false
                         $MinersDGV.Columns[1].FillWeight = 160
                         $MinersDGV.Columns[2].FillWeight = 25 + ($DataSource | ForEach-Object { $_.DeviceNames.Count } | Measure-Object -Maximum).Maximum * 25
                         $MinersDGV.Columns[3].FillWeight = 50
@@ -591,6 +588,10 @@ Function Update-TabControl {
 }
 
 Function Form_Resize { 
+
+    $EAP = $Global:ErrorActionPreference
+    $ErrorActionPreference = "SilentlyIgnore"
+
     $TabControl.Width = $LegacyGUIForm.ClientSize.Width - 16
     $TabControl.Height = $LegacyGUIForm.ClientSize.Height - $TabControl.Top - $EditConfigLink.Height
 
@@ -598,7 +599,7 @@ Function Form_Resize {
     $ButtonPause.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - $ButtonPause.Width - 50), 6)
     $ButtonStop.Location =  [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - 40), 6)
 
-    $MiningSummaryLabel.Width = $Variables.TextBoxSystemLog.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $BalancesDGV.Width = $MinersPanel.Width = $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $WatchdogTimersDGV.Width = $TabControl.Width - 26
+    $MiningSummaryLabel.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $BalancesDGV.Width = $MinersPanel.Width = $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $WatchdogTimersDGV.Width = $TabControl.Width - 26
 
     If ($Config.BalancesTrackerPollInterval -gt 0 -and $BalancesDGV.Rows.Count -gt 0) { 
         $BalancesDGVHeight = ($BalancesDGV.Rows.Height | Measure-Object -Sum).Sum + $BalancesDGV.ColumnHeadersHeight
@@ -651,8 +652,10 @@ Function Form_Resize {
 
     $WatchdogTimersDGV.Height = $TabControl.Height - $WatchdogTimersLabel.Height - $WatchdogTimersRemoveButton.Height - 64
 
-    $EditConfigLink.Location = [System.Drawing.Point]::new($TabControl.Left, ($LegacyGUIForm.ClientSize.Height - $EditConfigLink.Height))
-    $CopyrightLabel.Location = [System.Drawing.Point]::new(($TabControl.Width - $CopyrightLabel.Width), ($LegacyGUIForm.ClientSize.Height - $EditConfigLink.Height))
+    $EditConfigLink.Location = [System.Drawing.Point]::new(10, ($LegacyGUIForm.ClientSize.Height - $EditConfigLink.Height - 2))
+    $CopyrightLabel.Location = [System.Drawing.Point]::new(($TabControl.Width - $CopyrightLabel.Width + 6), ($LegacyGUIForm.ClientSize.Height - $EditConfigLink.Height - 2))
+
+    $Global:ErrorActionPreference = $EAP
 }
 
 $Tooltip = New-Object System.Windows.Forms.ToolTip
@@ -780,7 +783,7 @@ $EditConfigLink = New-Object System.Windows.Forms.LinkLabel
 $EditConfigLink.ActiveLinkColor = [System.Drawing.Color]::Blue
 $EditConfigLink.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $EditConfigLink.LinkColor = [System.Drawing.Color]::Blue
-$CopyrightLabel.Location = [System.Drawing.Point]::new(6, ($LegacyGUIForm.Bottom - 26))
+$EditConfigLink.Location = [System.Drawing.Point]::new(10, ($LegacyGUIForm.Bottom - 26))
 $EditConfigLink.TextAlign = "MiddleLeft"
 $EditConfigLink.Size = New-Object System.Drawing.Size(380, 26)
 $EditConfigLink.Add_Click({ If ($EditConfigLink.Tag -eq "WebGUI") { Start-Process "http://localhost:$($Variables.APIRunspace.APIPort)/configedit.html" } Else { Edit-File $Variables.ConfigFile } })
@@ -790,7 +793,7 @@ $Tooltip.SetToolTip($EditConfigLink, "Click to the edit configuration")
 $CopyrightLabel = New-Object System.Windows.Forms.LinkLabel
 $CopyrightLabel.ActiveLinkColor = [System.Drawing.Color]::Blue
 $CopyrightLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$CopyrightLabel.Location = [System.Drawing.Point]::new(6, ($LegacyGUIForm.Bottom - 26))
+$CopyrightLabel.Location = [System.Drawing.Point]::new(10, ($LegacyGUIForm.Bottom - 26))
 $CopyrightLabel.LinkColor = [System.Drawing.Color]::Blue
 $CopyrightLabel.Size = New-Object System.Drawing.Size(380, 26)
 $CopyrightLabel.Text = "Copyright (c) 2018-$((Get-Date).Year) Nemo, MrPlus && UselessGuru"
@@ -1143,7 +1146,6 @@ $EarningsPageControls = @()
 
 $EarningsChart = New-Object System.Windows.Forms.DataVisualization.Charting.Chart
 $EarningsChart.BackColor = [System.Drawing.Color]::FromArgb(255, 240, 240, 240)
-$EarningsChart.BringToBack()
 $EarningsChart.Location = [System.Drawing.Point]::new(-10, -5)
 $EarningsPageControls += $EarningsChart
 

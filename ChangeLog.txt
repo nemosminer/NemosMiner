@@ -10,7 +10,27 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
-ChangeLog NemosMiner 4.3.3.2 nn.04.2023
+
+ChangeLog NemosMiner 4.3.4.0 08.04.2023
+=======================================
+
+Changes:
+- Core: Set '$ErrorActionPreference = "Continue"' to show suppressed error messages
+
+Enhancements:
+- Pools: Make pools unavailable instead of blocking them when loading pool data
+
+Fixes:
+- Core: Dump when miner crashed immediately after launch
+- Core: Fix Equihash 1445 pers values (for some miners they are case sensitive)
+- Core: Fix cosmetic errors (error messages were hidden beacuse of '$ErrorActionPreference = "SilentlyContinue"')
+
+Miner updates:
+- JayddeeCpu-v3.22.2
+- MiniZ-v2.0c5
+
+
+ChangeLog NemosMiner 4.3.3.2 05.04.2023
 =======================================
 
 Enhancements:
@@ -48,6 +68,7 @@ Miner updates:
 - lolMiner-v1.72
 - Rigel-v1.3.10
 - SRBMinerMulti-v2.2.4
+
 
 ChangeLog NemosMiner 4.3.3.0 27.03.2023 (revoked)
 =================================================

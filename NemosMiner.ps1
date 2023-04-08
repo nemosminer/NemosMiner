@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.3.3.2
-Version date:   05 April 2023
+Version:        4.3.4.0
+Version date:   08 April 2023
 #>
 
 [CmdletBinding()]
@@ -269,7 +269,7 @@ param(
 
 Set-Location (Split-Path $MyInvocation.MyCommand.Path)
 
-$Global:ErrorActionPreference = "SilentlyContinue"
+$Global:ErrorActionPreference = "Continue"
 $Global:ProgressPreference = "SilentlyContinue"
 
 @"
@@ -291,7 +291,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.3.3.2"
+    Version      = [System.Version]"4.3.4.0"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -325,7 +325,7 @@ $Variables.PoolsConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolve
 $Variables.BalancesTrackerConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.BalancesTrackerConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
 
 $Variables.AllCommandLineParameters = [Ordered]@{ }
-$MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -ne "ConfigFile" } | Where-Object { Get-Variable $_ } | Sort-Object | ForEach-Object { 
+$MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -ne "ConfigFile" } | Where-Object { Get-Variable $_ -ErrorAction Ignore } | Sort-Object | ForEach-Object { 
     $Variables.AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly
     If ($MyInvocation.MyCommandLineParameters.$_ -is [Switch]) { $Variables.AllCommandLineParameters.$_ = [Boolean]$Variables.AllCommandLineParameters.$_ }
 }
@@ -415,6 +415,8 @@ If (Get-Item .\* -Stream Zone.*) {
 }
 
 Write-Message -Level Verbose "Setting variables..."
+$Variables.BrainData = [PSCustomObject]@{ }
+$Variables.Brains = @{ }
 $Variables.IsLocalAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
 $Variables.Miners = [Miner[]]@()
 $Variables.MiningEarning = $Variables.MiningProfit = $Variables.MiningPowerCost = [Double]::NaN
@@ -804,8 +806,6 @@ Function MainLoop {
 
         $host.UI.RawUI.WindowTitle = $LegacyGUIForm.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) - Runtime: {0:dd} days {0:hh} hrs {0:mm} mins - Path: $($Variables.Mainpath)" -f [TimeSpan]((Get-Date).ToUniversalTime() - $Variables.ScriptStartTime)
 
-        If (-not ($Variables.Miners | Where-Object Status -eq "Running") -and $Variables.Timer) { Write-Host "No miners running. Waiting for next cycle." }
-
         # Refresh selected tab
         Update-TabControl
 
@@ -815,6 +815,8 @@ Function MainLoop {
         ElseIf ($Variables.MiningProfit -ge 0 -or ($Variables.MiningEarning -ge 0 -and [Double]::IsNaN($Variables.MiningProfit))) { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Green } Else { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Red }
 
         If ($Variables.Timer) { Clear-Host }
+
+        If (-not ($Variables.Miners | Where-Object Status -eq "Running") -and $Variables.Timer) { Write-Host "No miners running. Waiting for next cycle." }
 
         # Get and display earnings stats
         If ($Variables.Balances -and $Variables.ShowPoolBalances) { 

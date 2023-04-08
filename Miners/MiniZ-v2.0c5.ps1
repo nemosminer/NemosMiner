@@ -1,6 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -in @("AMD", "NVIDIA"))) { Return }
 
-$Uri = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v2.0c4_win-x64.zip"
+$Uri = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v2.0c5_win-x64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\miniZ.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"

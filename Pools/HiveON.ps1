@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Hiveon.ps1
-Version:        4.3.3.2
-Version date:   05 April 2023
+Version:        4.3.4.0
+Version date:   08 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -51,7 +51,7 @@ If ($PoolConfig.Wallets) {
 
     If (-not $Request) { Return }
 
-    $Request.cryptoCurrencies | Where-Object { $Request.stats.($_.name).hashrate -gt 0 } | Where-Object { $Variables.Rates.($_.name).BTC } | ForEach-Object { 
+    $Request.cryptoCurrencies | Where-Object { $Variables.Rates.($_.name).BTC } | ForEach-Object { 
         $Currency = "$($_.name)".Trim()
         $Algorithm_Norm = Get-AlgorithmFromCurrency $Currency
         $Divisor = [Double]$_.profitPerPower
@@ -66,6 +66,9 @@ If ($PoolConfig.Wallets) {
         }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
+
+        $Reasons = @()
+        If ($Request.stats.($_.name).hashrate -eq 0) { $Reasons += "No hashrate at pool" }
 
         [PSCustomObject]@{ 
             Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
@@ -83,6 +86,7 @@ If ($PoolConfig.Wallets) {
             PortSSL                  = If ($PoolConfig.SSL -eq "Never") { 0 } Else { [UInt16]$_.servers[0].ssl_ports[0] }
             Price                    = [Double]$Stat.Live
             Protocol                 = "ethproxy"
+            Reasons                  = $Reasons
             Region                   = [String]$PoolConfig.Region
             SendHashrate             = $false
             SSLSelfSignedCertificate = $false

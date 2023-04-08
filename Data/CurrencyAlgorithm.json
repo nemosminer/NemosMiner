@@ -29,6 +29,7 @@
   "BSD": "Xevan",
   "BSHA3": "SHA3d",
   "BSTY": "Yescrypt",
+  "BTC": "SHA256",
   "BTCZ": "Equihash1445",
   "BTE": "Yespower",
   "BTG": "EquihashBTG",
@@ -53,6 +54,7 @@
   "DEM": "SHA256",
   "DGB": "Odocrypt",
   "DIME": "Quark",
+  "DIMI": "HMQ1725",
   "DIN": "Neoscrypt",
   "DINGO": "Scrypt",
   "DMS": "YescryptR32",
@@ -115,6 +117,7 @@
   "LTC": "Scrypt",
   "LTRM": "Ghostrider",
   "LTZ": "Equihash1445",
+  "MAX": "Keccak",
   "MAZA": "MinotaurX",
   "MBC": "Yespower2b",
   "MEC": "MegaMec",
@@ -212,6 +215,7 @@
   "XRG": "SHA256",
   "XSH": "Blake2s",
   "XVG": "Blake2s",
+  "XZC": "Lyra2Z",
   "YEC": "Equihash1927",
   "YERB": "Ghostrider",
   "YTN": "YespowerR16",
@@ -222,5 +226,5 @@
   "ZEN": "Equihash",
   "ZER": "Equihash1927",
   "ZOC": "Neoscrypt",
-  "DIMI": "HMQ1725"
+  "START": "X11"
 }

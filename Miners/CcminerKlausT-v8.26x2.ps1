@@ -16,7 +16,7 @@ $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Lyra2RE2";      MinMemGiB = 2; Minerset = 3; WarmupTimes = @(60, 0);  Arguments = " --algo lyra2v2" } # ASIC
     [PSCustomObject]@{ Algorithm = "Neoscrypt";     MinMemGiB = 2; Minerset = 1; WarmupTimes = @(60, 10); Arguments = " --algo neoscrypt --intensity 15.5" } # FPGA
     [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinMemGiB = 2; Minerset = 1; WarmupTimes = @(60, 0);  Arguments = " --algo neoscrypt-xaya --intensity 15.5" } # CryptoDredge-v0.27.0 is fastest
-    [PSCustomObject]@{ Algorithm = "Skein";         MinMemGiB = 0; Minerset = 3; WarmupTimes = @(60, 0);  Arguments = " --algo skein" } # FPGA
+#   [PSCustomObject]@{ Algorithm = "Skein";         MinMemGiB = 0; Minerset = 3; WarmupTimes = @(60, 0);  Arguments = " --algo skein" } # ASIC
     [PSCustomObject]@{ Algorithm = "Veltor";        MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo veltor --intensity 23" }
     [PSCustomObject]@{ Algorithm = "Whirlcoin";     MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo whirlcoin" }
     [PSCustomObject]@{ Algorithm = "Whirlpool";     MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo whirlpool" }

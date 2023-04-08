@@ -249,7 +249,6 @@ If ($Algorithms) {
                 $_ | Add-Member GpuDualMaxLoss $GpuDualMaxLoss -Force
                 $Algorithms += $_.PsObject.Copy()
             }
-            Remove-Variable GpuDualMaxLoss
         }
     }
 

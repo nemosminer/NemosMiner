@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool.ps1
-Version:        4.3.3.2
-Version date:   05 April 2023
+Version:        4.3.4.0
+Version date:   08 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -45,7 +45,7 @@ $TransferFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Dire
 If ($DivisorMultiplier -and $PriceField -and $Wallet) { 
 
     Try { 
-        If ($Variables.BrainData.$Name) { 
+        If ($Variables.Brains.$Name) { 
             $Request = $Variables.BrainData.$Name
         }
         Else { 
@@ -56,7 +56,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
 
     If (-not $Request) { Return }
 
-    $Request.PSObject.Properties.Name | Where-Object { $Request.$_.$PriceField -gt 0 } | ForEach-Object { 
+    $Request.PSObject.Properties.Name | ForEach-Object { 
         $Algorithm = $_
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $Currency = "$($Request.$_.currency)".Trim()
@@ -74,6 +74,11 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
             $CoinName = ""
         }
 
+        $Reasons = @()
+        If ($Request.$_.conversion_disabled -eq 1) { $Reasons += "Conversion disabled at pool" }
+        If ($Request.$_.error) { $Reasons += $Request.$_.error }
+        If ($Request.$_.hashrate_last24h -eq 0) { $Reasons += "No hashrate at pool" }
+        
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
         ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
@@ -95,6 +100,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
                     PortSSL                  = If ($PoolConfig.SSL -eq "Never") { 0 } Else { [UInt16]("5$([String]$Request.$_.port)") }
                     Price                    = [Double]$Stat.Live
                     Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethproxy" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
+                    Reasons                  = $Reasons
                     Region                   = [String]$Region_Norm
                     SendHashrate             = $false
                     SSLSelfSignedCertificate = $true

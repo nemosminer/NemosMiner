@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.3.3.2
-Version date:   05 April 2023
+Version:        4.3.4.0
+Version date:   08 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -45,7 +45,7 @@ If ($PoolConfig.UserName) {
 
         Do {
             Try { 
-                $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics" -Headers $Headers -UserAgent $UserAgent -SkipCertificateCheck -TimeoutSec 5
+                $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics" -Headers $Headers -SkipCertificateCheck -TimeoutSec 5 # -UserAgent $UserAgent 
             }
             Catch { 
                 $APICallFails++
@@ -57,7 +57,7 @@ If ($PoolConfig.UserName) {
 
         $Divisor = 1000000000
 
-        $Request.return | Where-Object profit -GT 0 | ForEach-Object { 
+        $Request.return | Select-Object | ForEach-Object { 
             $Current = $_
 
             $Algorithm_Norm = Get-Algorithm $_.algo
@@ -79,16 +79,9 @@ If ($PoolConfig.UserName) {
 
             $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ($_.profit / $Divisor) -FaultDetection $false
 
-            # Temp fix for pool API errors
-            Switch ($Algorithm_Norm) { 
-                # "Ethash"    { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }); Break }
-                # "KawPow"    { $Regions = @($PoolConfig.Region | Where-Object { $_ -notin @("europe") }); Break }
-                # "Lyra2RE2"  { $Current.host_list = $Current.host; Break }
-                "Neoscrypt"   { $Current.host_list = $Current.host; Break }
-                "Skein"       { $Current.host_list = $Current.host; Break }
-                "VertHash"    { $Current.host_list = $Current.host; $Port = 20534; Break }
-                # Default     { $Port = $Current.port }
-            }
+            $Reasons = @()
+            # Temp fix
+            If ($Algorithm_Norm -match "Neoscrypt|Skein|Verthash" ) { $Reasons += "Connection issue at pool" }
 
             ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
                 If ($Region = $Regions | Where-Object { $_ -eq "n/a" -or (Get-Region $_) -eq $Region_Norm }) { 
@@ -110,6 +103,7 @@ If ($PoolConfig.UserName) {
                         PortSSL                  = $null
                         Price                    = [Double]$Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * [Math]::Min($Stat.Day_Fluctuation, 1)
                         Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratumnh" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
+                        Reasons                  = $Reasons
                         Region                   = [String]$Region_Norm
                         SendHashrate             = $false
                         SSLSelfSignedCertificate = $true
@@ -139,7 +133,7 @@ If ($PoolConfig.UserName) {
 
         $Divisor = 1000000000
 
-        $Request.return | Where-Object profit -GT 0 | ForEach-Object { 
+        $Request.return | Select-Object | ForEach-Object { 
             $Current = $_
 
             $Algorithm_Norm = Get-Algorithm $_.algo
@@ -149,16 +143,9 @@ If ($PoolConfig.UserName) {
 
             $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $false
 
-
-            # Temp fix for pool API errors
-            Switch ($Algorithm_Norm) { 
-                # "Ethash"   { $Regions = @($PoolConfig.Region | Where-Object { $_ -in @("asia", "us-east") }); Break }
-                # "KawPow"     { $Regions = @($PoolConfig.Region | Where-Object { $_ -notin @("europe") }); Break }
-                "Neoscrypt"  { $Current.all_host_list = $Current.host; Break }
-                "Skein"      { $Current.all_host_list = $Current.host; Break }
-                "VertHash"   { $Port = 20534; Break }
-                # Default    { $Port = $Current.algo_switch_port }
-            }
+            $Reasons = @()
+            # Temp fix
+            If ($Algorithm_Norm -match "Neoscrypt|Skein|Verthash" ) { $Reasons += "Connection issue at pool" }
 
             ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
                 If ($Region = $Regions | Where-Object { $_ -eq "n/a" -or (Get-Region $_) -eq $Region_Norm }) { 
@@ -180,6 +167,7 @@ If ($PoolConfig.UserName) {
                         PortSSL                  = $null
                         Price                    = [Double]($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1)))
                         Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratumnh" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
+                        Reasons                  = $Reasons
                         Region                   = [String]$Region_Norm
                         StablePrice              = [Double]$Stat.Week
                         SSLSelfSignedCertificate = $true

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.3.2
-Version date:   05 April 2023
+Version:        4.3.4.0
+Version date:   08 April 2023
 #>
 
 # Window handling
@@ -269,7 +269,7 @@ Class Miner {
 
     hidden StartMining() { 
         $this.Info = "{$(($this.Workers.Pool | ForEach-Object { $_.Algorithm, $_.Name -join '@' }) -join ' & ')}"
-        If ($this.Arguments -and (Test-Json $this.Arguments)) { $this.CreateConfigFiles() }
+        If ($this.Arguments -and (Test-Json $this.Arguments -ErrorAction Ignore)) { $this.CreateConfigFiles() }
 
         If ($this.Status -eq [MinerStatus]::DryRun) { 
             $this.StatusMessage = "Dry run $($this.Info)"
@@ -413,7 +413,7 @@ Class Miner {
             Duration          = "{0:hh\:mm\:ss}" -f ($this.EndTime - $this.BeginTime)
             Earning           = $this.Earning
             Earning_Bias      = $this.Earning_Bias
-            LastDataSample    = $this.Data | Select-Object -Last 1 | ConvertTo-Json -Compress
+            LastDataSample    = $this.Data | Select-Object -Last 1 -ErrorAction SilentlyContinue | ConvertTo-Json -Compress
             MeasurePowerUsage = $this.MeasurePowerUsage
             Pools             = ($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
             Profit            = $this.Profit
@@ -465,7 +465,6 @@ Class Miner {
                 $TotalPowerUsage += [Double]$Device.ConfiguredPowerUsage
             }
         }
-        Remove-Variable Device
         Return $TotalPowerUsage
     }
 
@@ -716,18 +715,20 @@ Function Start-Mining {
 
         $Variables.CycleStarts = @()
 
-        $Variables.CoreRunspace = [RunspaceFactory]::CreateRunspace()
-        $Variables.CoreRunspace.Open()
+        $Runspace = [RunspaceFactory]::CreateRunspace()
+        $Runspace.ApartmentState = "STA"
+        $Runspace.ThreadOptions = "ReuseThread"
+        $Runspace.Open()
         Get-Variable -Scope Global | Where-Object Name -in @("Config", "Stats", "Variables") | ForEach-Object { 
-            $Variables.CoreRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
+            $Runspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
         }
-        $Variables.CoreRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath) | Out-Null
+        $Runspace.SessionStateProxy.Path.SetLocation($Variables.MainPath) | Out-Null
 
         $PowerShell = [PowerShell]::Create()
-        $PowerShell.Runspace = $Variables.CoreRunspace
-        [Void]$PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1") | Out-Null
+        $PowerShell.Runspace = $Runspace
+        [Void]$PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
 
-        $Variables.CoreRunspace | Add-Member -Force @{ Name = "CoreRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
+        $Variables.CoreRunspace = @{ Name = "CoreRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
 
         $Variables.Summary = "Mining processes are running."
     }
@@ -755,9 +756,8 @@ Function Stop-Mining {
             $_.WorkersRunning = @()
         }
 
-        $Variables.CoreRunspace.Close()
+        $Variables.CoreRunspace.PowerShell.Runspace.Dispose()
         If ($Variables.CoreRunspace.PowerShell) { $Variables.CoreRunspace.PowerShell.Dispose() }
-        $Variables.CoreRunspace.Dispose()
         $Variables.Remove("CoreRunspace")
     }
 
@@ -777,7 +777,7 @@ Function Stop-Mining {
     $Error.Clear()
 }
 
-Function Start-Brain { 
+Function Start-Brain2 { 
 
     Param(
         [Parameter(Mandatory = $false)]
@@ -809,7 +809,7 @@ Function Start-Brain {
 
                     $PowerShell = [PowerShell]::Create()
                     $PowerShell.RunspacePool = $Variables.BrainRunspacePool
-                    [Void]$PowerShell.AddScript($BrainScript) | Out-Null
+                    [Void]$PowerShell.AddScript($BrainScript)
                     $Variables.Brains.$_ = @{ Name = $_; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
                     $BrainsStarted += $_
                 }
@@ -823,7 +823,7 @@ Function Start-Brain {
     }
 }
 
-Function Stop-Brain { 
+Function Stop-Brain2 { 
 
     Param(
         [Parameter(Mandatory = $false)]
@@ -858,6 +858,78 @@ Function Stop-Brain {
     }
 }
 
+Function Start-Brain { 
+
+    Param(
+        [Parameter(Mandatory = $true)]
+        [String[]]$Brains
+    )
+
+    If (Test-Path -Path ".\Brains" -PathType Container) { 
+
+        # Starts Brains if necessary
+        $BrainsStarted = @()
+        $Brains | ForEach-Object { 
+            If ($Config.PoolsConfig.$_.BrainConfig -and -not $Variables.Brains.$_) { 
+                $BrainScript = ".\Brains\$($_).ps1"
+                If (Test-Path -Path $BrainScript -PathType Leaf) { 
+
+                    $Runspace = [RunspaceFactory]::CreateRunspace()
+                    $Runspace.ApartmentState = "STA"
+                    $Runspace.ThreadOptions = "ReuseThread"
+                    $Runspace.Open()
+                    Get-Variable -Scope Global | Where-Object Name -in @("Config", "Stats", "Variables") | ForEach-Object { 
+                        $Runspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
+                    }
+                    $Runspace.SessionStateProxy.Path.SetLocation($Variables.MainPath) | Out-Null
+
+                    $PowerShell = [PowerShell]::Create()
+                    $PowerShell.Runspace = $Runspace
+                    [Void]$Powershell.AddScript($BrainScript)
+
+                    $Variables.Brains.$_ = @{ Name = "BrainRunspace_$($_)"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
+
+                    $BrainsStarted += $_
+                }
+            }
+        }
+
+        If ($BrainsStarted.Count -gt 0) { Write-Message -Level Info "Pool brain backgound job$(If ($BrainsStarted.Count -gt 1) { "s" }) for '$($BrainsStarted -join ", ")' started." }
+    }
+    Else {
+        Write-Message -Level Error "Failed to start Pool brain backgound jobs. Directory '.\Brains' is missing."
+    }
+}
+
+Function Stop-Brain { 
+
+    Param(
+        [Parameter(Mandatory = $false)]
+        [String[]]$Brains = $Variables.Brains.Keys
+    )
+
+    If ($Brains) { 
+
+        $BrainsStopped = @()
+
+        $Brains | Where-Object { $Variables.Brains.$_ } | ForEach-Object { 
+            # Stop Brains
+            $Variables.Brains.$_.PowerShell.Runspace.Dispose() | Out-Null
+            If ($Variables.Brains.$_.PowerShell) { $Variables.Brains.$_.PowerShell.Dispose() }
+
+            $Variables.Brains.Remove($_)
+            $Variables.BrainData.PSObject.Properties.Remove($_)
+            $BrainsStopped += $_
+        }
+
+        [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
+
+        If ($BrainsStopped.Count -gt 0) { Write-Message -Level Info  "Pool brain backgound job$(If ($BrainsStopped.Count -gt 1) { "s" }) for '$(($BrainsStopped | Sort-Object) -join ", ")' stopped." }
+    }
+
+    [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
+}
+
 Function Start-BalancesTracker { 
 
     If (-not $Variables.BalancesTrackerRunspace) { 
@@ -867,18 +939,20 @@ Function Start-BalancesTracker {
                 $Variables.Summary = "Starting Balances Tracker background process..."
                 Write-Message -Level Verbose ($Variables.Summary -replace "<br>", " ")
 
-                $Variables.BalancesTrackerRunspace = [runspacefactory]::CreateRunspace()
-                $Variables.BalancesTrackerRunspace.Open()
+                $Runspace = [runspacefactory]::CreateRunspace()
+                $Runspace.ApartmentState = "STA"
+                $Runspace.ThreadOptions = "ReuseThread"
+                $Runspace.Open()
                 Get-Variable -Scope Global | Where-Object Name -in @("Config", "Variables") | ForEach-Object { 
-                    $Variables.BalancesTrackerRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
+                    $Runspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
                 }
-                $Variables.BalancesTrackerRunspace.SessionStateProxy.Path.SetLocation($Variables.MainPath) | Out-Null
+                $Runspace.SessionStateProxy.Path.SetLocation($Variables.MainPath) | Out-Null
 
                 $PowerShell = [PowerShell]::Create()
-                $PowerShell.Runspace = $Variables.BalancesTrackerRunspace
-                [Void]$PowerShell.AddScript("$($Variables.MainPath)\Includes\BalancesTracker.ps1") | Out-Null
+                $PowerShell.Runspace = $Runspace
+                [Void]$PowerShell.AddScript("$($Variables.MainPath)\Includes\BalancesTracker.ps1")
 
-                $Variables.BalancesTrackerRunspace | Add-Member -Force @{ Name = "BalancesTrackerRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
+                $Variables.BalancesTrackerRunspace = @{ Name = "BalancesTrackerRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
 
             }
             Catch { 
@@ -895,9 +969,8 @@ Function Stop-BalancesTracker {
 
     If ($Variables.BalancesTrackerRunspace) { 
 
-        $Variables.BalancesTrackerRunspace.Close()
+        $Variables.BalancesTrackerRunspace.PowerShell.Runspace.Dispose()
         If ($Variables.BalancesTrackerRunspace.PowerShell) { $Variables.BalancesTrackerRunspace.PowerShell.Dispose() }
-        $Variables.BalancesTrackerRunspace.Dispose()
         $Variables.Remove("BalancesTrackerRunspace")
 
         $Variables.Summary += "<br>Balances Tracker background process stopped."
@@ -3200,7 +3273,7 @@ Function Update-ConfigFile {
             "WaitForMinerData" { $Config.Remove($_) }
             "WarmupTime" { $Config.Remove($_) }
             "WebGUIUseColor" { $Config.UseColorForMinerStatus = $Config.$_; $Config.Remove($_) }
-            Default { If ($_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("CryptoCompareAPIKeyParam") + @("DryRun") + @("PoolsConfig") + @("UsePoolJobs"))) { $Config.Remove($_) } } # Remove unsupported config items
+            Default { If ($_ -notin @(@($Variables.AllCommandLineParameters.Keys) + @("CryptoCompareAPIKeyParam") + @("DryRun") + @("PoolsConfig"))) { $Config.Remove($_) } } # Remove unsupported config items
         }
     }
 

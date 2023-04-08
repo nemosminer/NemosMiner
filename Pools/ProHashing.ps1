@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.3.3.2
-Version date:   05 April 2023
+Version:        4.3.4.0
+Version date:   08 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -43,7 +43,7 @@ $TransferFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Dire
 If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) { 
 
     Try { 
-        If ($Variables.BrainData.$Name) { 
+        If ($Variables.Brains.$Name) { 
             $Request = $Variables.BrainData.$Name
         }
         Else { 
@@ -54,7 +54,7 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
 
     If (-not $Request) { Return }
 
-    $Request.PSObject.Properties.Name | Where-Object { $Request.$_.$PriceField -gt 0 } -ErrorAction Stop | ForEach-Object { 
+    $Request.PSObject.Properties.Name | ForEach-Object { 
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $Currency = $Request.$_.currency
@@ -72,6 +72,9 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
         }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
+
+        $Reasons = @()
+        If ($Request.$_.hashrate_last24h -eq 0) { $Reasons += "No hashrate at pool" }
 
         ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
             If ($Region = $PoolConfig.Region | Where-Object { (Get-Region $_) -eq $Region_Norm }) { 
@@ -92,6 +95,7 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
                     PortSSL                  = $null
                     Price                    = [Double]$Stat.Live
                     Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratum1" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
+                    Reasons                  = $Reasons
                     Region                   = [String]$Region_Norm
                     SendHashrate             = $false
                     SSLSelfSignedCertificate = $true

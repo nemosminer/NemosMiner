@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ProHashing.ps1
-Version:        4.3.3.2
-Version date:   05 April 2023
+Version:        4.3.4.0
+Version date:   08 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -46,7 +46,7 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
         $CurDate = (Get-Date).ToUniversalTime()
         $PoolVariant = $Config.PoolName | Where-Object { $_ -match "$($BrainName)*" }
 
-        If ($Config.PoolsConfig.$BrainName.BrainDebug) { Write-Message -Level Debug "$($BrainName) (Variant $($PoolVariant)): Start Brain" }
+        If ($Config.PoolsConfig.$BrainName.BrainDebug) { Write-Message -Level Verbose "Brain '$($BrainName) (Variant $($PoolVariant))': Start loop" }
 
         Do {
             Try { 
@@ -75,7 +75,6 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
             $AlgoData.$Algo.estimate_last24h = [Double]$AlgoData.$Algo.estimate_last24h
             If ($AlgoData.$Algo.actual_last24h) { $AlgoData.$Algo.actual_last24h = [Double]($AlgoData.$Algo.actual_last24h / 1000) }
             $BasePrice = If ($AlgoData.$Algo.actual_last24h) { [Double]$AlgoData.$Algo.actual_last24h } Else { [Double]$AlgoData.$Algo.estimate_last24h }
-            # $AlgoData.$Algo.estimate_current = [math]::max(0, [Double]($AlgoData.$Algo.estimate_current * ( 1 - ($BrainConfig.PoolAPIPerFailPercentPenalty * [math]::max(0, $APICallFails - $BrainConfig.PoolAPIAllowedFailureCount) / 100))))
 
             $AlgoObject += [PSCustomObject]@{ 
                 Date               = $CurDate
@@ -125,21 +124,16 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
             Remove-Variable Name
         }
 
-        ($AlgoData | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
-            If ([Double]($AlgoData.$_.actual_last24h) -gt 0) { 
-                $AlgoData.$_ | Add-Member Updated $CurDate -Force
-            }
-            Else { 
-                $AlgoData.PSObject.Properties.Remove($_)
-            }
-        }
-
-        $Variables.BrainData | Add-Member $BrainName $AlgoData -Force
+        ($AlgoData | Get-Member -MemberType NoteProperty).Name | ForEach-Object { $AlgoData.$_ | Add-Member Updated $CurDate -Force }
 
         If ($BrainConfig.UseTransferFile -or $Config.PoolsConfig.$BrainName.BrainDebug) { 
             ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Out-File -FilePath $TransferFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
         }
+        $Variables.BrainData | Add-Member $BrainName $AlgoData -Force
+        $Variables.Brains.$BrainName."Updated" = $CurDate
+
         Remove-Variable AlgoData -ErrorAction Ignore
+
         # Keep CurrenciesData for one hour
         If ($CurrenciesDataTimestamp.AddHours(1) -lt (Get-Date).ToUniversalTime()) { Remove-Variable CurrenciesData -ErrorAction Ignore }
 
@@ -147,8 +141,8 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
         $AlgoObject = @($AlgoObject | Where-Object { $_.Date -ge $CurDate.AddMinutes(-($BrainConfig.SampleSizeMinutes + 10)) })
 
         If ($Config.PoolsConfig.$BrainName.BrainDebug) { 
-            Write-Message -Level Debug ("$($BrainName) (Variant $($PoolVariant)): AlgoObject size {0:n0} Bytes" -f ($AlgoObject | ConvertTo-Json -Compress).length)
-            Write-Message -Level Debug "$($BrainName) (Variant $($PoolVariant)): $(Get-MemoryUsage)"
+            Write-Message -Level Debug ("Brain '$($BrainName) (Variant $($PoolVariant))': AlgoObject size {0:n0} Bytes" -f ($AlgoObject | ConvertTo-Json -Compress).length)
+            Write-Message -Level Debug "Brain '$($BrainName) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
         }
     }
 
@@ -159,11 +153,11 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
     [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
 
     If ($Config.PoolsConfig.$BrainName.BrainDebug) { 
-        Write-Message -Level Debug "$($BrainName) (Variant $($PoolVariant)): $(Get-MemoryUsage)"
-        Write-Message -Level Debug "$($BrainName) (Variant $($PoolVariant)): End Brain ($($Duration.TotalSeconds) sec.)"
+        Write-Message -Level Debug "Brain '$($BrainName) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
+        Write-Message -Level Verbose "Brain '$($BrainName) (Variant $($PoolVariant))': End loop (Duration $($Duration.TotalSeconds) sec.)"
     }
 
-    Do { 
-        Start-Sleep -Seconds 3
-    } While ($CurDate -gt $Variables.PoolDataCollectedTimeStamp -or (Get-Date).ToUniversalTime().AddSeconds([Int]$Duration.TotalSeconds + 5) -lt $Variables.EndCycleTime -or $CurDate.AddSeconds([Int]$Config.Interval) -gt (Get-Date).ToUniversalTime())
+    While ($CurDate -gt $Variables.PoolDataCollectedTimeStamp -or (Get-Date).ToUniversalTime().AddSeconds([Int]$Duration.TotalSeconds + 3) -le $Variables.EndCycleTime) { 
+        Start-Sleep -Seconds 1
+    }
 }

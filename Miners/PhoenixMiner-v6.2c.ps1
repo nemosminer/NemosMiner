@@ -42,7 +42,6 @@ If ($Algorithms) {
             $_ | Add-Member Intensity $Intensity -Force
             $_.PsObject.Copy()
         }
-        Remove-Variable Intensity
     }
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 

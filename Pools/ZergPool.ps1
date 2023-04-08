@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.3.3.2
-Version date:   05 April 2023
+Version:        4.3.4.0
+Version date:   08 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -50,7 +50,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
     $PayoutThresholdParameter = ",pl=$([Double]$PayoutThreshold)"
 
     Try { 
-        If ($Variables.BrainData.$Name) { 
+        If ($Variables.Brains.$Name) { 
             $Request = $Variables.BrainData.$Name
         }
         Else { 
@@ -61,7 +61,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
 
     If (-not $Request) { Return }
 
-    $Request.PSObject.Properties.Name | Where-Object { [Double]$Request.$_.$PriceField -gt 0 } | Where-Object { $Request.$_.algo -ne "token" } | Where-Object { $Request.$_.noautotrade -ne 1 -or $PayoutCurrency -eq "$($Request.$_.currency)".Trim() } | ForEach-Object { 
+    $Request.PSObject.Properties.Name | ForEach-Object { 
         $Algorithm = $Request.$_.algo
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $Currency = "$($Request.$_.currency)".Trim()
@@ -70,6 +70,10 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
         $Fee = $Request.$_.Fees / 100
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency_Norm) { "-$($Currency_Norm)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
+
+        $Reasons = @()
+        If ($Request.$_.noautotrade -eq 1) { $Reasons += "Conversion disabled at pool" }
+        If ($Request.$_.hashrate_shared -eq 0) { $Reasons += "No hashrate at pool" }
 
         ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
             If ($Region = $Regions | Where-Object { $_ -eq "n/a (Anycast)" -or (Get-Region $_) -eq $Region_Norm }) { 
@@ -97,13 +101,14 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
                     PortSSL                  = If ($PoolConfig.SSL -eq "Never") { 0 } Else { [UInt16]$Request.$_.tls_port }
                     Price                    = [Double]$Stat.Live
                     Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratum2" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
+                    Reasons                  = $Reasons
                     Region                   = [String]$Region_Norm
                     SendHashrate             = $false
                     SSLSelfSignedCertificate = $true
                     StablePrice              = [Double]$Stat.Week
                     Updated                  = [DateTime]$Request.$_.Updated
                     User                     = [String]$Wallet
-                    Workers                  = [Int]$Request.$_.workers
+                    Workers                  = [Int]$Request.$_.workers_shared
                     WorkerName               = ""
                 }
                 Break
