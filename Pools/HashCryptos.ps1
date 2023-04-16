@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HashCryptos.ps1
-Version:        4.3.4.0
-Version date:   08 April 2023
+Version:        4.3.4.1
+Version date:   16 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -44,6 +44,9 @@ $TransferFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Dire
 
 If ($DivisorMultiplier -and $PriceField -and $Wallet) { 
 
+    $StartTime = (Get-Date)
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
+
     Try { 
         If ($Variables.Brains.$Name) { 
             $Request = $Variables.BrainData.$Name
@@ -54,7 +57,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
     }
     Catch { Return }
 
-    If (-not $Request) { Return }
+    If (-not $Request.PSObject.Properties.Name) { Return }
 
     $Request.PSObject.Properties.Name | ForEach-Object { 
         $Algorithm = $_
@@ -65,11 +68,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
 
         # Add coin name
         If ($Request.$_.CoinName -and $Currency) { 
-            $CoinName = $Request.$_.CoinName.Trim()
-            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $CoinName
-        }
-        Else { 
-            $CoinName = ""
+            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName ((Get-Culture).TextInfo.ToTitleCase($Request.$_.CoinName.Trim().ToLower() -replace '[^A-Z0-9\$\.]') -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin')
         }
 
         $HostPrefix = Switch ($Algorithm_Norm) { 
@@ -114,9 +113,10 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
-        $Reasons = @()
-        If ($Request.$_.hashrate -eq 0) { $Reasons += "No hashrate at pool" }
-        If ($Request.$_.hashrate_last24h -eq 0) { $Reasons += "No hashrate at pool" }
+        $Reasons = [System.Collections.Generic.List[String]]@()
+        If ($Request.$_.hashrate -eq 0) { $Reasons.Add("No hashrate at pool") }
+        If ($Request.$_.hashrate_last24h -eq 0) { $Reasons.Add("No hashrate at pool") }
+        If ($PoolVariant -match ".+Plus$" -and $Request.$_.$PriceField -eq 0) { $Reasons.Add("Plus price -eq 0")}
 
         If ($HostPrefix) { 
 
@@ -124,7 +124,6 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
                 Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
                 Algorithm                = [String]$Algorithm_Norm
                 BaseName                 = [String]$Name
-                CoinName                 = [String]$CoinName
                 Currency                 = [String]$Currency
                 Disabled                 = [Boolean]$Stat.Disabled
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
@@ -148,6 +147,8 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
             }
         }
     }
+
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 
 $Error.Clear()

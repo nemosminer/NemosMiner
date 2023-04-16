@@ -98,6 +98,7 @@
   "GSPC": "Ghostrider",
   "GUN": "Neoscrypt",
   "GXX": "Lyra2z330",
+  "HRLD": "Phi",
   "HTA": "X16rv2",
   "HTH": "X25x",
   "HVQ": "KawPow",
@@ -113,10 +114,12 @@
   "KZC": "X11",
   "LBC": "Lbry",
   "LCC": "MinotaurX",
+  "LNC": "YespowerLtncg",
   "LOG": "Skein2",
   "LTC": "Scrypt",
   "LTRM": "Ghostrider",
   "LTZ": "Equihash1445",
+  "MAC": "Timetravel",
   "MAX": "Keccak",
   "MAZA": "MinotaurX",
   "MBC": "Yespower2b",
@@ -151,6 +154,7 @@
   "PYRK": "Lyra2z330",
   "QKC": "Ethash",
   "QOGE": "YescryptR16",
+  "QRK": "Quark",
   "REA": "SHA256csm",
   "REDE": "KawPow",
   "REOSC": "Ethash",
@@ -176,6 +180,7 @@
   "SPK": "Neoscrypt",
   "SPRX": "Yespower",
   "STAK": "Lyra2RE2",
+  "START": "X11",
   "SUGAR": "YespowerSugar",
   "SWAMP": "Yespower",
   "TAJ": "Blake2s",
@@ -226,5 +231,5 @@
   "ZEN": "Equihash",
   "ZER": "Equihash1927",
   "ZOC": "Neoscrypt",
-  "START": "X11"
+  "BLC": "Blakecoin"
 }

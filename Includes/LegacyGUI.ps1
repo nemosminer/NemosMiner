@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           LegacyGUI.psm1
-Version:        4.3.4.0
-Version date:   08 April 2023
+Version:        4.3.4.1
+Version date:   16 April 2023
 #>
 
 # [Void] [System.Windows.Forms.Application]::EnableVisualStyles()
@@ -390,20 +390,15 @@ Function Update-TabControl {
                         If ($RadioButtonMinersUnavailable.checked -or $RadioButtonMiners.checked) { @{ Name = "Reason"; Expression = { $_.Reasons -join ', '} } }
                     ) | Sort-Object @{ Expression = { $_.Best }; Descending = $true }, "Device(s)", Miner | Out-DataTable
 
-                    $MinersDGV.Columns[0].Visible = $False
-                    $MinersDGV.Columns[5].Visible = $Variables.CalculatePowerCost
-                    $MinersDGV.Columns[6].Visible = $Variables.CalculatePowerCost
-                    $MinersDGV.Columns[7].Visible = $Variables.CalculatePowerCost
-
                     If ($MinersDGV.Columns) { 
-                        $MinersDGV.Columns[0].Visible = $false
+                        $MinersDGV.Columns[0].Visible = $False
                         $MinersDGV.Columns[1].FillWeight = 160
                         $MinersDGV.Columns[2].FillWeight = 25 + ($DataSource | ForEach-Object { $_.DeviceNames.Count } | Measure-Object -Maximum).Maximum * 25
                         $MinersDGV.Columns[3].FillWeight = 50
                         $MinersDGV.Columns[4].FillWeight = 55; $MinersDGV.Columns[4].DefaultCellStyle.Alignment = "MiddleRight"; $MinersDGV.Columns[4].HeaderCell.Style.Alignment = "MiddleRight"
-                        $MinersDGV.Columns[5].FillWeight = 60; $MinersDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $MinersDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"
-                        $MinersDGV.Columns[6].FillWeight = 55; $MinersDGV.Columns[6].DefaultCellStyle.Alignment = "MiddleRight"; $MinersDGV.Columns[6].HeaderCell.Style.Alignment = "MiddleRight"
-                        $MinersDGV.Columns[7].FillWeight = 55; $MinersDGV.Columns[7].DefaultCellStyle.Alignment = "MiddleRight"; $MinersDGV.Columns[7].HeaderCell.Style.Alignment = "MiddleRight"
+                        $MinersDGV.Columns[5].FillWeight = 60; $MinersDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $MinersDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"; $MinersDGV.Columns[5].Visible = $Variables.CalculatePowerCost
+                        $MinersDGV.Columns[6].FillWeight = 55; $MinersDGV.Columns[6].DefaultCellStyle.Alignment = "MiddleRight"; $MinersDGV.Columns[6].HeaderCell.Style.Alignment = "MiddleRight"; $MinersDGV.Columns[6].Visible = $Variables.CalculatePowerCost
+                        $MinersDGV.Columns[7].FillWeight = 55; $MinersDGV.Columns[7].DefaultCellStyle.Alignment = "MiddleRight"; $MinersDGV.Columns[7].HeaderCell.Style.Alignment = "MiddleRight"; $MinersDGV.Columns[7].Visible = $Variables.CalculatePowerCost
                         $MinersDGV.Columns[8].FillWeight = 60  + ($DataSource | ForEach-Object { $_.Workers.Count } | Measure-Object -Maximum).Maximum * 30
                         $MinersDGV.Columns[9].FillWeight = 60  + ($DataSource | ForEach-Object { $_.Workers.Count } | Measure-Object -Maximum).Maximum * 30
                         $MinersDGV.Columns[10].FillWeight = 50 + ($DataSource | ForEach-Object { $_.Workers.Count } | Measure-Object -Maximum).Maximum * 25; $MinersDGV.Columns[10].DefaultCellStyle.Alignment = "MiddleRight"; $MinersDGV.Columns[10].HeaderCell.Style.Alignment = "MiddleRight"
@@ -588,74 +583,70 @@ Function Update-TabControl {
 }
 
 Function Form_Resize { 
+    If ($LegacyGUIForm.Height -lt $LegacyGUIForm.MinimumSize.Height -or $LegacyGUIForm.Width -lt $LegacyGUIForm.MinimumSize.Width ) { Return } # Sometimes $LegacyGUIForm is smalle than minimum (Why?)
+    Try { 
+        $TabControl.Width = $LegacyGUIForm.Width - 40
+        $TabControl.Height = $LegacyGUIForm.Height - $MiningStatusLabel.Height - $MiningSummaryLabel.Height - $EditConfigLink.Height - 72
 
-    $EAP = $Global:ErrorActionPreference
-    $ErrorActionPreference = "SilentlyIgnore"
+        $ButtonStart.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - $ButtonPause.Width - $ButtonStart.Width - 60), 6)
+        $ButtonPause.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - $ButtonPause.Width - 50), 6)
+        $ButtonStop.Location =  [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - 40), 6)
 
-    $TabControl.Width = $LegacyGUIForm.ClientSize.Width - 16
-    $TabControl.Height = $LegacyGUIForm.ClientSize.Height - $TabControl.Top - $EditConfigLink.Height
+        $MiningSummaryLabel.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $BalancesDGV.Width = $MinersPanel.Width = $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $WatchdogTimersDGV.Width = $TabControl.Width - 26
 
-    $ButtonStart.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - $ButtonPause.Width - $ButtonStart.Width - 60), 6)
-    $ButtonPause.Location = [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - $ButtonPause.Width - 50), 6)
-    $ButtonStop.Location =  [System.Drawing.Point]::new(($LegacyGUIForm.Width - $ButtonStop.Width - 40), 6)
-
-    $MiningSummaryLabel.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $BalancesDGV.Width = $MinersPanel.Width = $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $WatchdogTimersDGV.Width = $TabControl.Width - 26
-
-    If ($Config.BalancesTrackerPollInterval -gt 0 -and $BalancesDGV.Rows.Count -gt 0) { 
-        $BalancesDGVHeight = ($BalancesDGV.Rows.Height | Measure-Object -Sum).Sum + $BalancesDGV.ColumnHeadersHeight
-        If ($BalancesDGVHeight -gt $TabControl.Height / 2) { 
-            $EarningsChart.Height = $TabControl.Height / 2
-            $BalancesDGV.ScrollBars = "Vertical"
-            $BalancesLabel.Location = [System.Drawing.Point]::new(6, ($TabControl.Height / 2 - 20))
+        If ($Config.BalancesTrackerPollInterval -gt 0 -and $BalancesDGV.Rows.Count -gt 0) { 
+            $BalancesDGVHeight = ($BalancesDGV.Rows.Height | Measure-Object -Sum).Sum + $BalancesDGV.ColumnHeadersHeight
+            If ($BalancesDGVHeight -gt $TabControl.Height / 2) { 
+                $EarningsChart.Height = $TabControl.Height / 2
+                $BalancesDGV.ScrollBars = "Vertical"
+                $BalancesLabel.Location = [System.Drawing.Point]::new(8, ($TabControl.Height / 2 - 20))
+            }
+            Else { 
+                $EarningsChart.Height = $TabControl.Height - $BalancesDGVHeight - 46
+                $BalancesDGV.ScrollBars = "None"
+                $BalancesLabel.Location = [System.Drawing.Point]::new(8, ($EarningsChart.Bottom - 20))
+            }
         }
         Else { 
-            $EarningsChart.Height = $TabControl.Height - $BalancesDGVHeight - 46
             $BalancesDGV.ScrollBars = "None"
-            $BalancesLabel.Location = [System.Drawing.Point]::new(8, ($EarningsChart.Bottom - 20))
+            $BalancesLabel.Location = [System.Drawing.Point]::new(8, ($TabControl.Height - $BalancesLabel.Height - 50))
+            $EarningsChart.Height = $BalancesLabel.Top + 36
         }
+        $BalancesDGV.Location = [System.Drawing.Point]::new(10, $BalancesLabel.Bottom)
+        $BalancesDGV.Height = $TabControl.Height - $BalancesLabel.Bottom - 58
+
+        $LaunchedMinersDGV.Height = $LaunchedMinersDGV.RowTemplate.Height * $Variables.MinersBest_Combo.Count + $LaunchedMinersDGV.ColumnHeadersHeight
+        If ($LaunchedMinersDGV.Height -gt $TabControl.Height / 2) { 
+            $LaunchedMinersDGV.Height = $TabControl.Height / 2
+            $LaunchedMinersDGV.ScrollBars = "Vertical"
+        }
+        Else { 
+            $LaunchedMinersDGV.ScrollBars = "None"
+        }
+
+        $SystemLogLabel.Location = [System.Drawing.Point]::new(8, ($LaunchedMinersLabel.Height + $LaunchedMinersDGV.Height + 25))
+        $Variables.TextBoxSystemLog.Location = [System.Drawing.Point]::new(8, ($LaunchedMinersLabel.Height + $LaunchedMinersDGV.Height + $SystemLogLabel.Height + 24))
+        $Variables.TextBoxSystemLog.Height = ($TabControl.Height - $LaunchedMinersLabel.Height - $LaunchedMinersDGV.Height - $SystemLogLabel.Height - 68)
+        If (-not $Variables.TextBoxSystemLog.SelectionLength) { 
+            $Variables.TextBoxSystemLog.ScrollToCaret()
+        }
+
+        $MinersDGV.Height = $TabControl.Height - $MinersLabel.Height - $MinersPanel.Height - 61
+
+        $PoolsDGV.Height = $TabControl.Height - $PoolsLabel.Height - $PoolsPanel.Height - 61
+
+        $WorkersDGV.Height = $TabControl.Height - $WorkersLabel.Height - 58
+
+        $SwitchingDGV.Height = $TabControl.Height - $SwitchingLogLabel.Height - $SwitchingLogClearButton.Height - 64
+
+        $WatchdogTimersDGV.Height = $TabControl.Height - $WatchdogTimersLabel.Height - $WatchdogTimersRemoveButton.Height - 64
+
+        $EditConfigLink.Location = [System.Drawing.Point]::new(10, ($LegacyGUIForm.Height - $EditConfigLink.Height - 58))
+        $CopyrightLabel.Location = [System.Drawing.Point]::new(($TabControl.Width - $CopyrightLabel.Width + 6), ($LegacyGUIForm.Height - $EditConfigLink.Height - 58))
     }
-    Else { 
-        $BalancesDGV.ScrollBars = "None"
-        $BalancesLabel.Location = [System.Drawing.Point]::new(8, ($TabControl.Height - $BalancesLabel.Height - 50))
-        $EarningsChart.Height = $BalancesLabel.Top + 36
+    Catch { 
+        Start-Sleep 0
     }
-    $BalancesDGV.Location = [System.Drawing.Point]::new(10, $BalancesLabel.Bottom)
-    $BalancesDGV.Height = $TabControl.Height - $BalancesLabel.Bottom - 46
-
-    $BalancesLabel.BringToFront()
-    $BalancesDGV.BringToFront()
-
-    $LaunchedMinersDGV.Height = $LaunchedMinersDGV.RowTemplate.Height * $Variables.MinersBest_Combo.Count + $LaunchedMinersDGV.ColumnHeadersHeight
-    If ($LaunchedMinersDGV.Height -gt $TabControl.Height / 2) { 
-        $LaunchedMinersDGV.Height = $TabControl.Height / 2
-        $LaunchedMinersDGV.ScrollBars = "Vertical"
-    }
-    Else { 
-        $LaunchedMinersDGV.ScrollBars = "None"
-    }
-
-    $SystemLogLabel.Location = [System.Drawing.Point]::new(8, ($LaunchedMinersLabel.Height + $LaunchedMinersDGV.Height + 25))
-    $Variables.TextBoxSystemLog.Location = [System.Drawing.Point]::new(8, ($LaunchedMinersLabel.Height + $LaunchedMinersDGV.Height + $SystemLogLabel.Height + 24))
-    $Variables.TextBoxSystemLog.Height = ($TabControl.Height - $LaunchedMinersLabel.Height - $LaunchedMinersDGV.Height - $SystemLogLabel.Height - 68)
-    $Variables.TextBoxSystemLog.Width = $TabControl.Width - 26
-    If (-not $Variables.TextBoxSystemLog.SelectionLength) { 
-        $Variables.TextBoxSystemLog.ScrollToCaret()
-    }
-
-    $MinersDGV.Height = $TabControl.Height - $MinersLabel.Height - $MinersPanel.Height - 61
-
-    $PoolsDGV.Height = $TabControl.Height - $PoolsLabel.Height - $PoolsPanel.Height - 61
-
-    $WorkersDGV.Height = $TabControl.Height - $WorkersLabel.Height - 58
-
-    $SwitchingDGV.Height = $TabControl.Height - $SwitchingLogLabel.Height - $SwitchingLogClearButton.Height - 64
-
-    $WatchdogTimersDGV.Height = $TabControl.Height - $WatchdogTimersLabel.Height - $WatchdogTimersRemoveButton.Height - 64
-
-    $EditConfigLink.Location = [System.Drawing.Point]::new(10, ($LegacyGUIForm.ClientSize.Height - $EditConfigLink.Height - 2))
-    $CopyrightLabel.Location = [System.Drawing.Point]::new(($TabControl.Width - $CopyrightLabel.Width + 6), ($LegacyGUIForm.ClientSize.Height - $EditConfigLink.Height - 2))
-
-    $Global:ErrorActionPreference = $EAP
 }
 
 $Tooltip = New-Object System.Windows.Forms.ToolTip
@@ -723,7 +714,7 @@ $MiningSummaryLabel.TextAlign = "MiddleLeft"
 $MiningSummaryLabel.Visible = $true
 $LegacyGUIControls += $MiningSummaryLabel
 $Variables.TextBoxSystemLog
-$Tooltip.SetToolTip($MiningSummaryLabel, "Color legend:`nBlack: Mining is profitable`nRed: Mining NOT profitable")
+$Tooltip.SetToolTip($MiningSummaryLabel, "Color legend:`nBlack: Mining is idle`nGreen: Mining is profitable`nRed: Mining NOT profitable")
 
 $ButtonStart = New-Object System.Windows.Forms.Button
 $ButtonStart.Enabled = (-not $Config.Autostart)
@@ -924,7 +915,7 @@ $ContextMenuStrip.Add_ItemClicked(
                                     $_.Available = $false
                                     $_.Disabled = $false
                                     $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Disabled by user" })
-                                    If ($_.Reasons -notcontains "0 H/s Stat file" ) { $_.Reasons += "0 H/s Stat file" }
+                                    If ($_.Reasons -notcontains "0 H/s Stat file" ) { $_.Reasons.Add("0 H/s Stat file") }
                                     $_.Status = [MinerStatus]::Failed
                                     Set-Stat -Name $Stat_Name -Value $Parameters.Value -FaultDetection $false | Out-Null
                                 }
@@ -959,7 +950,7 @@ $ContextMenuStrip.Add_ItemClicked(
                             }
                             Remove-Variable Worker
                             $_.Disabled = $true
-                            $_.Reasons += "Disabled by user"
+                            $_.Reasons.Add("Disabled by user")
                             $_.Reasons = $_.Reasons | Sort-Object -Unique
                             $_.Available = $false
                         }
@@ -1536,8 +1527,8 @@ $TabControl.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $TabControl.Location = [System.Drawing.Point]::new(6, $MiningSummaryLabel.Bottom)
 $TabControl.Name = "TabControl"
 $TabControl.ShowToolTips = $true
-$TabControl.Height = $LegacyGUIForm.ClientSize.Height - $MiningStatusLabel.ClientSize.Height - $MiningSummaryLabel.ClientSize.Height - 120
-$TabControl.Width = $LegacyGUIForm.ClientSize.Width - 12
+$TabControl.Height = 0
+$TabControl.Width = 0
 $TabControl.Controls.AddRange(@($RunPage, $EarningsPage, $MinersPage, $PoolsPage, $RigMonitorPage, $SwitchingPage, $WatchdogTimersPage))
 $TabControl.Add_Click({ Update-TabControl })
 
@@ -1555,6 +1546,7 @@ $LegacyGUIForm.Add_Load(
         }
 
         $Global:LegacyGUIFormWindowState = If ($Config.LegacyGUIStartMinimized) { [System.Windows.Forms.FormWindowState]::Minimized } Else { [System.Windows.Forms.FormWindowState]::Normal }
+        $LegacyGUIForm.Add_ResizeEnd({ Form_Resize })
         $LegacyGUIForm.Add_SizeChanged(
             { 
                 If ($this.WindowState -ne $Global:LegacyGUIFormWindowState) { 
@@ -1563,7 +1555,6 @@ $LegacyGUIForm.Add_Load(
                 }
             }
         )
-        $LegacyGUIForm.Add_ResizeEnd({ Form_Resize })
         Form_Resize
 
         $TimerUI = New-Object System.Windows.Forms.Timer

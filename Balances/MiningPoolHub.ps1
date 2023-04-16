@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.3.4.0
-Version date:   08 April 2023
+Version:        4.3.4.1
+Version date:   16 April 2023
 #>
 using module ..\Includes\Include.psm1
 
@@ -38,7 +38,7 @@ While (-not $GetUserAllBalances -and $RetryCount -gt 0 -and $Config.MiningPoolHu
         $WebResponse = Invoke-WebRequest -Uri $Url -TimeoutSec $Config.PoolAPITimeout -ErrorAction Ignore
 
         # PWSH 6+ no longer supports basic parsing -> parse text
-        $CoinList = @()
+        $CoinList = [System.Collections.Generic.List[PSCustomObject]]@()
         $InCoinList = $false
 
         If ($WebResponse.statuscode -eq 200) {
@@ -49,7 +49,7 @@ While (-not $GetUserAllBalances -and $RetryCount -gt 0 -and $Config.MiningPoolHu
                 If ($InCoinList) { 
                     If ($_ -like '</table>') { Return }
                     If ($_ -like '<td align="left"><a href="*') { 
-                        $CoinList += $_ -replace '<td align="left"><a href="' -replace '" target="_blank">.+' -replace "^//" -replace ".miningpoolhub.com"
+                        $CoinList.Add($_ -replace '<td align="left"><a href="' -replace '" target="_blank">.+' -replace "^//" -replace ".miningpoolhub.com")
                     }
                 }
             }

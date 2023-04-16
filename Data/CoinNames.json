@@ -140,6 +140,7 @@
   "DGBODO": "Digibyte",
   "DGC": "DigitalCoin",
   "DIME": "DimeCoin",
+  "DIMI": "DiminutiveCoin",
   "DIN": "Dinero",
   "DINGO": "DingoCoin",
   "DMS": "Documentchain",
@@ -247,6 +248,7 @@
   "HODL": "HodlCoin",
   "HORA": "Hydnora",
   "HPC": "Happy",
+  "HRLD": "Harold",
   "HTA": "Historia",
   "HTH": "HthCoin",
   "HUSH": "Hush",
@@ -408,6 +410,7 @@
   "QBS": "Qbase",
   "QKC": "QuarkChain",
   "QOGE": "QogeCoin",
+  "QRK": "Quark",
   "QRL": "Quantum",
   "QRN": "Qureno",
   "QWC": "QwertyCoin",
@@ -619,5 +622,5 @@
   "ZP": "ZenProtocol",
   "ZUR": "ZurCoin",
   "ZYON": "BitZyon",
-  "DIMI": "DiminutiveCoin"
+  "BLC": "Blake"
 }

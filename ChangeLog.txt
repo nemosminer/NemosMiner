@@ -11,6 +11,30 @@ Known issues:
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
 
+ChangeLog NemosMiner 4.3.4.1 16.04.2023
+=======================================
+
+Enhancements:
+- Brains: Speed up pool data collection
+- Brains / ZPool: Auto-add CoinName to CoinName.json
+- Pools / MiningPoolHubCoins: Make pool unavaliable if 0 hashrate
+
+Fixes:
+- Core: Invalid / double Currency & CoinName assigned to some pools
+- Miner APIs: TeamBlackMiner API broken (Regression from 4.3.2.1)
+- SRBMinerMulti-v2.2.4: Could not generate miner objects for CryptoHashing pool
+
+Pools:
+- MiningPoolHub: Removed Coin variant, renamed MininPoolHubCoins to MiningPoolHub
+- MiningPoolHub: Added *Plus variant
+
+Miner updates:
+- GMiner-v3.32
+- lolMiner-v1.73
+- Rigel-v1.3.12
+- TeamBlackMiner-v1.94
+
+
 ChangeLog NemosMiner 4.3.4.0 08.04.2023
 =======================================
 
@@ -23,7 +47,7 @@ Enhancements:
 
 Fixes:
 - Core: Dump when miner crashed immediately after launch
-- Core: Fix Equihash 1445 pers values (for some miners they are case sensitive)
+- Core: Fix Equihash 1445 pers values (for some miners, e.g. miniZ, they are case sensitive)
 - Core: Fix cosmetic errors (error messages were hidden beacuse of '$ErrorActionPreference = "SilentlyContinue"')
 
 Miner updates:

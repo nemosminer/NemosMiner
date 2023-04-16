@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Hiveon.ps1
-Version:        4.3.4.0
-Version date:   08 April 2023
+Version:        4.3.4.1
+Version date:   16 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -37,6 +37,10 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PoolConfig = $Variables.PoolsConfig.$Name
 
 If ($PoolConfig.Wallets) { 
+
+    $StartTime = (Get-Date)
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
+
     $APICallFails = 0
 
     Do {
@@ -58,23 +62,18 @@ If ($PoolConfig.Wallets) {
 
         # Add coin name
         If ($_.title -and $Currency) { 
-            $CoinName = $_.title.Trim()
-            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $CoinName
-        }
-        Else { 
-            $CoinName = ""
+            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName ((Get-Culture).TextInfo.ToTitleCase($_.title.Trim().ToLower() -replace '[^A-Z0-9\$\.]') -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin')
         }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
 
-        $Reasons = @()
-        If ($Request.stats.($_.name).hashrate -eq 0) { $Reasons += "No hashrate at pool" }
+        $Reasons = [System.Collections.Generic.List[String]]@()
+        If ($Request.stats.($_.name).hashrate -eq 0) { $Reasons.Add("No hashrate at pool") }
 
         [PSCustomObject]@{ 
             Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
             Algorithm                = [String]$Algorithm_Norm
             BaseName                 = [String]$Name
-            CoinName                 = [String]$CoinName
             Currency                 = [String]$Currency
             Disabled                 = [Boolean]$Stat.Disabled
             EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
@@ -97,6 +96,8 @@ If ($PoolConfig.Wallets) {
             WorkerName               = ""
         }
     }
+
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 
 $Error.Clear()

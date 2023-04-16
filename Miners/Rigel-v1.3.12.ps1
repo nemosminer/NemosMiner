@@ -1,6 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "NVIDIA")) { Return }
 
-$Uri = "https://github.com/rigelminer/rigel/releases/download/1.3.11/rigel-1.3.11-win.zip"
+$Uri = "https://github.com/rigelminer/rigel/releases/download/1.3.12/rigel-1.3.12-win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\Rigel.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -15,6 +15,7 @@ $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "kHeavyHash"); Fee = @(0.007); MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.77; Tuning = " --mt2"; Minerset = 2; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  ethash+kheavyhash" }
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Fee = @(0.007); MinMemGiB = 2.0;                                           Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(45, 10); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  kheavyhash" }
     [PSCustomObject]@{ Algorithms = @("NexaPow");                    Fee = @(0.02);  MinMemGiB = 3.0;                                           Tuning = " --mt2"; Minerset = 1; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  nexapow" }
+    [PSCustomObject]@{ Algorithms = @("OctaSpace");                  Fee = @(0.02);  MinMemGiB = 3.0;                                           Tuning = " --mt2"; Minerset = 1; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @()); Arguments = " --algorithm  octa" }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
@@ -74,7 +75,7 @@ If ($Algorithms) {
                     Name        = $Miner_Name
                     Path        = $Path
                     Port        = $MinerAPIPort
-                    Type        = ($AvailableMiner_Devices.Type | Select-Object -Unique)
+                    Type        = "NVIDIA"
                     URI         = $Uri
                     WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
                 }

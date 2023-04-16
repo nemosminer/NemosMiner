@@ -6,19 +6,15 @@
     "AutoExchange": true,
     "BalancesKeepAlive": 90, // Inactive accounts are purged after 90 days
     "BrainConfig": {
-      "Debug": false,
       "PoolAPIAllowedFailureCount": 3,
-      "PoolAPIPerFailPercentPenalty": 10,
       "PoolAPIRetryInterval": 11,
       "PoolAPITimeout": 30,
       "PoolCurrenciesUri": "",
       "PoolStatusUri": "https://www.hashcryptos.com/api/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
-      "UseFullTrust": false,
       "UseTransferFile": false
     },
-    "BrainDebug": false,
     "ExcludeAlgorithm": [],
     "GuaranteedPayoutCurrencies": [
       "BCH",
@@ -44,6 +40,7 @@
     "PayoutThreshold": {
       "*": 0.0000075
     },
+    "PoolDebug": false,
     "Region": [
       "n/a"
     ],
@@ -87,6 +84,7 @@
     "Region": [
       "n/a"
     ],
+    "PoolDebug": false,
     "SSL": "prefer",
     "Variant": {
       "Hiveon": {}
@@ -98,17 +96,14 @@
     "BalancesKeepAlive": 180, // https://www.mining-dutch.nl/index.php?page=wallets
     "BrainConfig": {
       "PoolAPIAllowedFailureCount": 3,
-      "PoolAPIPerFailPercentPenalty": 10,
-      "PoolAPIRetryInterval": 10,
+      "PoolAPIRetryInterval": 3,
       "PoolAPITimeout": 3,
       "PoolCurrenciesUri": "",
       "PoolStatusUri": "https://www.mining-dutch.nl/api/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
-      "UseFullTrust": false,
       "UseTransferFile": false
     },
-    "BrainDebug": false,
     "ExcludeAlgorithm": [],
     "ExcludeRegion": [],
     "PayoutThreshold": {
@@ -117,6 +112,7 @@
       },
       "BTC": 0.001
     },
+    "PoolDebug": false,
     "Region": [
       "americas",
       "asia",
@@ -141,6 +137,16 @@
     "Algorithm": [],
     "AutoExchange": true,
     "BalancesKeepAlive": 90, // No expiration communicated by pool
+    "BrainConfig": {
+      "PoolAPIAllowedFailureCount": 3,
+      "PoolAPIRetryInterval": 10,
+      "PoolAPITimeout": 3,
+      "PoolCurrenciesUri": "",
+      "PoolStatusUri": "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics",
+      "SampleHalfPower": 0,
+      "SampleSizeMinutes": 45,
+      "UseTransferFile": false
+    },
     "EarningsAdjustmentFactor": 0.1, // Lower projected earnings until pool resolves its payout issues (https://bitcointalk.org/index.php?topic=472510.msg61523969#msg61523969)
     "ExcludeAlgorithm": [],
     "Fee": 0.009,
@@ -178,14 +184,14 @@
       "ZEC",
       "ZEN"
     ],
+    "PoolDebug": false,
     "Region": [
       "asia",
       "europe",
       "us-east"
     ],
     "Variant": {
-      "MiningPoolHub": {},
-      "MiningPoolHubCoins": {}
+      "MiningPoolHub": {}
     }
   },
   "NiceHash": {
@@ -200,6 +206,7 @@
     "Region": [
       "n/a (Anycast)"
     ],
+    "PoolDebug": false,
     "SSL": "prefer",
     "Variant": {
       "NiceHash External": {
@@ -224,17 +231,14 @@
     "BalancesKeepAlive": 90, // The customer has not mined with the pool for 90 days (https://prohashing.com/help/prohashing-legal-information#terms)
     "BrainConfig": {
       "PoolAPIAllowedFailureCount": 3,
-      "PoolAPIPerFailPercentPenalty": 10,
       "PoolAPIRetryInterval": 3,
       "PoolAPITimeout": 20,
       "PoolCurrenciesUri": "https://prohashing.com/api/v1/currencies",
       "PoolStatusUri": "https://prohashing.com/api/v1/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
-      "UseFullTrust": false,
       "UseTransferFile": false
     },
-    "BrainDebug": false,
     "ExcludeAlgorithm": [],
     "GuaranteedPayoutCurrencies": [
       "BTC",
@@ -245,6 +249,7 @@
       "mBTC": 0,
       "USD": 10
     },
+    "PoolDebug": false,
     "Region": [
       "EU",
       "US"
@@ -270,17 +275,14 @@
     "BalancesKeepAlive": 90, // Accounts with no mining activity for 3 months are purged 
     "BrainConfig": {
       "PoolAPIAllowedFailureCount": 3,
-      "PoolAPIPerFailPercentPenalty": 10,
       "PoolAPIRetryInterval": 3,
       "PoolAPITimeout": 30,
       "PoolCurrenciesUri": "https://zergpool.com/api/currencies",
       "PoolStatusUri": "https://zergpool.com/api/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
-      "UseFullTrust": false,
       "UseTransferFile": false
     },
-    "BrainDebug": false,
     "ExcludeAlgorithm": [],
     "GuaranteedPayoutCurrencies": [
       "DOGE",
@@ -305,6 +307,7 @@
     "PayoutThreshold": { // PayoutThreshold is retrieved from API data, but can be set here to override value set by pool (can only set higher)
       // e.g. "mBTC": 5
     },
+    "PoolDebug": false,
     "Region": [
       "asia",
       "eu",
@@ -335,19 +338,15 @@
     "AutoExchange": true,
     "BalancesKeepAlive": 90, // Inactive accounts are purged after 90 days
     "BrainConfig": {
-      "Debug": false,
       "PoolAPIAllowedFailureCount": 3,
-      "PoolAPIPerFailPercentPenalty": 10,
       "PoolAPIRetryInterval": 3,
       "PoolAPITimeout": 30,
       "PoolCurrenciesUri": "https://www.zpool.ca/api/currencies",
       "PoolStatusUri": "https://www.zpool.ca/api/status",
       "SampleHalfPower": 0,
       "SampleSizeMinutes": 45,
-      "UseFullTrust": false,
       "UseTransferFile": false
     },
-    "BrainDebug": false,
     "ExcludeAlgorithm": [],
     "GuaranteedPayoutCurrencies": [
       "BTC",
@@ -362,6 +361,7 @@
       "*": 0.0125,
       "mBTC": 1.5
     },
+    "PoolDebug": false,
     "Region": [
       "eu",
       "jp",
@@ -371,7 +371,6 @@
     "SSL": "prefer",
     "Variant": {
       "ZPool": {
-        "DivisorMultiplier": 1000000,
         "PriceField": "estimate_current"
       },
       "ZPool24hr": {

@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.3.4.0
-Version date:   08 April 2023
+Version:        4.3.4.1
+Version date:   16 April 2023
 #>
 
 [CmdletBinding()]
@@ -291,7 +291,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.3.4.0"
+    Version      = [System.Version]"4.3.4.1"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -449,7 +449,7 @@ $Variables.ShowCurrency = $Config.ShowCurrency
 $Variables.ShowUser = $Config.ShowUser
 $Variables.UIStyle = $Config.UIStyle
 
-$Variables.Summary = "Loading miner device information.<br>This will take a while..."
+$Variables.Summary = "Loading miner device information...<br>This may take a while."
 Write-Message -Level Verbose ($Variables.Summary -replace "<br>", " ")
 
 $Variables.SupportedCPUDeviceVendors = @("AMD", "INTEL")
@@ -783,7 +783,7 @@ Function MainLoop {
             }
             "y" { 
                 $Variables.ShowCurrency = -not $Variables.ShowCurrency
-                Write-Host "'Currenc" -NoNewline; Write-Host "y" -ForegroundColor Cyan -NoNewline; Write-Host "' column visibilityset to " -NoNewline; If ($Variables.ShowCurrency) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                Write-Host "'Currenc" -NoNewline; Write-Host "y" -ForegroundColor Cyan -NoNewline; Write-Host "' column visibility set to " -NoNewline; If ($Variables.ShowCurrency) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
                 Start-Sleep -Seconds 2
                 $Variables.RefreshNeeded = $true
                 Break
@@ -811,12 +811,11 @@ Function MainLoop {
 
         $MiningSummaryLabel.Text = $Variables.Summary -replace "<br>", "`n" -replace "Power Cost", "`nPower Cost" -replace " / ", "/" -replace "&ensp;", " " -replace "   ", "  "
 
-        If ($Variables.MinersBest_Combo | Where-Object Best -eq $true -or [Double]::IsNaN($Variables.MiningEarning)) { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Black }
-        ElseIf ($Variables.MiningProfit -ge 0 -or ($Variables.MiningEarning -ge 0 -and [Double]::IsNaN($Variables.MiningProfit))) { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Green } Else { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Red }
+        If ($Variables.MiningProfit -ge 0) { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Green }
+        ElseIf ($Variables.MiningProfit -lt 0) { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Red }
+        Else { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Black }
 
         If ($Variables.Timer) { Clear-Host }
-
-        If (-not ($Variables.RunningMiners) -and $Variables.Timer) { Write-Host "No miners running. Waiting for next cycle." }
 
         # Get and display earnings stats
         If ($Variables.Balances -and $Variables.ShowPoolBalances) { 
@@ -898,6 +897,9 @@ Function MainLoop {
                     "Power usage measurement for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring." | Out-Host
                 }
             }
+        }
+        ElseIf ($Variables.Miners) { 
+            Write-Host "No miners running. Waiting for next cycle."
         }
 
         If ($Variables.MinersBest_Combo) { 
@@ -986,6 +988,7 @@ While ($true) {
     If ($Config.LegacyGUI) { 
         If (-not $LegacyGUIform.CanSelect) { 
             . .\Includes\LegacyGUI.ps1
+            Form_Resize
             $LegacyGUIform.ShowDialog() | Out-Null
         }
     }

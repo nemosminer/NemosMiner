@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.3.4.0
-Version date:   08 April 2023
+Version:        4.3.4.1
+Version date:   16 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -45,6 +45,9 @@ $TransferFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Dire
 
 If ($DivisorMultiplier -and $Regions -and $Wallet) {
 
+    $StartTime = (Get-Date)
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
+
     $PayoutThreshold = $PoolConfig.PayoutThreshold.$PayoutCurrency
     If (-not $PayoutThreshold -and $PoolConfig.PayoutThreshold.mBTC) { $PayoutThreshold = $PoolConfig.PayoutThreshold.mBTC / 1000 }
     $PayoutThresholdParameter = ",pl=$([Double]$PayoutThreshold)"
@@ -59,21 +62,26 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
     }
     Catch { Return }
 
-    If (-not $Request) { Return }
+    If (-not $Request.PSObject.Properties.Name) { Return }
 
     $Request.PSObject.Properties.Name | ForEach-Object { 
         $Algorithm = $Request.$_.algo
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $Currency = "$($Request.$_.currency)".Trim()
-        $Currency_Norm = $Currency -replace "-.+$"
+        $Currency = "$($Request.$_.currency)".Trim() -replace "-.+$"
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
         $Fee = $Request.$_.Fees / 100
 
-        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency_Norm) { "-$($Currency_Norm)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
+        # Add coin name
+        If ($Request.$_.CoinName -and $Currency) { 
+            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName ((Get-Culture).TextInfo.ToTitleCase($Request.$_.CoinName.Trim().ToLower() -replace '[^A-Z0-9\$\.]') -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin')
+        }
 
-        $Reasons = @()
-        If ($Request.$_.noautotrade -eq 1) { $Reasons += "Conversion disabled at pool" }
-        If ($Request.$_.hashrate_shared -eq 0) { $Reasons += "No hashrate at pool" }
+        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
+
+        $Reasons = [System.Collections.Generic.List[String]]@()
+        # If ($Request.$_.noautotrade -eq 1) { $Reasons.Add("Conversion disabled at pool") } # Remvoed because of https://github.com/RainbowMiner/RainbowMiner/issues/2341#issuecomment-1498474419
+        If ($Request.$_.hashrate_shared -eq 0) { $Reasons.Add("No hashrate at pool") }
+        If ($PoolVariant -match ".+Plus$" -and $Request.$_.$PriceField -eq 0) { $Reasons.Add("Plus price -eq 0")}
 
         ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
             If ($Region = $Regions | Where-Object { $_ -eq "n/a (Anycast)" -or (Get-Region $_) -eq $Region_Norm }) { 
@@ -90,7 +98,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
                     Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
                     Algorithm                = [String]$Algorithm_Norm
                     BaseName                 = [String]$Name
-                    Currency                 = [String]$Currency_Norm
+                    Currency                 = [String]$Currency
                     Disabled                 = [Boolean]$Stat.Disabled
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                     Fee                      = [Decimal]$Fee
@@ -115,6 +123,8 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
             }
         }
     }
+
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 
 $Error.Clear()

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool.ps1
-Version:        4.3.4.0
-Version date:   08 April 2023
+Version:        4.3.4.1
+Version date:   16 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -36,13 +36,15 @@ $ProgressPreference = "SilentlyContinue"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PoolConfig = $Variables.PoolsConfig.$Name
 $PriceField = $PoolConfig.Variant.$PoolVariant.PriceField
-$DivisorMultiplier = $PoolConfig.Variant.$PoolVariant.DivisorMultiplier
 $HostSuffix = "mine.zpool.ca"
 $PayoutCurrency = $PoolConfig.Wallets.Keys | Select-Object -First 1
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
 $TransferFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Data\BrainData_" + (Get-Item $MyInvocation.MyCommand.Path).BaseName + ".json"
 
-If ($DivisorMultiplier -and $PriceField -and $Wallet) { 
+If ($PriceField -and $Wallet) { 
+
+    $StartTime = (Get-Date)
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
 
     Try { 
         If ($Variables.Brains.$Name) { 
@@ -54,7 +56,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
     }
     Catch { Return }
 
-    If (-not $Request) { Return }
+    If (-not $Request.PSObject.Properties.Name) { Return }
 
     $Request.PSObject.Properties.Name | ForEach-Object { 
         $Algorithm = $_
@@ -62,23 +64,20 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
         $Currency = "$($Request.$_.currency)".Trim()
         If ($Algorithm_Norm -eq "FiroPow" -and $Currency -eq "SCC") { $Algorithm_Norm = "FiroPowSCC" } # SCC firo variant
 
-        $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
+        $Divisor = 1000000 * ($Request.$_.mbtc_mh_factor -as [Double])
         $Fee = $Request.$_.Fees / 100
 
         # Add coin name
         If ($Request.$_.CoinName -and $Currency) { 
-            $CoinName = $Request.$_.CoinName.Trim()
-            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $CoinName
-        }
-        Else { 
-            $CoinName = ""
+            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName ((Get-Culture).TextInfo.ToTitleCase($Request.$_.CoinName.Trim().ToLower() -replace '[^A-Z0-9\$\.]') -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin')
         }
 
-        $Reasons = @()
-        If ($Request.$_.conversion_disabled -eq 1) { $Reasons += "Conversion disabled at pool" }
-        If ($Request.$_.error) { $Reasons += $Request.$_.error }
-        If ($Request.$_.hashrate_last24h -eq 0) { $Reasons += "No hashrate at pool" }
-        
+        $Reasons = [System.Collections.Generic.List[String]]@()
+        # If ($Request.$_.conversion_disabled -eq 1) { $Reasons.Add("Conversion disabled at pool") } # Disabled: https://github.com/RainbowMiner/RainbowMiner/issues/2341
+        If ($Request.$_.error) { $Reasons.Add($Request.$_.error) }
+        If ($Request.$_.hashrate_last24h -eq 0) { $Reasons.Add("No hashrate at pool") }
+        If ($PoolVariant -match ".+Plus$" -and $Request.$_.$PriceField -eq 0) { $Reasons.Add("Plus price -eq 0")}
+
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
         ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
@@ -114,6 +113,8 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
             }
         }
     }
+    
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 
 $Error.Clear()

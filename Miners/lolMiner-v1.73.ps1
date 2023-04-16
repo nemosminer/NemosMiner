@@ -1,6 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -in @("AMD", "INTEL", "NVIDIA"))) { Return }
 
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.72/lolMiner_v1.72_Win64.zip"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.73/lolMiner_v1.73_Win64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\lolminer.exe"
 $DeviceEnumerator = "Bus"
@@ -49,7 +49,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Cuckaroo29B");                Type = "NVIDIA"; Fee = @(0.02);       MinMemGiB = 6.0;                                           Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @();                  Arguments = " --algo CR29-40" }
     [PSCustomObject]@{ Algorithms = @("Cuckaroo29S");                Type = "NVIDIA"; Fee = @(0.02);       MinMemGiB = 6.0;                                           Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @();                  Arguments = " --algo CR29-32" }
     [PSCustomObject]@{ Algorithms = @("Cuckaroo30CTX");              Type = "NVIDIA"; Fee = @(0.025);      MinMemGiB = 8.0;                                           Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @();                  Arguments = " --algo C30CTX" }
-    [PSCustomObject]@{ Algorithms = @("CuckarooD29");                Type = "NVIDIA"; Fee = @(0.01);       MinMemGiB = 4.0;                                           Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @();                  Arguments = " --algo C29D" } # GMiner-v3.31 is fastest
+    [PSCustomObject]@{ Algorithms = @("CuckarooD29");                Type = "NVIDIA"; Fee = @(0.01);       MinMemGiB = 4.0;                                           Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @();                  Arguments = " --algo C29D" } # GMiner-v3.32 is fastest
     [PSCustomObject]@{ Algorithms = @("CuckarooM29");                Type = "NVIDIA"; Fee = @(0.01);       MinMemGiB = 6.0;                                           Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @();                  Arguments = " --algo C29M" }
 #   [PSCustomObject]@{ Algorithms = @("Cuckatoo31");                 Type = "NVIDIA"; Fee = @(0.02);       MinMemGiB = 4.0;                                           Minerset = 3; WarmupTimes = @(60, 60); ExcludeGPUArchitecture = @();                  Arguments = " --algo C31" } # ASIC
 #   [PSCustomObject]@{ Algorithms = @("Cuckatoo32");                 Type = "NVIDIA"; Fee = @(0.02);       MinMemGiB = 4.0;                                           Minerset = 3; WarmupTimes = @(60, 60); ExcludeGPUArchitecture = @();                  Arguments = " --algo C32" } # ASIC

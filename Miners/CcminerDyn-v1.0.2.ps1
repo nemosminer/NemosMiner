@@ -39,7 +39,7 @@ If ($Algorithms) {
                     Name        = $Miner_Name
                     Path        = $Path
                     Port        = $MinerAPIPort
-                    Type        = ($AvailableMiner_Devices.Type | Select-Object -Unique)
+                    Type        = "NVIDIA"
                     URI         = $Uri
                     WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
                 }

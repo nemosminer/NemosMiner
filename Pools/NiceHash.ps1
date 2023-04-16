@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.3.4.0
-Version date:   08 April 2023
+Version:        4.3.4.1
+Version date:   16 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -41,6 +41,10 @@ $Wallet = $PoolConfig.Variant.$PoolVariant.Wallets.$PayoutCurrency
 $User = "$Wallet.$($PoolConfig.WorkerName -replace "^ID=")"
 
 If ($Wallet) { 
+
+    $StartTime = (Get-Date)
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
+
     $APICallFails = 0
 
     Do {
@@ -83,9 +87,9 @@ If ($Wallet) {
 
         $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor) -FaultDetection $false
 
-        $Reasons = @()
-        If ($_.algodetails.order -eq 0) { $Reasons += "No orders at pool" }
-        If ($_.speed -eq 0) { $Reasons += "No hashrate at pool" }
+        $Reasons = [System.Collections.Generic.List[String]]@()
+        If ($_.algodetails.order -eq 0) { $Reasons.Add("No orders at pool") }
+        If ($_.speed -eq 0) { $Reasons.Add("No hashrate at pool") }
 
         [PSCustomObject]@{ 
             Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Minute_5_Fluctuation), 1)) # Use short timespan to counter price spikes
@@ -112,6 +116,8 @@ If ($Wallet) {
             WorkerName               = ""
         }
     }
+
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 
 $Error.Clear()

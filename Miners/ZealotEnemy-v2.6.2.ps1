@@ -25,7 +25,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "SkunkHash";  MinMemGiB = 3;                                       Minerset = 3; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo skunk --statsavg 1" } # No hashrate in time for old cards
 #   [PSCustomObject]@{ Algorithm = "Sonoa";      MinMemGiB = 2;                                       Minerset = 2; WarmupTimes = @(90, 15); ExcludeGPUArchitecture = @(); Arguments = " --algo sonoa --statsavg 1" } # No hashrate in time
     [PSCustomObject]@{ Algorithm = "Timetravel"; MinMemGiB = 2;                                       Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo timetravel --statsavg 5" }
-#   [PSCustomObject]@{ Algorithm = "Tribus";     MinMemGiB = 3;                                       MinerSet = 0; WarmupTimes = @(60, 15); ExcludeGPUArchitecture = @(); Arguments = " --algo tribus --statsavg 1" } # ASIC
+#   [PSCustomObject]@{ Algorithm = "Tribus";     MinMemGiB = 3;                                       MinerSet = 0; WarmupTimes = @(90, 15); ExcludeGPUArchitecture = @(); Arguments = " --algo tribus --statsavg 1" } # ASIC
 #   [PSCustomObject]@{ Algorithm = "X16r";       MinMemGiB = 3;                                       Minerset = 3; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @(); Arguments = " --algo x16r --statsavg 1" } # ASIC
     [PSCustomObject]@{ Algorithm = "X16rv2";     MinMemGiB = 3;                                       MinerSet = 0; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo x16rv2 --statsavg 5" }
     [PSCustomObject]@{ Algorithm = "X16s";       MinMemGiB = 3;                                       Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo x16s --statsavg 5" } # FPGA
@@ -51,23 +51,23 @@ If ($Algorithms) {
                 $Arguments = $_.Arguments
                 $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)" -replace ' '
 
-                If ($AvailableMiner_Devices | Where-Object MemoryGiB -le 2) { $_.Arguments = $_.Arguments -replace " --intensity [0-9\.]+" }
+                If ($AvailableMiner_Devices | Where-Object MemoryGiB -le 2) { $Arguments = $Arguments -replace " --intensity [0-9\.]+" }
 
                 # Get arguments for available miner devices
-                # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
+                # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                 [PSCustomObject]@{ 
                     Algorithms  = @($_.Algorithm)
                     API         = "Trex"
-                    Arguments   = ("$($_.Arguments) $(If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "--no-cert-verify --url stratum+ssl" } Else { "--url stratum+tcp" })://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) --user $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" }) --pass $($MinerPools[0].($_.Algorithm).Pass) --api-bind 0 --api-bind-http $MinerAPIPort --retry-pause 1 --quiet --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
+                    Arguments   = ("$($Arguments) $(If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "--no-cert-verify --url stratum+ssl" } Else { "--url stratum+tcp" })://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) --user $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" }) --pass $($MinerPools[0].($_.Algorithm).Pass) --api-bind 0 --api-bind-http $MinerAPIPort --retry-pause 1 --quiet --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     DeviceNames = $AvailableMiner_Devices.Name
                     Fee         = 0.01 # dev fee
+                    MinerSet    = $_.MinerSet
+                    MinerUri    = "" # "http://127.0.0.1:$($MinerAPIPort)" # Always offline
+                    Name        = $Miner_Name
                     Path        = $Path
                     Port        = $MinerAPIPort
-                    MinerSet    = $_.MinerSet
-                    MinerUri    = "http://127.0.0.1:$($MinerAPIPort)" # Always offline
-                    Name        = $Miner_Name
-                    Type        = ($AvailableMiner_Devices.Type | Select-Object -Unique)
+                    Type        = "NVIDIA"
                     URI         = $Uri
                     WarmupTimes = @($_.WarmupTimes) # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
                 }

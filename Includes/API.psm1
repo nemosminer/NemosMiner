@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.3.4.0
-Version date:   08 April 2023
+Version:        4.3.4.1
+Version date:   16 April 2023
 #>
 
 Function Start-APIServer { 
@@ -451,7 +451,8 @@ Function Start-APIServer {
                                             $Data += "$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })@$($_.Name)`n"
                                             Enable-Stat -Name "$($Stat_Name)_Profit"
                                             $_.Disabled = $false
-                                            $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Disabled by user" } | Sort-Object -Unique)
+                                            $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Where-Object { $_ -notlike "Disabled by user" })
+                                            $_.Reasons = $_.Reasons | Sort-Object -Unique
                                             If (-not $_.Reasons) { $_.Available = $true }
                                         }
                                         $Message = "$($Pools.Count) $(If ($Pools.Count -eq 1) { "Pool" } Else { "pools" }) enabled."
@@ -473,7 +474,8 @@ Function Start-APIServer {
                                             }
                                             Remove-Variable Worker
                                             $_.Disabled = $false
-                                            $_.Reasons = @($_.Reasons | Where-Object { $_ -ne "Disabled by user" } | Sort-Object -Unique)
+                                            $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Where-Object { $_ -ne "Disabled by user" })
+                                            $_.Reasons = $_.Reasons | Sort-Object -Unique
                                             If (-not $_.Reasons) { $_.Available = $true }
                                         }
                                         $Message = "$($Miners.Count) $(If ($Miners.Count -eq 1) { "Miner" } Else { "Miners" }) enabled."

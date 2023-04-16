@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.4.0
-Version date:   08 April 2023
+Version:        4.3.4.1
+Version date:   16 April 2023
 #>
 
 # Window handling
@@ -256,10 +256,12 @@ Class Miner {
     }
 
     hidden StopDataReader() { 
-        # Before stopping read data
-        If ($this.DataReaderJob.HasMoreData) { $this.Data += @($this.DataReaderJob | Stop-Job | Receive-Job) }
-        $this.DataReaderJob | Get-Job | Remove-Job | Out-Null
-        $this.DataReaderJob = $null
+        If ($this.DataReaderJob) { 
+            # Before stopping read data
+            If ($this.DataReaderJob.HasMoreData) { $this.Data += @($this.DataReaderJob | Stop-Job | Receive-Job) }
+            $this.DataReaderJob | Get-Job | Remove-Job | Out-Null
+            $this.DataReaderJob = $null
+        }
     }
 
     hidden RestartDataReader() { 
@@ -268,7 +270,7 @@ Class Miner {
     }
 
     hidden StartMining() { 
-        $this.Info = "{$(($this.Workers.Pool | ForEach-Object { $_.Algorithm, $_.Name -join '@' }) -join ' & ')}"
+        $this.Info = "{$(($this.Workers.Pool | ForEach-Object { $_.Algorithm, $_.BaseName -join '@' }) -join ' & ')}"
         If ($this.Arguments -and (Test-Json $this.Arguments -ErrorAction Ignore)) { $this.CreateConfigFiles() }
 
         If ($this.Status -eq [MinerStatus]::DryRun) { 
@@ -325,7 +327,7 @@ Class Miner {
                 }
                 Start-Sleep -Milliseconds 100
             }
-            Else { 
+            If ($this.Status -ne [MinerStatus]::Running) { 
                 $this.Status = [MinerStatus]::Failed
                 $this.StatusMessage = "Failed $($this.Info)"
                 $this.Devices | ForEach-Object { $_.Status = "Failed" }
@@ -747,7 +749,7 @@ Function Stop-Mining {
 
         # Give core loop time to shut down gracefully
         $Timestamp = (Get-Date).AddSeconds(30)
-        While (-not $Quick -and ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running -or $_.Status -eq [MinerStatus]::DryRun }) -and (Get-Date) -le $Timestamp) { 
+        While (-not $Quick -and ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }) -and (Get-Date) -le $Timestamp) { 
             Start-Sleep -Seconds 1
         }
 
@@ -1091,7 +1093,7 @@ Function Get-Rate {
 Function Write-Message { 
 
     Param(
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [String]$Message, 
         [Parameter(Mandatory = $false)]
@@ -3019,6 +3021,7 @@ Function Get-PoolBaseName {
 Function Get-NMVersion { 
 
     # Updater always logs all messages to screen
+    $ConfigLogToScreen = $Config.LogToScreen
     $Config.LogToScreen = @("Info", "Warn", "Error", "Verbose", "Debug")
 
     # GitHub only supports TLSv1.2 since feb 22 2018
@@ -3053,6 +3056,8 @@ Function Get-NMVersion {
     Catch { 
         Write-Message -Level Warn "Version checker could not contact update server."
     }
+    $Config.LogToScreen = $ConfigLogToScreen
+
 }
 
 Function Copy-Object { 
@@ -3091,7 +3096,6 @@ Function Initialize-Autoupdate {
     $UpdateScriptURL = "https://github.com/Minerx117/miners/releases/download/AutoUpdate/Autoupdate.ps1"
     $UpdateScript = ".\AutoUpdate\AutoUpdate.ps1"
     $UpdateLog = ".\Logs\AutoUpdateLog_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").txt"
-    $BackupFile = ".\AutoUpdate\Backup_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").zip"
 
     # Download update script
     "Downloading update script..." | Tee-Object $UpdateLog -Append | Write-Message -Level Verbose 
@@ -3217,11 +3221,11 @@ Function Update-ConfigFile {
 
     # Rename MPH to MiningPoolHub
     $Config.PoolName = $Config.PoolName -replace "MPH", "MiningPoolHub"
-    $Config.PoolName = $Config.PoolName -replace "MPHCoins", "MiningPoolHubCoins"
+    $Config.PoolName = $Config.PoolName -replace "MPHCoins", "MiningPoolHub"
 
     # *Coins pool no longer exists
     $OldPoolName = $Config.PoolName
-    $Config.PoolName = $Config.PoolName -replace 'Coins$', '' -replace 'CoinsPlus$', 'Plus'
+    $Config.PoolName = $Config.PoolName -replace 'Coins$', '' -replace 'CoinsPlus$', ''
     If (Compare-Object @($OldPoolName | Select-Object) @($Config.PoolName | Select-Object)) { 
         Write-Message -Level Info "Pool configuration has changed ($($OldPoolName -join ', ') -> $($Config.PoolName -join ', ')). Please verify your configuration."
     }
@@ -3242,18 +3246,22 @@ Function Update-ConfigFile {
         Write-Message -Level Warn "Available mining locations have changed ($OldRegion -> $($Config.Region)). Please verify your configuration."
     }
     # Extend MinDataSampleAlgoMultiplier
-    If ($Config.MinDataSampleAlgoMultiplier.DynexSolve -eq $null) { $Config.MinDataSampleAlgoMultiplier | Add-Member "DynexSolve" 3 }
-    If ($Config.MinDataSampleAlgoMultiplier.Ghostrider -eq $null) { $Config.MinDataSampleAlgoMultiplier | Add-Member "GhostRider" 3 }
-    If ($Config.MinDataSampleAlgoMultiplier.Mike -eq $null) { $Config.MinDataSampleAlgoMultiplier | Add-Member "Mike" 3 }
+    If ($null -eq $Config.MinDataSampleAlgoMultiplier.DynexSolve) { $Config.MinDataSampleAlgoMultiplier | Add-Member "DynexSolve" 3 }
+    If ($null -eq $Config.MinDataSampleAlgoMultiplier.Ghostrider) { $Config.MinDataSampleAlgoMultiplier | Add-Member "GhostRider" 3 }
+    If ($null -eq $Config.MinDataSampleAlgoMultiplier.Mike) { $Config.MinDataSampleAlgoMultiplier | Add-Member "Mike" 3 }
     # Remove AHashPool config data
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "AhashPool*" }
-    Remove-Item ".\Stats\AhashPool*.txt" -Force
+    Remove-Item -Path ".\Stats\AhashPool*.txt" -Force
     # Remove BlockMasters config data
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "BlockMasters*" }
-    Remove-Item ".\Stats\BlockMasters*.txt" -Force
+    Remove-Item -Path ".\Stats\BlockMasters*.txt" -Force
+    # Remove MiningPoolHubCoins config data
+    $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "MiningPoolHubCoins" }
+    Remove-Item -Path ".\Stats\MiningPoolHub_*.txt" -Force
+    Get-ChildItem -Path ".\Stats\MiningPoolHubCoins_*.txt" | Rename-Item -NewName { $_.Name -replace "^MiningPoolHubCoins_", "MiningPoolHub_" }
     # Remove BlockMasters config data
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "NLPool*" }
-    Remove-Item ".\Stats\NLPool*.txt" -Force
+    Remove-Item -Path ".\Stats\NLPool*.txt" -Force
     # Remove TonPool config
     $Config.PoolName = $Config.PoolName | Where-Object { $_ -notlike "TonPool" }
     # Remove TonWhales config

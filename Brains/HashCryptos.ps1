@@ -19,11 +19,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningDutch.ps1
-Version:        4.3.4.0
-Version date:   08 April 2023
+Version:        4.3.4.1
+Version date:   16 April 2023
 #>
 
 using module ..\Includes\Include.psm1
+
+$Global:ProgressPreference = "Ignore"
+$Global:InformationPreference = "Ignore"
 
 # Set Process priority
 (Get-Process -Id $PID).PriorityClass = "BelowNormal"
@@ -32,7 +35,7 @@ $BrainName = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 
 $AlgoObject = @()
 $APICallFails = 0
-$CurrenciesData = @()
+$Durations = [System.Collections.Generic.List[Double]]@()
 $TransferFile = "$($PWD)\Data\BrainData_$($BrainName).json"
 
 $Headers = @{ "Accept"="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8";"Cache-Control"="no-cache" }
@@ -44,12 +47,9 @@ $ProgressPreference = "SilentlyContinue"
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
 While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) { 
-
     $Duration = Measure-Command { 
-        $CurDate = (Get-Date).ToUniversalTime()
-        $PoolVariant = $Config.PoolName | Where-Object { $_ -match "$($BrainName)*" }
 
-        If ($Config.PoolsConfig.$BrainName.BrainDebug) { Write-Message -Level Verbose "Brain '$($BrainName) (Variant $($PoolVariant))': Start loop" }
+        Write-Message -Level Debug "Brain '$($BrainName)': Start loop$(If ($Duration) { " (Previous loop duration: $($Duration.TotalSeconds) sec. / Avg. loop duration: $(($Durations | Measure-Object -Average).Average))" })"
 
         Do {
             Try { 
@@ -58,70 +58,56 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
             }
             Catch { 
             }
-            If (($AlgoData | Get-Member -MemberType NoteProperty).Name.Count -lt 2) { 
+            If ($AlgoData.PSObject.Properties.Name.Count -lt 2) { 
                 $APICallFails++
                 Start-Sleep -Seconds ([Math]::max(300, ($APICallFails * $BrainConfig.PoolAPIRetryInterval)))
             }
-        } While (($AlgoData | Get-Member -MemberType NoteProperty).Name.Count -lt 2)
+        } While ($AlgoData.PSObject.Properties.Name.Count -lt 2)
 
-        ForEach ($Algo in (($AlgoData | Get-Member -MemberType NoteProperty).Name)) { 
-            $Currency = If ($Currencies.Symbol) { (($Currencies | Sort-Object Estimate)[-1].Symbol).Trim() } Else { "" }
+        $CurDate = (Get-Date).ToUniversalTime()
 
-            If ($Currency) { $AlgoData.$Algo | Add-Member @{ Currency = $Currency } -Force } Else { $AlgoData.$Algo.PSObject.Properties.Remove("Currency") }
-
-            $AlgoData.$Algo.estimate_last24h = [Double]$AlgoData.$Algo.estimate_last24h
-            $AlgoData.$Algo.hashrate_last24h = [Double]$hashrate_last24h.$Algo.estimate_last24h # Pool sends "Null" for some algorithms
-            If ($AlgoData.$Algo.actual_last24h) { $AlgoData.$Algo.actual_last24h = [Double]$AlgoData.$Algo.actual_last24h }
-            $BasePrice = If ($AlgoData.$Algo.actual_last24h) { [Double]$AlgoData.$Algo.actual_last24h } Else { [Double]$AlgoData.$Algo.estimate_last24h }
+        ForEach ($Algo in $AlgoData.PSObject.Properties.Name) { 
+            $AlgoData.$Algo.estimate_current = $AlgoData.$Algo.estimate_current -as [Double]
+            $AlgoData.$Algo.estimate_last24h = $AlgoData.$Algo.estimate_last24h -as [Double]
+            $AlgoData.$Algo.actual_last24h = $AlgoData.$Algo.actual_last24h -as [Double]
+            $BasePrice = If ($AlgoData.$Algo.actual_last24h) { $AlgoData.$Algo.actual_last24h } Else { $AlgoData.$Algo.estimate_last24h }
             $AlgoObject += [PSCustomObject]@{ 
+                actual_last24h     = $BasePrice
+                Currency           = ""
                 Date               = $CurDate
+                estimate_current   = $AlgoData.$Algo.estimate_current
+                estimate_last24h   = $AlgoData.$Algo.estimate_last24h
+                Fees               = $AlgoData.$Algo.fees
+                Hashrate           = $AlgoData.$Algo.hashrate -as [Double]
+                hashrate_last24h   = $AlgoData.$Algo.hashrate_last24h -as [Double]
+                Last24Drift        = $AlgoData.$Algo.estimate_current - $BasePrice
+                Last24DriftPercent = If ($BasePrice -gt 0) { ($AlgoData.$Algo.estimate_current - $BasePrice) / $BasePrice } Else { 0 }
+                Last24DriftSign    = If ($AlgoData.$Algo.estimate_current -ge $BasePrice) { "Up" } Else { "Down" }
                 Name               = $Algo
                 Port               = $AlgoData.$Algo.port
-                Currency           = $Currency
-                Fees               = $AlgoData.$Algo.fees
-                Hashrate           = $AlgoData.$Algo.hashrate
                 Workers            = $AlgoData.$Algo.workers
-                estimate_current   = $AlgoData.$Algo.estimate_current -as [Double]
-                estimate_last24h   = $AlgoData.$Algo.estimate_last24h
-                actual_last24h     = $BasePrice
-                hashrate_last24h   = $AlgoData.$Algo.hashrate_last24h
-                Last24Drift        = $AlgoData.$Algo.estimate_current - $BasePrice
-                Last24DriftSign    = If (($AlgoData.$Algo.estimate_current - $BasePrice) -ge 0) { "Up" } Else { "Down" }
-                Last24DriftPercent = If ($BasePrice -gt 0) { ($AlgoData.$Algo.estimate_current - $BasePrice) / $BasePrice } Else { 0 }
             }
         }
-        Remove-Variable Algo -ErrorAction Ignore
 
-        If ($PoolVariant -match "Plus$") {
-            # Created here for performance optimization, minimize # of lookups
-            $CurAlgoObject = $AlgoObject | Where-Object { $_.date -eq $CurDate }
-            $SampleSizets = New-TimeSpan -Minutes $BrainConfig.SampleSizeMinutes
-            $SampleSizeHalfts = New-TimeSpan -Minutes ($BrainConfig.SampleSizeMinutes / 2)
-            $GroupAvgSampleSize = $AlgoObject | Where-Object { $_.Date -ge ($CurDate - $SampleSizets) } | Group-Object Name, Last24DriftSign | Select-Object Name, Count, @{Name = "Avg"; Expression = { ($_.group.Last24DriftPercent | Measure-Object -Average).Average } }, @{Name = "Median"; Expression = { Get-Median $_.group.Last24DriftPercent } }
-            $GroupMedSampleSize = $AlgoObject | Where-Object { $_.Date -ge ($CurDate - $SampleSizets) } | Group-Object Name | Select-Object Name, Count, @{Name = "Avg"; Expression = { ($_.group.Last24DriftPercent | Measure-Object -Average).Average } }, @{Name = "Median"; Expression = { Get-Median $_.group.Last24DriftPercent } }
-            $GroupAvgSampleSizeHalf = $AlgoObject | Where-Object { $_.Date -ge ($CurDate - $SampleSizeHalfts) } | Group-Object Name, Last24DriftSign | Select-Object Name, Count, @{Name = "Avg"; Expression = { ($_.group.Last24DriftPercent | Measure-Object -Average).Average } }, @{Name = "Median"; Expression = { Get-Median $_.group.Last24DriftPercent } }
-            $GroupMedSampleSizeHalf = $AlgoObject | Where-Object { $_.Date -ge ($CurDate - $SampleSizeHalfts) } | Group-Object Name | Select-Object Name, Count, @{Name = "Avg"; Expression = { ($_.group.Last24DriftPercent | Measure-Object -Average).Average } }, @{Name = "Median"; Expression = { Get-Median $_.group.Last24DriftPercent } }
-            $GroupMedSampleSizeNoPercent = $AlgoObject | Where-Object { $_.Date -ge ($CurDate - $SampleSizets) } | Group-Object Name | Select-Object Name, Count, @{Name = "Avg"; Expression = { ($_.group.Last24DriftPercent | Measure-Object -Average).Average } }, @{Name = "Median"; Expression = { Get-Median $_.group.Last24Drift } }
+        # Created here for performance optimization, minimize # of lookups
+        $CurAlgoObject = $AlgoObject | Where-Object { $_.date -eq $CurDate }
+        $SampleSizets = New-TimeSpan -Minutes $BrainConfig.SampleSizeMinutes
+        $SampleSizeHalfts = New-TimeSpan -Minutes ($BrainConfig.SampleSizeMinutes / 2)
+        $PenaltySampleSizeHalf = ((($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Down" }).Count) / (($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Count)) * [math]::abs(($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Median)
+        $PenaltySampleSizeNoPercent = ((($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Down" }).Count) / (($GroupMedSampleSize | Where-Object { $_.Name -eq $Name }).Count)) * [math]::abs(($GroupMedSampleSizeNoPercent | Where-Object { $_.Name -eq $Name }).Median)
+        $GroupAvgSampleSizeHalf = $AlgoObject | Where-Object { $_.Date -ge ($CurDate - $SampleSizeHalfts) } | Group-Object Name, Last24DriftSign | Select-Object Name, Count, @{Name = "Avg"; Expression = { ($_.group.Last24DriftPercent | Measure-Object -Average).Average } }, @{Name = "Median"; Expression = { Get-Median $_.group.Last24DriftPercent } }
+        $GroupMedSampleSizeHalf = $AlgoObject | Where-Object { $_.Date -ge ($CurDate - $SampleSizeHalfts) } | Group-Object Name | Select-Object Name, Count, @{Name = "Avg"; Expression = { ($_.group.Last24DriftPercent | Measure-Object -Average).Average } }, @{Name = "Median"; Expression = { Get-Median $_.group.Last24DriftPercent } }
+        $GroupMedSampleSizeNoPercent = $AlgoObject | Where-Object { $_.Date -ge ($CurDate - $SampleSizets) } | Group-Object Name | Select-Object Name, Count, @{Name = "Avg"; Expression = { ($_.group.Last24DriftPercent | Measure-Object -Average).Average } }, @{Name = "Median"; Expression = { Get-Median $_.group.Last24Drift } }
 
-            ForEach ($Name in ($AlgoObject.Name | Select-Object -Unique)) { 
-                $PenaltySampleSizeHalf = ((($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Down" }).Count) / (($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Count)) * [math]::abs(($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Median)
-                $PenaltySampleSizeNoPercent = ((($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Down" }).Count) / (($GroupMedSampleSize | Where-Object { $_.Name -eq $Name }).Count)) * [math]::abs(($GroupMedSampleSizeNoPercent | Where-Object { $_.Name -eq $Name }).Median)
-                $Penalty = ($PenaltySampleSizeHalf * $BrainConfig.SampleHalfPower + $PenaltySampleSizeNoPercent) / ($BrainConfig.SampleHalfPower + 1)
-                $Price = [math]::max(0, [Double](($Penalty) + ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).actual_last24h))
-                If ($BrainConfig.UseFullTrust) { 
-                    If ($Penalty -gt 0) { 
-                        $Price = [Math]::max([Double]$Price, [Double]($CurAlgoObject | Where-Object { $_.Name -eq $Name }).estimate_current)
-                    }
-                    Else { 
-                        $Price = [Math]::min([Double]$Price, [Double]($CurAlgoObject | Where-Object { $_.Name -eq $Name }).estimate_current)
-                    }
-                }
-                $AlgoData.$Name | Add-Member @{ Plus_Price = $Price } -Force
-            }
-            Remove-Variable Name
+        ForEach ($Name in ($AlgoObject.Name | Select-Object -Unique)) { 
+            $PenaltySampleSizeHalf = (($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Down" }).Count / ($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Count) * [math]::abs(($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Median)
+            $PenaltySampleSizeNoPercent = (($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Down" }).Count / ($GroupMedSampleSize | Where-Object { $_.Name -eq $Name }).Count) * [math]::abs(($GroupMedSampleSizeNoPercent | Where-Object { $_.Name -eq $Name }).Median)
+            $Penalty = ($PenaltySampleSizeHalf * $BrainConfig.SampleHalfPower + $PenaltySampleSizeNoPercent) / ($BrainConfig.SampleHalfPower + 1)
+            $Price = [math]::max(0, [Double]($Penalty + ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).actual_last24h))
+            $AlgoData.$Name | Add-Member @{ Plus_Price = $Price } -Force
         }
 
-        ($AlgoData | Get-Member -MemberType NoteProperty).Name | ForEach-Object { $AlgoData.$_ | Add-Member Updated $CurDate -Force }
+        $AlgoData.PSObject.Properties.Name | ForEach-Object { $AlgoData.$_ | Add-Member Updated $CurDate -Force }
 
         If ($BrainConfig.UseTransferFile -or $Config.PoolsConfig.$BrainName.BrainDebug) { 
             ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Out-File -FilePath $TransferFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
@@ -129,16 +115,19 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
         $Variables.BrainData | Add-Member $BrainName $AlgoData -Force
         $Variables.Brains.$BrainName."Updated" = $CurDate
 
-        Remove-Variable AlgoData, CurrenciesData -ErrorAction Ignore
-
         # Limit to only sample size + 10 minutes min history
         $AlgoObject = @($AlgoObject | Where-Object { $_.Date -ge $CurDate.AddMinutes(-($BrainConfig.SampleSizeMinutes + 10)) })
 
         If ($Config.PoolsConfig.$BrainName.BrainDebug) { 
-            Write-Message -Level Debug ("Brain '$($BrainName) (Variant $($PoolVariant))': AlgoObject size {0:n0} Bytes" -f ($AlgoObject | ConvertTo-Json -Compress).length)
-            Write-Message -Level Debug "Brain '$($BrainName) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
+            Write-Message -Level Debug ("Brain '$($BrainName)': AlgoObject size {0:n0} Bytes" -f ($AlgoObject | ConvertTo-Json -Compress).length)
+            Write-Message -Level Debug "Brain '$($BrainName)': $(Get-MemoryUsage)"
         }
     }
+
+    $Durations.Add($Duration.TotalSeconds)
+    $Durations = [System.Collections.Generic.List[Double]]@($Durations | Select-Object -Last 100)
+
+    Remove-Variable Algo, AlgoData, Name -ErrorAction Ignore
 
     $Error.Clear()
 
@@ -146,12 +135,10 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
     [System.GC]::WaitForPendingFinalizers() | Out-Null
     [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
 
-    If ($Config.PoolsConfig.$BrainName.BrainDebug) { 
-        Write-Message -Level Debug "Brain '$($BrainName) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
-        Write-Message -Level Verbose "Brain '$($BrainName) (Variant $($PoolVariant))': End loop (Duration $($Duration.TotalSeconds) sec.)"
-    }
+    Write-Message -Level Debug "Brain '$($BrainName)': $(Get-MemoryUsage)"
+    Write-Message -Level Debug "Brain '$($BrainName)': End loop (Duration $($Duration.TotalSeconds) sec.)"
 
-    While ($CurDate -gt $Variables.PoolDataCollectedTimeStamp -or (Get-Date).ToUniversalTime().AddSeconds([Int]$Duration.TotalSeconds + 3) -le $Variables.EndCycleTime) { 
+    While ($CurDate -ge $Variables.PoolDataCollectedTimeStamp -or (Get-Date).ToUniversalTime().AddSeconds([Int]($Durations | Measure-Object -Average).Average + 3) -le $Variables.EndCycleTime) { 
         Start-Sleep -Seconds 1
     }
 }

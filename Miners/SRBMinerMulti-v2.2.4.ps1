@@ -280,7 +280,7 @@ If ($Algorithms) {
                     }
                     $Arguments += "$($_.Arguments[$Index]) --pool $($MinerPools[$Index].$Algorithm.Host):$($MinerPools[$Index].$Algorithm.PoolPorts | Select-Object -Last 1) --wallet $($MinerPools[$Index].$Algorithm.User)"
                     $Arguments += " --password $($MinerPools[$Index].$Algorithm.Pass)$(If ($MinerPools[$Index].$Algorithm.BaseName -eq "ProHashing" -and $Algorithm -eq "Ethash") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[$Index].$Algorithm.DAGSizeGiB))" })"
-                    If ($MinerPools[$Index].$Algorithm.WorkerName) { " --worker $($MinerPools[$Index].$Algorithm.WorkerName)" }
+                    If ($MinerPools[$Index].$Algorithm.WorkerName) { $Arguments += " --worker $($MinerPools[$Index].$Algorithm.WorkerName)" }
                     $Arguments += If ($MinerPools[$Index].$Algorithm.PoolPorts[1]) { " --tls true" } Else { " --tls false" }
 
                     If ($_.GpuDualMaxLoss) { $Arguments += " --gpu-dual-max-loss 5" }

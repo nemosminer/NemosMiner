@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningPoolHub.ps1
-Version:        4.3.4.0
-Version date:   08 April 2023
+Version:        4.3.4.1
+Version date:   16 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -40,145 +40,85 @@ $Headers = @{ "Cache-Control" = "no-cache" }
 $Useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"
 
 If ($PoolConfig.UserName) { 
-    If ($PoolVariant -match "Coins$") { 
-        $APICallFails = 0
 
-        Do {
-            Try { 
-                $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics" -Headers $Headers -SkipCertificateCheck -TimeoutSec 5 # -UserAgent $UserAgent 
-            }
-            Catch { 
-                $APICallFails++
-                Start-Sleep -Seconds ($APICallFails * 3)
-            }
-        } While (-not $Request -and $APICallFails -lt 3)
+    $StartTime = (Get-Date)
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
 
-        If (-not $Request) { Return }
+    $APICallFails = 0
 
-        $Divisor = 1000000000
+    Do {
+        Try { 
+            $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics" -Headers $Headers -SkipCertificateCheck -TimeoutSec 5 # -UserAgent $UserAgent 
+        }
+        Catch { 
+            $APICallFails++
+            Start-Sleep -Seconds ($APICallFails * 3)
+        }
+    } While (-not $Request -and $APICallFails -lt 3)
 
-        $Request.return | Select-Object | ForEach-Object { 
-            $Current = $_
+    If (-not $Request) { Return }
 
-            $Algorithm_Norm = Get-Algorithm $_.algo
-            $Currency = "$($Current.symbol)".Trim()
-            $Fee = [Decimal]($_.Fee / 100)
-            $Port = $Current.port
+    $Divisor = 1000000000
 
-            # Add coin name
-            If ($Current.coin_name -and $Currency) { 
-                $CoinName = (Get-Culture).TextInfo.ToTitleCase($Current.coin_name.ToLower())
-                Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $CoinName
-            }
-            Else { 
-                $CoinName = ""
-            }
+    $Request.return | Select-Object | ForEach-Object { 
+        $Current = $_
 
-            # Temp fix
-            $Regions = If ($Current.host_list.split(";").count -eq 1) { @("n/a") } Else { $PoolConfig.Region }
+        $Algorithm_Norm = Get-Algorithm $_.algo
+        $Currency = "$($Current.symbol)".Trim()
+        $Fee = [Decimal]($_.Fee / 100)
+        $Port = $Current.port
 
-            $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ($_.profit / $Divisor) -FaultDetection $false
+        # Add coin name
+        If ($Current.coin_name -and $Currency) { 
+            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName ((Get-Culture).TextInfo.ToTitleCase($Current.coin_name.Trim().ToLower() -replace '[^A-Z0-9\$\.]') -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin')
+        }
 
-            $Reasons = @()
-            # Temp fix
-            If ($Algorithm_Norm -match "Neoscrypt|Skein|Verthash" ) { $Reasons += "Connection issue at pool" }
+        # Temp fix
+        $Regions = If ($Current.host_list.split(";").count -eq 1) { @("n/a") } Else { $PoolConfig.Region }
 
-            ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
-                If ($Region = $Regions | Where-Object { $_ -eq "n/a" -or (Get-Region $_) -eq $Region_Norm }) { 
+        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ($_.profit / $Divisor) -FaultDetection $false
 
-                    If ($Region -eq "n/a") { $Region_Norm = $Region }
+        $Reasons = [System.Collections.Generic.List[String]]@()
+        # Temp fix
+        # If ($Algorithm_Norm -match "Neoscrypt|Skein|Verthash" ) { $Reasons.Add("Connection issue at pool") }
+        If ($_.pool_hash -eq "-" -or $_.pool_hash -eq "0") { $Reasons.Add("No hashrate at pool") }
 
-                    [PSCustomObject]@{ 
-                        Accuracy                 = [Double](1 - $Stat.Week_Fluctuation)
-                        Algorithm                = [String]$Algorithm_Norm
-                        BaseName                 = [String]$Name
-                        CoinName                 = [String]$CoinName
-                        Currency                 = [String]$Currency
-                        EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                        Fee                      = $Fee
-                        Host                     = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
-                        Name                     = [String]$PoolVariant
-                        Pass                     = "x"
-                        Port                     = [UInt16]$Port
-                        PortSSL                  = $null
-                        Price                    = [Double]$Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * [Math]::Min($Stat.Day_Fluctuation, 1)
-                        Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratumnh" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
-                        Reasons                  = $Reasons
-                        Region                   = [String]$Region_Norm
-                        SendHashrate             = $false
-                        SSLSelfSignedCertificate = $true
-                        StablePrice              = [Double]$Stat.Week
-                        User                     = "$($PoolConfig.UserName).$($PoolConfig.WorkerName)"
-                        WorkerName               = ""
-                    }
-                    Break
+        If ($Current.host -eq "hub.miningpoolhub.com") { $Current.host_list = "hub.miningpoolhub.com" }
+
+        ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
+            If ($Region = $Regions | Where-Object { $_ -eq "n/a" -or (Get-Region $_) -eq $Region_Norm }) { 
+
+                If ($Region -eq "n/a") { $Region_Norm = $Region }
+
+                [PSCustomObject]@{ 
+                    Accuracy                 = [Double](1 - $Stat.Week_Fluctuation)
+                    Algorithm                = [String]$Algorithm_Norm
+                    BaseName                 = [String]$Name
+                    Currency                 = [String]$Currency
+                    EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+                    Fee                      = $Fee
+                    Host                     = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
+                    Name                     = [String]$PoolVariant
+                    Pass                     = "x"
+                    Port                     = [UInt16]$Port
+                    PortSSL                  = $null
+                    Price                    = [Double]$Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * [Math]::Min($Stat.Day_Fluctuation, 1)
+                    Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratumnh" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
+                    Reasons                  = $Reasons
+                    Region                   = [String]$Region_Norm
+                    SendHashrate             = $false
+                    SSLSelfSignedCertificate = $true
+                    StablePrice              = [Double]$Stat.Week
+                    User                     = "$($PoolConfig.UserName).$($PoolConfig.WorkerName)"
+                    WorkerName               = ""
+                    Workers                  = [Int]$_.workers
                 }
+                Break
             }
         }
     }
-    Else { 
-        $APICallFails = 0
 
-        Do {
-            Try { 
-                $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getautoswitchingandprofitsstatistics" -Headers $Headers -UserAgent $UserAgent -SkipCertificateCheck -TimeoutSec 5
-            }
-            Catch { 
-                $APICallFails++
-                Start-Sleep -Seconds ($APICallFails * 3)
-            }
-        } While (-not $Request -and $APICallFails -lt 3)
-
-        If (-not $Request) { Return }
-
-        $Divisor = 1000000000
-
-        $Request.return | Select-Object | ForEach-Object { 
-            $Current = $_
-
-            $Algorithm_Norm = Get-Algorithm $_.algo
-            $Port = $Current.algo_switch_port
-
-            $Regions = If ($Current.all_host_list.split(";").count -eq 1) { @("n/a") } Else { $PoolConfig.Region }
-
-            $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)_Profit" -Value ([Decimal]$_.profit / $Divisor) -FaultDetection $false
-
-            $Reasons = @()
-            # Temp fix
-            If ($Algorithm_Norm -match "Neoscrypt|Skein|Verthash" ) { $Reasons += "Connection issue at pool" }
-
-            ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
-                If ($Region = $Regions | Where-Object { $_ -eq "n/a" -or (Get-Region $_) -eq $Region_Norm }) { 
-
-                    If ($Region -eq "n/a") { $Region_Norm = $Region }
-
-                    [PSCustomObject]@{ 
-                        Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
-                        Algorithm                = [String]$Algorithm_Norm
-                        BaseName                 = [String]$Name
-                        Currency                 = [String]$Current.current_mining_coin_symbol
-                        Disabled                 = [Boolean]$Stat.Disabled
-                        EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                        Fee                      = [Decimal]$PoolConfig.Fee
-                        Host                     = [String]($Current.all_host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
-                        Name                     = [String]$PoolVariant
-                        Pass                     = "x"
-                        Port                     = [UInt16]$Port
-                        PortSSL                  = $null
-                        Price                    = [Double]($Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * (0 + [Math]::Min($Stat.Day_Fluctuation, 1)))
-                        Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratumnh" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
-                        Reasons                  = $Reasons
-                        Region                   = [String]$Region_Norm
-                        StablePrice              = [Double]$Stat.Week
-                        SSLSelfSignedCertificate = $true
-                        User                     = "$($PoolConfig.UserName).$($PoolConfig.WorkerName)"
-                        WorkerName               = ""
-                    }
-                    Break
-                }
-            }
-        }
-    }
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 
 $Error.Clear()
