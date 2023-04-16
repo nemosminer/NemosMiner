@@ -1093,7 +1093,7 @@ Function Get-Rate {
 Function Write-Message { 
 
     Param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateNotNullOrEmpty()]
         [String]$Message, 
         [Parameter(Mandatory = $false)]
@@ -3630,7 +3630,7 @@ Function Get-MemoryUsage {
     $MemUsageByte = [System.GC]::GetTotalMemory("forcefullcollection")
     $MemUsageMB = $MemUsageByte / 1MB
     $DiffBytes = $MemUsageByte - $Script:last_memory_usage_byte
-    $BiffText = ""
+    $DiffText = ""
     $Sign = ""
     If ( $Script:last_memory_usage_byte -ne 0 ) { 
         If ($DiffBytes -ge 0) {
