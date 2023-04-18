@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.4.1
-Version date:   16 April 2023
+Version:        4.3.4.2
+Version date:   18 April 2023
 #>
 
 # Window handling
@@ -415,7 +415,7 @@ Class Miner {
             Duration          = "{0:hh\:mm\:ss}" -f ($this.EndTime - $this.BeginTime)
             Earning           = $this.Earning
             Earning_Bias      = $this.Earning_Bias
-            LastDataSample    = $this.Data | Select-Object -Last 1 -ErrorAction SilentlyContinue | ConvertTo-Json -Compress
+            LastDataSample    = $this.Data | Select-Object -Last 1 -ErrorAction Ignore | ConvertTo-Json -Compress
             MeasurePowerUsage = $this.MeasurePowerUsage
             Pools             = ($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
             Profit            = $this.Profit
@@ -689,7 +689,6 @@ namespace PInvoke.Win32 {
     ) | Out-Null
 
     $Variables.IdleRunspace | Add-Member -Force @{ Name = "IdleRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
-
 }
 
 Function Stop-IdleDetection { 
@@ -922,22 +921,22 @@ Function Initialize-Application {
         Exit
     }
     # Load coin names
-    $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
-    If (-not $Global:CoinNames) { 
+    $Variables.CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json -AsHashtable
+    If (-not $Variables.CoinNames) { 
         Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CoinNames.json' is not a valid JSON file. Please restore it from your original download."
         $WscriptShell.Popup("File '.\Data\CoinNames.json' is not a valid JSON file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
         Exit
     }
     # Load EquihashCoinPers data
-    $Global:EquihashCoinPers = Get-Content -Path ".\Data\EquihashCoinPers.json" | ConvertFrom-Json
-    If (-not $Global:EquihashCoinPers) { 
+    $Variables.EquihashCoinPers = Get-Content -Path ".\Data\EquihashCoinPers.json" | ConvertFrom-Json
+    If (-not $Variables.EquihashCoinPers) { 
         Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\EquihashCoinPers.json' is not a valid JSON file. Please restore it from your original download."
         $WscriptShell.Popup("File '.\Data\EquihashCoinPers.json' is not a valid JSON file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
         Exit
     }
     # Load currency algorithm data
-    $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
-    If (-not $Global:CurrencyAlgorithm) { 
+    $Variables.CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json -AsHashtable
+    If (-not $Variables.CurrencyAlgorithm) { 
         Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CurrencyAlgorithm.json' is not a valid JSON file. Please restore it from your original download."
         $WscriptShell.Popup("File '.\Data\CurrencyAlgorithm.json' is not a valid JSON file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
         Start-Sleep -Seconds 10
@@ -2911,14 +2910,7 @@ Function Add-CoinName {
         [String]$CoinName
     )
 
-    If (-not (Test-Path -Path Variable:Global:CoinNames -ErrorAction SilentlyContinue)) { 
-        $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
-    }
-    If (-not (Test-Path -Path Variable:Global:CurrencyAlgorithm -ErrorAction SilentlyContinue)) { 
-        $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
-    }
-
-    If ($Global:CoinNames.$Currency -and $Global:CurrencyAlgorithm.$Currency) { 
+    If ($Variables.CoinNames.$Currency -and $Variables.CurrencyAlgorithm.$Currency) { 
        Return
     }
     Else { 
@@ -2929,15 +2921,13 @@ Function Add-CoinName {
         # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, update the coin names file and release mutex. Otherwise, display an error. 
         If ($Mutex.WaitOne(1000)) { 
 
-            If (-not $Global:CurrencyAlgorithm.$Currency) { 
-                $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json -AsHashtable | Get-SortedObject
-                $Global:CurrencyAlgorithm | Add-Member $Currency $Algorithm -Force
-                $Global:CurrencyAlgorithm | ConvertTo-Json | Out-File -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
+            If (-not $Variables.CurrencyAlgorithm.$Currency) { 
+                $Variables.CurrencyAlgorithm.$Currency = $Algorithm
+                $Variables.CurrencyAlgorithm | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
             }
-            If (-not $Global:CoinNames.$Currency) { 
-                $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json -AsHashtable | Get-SortedObject
-                $Global:CoinNames | Add-Member $Currency ((Get-Culture).TextInfo.ToTitleCase($CoinName.Trim().ToLower()) -replace '[^A-Z0-9\$\.]' -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin') -Force
-                $Global:CoinNames | ConvertTo-Json | Out-File -Path ".\Data\CoinNames.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
+            If (-not $Variables.CoinNames.$Currency) { 
+                $Variables.CoinNames.$Currency = ((Get-Culture).TextInfo.ToTitleCase($CoinName.Trim().ToLower()) -replace '[^A-Z0-9\$\.]' -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin')
+                $Variables.CoinNames | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CoinNames.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
             }
             [Void]$Mutex.ReleaseMutex()
         }
@@ -2952,13 +2942,13 @@ Function Get-CoinName {
     )
 
     If ($Currency) { 
-        If ($Global:CoinNames.$Currency) { 
-            Return $Global:CoinNames.$Currency
+        If ($Variables.CoinNames.$Currency) { 
+            Return $Variables.CoinNames.$Currency
         }
 
-        $Global:CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
-        If ($Global:CoinNames.$Currency) { 
-            Return $Global:CoinNames.$Currency
+        $Variables.CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
+        If ($Variables.CoinNames.$Currency) { 
+            Return $Variables.CoinNames.$Currency
         }
     }
     Return $null
@@ -2976,13 +2966,13 @@ Function Get-EquihashCoinPers {
     )
 
     If ($Currency) { 
-        If ($Global:EquihashCoinPers.$Currency) { 
-            Return "$($Command)$($Global:EquihashCoinPers.$Currency)"
+        If ($Variables.EquihashCoinPers.$Currency) { 
+            Return "$($Command)$($Variables.EquihashCoinPers.$Currency)"
         }
 
-        $Global:EquihashCoinPers = Get-Content -Path ".\Data\EquihashCoinPers.json" | ConvertFrom-Json
-        If ($Global:EquihashCoinPers.$Currency) { 
-            Return "$($Command)$($Global:EquihashCoinPers.$Currency)"
+        $Variables.EquihashCoinPers = Get-Content -Path ".\Data\EquihashCoinPers.json" | ConvertFrom-Json
+        If ($Variables.EquihashCoinPers.$Currency) { 
+            Return "$($Command)$($Variables.EquihashCoinPers.$Currency)"
         }
     }
     Return $DefaultCommand
@@ -2996,13 +2986,13 @@ Function Get-AlgorithmFromCurrency {
     )
 
     If ($Currency) { 
-        If ($Global:CurrencyAlgorithm.$Currency) { 
-            Return $Global:CurrencyAlgorithm.$Currency
+        If ($Variables.CurrencyAlgorithm.$Currency) { 
+            Return $Variables.CurrencyAlgorithm.$Currency
         }
 
-        $Global:CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
-        If ($Global:CurrencyAlgorithm.$Currency) { 
-            Return $Global:CurrencyAlgorithm.$Currency
+        $Variables.CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json
+        If ($Variables.CurrencyAlgorithm.$Currency) { 
+            Return $Variables.CurrencyAlgorithm.$Currency
         }
     }
     Return $null
@@ -3057,7 +3047,6 @@ Function Get-NMVersion {
         Write-Message -Level Warn "Version checker could not contact update server."
     }
     $Config.LogToScreen = $ConfigLogToScreen
-
 }
 
 Function Copy-Object { 
@@ -3544,7 +3533,6 @@ Function Get-EpochLength {
         "RVN"   { Return 7500 }
         Default { return 30000 }
     }
-
 }
 
 Function Get-DAGdata { 

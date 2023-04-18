@@ -20,6 +20,7 @@
   "BELL": "Yespower",
   "BGL": "Keccak",
   "BLACK": "Ethash",
+  "BLC": "Blakecoin",
   "BLOC": "CryptonightHeavyXhv",
   "BMB": "Pufferfish2BMB",
   "BNB": "Token",
@@ -77,6 +78,7 @@
   "EXO": "X16r",
   "EXP": "Ethash",
   "FCH": "SHA256",
+  "FEC": "Scrypt",
   "FIRO": "FiroPow",
   "FITA": "Ghostrider",
   "FLUX": "Equihash1254",
@@ -87,6 +89,7 @@
   "FTO": "X11",
   "GALE": "SHA256csm",
   "GBX": "Neoscrypt",
+  "GCN": "Scrypt",
   "GEC": "Ghostrider",
   "GENIX": "X16r",
   "GLINK": "Equihash1445",
@@ -230,6 +233,5 @@
   "ZEC": "Equihash",
   "ZEN": "Equihash",
   "ZER": "Equihash1927",
-  "ZOC": "Neoscrypt",
-  "BLC": "Blakecoin"
+  "ZOC": "Neoscrypt"
 }

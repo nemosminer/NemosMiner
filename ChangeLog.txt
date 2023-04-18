@@ -11,6 +11,20 @@ Known issues:
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
 
+
+ChangeLog NemosMiner 4.3.4.2 18.04.2023
+=======================================
+
+Fixes:
+- Brains / ZergPool: Change sort order to select best paying currency
+- Brains / ZergPool: Default pool fee not set (Regression from 4.3.4.1)
+- Core / Includes.psm1: Add-CoinName not updating data files
+
+Miner updates:
+- GMiner-v3.33
+- Rigel-v1.4.1
+
+
 ChangeLog NemosMiner 4.3.4.1 16.04.2023
 =======================================
 
@@ -25,7 +39,7 @@ Fixes:
 - SRBMinerMulti-v2.2.4: Could not generate miner objects for CryptoHashing pool
 
 Pools:
-- MiningPoolHub: Removed Coin variant, renamed MininPoolHubCoins to MiningPoolHub
+- MiningPoolHub: Removed Coin variant, renamed MiningPoolHubCoins to MiningPoolHub
 - MiningPoolHub: Added *Plus variant
 
 Miner updates:

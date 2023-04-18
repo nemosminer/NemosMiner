@@ -283,6 +283,7 @@
       "SampleSizeMinutes": 45,
       "UseTransferFile": false
     },
+    "DefaultFee": 0.5,
     "ExcludeAlgorithm": [],
     "GuaranteedPayoutCurrencies": [
       "DOGE",
@@ -317,17 +318,14 @@
     "SSL": "prefer",
     "Variant": {
       "ZergPool": {
-        "DefaultFee": 0.5,
         "DivisorMultiplier": 1000000,
         "PriceField": "estimate_current"
       },
       "ZergPool24hr": {
-        "DefaultFee": 0.5,
         "DivisorMultiplier": 1000000,
         "PriceField": "estimate_last24h"
       },
       "ZergPoolPlus": {
-        "DefaultFee": 0.5,
         "DivisorMultiplier": 1000000,
         "PriceField": "Plus_Price"
       }

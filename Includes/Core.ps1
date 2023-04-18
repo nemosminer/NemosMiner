@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.3.4.1
-Version date:   16 April 2023
+Version:        4.3.4.2
+Version date:   18 April 2023
 #>
 
 using module .\Include.psm1
@@ -317,7 +317,7 @@ Do {
                             }
                             If ($Config.BadShareRatioThreshold -gt 0) { 
                                 $Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { 
-                                    $LatestMinerSharesData = ($Miner.Data | Select-Object -Last 1).Shares
+                                    $LatestMinerSharesData = ($Miner.Data | Select-Object -Last 1 -ErrorAction Ignore).Shares
                                     If ($LatestMinerSharesData.$_ -and $LatestMinerSharesData.$_[1] -gt 0 -and $LatestMinerSharesData.$_[3] -gt [Int](1 / $Config.BadShareRatioThreshold) -and $LatestMinerSharesData.$_[1] / $LatestMinerSharesData.$_[3] -gt $Config.BadShareRatioThreshold) { 
                                         $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' stopped. Reasons: Too many bad shares (Shares Total = $($LatestMinerSharesData.$_[3]), Rejected = $($LatestMinerSharesData.$_[1]))."
                                         $Miner.SetStatus([MinerStatus]::Failed)
@@ -360,7 +360,7 @@ Do {
                             ForEach ($Worker in $Miner.WorkersRunning) { 
                                 $Algorithm = $Worker.Pool.Algorithm
                                 $Factor = 1
-                                $LatestMinerSharesData = ($Miner.Data | Select-Object -Last 1).Shares
+                                $LatestMinerSharesData = ($Miner.Data | Select-Object -Last 1 -ErrorAction Ignore).Shares
                                 If ($Miner.Data.Count -gt $Miner.MinDataSample -and -not $Miner.Benchmark -and $Config.SubtractBadShares -and $LatestMinerSharesData.$Algorithm -gt 0) { # Need $Miner.MinDataSample shares before adjusting hashrate
                                     $Factor = (1 - $LatestMinerSharesData.$Algorithm[1] / $LatestMinerSharesData.$Algorithm[3])
                                     $Miner_Hashrates.$Algorithm *= $Factor
@@ -378,7 +378,7 @@ Do {
                                     $Miner.SetStatus([MinerStatus]::Failed)
                                 }
                             }
-                            Remove-Variable Worker
+                            Remove-Variable Worker -ErrorAction Ignore
                         }
                         # We don't want to store power usage if we have less than $MinDataSample, store even when fluctuating hash rates were recorded
                         If ($Miner.Data.Count -ge $Miner.MinDataSample -and $Miner.ReadPowerUsage -and ($Miner.Hashrates_Live -gt 0 -or $Miner.Activated -gt $Variables.WatchdogCount)) { 
@@ -456,11 +456,11 @@ Do {
                     If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.MiningStatus -eq "Idle") { Continue }
 
                     # Remove de-configured pools
-                    $PoolsDeconfigured = @($Variables.Pools | Where-Object BaseName -notin (Get-PoolBaseName $Variables.PoolName))
-                    $Pools = @($Variables.Pools | Where-Object BaseName -in (Get-PoolBaseName $Variables.PoolName))
+                    $PoolsDeconfigured = @($Variables.Pools | Where-Object Name -notin $Variables.PoolName)
+                    $Pools = @($Variables.Pools | Where-Object Name -in $Variables.PoolName)
                     $Pools | ForEach-Object { $_.Reasons = @() }
 
-                    If ($ComparePools = @(Compare-Object -PassThru $PoolsNew $Pools -Property BaseName, Algorithm -IncludeEqual)) { 
+                    If ($ComparePools = @(Compare-Object -PassThru $PoolsNew $Pools -Property Name, Algorithm -IncludeEqual)) { 
                         # Find added & updated pools
                         $Variables.PoolsAdded = @($ComparePools | Where-Object SideIndicator -EQ "<=")
                         $Variables.PoolsUpdated = @($ComparePools | Where-Object SideIndicator -EQ "==")
@@ -473,7 +473,7 @@ Do {
                             $_.Available = $true
                             $_.Best = $false
 
-                            If ($Pool = $Variables.PoolsUpdated | Where-Object BaseName -EQ $_.BaseName | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Currency -EQ $_.Currency | Select-Object -First 1) { 
+                            If ($Pool = $Variables.PoolsUpdated | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Currency -EQ $_.Currency | Select-Object -First 1) { 
                                 $_.Accuracy                 = $Pool.Accuracy
                                 $_.CoinName                 = $Pool.CoinName
                                 $_.Currency                 = $Pool.Currency
@@ -481,7 +481,6 @@ Do {
                                 $_.EarningsAdjustmentFactor = $Pool.EarningsAdjustmentFactor
                                 $_.Fee                      = $Pool.Fee
                                 $_.Host                     = $Pool.Host
-                                $_.Name                     = $Pool.Name
                                 $_.Pass                     = $Pool.Pass
                                 $_.Port                     = $Pool.Port
                                 $_.PortSSL                  = $Pool.PortSSL

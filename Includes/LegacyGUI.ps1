@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           LegacyGUI.psm1
-Version:        4.3.4.1
-Version date:   16 April 2023
+Version:        4.3.4.2
+Version date:   18 April 2023
 #>
 
 # [Void] [System.Windows.Forms.Application]::EnableVisualStyles()
@@ -372,8 +372,6 @@ Function Update-TabControl {
                     ElseIf ($RadioButtonMinersUnavailable.checked) { $DataSource = $Variables.Miners | Where-Object { -not $_.Available } }
                     Else { $DataSource = $Variables.Miners }
 
-                    $SortBy = If ($Variables.CalculatePowerCost -and -not $Config.IgnorePowerCost) { "Profit" } Else { "Earning" }
-
                     $MinersDGV.BeginInit()
                     $MinersDGV.DataSource = $DataSource | Select-Object @(
                         @{ Name = "Best"; Expression = { $_.Best } }, 
@@ -489,8 +487,8 @@ Function Update-TabControl {
                         @{ Name = "Last seen"; Expression = { (Get-TimeSince $_.date) } }, 
                         @{ Name = "Version"; Expression = { $_.version } }, 
                         @{ Name = "Currency"; Expression = { ForEach-Object { $_.data.Currency | Select-Object -Unique } } }, 
-                        @{ Name = "Estimated Earning/day"; Expression = { If ($_.Data -ne $null) { "{0:n$($Config.DecimalsMax)}" -f (($_.Data.Earning | Where-Object { -not [Double]::IsNaN($_) } | Measure-Object -Sum).Sum * $Variables.Rates.BTC.($_.data.Currency | Select-Object -Unique)) } } }, 
-                        @{ Name = "Estimated Profit/day"; Expression = { If ($_.Data -ne $null) { " {0:n$($Config.DecimalsMax)}" -f (($_.Data.Profit | Where-Object { -not [Double]::IsNaN($_) } | Measure-Object -Sum).Sum * $Variables.Rates.BTC.($_.data.Currency | Select-Object -Unique)) } } }, 
+                        @{ Name = "Estimated Earning/day"; Expression = { If ($null -ne $_.Data) { "{0:n$($Config.DecimalsMax)}" -f (($_.Data.Earning | Where-Object { -not [Double]::IsNaN($_) } | Measure-Object -Sum).Sum * $Variables.Rates.BTC.($_.data.Currency | Select-Object -Unique)) } } }, 
+                        @{ Name = "Estimated Profit/day"; Expression = { If ($null -ne $_.Data) { " {0:n$($Config.DecimalsMax)}" -f (($_.Data.Profit | Where-Object { -not [Double]::IsNaN($_) } | Measure-Object -Sum).Sum * $Variables.Rates.BTC.($_.data.Currency | Select-Object -Unique)) } } }, 
                         @{ Name = "Miner(s)"; Expression = { $_.data.Name -join $nl } }, 
                         @{ Name = "Pool(s)"; Expression = { ($_.data | ForEach-Object { $_.Pool -split "," -join " & " }) -join $nl } }, 
                         @{ Name = "Algorithm(s)"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join $nl } }, 

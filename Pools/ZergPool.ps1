@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.3.4.1
-Version date:   16 April 2023
+Version:        4.3.4.2
+Version date:   18 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -79,7 +79,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
         $Reasons = [System.Collections.Generic.List[String]]@()
-        # If ($Request.$_.noautotrade -eq 1) { $Reasons.Add("Conversion disabled at pool") } # Remvoed because of https://github.com/RainbowMiner/RainbowMiner/issues/2341#issuecomment-1498474419
+        If ($Request.$_.noautotrade -eq 1 -and $Request.$_.Currency -ne $PayoutCurrency) { $Reasons.Add("Conversion disabled at pool") }
         If ($Request.$_.hashrate_shared -eq 0) { $Reasons.Add("No hashrate at pool") }
         If ($PoolVariant -match ".+Plus$" -and $Request.$_.$PriceField -eq 0) { $Reasons.Add("Plus price -eq 0")}
 

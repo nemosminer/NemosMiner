@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool.ps1
-Version:        4.3.4.1
-Version date:   16 April 2023
+Version:        4.3.4.2
+Version date:   18 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -66,18 +66,36 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
         } While (-not ($AlgoData -and $CurrenciesData))
 
         $CurDate = (Get-Date).ToUniversalTime()
-        $CurrenciesData.PSObject.Properties.Name | Where-Object { -not $CurrenciesData.$_.hashrate } | ForEach-Object { $CurrenciesData.PSObject.Properties.Remove($_) }
+        # $CurrenciesData.PSObject.Properties.Name | Where-Object { -not $CurrenciesData.$_.hashrate } | ForEach-Object { $CurrenciesData.PSObject.Properties.Remove($_) }
+
+        # Add currency and convert to array for easy sorting
+        $CurrenciesArray = [System.Collections.Generic.List[PSCustomObject]]@()
+        $CurrenciesData.PSObject.Properties.Name | ForEach-Object { 
+            $CurrenciesData.$_ | Add-Member @{ Currency = If ($CurrenciesData.$_.symbol) { $CurrenciesData.$_.symbol -replace "-.+$", "" } Else { $_ -replace "-.+$", "" } } -Force
+            $CurrenciesData.$_ | Add-Member @{ CoinName = If ($CurrenciesData.$_.name) { $CurrenciesData.$_.name } Else { $_ } } -Force
+            $CurrenciesData.$_.PSObject.Properties.Remove("symbol")
+            $CurrenciesData.$_.PSObject.Properties.Remove("name")
+            $CurrenciesArray.Add($CurrenciesData.$_)
+        }
+
+        # Get best currency
+        $CurrenciesArray | Group-Object algo | ForEach-Object { 
+            $BestCurrency = ($_.Group | Sort-Object estimate -Descending | Select-Object -First 1)
+            $AlgoData.($_.name) | Add-Member Currency $BestCurrency.currency -Force
+            $AlgoData.($_.name) | Add-Member CoinName $BestCurrency.coinname -Force
+        }
 
         ForEach ($Algo in $AlgoData.PSObject.Properties.Name) { 
-            If ($AlgoData.$Algo.coins -eq 1) { 
-                $Currencies = @($CurrenciesData.PSObject.Properties.Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo })
-                $Currency = If ($Currencies.Count -eq 1) { $($Currencies[0] -replace "-.+").Trim() } Else { "" }
-            }
-            Else { 
-                $Currency = ""
-            }
+            $Currency = $AlgoData.$Algo.Currency
             If ($Currency) { 
-                $AlgoData.$Algo | Add-Member @{ Currency = $Currency } -Force
+                # Add coin name and keep data data up to date
+                If ($AlgoData.$Algo.CoinName) { 
+                    Add-CoinName -Algorithm $Algo -Currency $Currency -CoinName $AlgoData.$Algo.CoinName
+                    If ($Variables.DagData.Algorithm.$Algo -and $AlgoData.$Algo.height -gt ($Variables.DAGData.Currency.$Currency.BlockHeight)) { 
+                        $Variables.DAGData.Currency.$Currency = (Get-DAGData -Blockheight $AlgoData.$Algo.height -Currency $Currency -EpochReserve 2)
+                        $Variables.DAGData.Updated."$BrainName Brain" = (Get-Date).ToUniversalTime()
+                    }
+                }
                 $AlgoData.$Algo | Add-Member @{ conversion_disabled = $CurrenciesData.$Currency.conversion_disabled } -Force
                 If ($CurrenciesData.$Currency.error) { 
                     $AlgoData.$Algo | Add-Member @{ error = "Pool error msg: $($CurrenciesData.$Currency.error)" } -Force
@@ -87,7 +105,6 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
                 }
             }
             Else { 
-                $AlgoData.$Algo | Add-Member @{ Currency = "" } -Force
                 $AlgoData.$Algo | Add-Member @{ error = "" } -Force
                 $AlgoData.$Algo | Add-Member @{ conversion_disabled = 0 } -Force
             }
