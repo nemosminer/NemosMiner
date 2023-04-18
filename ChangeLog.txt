@@ -18,6 +18,7 @@ ChangeLog NemosMiner 4.3.4.2 18.04.2023
 Fixes:
 - Brains / ZergPool: Change sort order to select best paying currency
 - Brains / ZergPool: Default pool fee not set (Regression from 4.3.4.1)
+- Brains: Invalid Plus price calculation (Regression from v4.3.4.1)
 - Core / Includes.psm1: Add-CoinName not updating data files
 
 Miner updates:

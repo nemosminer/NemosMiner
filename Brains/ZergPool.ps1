@@ -92,9 +92,8 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
                 $Currency = If ($Currencies.Currency) { (($Currencies | Sort-Object Estimate)[-1].Currency).Trim() } Else { "" }
             }
 
-            # Add coin name and keep data data up to date
-            If ($AlgoData.$Algo.CoinName -and $Currency) { 
-                Add-CoinName -Algorithm $Algo -Currency $Currency -CoinName $AlgoData.$Algo.CoinName
+            If ($Currency) { 
+                # Keep dag data data up to date
                 If ($Variables.DagData.Algorithm.$Algo -and $AlgoData.$Algo.height -gt ($Variables.DAGData.Currency.$Currency.BlockHeight)) { 
                     $Variables.DAGData.Currency.$Currency = (Get-DAGData -Blockheight $AlgoData.$Algo.height -Currency $Currency -EpochReserve 2)
                     $Variables.DAGData.Updated."$BrainName Brain" = (Get-Date).ToUniversalTime()
@@ -137,8 +136,8 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
         $GroupMedSampleSizeNoPercent = $AlgoObject | Where-Object { $_.Date -ge ($CurDate - $SampleSizets) } | Group-Object Name | Select-Object Name, Count, @{Name = "Avg"; Expression = { ($_.group.Last24DriftPercent | Measure-Object -Average).Average } }, @{Name = "Median"; Expression = { Get-Median $_.group.Last24Drift } }
 
         ForEach ($Name in ($AlgoObject.Name | Select-Object -Unique)) { 
-            $PenaltySampleSizeHalf = (($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Down" }).Count / ($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Count) * [math]::abs(($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Median)
-            $PenaltySampleSizeNoPercent = (($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Down" }).Count / ($GroupMedSampleSize | Where-Object { $_.Name -eq $Name }).Count) * [math]::abs(($GroupMedSampleSizeNoPercent | Where-Object { $_.Name -eq $Name }).Median)
+            $PenaltySampleSizeHalf = ((($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSizeHalf | Where-Object { $_.Name -eq $Name + ", Down" }).Count) / (($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Count)) * [math]::abs(($GroupMedSampleSizeHalf | Where-Object { $_.Name -eq $Name }).Median)
+            $PenaltySampleSizeNoPercent = ((($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Up" }).Count - ($GroupAvgSampleSize | Where-Object { $_.Name -eq $Name + ", Down" }).Count) / (($GroupMedSampleSize | Where-Object { $_.Name -eq $Name }).Count)) * [math]::abs(($GroupMedSampleSizeNoPercent | Where-Object { $_.Name -eq $Name }).Median)
             $Penalty = ($PenaltySampleSizeHalf * $BrainConfig.SampleHalfPower + $PenaltySampleSizeNoPercent) / ($BrainConfig.SampleHalfPower + 1)
             $Price = [math]::max(0, [Double]($Penalty + ($CurAlgoObject | Where-Object { $_.Name -eq $Name }).actual_last24h))
             $AlgoData.$Name | Add-Member @{ Plus_Price = $Price } -Force
@@ -166,7 +165,7 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
     $Durations.Add($Duration.TotalSeconds)
     $Durations = [System.Collections.Generic.List[Double]]@($Durations | Select-Object -Last 100)
 
-    Remove-Variable Algo, AlgoData, CurrenciesData, Name -ErrorAction Ignore
+    Remove-Variable Algo, AlgoData, CurrenciesArray, CurrenciesData, Name -ErrorAction Ignore
 
     $Error.Clear()
 
