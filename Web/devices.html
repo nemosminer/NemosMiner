@@ -33,11 +33,13 @@
             <thead>
               <tr>
                 <th data-field="state" data-checkbox="true"></th>
+                <th data-switchable="false" data-field="tStatusMessage" data-class="hidden statuscolorizer"></th>
                 <th data-field="Name" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
                 <th data-field="Model" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Model</th>
                 <th data-field="Vendor" data-sortable="true" data-filter-control="select">Vendor</th>
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
-                <th data-field="Status" class="statuscolorizer" data-sortable="true" data-filter-control="select">Status</th>
+                <th data-field="tStatus"data-sortable="true" data-filter-control="select" data-visible="false">Status</th>
+                <th data-field="Status" data-sortable="true" data-filter-control="select">Status Message</th>
                 <th data-field="tMemory" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Memory</th>
                 <th data-field="tCores" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
                 <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
@@ -102,12 +104,14 @@
             >
             <thead>
               <tr>
+                <th data-switchable="false" data-field="tStatusMessage" data-class="hidden statuscolorizer"></th>
                 <th data-field="state" data-checkbox="true"></th>
                 <th data-field="Name" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
                 <th data-field="Model" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Model</th>
                 <th data-field="Vendor" data-sortable="true" data-filter-control="select">Vendor</th>
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
-                <th data-field="Status" class="statuscolorizer" data-sortable="true" data-filter-control="select">Status</th>
+                <th data-field="tStatus"data-sortable="true" data-filter-control="select" data-visible="false">Status</th>
+                <th data-field="Status" data-sortable="true" data-filter-control="select">Status Message</th>
                 <th data-field="tMemory" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Memory</th>
                 <th data-field="tCores" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
                 <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
@@ -169,11 +173,13 @@
               >
               <thead>
                 <tr>
+                  <th data-switchable="false" data-field="tStatusMessage" data-class="hidden statuscolorizer"></th>
                   <th data-field="Name" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
                   <th data-field="Model" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Model</th>
                   <th data-field="Vendor" data-sortable="true" data-filter-control="select">Vendor</th>
                   <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
-                  <th data-field="Status" class="statuscolorizer" data-sortable="true" data-filter-control="select">Status</th>
+                  <th data-field="tStatus"data-sortable="true" data-filter-control="select" data-visible="false">Status</th>
+                  <th data-field="Status" data-sortable="true" data-filter-control="select">Status Message</th>
                   <th data-field="tMemory" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Memory</th>
                   <th data-field="tCores" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
                   <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
@@ -233,6 +239,10 @@
                 if (item.CUDAVersion) item.tCUDAVersion = item.CUDAVersion.Major + '.' + item.CUDAVersion.Minor;
 
                 if (item.Architecture) item.tArchitecture = item.Architecture;
+
+                // Format status message
+                item.tStatus = item.Status.replace(/ \{.+/g, '');
+                item.tStatusMessage = item.Status;
 
                 // Format device state
                 const enumstatus = ['Enabled', 'Disabled', 'Unsupported'];

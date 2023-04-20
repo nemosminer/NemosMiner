@@ -12,7 +12,6 @@ function formatMiners(data) {
 
     // Format the pool and algorithm data
     if (item.Workers.length > 0) {
-      // item.tPrimaryAlgorithm = item.Algorithms[0];
       item.tPrimaryMinerFee = item.Workers[0].Fee;
       item.tPrimaryHashrate = item.Workers[0].Hashrate;
       if (item.Workers[0].Pool) {
@@ -20,11 +19,11 @@ function formatMiners(data) {
         item.tPrimaryCurrency = item.Workers[0].Pool.Currency;
         item.tPrimaryCoinName = item.Workers[0].Pool.CoinName;
         item.tPrimaryPool = item.Workers[0].Pool.BaseName;
+        item.tPrimaryPoolVariant = item.Workers[0].Pool.Name;
         item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
         item.tPrimaryPoolUser = item.Workers[0].Pool.User;
       }
       if (item.Workers.length > 1) {
-        // item.tPrimaryAlgorithm = item.Algorithms[1];
         item.tSecondaryHashrate = item.Workers[1].Hashrate;
         item.tSecondaryMinerFee = item.Workers[1].Fee;
         if (item.Workers[1].Pool) {
@@ -32,6 +31,7 @@ function formatMiners(data) {
           item.tSecondaryCurrency = item.Workers[1].Pool.Currency;
           item.tSecondaryCoinName = item.Workers[1].Pool.CoinName;
           item.tSecondaryPool = item.Workers[1].Pool.BaseName;
+          item.tSecondaryPoolVariant = item.Workers[1].Pool.Name;
           item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
           item.tSecondaryPoolUser = item.Workers[1].Pool.User;
         }
@@ -40,7 +40,6 @@ function formatMiners(data) {
 
     try {
       if (item.WorkersRunning.length > 0) {
-        // item.tPrimaryAlgorithm = item.Algorithms[0];
         item.tPrimaryMinerFee = item.WorkersRunning[0].Fee;
         item.tPrimaryHashrate = item.WorkersRunning[0].Hashrate;
         if (item.WorkersRunning[0].Pool) {
@@ -48,12 +47,12 @@ function formatMiners(data) {
           item.tPrimaryCurrency = item.WorkersRunning[0].Pool.Currency;
           item.tPrimaryCoinName = item.WorkersRunning[0].Pool.CoinName;
           item.tPrimaryPool = item.WorkersRunning[0].Pool.BaseName;
+          item.tPrimaryPoolVariant = item.Workers[0].Pool.Name;
           item.tPrimaryPoolFee = item.WorkersRunning[0].Pool.Fee;
           item.tPrimaryPoolUser = item.WorkersRunning[0].Pool.User;
         }
 
         if (item.WorkersRunning.length > 1) {
-          // item.tSecondaryAlgorithm = item.Algorithms[1];
           item.tSecondaryHashrate = item.WorkersRunning[1].Hashrate;
           item.tSecondaryMinerFee = item.WorkersRunning[1].Fee;
           if (item.WorkersRunning[1].Pool) {
@@ -61,6 +60,7 @@ function formatMiners(data) {
             item.tSecondaryCurrency = item.WorkersRunning[1].Pool.Currency;
             item.tSecondaryCoinName = item.WorkersRunning[1].Pool.CoinName;
             item.tSecondaryPool = item.WorkersRunning[1].Pool.BaseName;
+            item.tSecondaryPoolVariant = item.Workers[1].Pool.Name;
             item.tSecondaryPoolFee = item.WorkersRunning[1].Pool.Fee;
             item.tSecondaryPoolUser = item.WorkersRunning[1].Pool.User;
           }
@@ -100,6 +100,20 @@ function formatMiners(data) {
       item.tWarmupTimes0 = item.WarmupTimes[0];
       item.tWarmupTimes1 = item.WarmupTimes[1];
     }
+  });
+  return data;
+}
+
+function formatPools(data) {
+  // This function can alter the returned data before building the table, formatting it in a way
+  // that is easier to display and manipulate in a table
+  $.each(data, function(index, item) {
+    // Format miner link
+    if (config.UsemBTC) factor = 1000;
+    else factor = 1;
+    item.tPrice = item.Price * factor;
+    item.tPrice_Bias = item.Price_Bias * factor;
+    item.tStablePrice = item.StablePrice * factor;
   });
   return data;
 }
