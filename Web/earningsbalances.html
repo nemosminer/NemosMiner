@@ -443,7 +443,7 @@
                               avghourlygrowth: item.AvgHourlyGrowth,
                               avgdailygrowth: item.AvgDailyGrowth,
                               avgweeklygrowth: item.AvgWeeklyGrowth,
-                              payoutthreshold: parseFloat(item.PayoutThreshold) / factor,
+                              payoutthreshold: parseFloat(item.PayoutThreshold).toFixed(config.DecimalsMax) / factor,
                               payoutthresholdcurrency: item.PayoutThresholdCurrency,
                               rate: currencyrate,
                               rates: rates,
