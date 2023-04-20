@@ -37,14 +37,15 @@
             >
             <thead>
               <tr>
-                <th data-switchable="false" data-field="StatusMessage" data-class="hidden statuscolorizer"></th>
+                <th data-switchable="false" data-field="tStatusMessage" data-class="hidden statuscolorizer"></th>
                 <th data-field="state" data-checkbox="true"></th>
                 <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
                 <th data-field="tName" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
                 <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">Miner</th>
                 <th data-field="Version" data-sortable="true" data-filter-control="select" data-visible="false">Version</th>
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
-                <th data-field="tStatusMessage" data-sortable="true" data-filter-control="select">Status</th>
+                <th data-field="tStatus" data-sortable="true" data-filter-control="select" data-visible="false">Status</th>
+                <th data-field="StatusMessage" data-sortable="true" data-filter-control="select">Status Message</th>
                 <th data-field="Earning" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)" data-visible="false">Earning</th>
                 <th data-field="Earning_Bias" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning Bias</th>
                 <th data-field="PowerCost" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Power Cost</th>
@@ -59,6 +60,7 @@
                 <th data-field="tPrimaryCurrency" data-sortable="true" data-filter-control="select" data-visible="false">Primary Currency</th>
                 <th data-field="tPrimaryCoinName" data-sortable="true" data-filter-control="select" data-visible="false">Primary CoinName</th>
                 <th data-field="tPrimaryPool" data-sortable="true" data-filter-control="select" >Primary Pool</th>
+                <th data-field="tPrimaryPoolVariant" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Primary Pool (Variant)</th>
                 <th data-field="tPrimaryPoolUser" data-sortable="true" data-filter-control="select" data-visible="false">Primary User</th>
                 <th data-field="tPrimaryHashrateLive" data-align="right" data-sortable="true" data-formatter="formatHashrateValue">Live<br>Hashrate</th>
                 <th data-field="tPrimaryHashrate" data-align="right" data-sortable="true" data-formatter="formatHashrateValue">Benchmarked<br>Hashrate</th>
@@ -68,6 +70,7 @@
                 <th data-field="tSecondaryCurrency" data-sortable="true" data-filter-control="select" data-visible="false">Secondary Currency</th>
                 <th data-field="tSecondaryCoinName" data-sortable="true" data-filter-control="select" data-visible="false">Secondary CoinName</th>
                 <th data-field="tSecondaryPool" data-align="right" data-sortable="true" data-filter-control="select">Secondary Pool</th>
+                <th data-field="tSecondaryPoolVariant" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Secondary Pool (Variant)</th>
                 <th data-field="tSecondaryPoolUser" data-sortable="true" data-filter-control="select" data-visible="false">Secondary User</th>
                 <th data-field="tSecondaryHashrateLive" data-align="right" data-sortable="true" data-formatter="formatHashrateValue">Live<br>Hashrate</th>
                 <th data-field="tSecondaryHashrate" data-align="right" data-sortable="true" data-formatter="formatHashrateValue">Benchmarked<br>Hashrate</th>

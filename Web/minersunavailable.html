@@ -62,6 +62,7 @@
                 <th data-field="tPrimaryCurrency" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Primary Currency</th>
                 <th data-field="tPrimaryCoinName" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Primary CoinName</th>
                 <th data-field="tPrimaryPool" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Primary Pool</th>
+                <th data-field="tPrimaryPoolVariant" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Primary Pool (Variant)</th>
                 <th data-field="tPrimaryPoolUser" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Primary User</th>
                 <th data-field="tPrimaryHashrate" data-align="right" data-sortable="true" data-formatter="formatHashrateValue" class="text-nowrap">Primary<br>Hashrate</th>
                 <th data-field="tPrimaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Primary Pool Fee</th>
@@ -70,6 +71,7 @@
                 <th data-field="tSecondaryCurrency" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Secondary Currency</th>
                 <th data-field="tSecondaryCoinName" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Secondary CoinName</th>
                 <th data-field="tSecondaryPool" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Secondary Pool</th>
+                <th data-field="tSecondaryPoolVariant" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Secondary Pool (Variant)</th>
                 <th data-field="tSecondaryPoolUser" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Secondary User</th>
                 <th data-field="tSecondaryHashrate" data-align="right" data-sortable="true" data-formatter="formatHashrateValue" class="text-nowrap">Secondary<br>Hashrate</th>
                 <th data-field="tSecondaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Secondary Pool Fee</th>
@@ -137,7 +139,7 @@
                         break;
                       case this.innerText.match(/^Stopping/)?.input:
                         $(this).parent('tr').addClass('miner-stopping');
-                        break
+                        break;
                       case this.innerText.match(/^Unavailable/)?.input:
                         $(this).parent('tr').addClass('miner-unavailable');
                         break;
@@ -258,10 +260,8 @@
                 }
               });
 
-              $(document).ready(function () {
-                $(".addlocalcurrency").each(function () {
-                  this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.Currency + ')';
-                });
+              $(".addlocalcurrency").each(function () {
+                this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.Currency + ')';
               });
             });
 
