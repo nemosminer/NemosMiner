@@ -1,6 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.Type -eq "NVIDIA" })) { Return }
 
-$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/3.33/gminer_3_33_windows64.zip"
+$Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/3.34/gminer_3_34_windows64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\miner.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -35,7 +35,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 2.0;                                           Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo kaspa --cuda 1 --opencl 0" } # XmRig-v6.18.1 is almost as fast but has no fee
     [PSCustomObject]@{ Algorithms = @("Octopus");                    Type = "NVIDIA"; Fee = @(0.03);  MinMemGiB = $MinerPools[0].Octopus.DAGSizeGiB + 0.77;      Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo octopus --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithms = @("ProgPowSero");                Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = $MinerPools[0].ProgPowSero.DAGSizeGiB + 0.77;  Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo sero --cuda 1 --opencl 0" }
-
+    [PSCustomObject]@{ Algorithms = @("SHA512256d");                 Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 1.0;                                           Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo sha512_256d --cuda 1 --opencl 0" }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
