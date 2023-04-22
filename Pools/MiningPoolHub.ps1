@@ -70,7 +70,7 @@ If ($PoolConfig.UserName) {
 
         # Add coin name
         If ($Current.coin_name -and $Currency) { 
-            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName ((Get-Culture).TextInfo.ToTitleCase($Current.coin_name.Trim().ToLower() -replace '[^A-Z0-9\$\.]') -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin')
+            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Current.coin_name
         }
 
         # Temp fix

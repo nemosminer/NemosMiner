@@ -67,13 +67,7 @@ If ($PriceField -and $Wallet) {
         $Divisor = 1000000 * ($Request.$_.mbtc_mh_factor -as [Double])
         $Fee = $Request.$_.Fees / 100
 
-        # Add coin name
-        If ($Request.$_.CoinName -and $Currency) { 
-            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName ((Get-Culture).TextInfo.ToTitleCase($Request.$_.CoinName.Trim().ToLower() -replace '[^A-Z0-9\$\.]') -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin')
-        }
-
         $Reasons = [System.Collections.Generic.List[String]]@()
-        # If ($Request.$_.conversion_disabled -eq 1) { $Reasons.Add("Conversion disabled at pool") } # Disabled: https://github.com/RainbowMiner/RainbowMiner/issues/2341
         If ($Request.$_.error) { $Reasons.Add($Request.$_.error) }
         If ($Request.$_.hashrate_last24h -eq 0) { $Reasons.Add("No hashrate at pool") }
         If ($PoolVariant -match ".+Plus$" -and $Request.$_.$PriceField -eq 0) { $Reasons.Add("Plus price -eq 0")}
