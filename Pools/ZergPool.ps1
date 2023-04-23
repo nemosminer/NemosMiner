@@ -99,7 +99,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
                     Fee                      = [Decimal]$Fee
                     Host                     = [String]$PoolHost
                     Name                     = [String]$PoolVariant
-                    Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency$(If ($Currency) { ",mc=$Currency" })$PayoutThresholdParameter"
+                    Pass                     = "c=$PayoutCurrency$(If ($Currency) { ",mc=$Currency" }),ID=$($PoolConfig.WorkerName)$PayoutThresholdParameter"
                     Port                     = If ($PoolConfig.SSL -eq "Always") { 0 } Else { [UInt16]$Request.$_.port }
                     PortSSL                  = If ($PoolConfig.SSL -eq "Never") { 0 } Else { [UInt16]$Request.$_.tls_port }
                     Price                    = [Double]$Stat.Live

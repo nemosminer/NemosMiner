@@ -258,7 +258,7 @@ Class Miner {
     hidden StopDataReader() { 
         If ($this.DataReaderJob) { 
             # Before stopping read data
-            If ($this.DataReaderJob.HasMoreData) { $this.Data += @($this.DataReaderJob | Stop-Job | Receive-Job) }
+            If ($this.DataReaderJob.HasMoreData) { $this.Data += @($this.DataReaderJob | Stop-Job | Receive-Job | Select-Object) }
             $this.DataReaderJob | Get-Job | Remove-Job | Out-Null
             $this.DataReaderJob = $null
         }
@@ -1005,19 +1005,16 @@ Function Get-CommandLineParameter {
 Function Get-Rate { 
     # Read exchange rates from min-api.cryptocompare.com, use stored data as fallback
     $RatesCacheFileName = "Cache\Rates.json"
-    $RatesCache = Get-Content -Path $RatesCacheFileName -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue
+    If (-not $Variables.Rates) { $Variables.Rates = Get-Content -Path $RatesCacheFileName -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue }
 
-    If (-not $RatesCache.Values) { $RatesCache = [PSCustomObject]@{ } }
-    $RatesValues = $RatesCache.Values
-    $AllCurrencies = $RatesCache.Currencies
     # Use stored currencies from last run
-    If (-not $Variables.BalancesCurrencies -and $Config.BalancesTrackerPollInterval) { $Variables.BalancesCurrencies = $AllCurrencies }
+    If (-not $Variables.BalancesCurrencies -and $Config.BalancesTrackerPollInterval) { $Variables.BalancesCurrencies = $Variables.Rates.PSObject.Properties.Name | Where-Object { $_ -eq  ($_ -replace "^m") } }
 
     $Variables.AllCurrencies = @(@($Config.Currency) + @($Config.Wallets.Keys) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies)) -replace "mBTC", "BTC" | Sort-Object -Unique
 
     If (-not $Variables.Rates.BTC.($Config.Currency) -or (Compare-Object @($Variables.Rates.PSObject.Properties.Name | Select-Object) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "=>") -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-(3, $Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum))) { 
         Try { 
-            $RatesValues = [PSCustomObject]@{ BTC = [PSCustomObject]@{} }
+            $Rates = [PSCustomObject]@{ BTC = [PSCustomObject]@{} }
             $TSymBatches = @()
             $TSyms = "BTC"
             $Variables.AllCurrencies | Where-Object { $_ -ne "mBTC" } | Select-Object -Unique | ForEach-Object { 
@@ -1033,26 +1030,43 @@ Function Get-Rate {
 
             $TSymBatches | ForEach-Object { 
                 (Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$($_)$($Config.CryptoCompareAPIKeyParam)&extraParams=$($Variables.Branding.BrandWebSite) Version $($Variables.Branding.Version)" -TimeoutSec 5 -ErrorAction Ignore).BTC | ForEach-Object { 
-                    $_.PSObject.Properties | ForEach-Object { $RatesValues.BTC | Add-Member @{ "$($_.Name)" = ($_.Value) } }
+                    $_.PSObject.Properties | ForEach-Object { $Rates.BTC | Add-Member @{ "$($_.Name)" = ($_.Value) } -Force }
                 }
             }
 
-            If ($RatesValues) { 
-                $Currencies = ($RatesValues.BTC | Get-Member -MemberType NoteProperty).Name
+            If ($Currencies = $Rates.BTC.PSObject.Properties.Name) { 
                 $Currencies | Select-Object | Where-Object { $_ -ne "BTC" } | ForEach-Object { 
                     $Currency = $_
-                    $RatesValues | Add-Member $Currency ($RatesValues.BTC.PSObject.Copy()) -Force
-                    ($RatesValues.$Currency | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
-                        $RatesValues.$Currency | Add-Member $_ ([Double]$RatesValues.BTC.$_ / $RatesValues.BTC.$Currency) -Force
+                    $Rates | Add-Member $Currency ($Rates.BTC | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) -Force
+                    $Rates.$Currency.PSObject.Properties.Name | ForEach-Object { 
+                        $Rates.$Currency | Add-Member $_ (($Rates.BTC.$_ / $Rates.BTC.$Currency) -as [Double]) -Force
+                    }
+                }
+
+                # Add mBTC
+                If ($Config.UsemBTC) { 
+                    $Currencies = $Rates.BTC.PSObject.Properties.Name
+                    $Currencies | ForEach-Object { 
+                        $Currency = $_
+                        $mCurrency = "m$($Currency)"
+                        $Rates | Add-Member $mCurrency ($Rates.$Currency | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json) -Force
+                        $Rates.$mCurrency.PSOBject.Properties.Name | ForEach-Object { 
+                            $Rates.$mCurrency | Add-Member $_ ([Double]$Rates.$Currency.$_ / 1000) -Force
+                        }
+                    }
+                    $Rates.PSOBject.Properties.Name | ForEach-Object { 
+                        $Currency = $_
+                        $Rates.PSOBject.Properties.Name | Where-Object { $_ -in $Currencies } | ForEach-Object { 
+                            $mCurrency = "m$($_)"
+                            $Rates.$Currency | Add-Member $mCurrency ([Double]$Rates.$Currency.$_ * 1000) -Force
+                        }
                     }
                 }
                 Write-Message -Level Info "Loaded currency exchange rates from 'min-api.cryptocompare.com'.$(If ($MissingCurrencies = Compare-Object $Currencies $Variables.AllCurrencies -PassThru) { " API does not provide rates for '$($MissingCurrencies -join ', ')'." })"
-                $Variables.Rates = $RatesValues
+                $Variables.Rates = $Rates
                 $Variables.RatesUpdated = (Get-Date).ToUniversalTime()
 
-                $RatesCache | Add-Member @{ Currencies = $Variables.AllCurrencies } -Force
-                $RatesCache | Add-Member @{ Values = $RatesValues } -Force
-                $RatesCache | ConvertTo-Json -Depth 5 | Out-File -FilePath $RatesCacheFileName -Encoding utf8NoBOM -Force -ErrorAction SilentlyContinue
+                $Variables.Rates | ConvertTo-Json -Depth 5 | Out-File -FilePath $RatesCacheFileName -Encoding utf8NoBOM -Force -ErrorAction SilentlyContinue
             }
         }
         Catch { 
@@ -1063,27 +1077,6 @@ Function Get-Rate {
             }
             Else { 
                 Write-Message -Level Warn "Could not load exchange rates from 'min-api.cryptocompare.com'."
-            }
-        }
-    }
-
-    If ($Config.UsemBTC) { 
-        # Add mBTC
-        $Currencies = ($Variables.Rates.BTC | Get-Member -MemberType NoteProperty).Name
-        $Currencies | ForEach-Object { 
-            $Currency = $_
-            $mCurrency = "m$($Currency)"
-            # $Variables.Rates | Add-Member $mCurrency ($Variables.Rates.$Currency | ConvertTo-Json -WarningAction SilentlyContinue | ConvertFrom-Json)
-            $Variables.Rates | Add-Member $mCurrency ($Variables.Rates.$Currency.PSObject.Copy()) -Force
-            ($Variables.Rates.$mCurrency | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
-                $Variables.Rates.$mCurrency | Add-Member $_ ([Double]$Variables.Rates.$Currency.$_ / 1000) -Force
-            }
-        }
-        ($Variables.Rates | Get-Member -MemberType NoteProperty).Name | ForEach-Object { 
-            $Currency = $_
-            ($RatesValues | Get-Member -MemberType NoteProperty).Name | Where-Object { $_ -in $Currencies } | ForEach-Object { 
-                $mCurrency = "m$($_)"
-                $Variables.Rates.$Currency | Add-Member $mCurrency ([Double]$Variables.Rates.$Currency.$_ * 1000) -Force
             }
         }
     }
@@ -2918,11 +2911,11 @@ Function Add-CoinName {
         # This lets us ensure only one thread is trying to write to the file at a time. 
         $Mutex = New-Object System.Threading.Mutex($false, "$($PWD -replace '[^A-Z0-9]')_CoinData")
 
-        # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, update the coin names file and release mutex. Otherwise, display an error. 
+        # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, update the coin names file and release mutex
         If ($Mutex.WaitOne(1000)) { 
 
             If (-not $Variables.CurrencyAlgorithm.$Currency) { 
-                $Variables.CurrencyAlgorithm.$Currency = $Algorithm
+                $Variables.CurrencyAlgorithm.$Currency = Get-Algorithm $Algorithm
                 $Variables.CurrencyAlgorithm | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
             }
             If (-not $Variables.CoinNames.$Currency) { 
@@ -2941,17 +2934,10 @@ Function Get-CoinName {
         [String]$Currency
     )
 
-    If ($Currency) { 
-        If ($Variables.CoinNames.$Currency) { 
-            Return $Variables.CoinNames.$Currency
-        }
-
-        $Variables.CoinNames = Get-Content -Path ".\Data\CoinNames.json" | ConvertFrom-Json
-        If ($Variables.CoinNames.$Currency) { 
-            Return $Variables.CoinNames.$Currency
-        }
+    If ($Variables.CoinNames.$Currency) { 
+        Return $Variables.CoinNames.$Currency
     }
-    Return $null
+    Return
 }
 
 Function Get-EquihashCoinPers {

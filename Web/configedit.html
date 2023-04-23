@@ -53,8 +53,14 @@
                     <div style="padding-top: 0.2rem" title="Your NiceHash Bitcoin wallet address (must be between 26 and 35 chars long)&#10;configure only if different from main Bitcoin wallet address">
                       <label for="NiceHashWallet">NiceHash Bitcoin wallet address</label>
                       <input type="text" id="NiceHashWallet" name="NiceHashWallet" minlenght=26 maxlength=35 size=40>
-                      <input title="Tick if NiceHash wallet is a NiceHash internal address&#10;&#10;Note: NiceHash internal wallets have lower pool fees" type="checkbox" class="toggle-switch" id="NiceHashWalletIsInternal" name="NiceHashWalletIsInternal">
-                      <label title="Tick if NiceHash wallet is a NiceHash internal address&#10;&#10;Note: NiceHash internal wallets have lower pool fees" for="NiceHashWalletIsInternal">is internal</label>
+                    </div>
+                    <div title="Select NiceHash wallet address type">
+                      <label title="Select NiceHash wallet type&#10;&#10;Note: Internal wallets have lower pool fees&#10;but you must register the with NiceHash" for="NiceHashWalletIsInternal">NiceHash Bitcoin wallet address is a NiceHash</label>
+                      <select name="" id="NiceHashWalletIsInternal">
+                        <option value=internal>internal</option>
+                        <option value=external>external</option>
+                      </select>
+                      <label for="NiceHashWalletIsInternal">address</label>
                     </div>
                     <div title="Your NiceHash API Key&#10;taken from your NiceHash account settings&#10;If left empty NemosMiner cannot retrieve balance data from NiceHash internal wallet" for="NiceHashAPIKey">
                       <label for="NiceHashAPIKey">NiceHash API key</label>
@@ -567,10 +573,10 @@
               $(document.getElementById('NiceHashWallet')).trigger('change');
               document.getElementById('NiceHashAPIKey').value = config.NiceHashAPIKey || '';
               document.getElementById('NiceHashAPISecret').value = config.NiceHashAPISecret || '';
-              document.getElementById('NiceHashWalletIsInternal').checked = config.NiceHashWalletIsInternal || '';
+              if (config.NiceHashWalletIsInternal) document.getElementById('NiceHashWalletIsInternal').value = 'internal';
+              else document.getElementById('NiceHashWalletIsInternal').value = 'external';
               // NiceHashWalletIsInternal
               $(document.getElementById('NiceHashWallet')).change(function (event) {
-                document.getElementById('NiceHashWalletIsInternal').checked = Boolean(document.getElementById('NiceHashWallet').value);
                 document.getElementById('NiceHashWalletIsInternal').disabled = (document.getElementById('NiceHashWallet')).value.notmatch(/^[0-9A-Za-z]{34}$/);
               });
               document.getElementById('NiceHashOrganizationId').value = config.NiceHashOrganizationId || '';
@@ -781,9 +787,6 @@
 
               // Miner Runtime Settings
               document.getElementById('MinerWindowStyle').value = config.MinerWindowStyle.toLowerCase();
-              // if (config.MinerWindowStyle.toLowerCase() == 'hidden') document.getElementById('MinerWindowStyleHidden').checked = true;
-              // if (config.MinerWindowStyle.toLowerCase() == 'minimized') document.getElementById('MinerWindowStyleMinimized').checked = true;
-              // if (config.MinerWindowStyle.toLowerCase() == 'normal') document.getElementById('MinerWindowStyleNormal').checked = true;
               if (config.MinerWindowStyleNormalWhenBenchmarking) document.getElementById('MinerWindowStyleNormalWhenBenchmarking').checked = true;
               if (parseInt(config.CPUMinerProcessPriority) >= -2 && parseInt(config.CPUMinerProcessPriority) <= 1) document.getElementById('CPUMinerProcessPriority').value = config.CPUMinerProcessPriority;
               else document.getElementById('CPUMinerProcessPriority').value = -2;
@@ -1193,7 +1196,7 @@
                   config.NiceHashAPIKey = document.getElementById('NiceHashAPIKey').value = document.getElementById('NiceHashAPIKey').value.toString().trim();
                   config.NiceHashAPISecret = document.getElementById('NiceHashAPISecret').value = document.getElementById('NiceHashAPISecret').value.toString().trim();
                   config.NiceHashWallet = document.getElementById('NiceHashWallet').value = document.getElementById('NiceHashWallet').value.toString().trim();
-                  config.NiceHashWalletIsInternal = document.getElementById('NiceHashWalletIsInternal').checked;
+                  config.NiceHashWalletIsInternal = document.getElementById('NiceHashWalletIsInternal').value === "internal";
                   config.NiceHashOrganizationId = document.getElementById('NiceHashOrganizationId').value = document.getElementById('NiceHashOrganizationId').value.toString().trim();
                   config.ProHashingAPIKey = document.getElementById('ProHashingAPIKey').value = document.getElementById('ProHashingAPIKey').value.toString().trim();
                   config.ProHashingUserName = document.getElementById('ProHashingUserName').value = document.getElementById('ProHashingUserName').value.toString().trim();
@@ -1263,9 +1266,6 @@
 
                   // Miner Runtime Settings
                   config.MinerWindowStyle = document.getElementById('MinerWindowStyle').value;
-                  // if (document.getElementById('MinerWindowStyleHidden').checked) config.MinerWindowStyle = 'hidden';
-                  // if (document.getElementById('MinerWindowStyleMinimized').checked) config.MinerWindowStyle = 'minimized';
-                  // if (document.getElementById('MinerWindowStyleNormal').checked) config.MinerWindowStyle = 'normal';
                   config.MinerWindowStyleNormalWhenBenchmarking = document.getElementById('MinerWindowStyleNormalWhenBenchmarking').checked;
                   config.CPUMinerProcessPriority = parseInt(document.getElementById('CPUMinerProcessPriority').value);
                   config.GPUMinerProcessPriority = parseInt(document.getElementById('GPUMinerProcessPriority').value);

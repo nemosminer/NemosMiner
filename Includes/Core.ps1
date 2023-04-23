@@ -313,7 +313,7 @@ Do {
                                         }
                                     }
                                 }
-                                Remove-Variable Worker
+                                Remove-Variable Worker -ErrorAction Ignore
                             }
                             If ($Config.BadShareRatioThreshold -gt 0) { 
                                 $Miner.WorkersRunning.Pool.Algorithm | ForEach-Object { 
@@ -670,7 +670,7 @@ Do {
                     $NewMiners = [Miner[]]@()
                     Get-ChildItem -Path ".\Miners\*.ps1" | ForEach-Object { 
                         & $_
-                    } | Select-Object | ForEach-Object { 
+                    } | ForEach-Object { 
                         Try { 
                             $_ | Add-Member MinDataSample  ([Int]($Config.MinDataSample * (($_.Algorithms | Select-Object | ForEach-Object { $Config.MinDataSampleAlgoMultiplier.$_ }), 1 | Measure-Object -Maximum).Maximum))
                             $_ | Add-Member ProcessPriority $(If ($_.Type -eq "CPU") { $Config.CPUMinerProcessPriority } Else { $Config.GPUMinerProcessPriority })
@@ -970,7 +970,7 @@ Do {
                             $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
                         }
                     }
-                    Remove-Variable Worker
+                    Remove-Variable Worker -ErrorAction Ignore
                     $Miner.SetStatus([MinerStatus]::Idle)
                     $Miner.Info = ""
                     $Miner.WorkersRunning = @()
@@ -1147,7 +1147,7 @@ Do {
                             PoolRegion    = $Worker.Pool.Region
                         }
                     }
-                    Remove-Variable Worker
+                    Remove-Variable Worker -ErrorAction Ignore
                 }
             }
             ElseIf ($Miner.DataCollectInterval -ne $DataCollectInterval -or $Config.CalculatePowerCost -ne $Variables.CalculatePowerCost) {

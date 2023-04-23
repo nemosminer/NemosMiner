@@ -10,12 +10,37 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.3.4.3 23.04.2023
+=======================================
+
+Changes:
+- Core: Renamed algorithm 'Blake3Ironfish'  to 'IronFish'
+
+Enhancements:
+- Brains: Add error logging
+- Core / Includes.psm1: Optimize Get-Rate (less disk reads)
+- Legacy & Web GUI / Pool data: Show Price in mBTC when $UsemBIT -eq $true
+- Legacy GUI: Optimize table draw speed
+- Web GUI: Add 'Primary Pool (Variant)' & 'Secondary Pool (Variant)' columns to miner tables (hidden by default)
+
+Fixes:
+- BalanceTracker not updating PoolsLastEarnings data (regression from 4.3.0.0)
+- Brains: Convert null values to 0
+- Brains: Convert numeric string values to numbers
+- Brains: Invalid Plus price calculation (Regression from v4.3.4.1)
+- Core: Core crash when receiving $null from DataReaderJob
+
+Miner updates:
+- GMiner-v3.34
+- Rigel-v1.4.4
+- TeamRedMiner-v0.10.11
 
 
 ChangeLog NemosMiner 4.3.4.2 18.04.2023
 =======================================
 
 Fixes:
+- BalancesTracker: Crash when using HashCrypto or MiningDutch pools
 - Brains / ZergPool: Change sort order to select best paying currency
 - Brains / ZergPool: Default pool fee not set (Regression from 4.3.4.1)
 - Brains: Invalid Plus price calculation (Regression from v4.3.4.1)
@@ -40,8 +65,8 @@ Fixes:
 - SRBMinerMulti-v2.2.4: Could not generate miner objects for CryptoHashing pool
 
 Pools:
-- MiningPoolHub: Removed Coin variant, renamed MiningPoolHubCoins to MiningPoolHub
-- MiningPoolHub: Added *Plus variant
+- MiningPoolHub: Removed MiningPoolHubCoin variant, renamed MiningPoolHubCoins to MiningPoolHub
+- MiningPoolHub: Added MiningPoolHubPlus variant
 
 Miner updates:
 - GMiner-v3.32
@@ -226,7 +251,6 @@ Enhancements:
 
 Fixes:
 - 'MiningDutch' BalanceTracker blocking all other balances if pool is down
-- BalanceTracker not updating PoolsLastEarnings data (regression from 4.3.0.0)
 
 Miner updates:
 - NanoMiner-v3.7.7
