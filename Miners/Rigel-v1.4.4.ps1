@@ -1,6 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "NVIDIA")) { Return }
 
-$Uri = "https://github.com/rigelminer/rigel/releases/download/1.4.3/rigel-1.4.3-win.zip"
+$Uri = "https://github.com/rigelminer/rigel/releases/download/1.4.4/rigel-1.4.4-win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\Rigel.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
