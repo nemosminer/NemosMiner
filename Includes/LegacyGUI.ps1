@@ -53,7 +53,7 @@ Function CheckBoxSwitching_Click {
             $SwitchingDGV.Columns[4].FillWeight = 50 + ($SwitchingDGV.MinersBest_Combo | ForEach-Object { $_.Algorithms.Count } | Measure-Object -Maximum).Maximum * 25; $SwitchingDGV.Columns[4].HeaderText = "Algorithm(s)"
             $SwitchingDGV.Columns[5].FillWeight = 90 + ($SwitchingDGV.MinersBest_Combo | ForEach-Object { $_.Accounts.Count } | Measure-Object -Maximum).Maximum * 50; $SwitchingDGV.Columns[5].HeaderText = "Account(s)"
             $SwitchingDGV.Columns[6].FillWeight = 30; $SwitchingDGV.Columns[6].HeaderText = "Cycles"; $SwitchingDGV.Columns[6].DefaultCellStyle.Alignment = "MiddleRight"; $SwitchingDGV.Columns[6].HeaderCell.Style.Alignment = "MiddleRight"
-            $SwitchingDGV.Columns[7].FillWeight = 35
+            $SwitchingDGV.Columns[7].FillWeight = 35; $SwitchingDGV.Columns[7].DefaultCellStyle.Alignment = "MiddleRight"; $SwitchingDGV.Columns[7].HeaderCell.Style.Alignment = "MiddleRight"
             $SwitchingDGV.Columns[8].FillWeight = 30 + ($SwitchingDGV.MinersBest_Combo | ForEach-Object { $_.DeviceNames.Count } | Measure-Object -Maximum).Maximum * 15; $SwitchingDGV.Columns[8].HeaderText = "Device(s)"
             $SwitchingDGV.Columns[9].FillWeight = 30
         }
@@ -284,7 +284,7 @@ Function Update-TabControl {
                         If ($_) { 
                             $ToolTip[$I] = "$($ToolTip[$I])`n$($Pool): {0:N$($Config.DecimalsMax)} $($Config.Currency)" -f $_
                         }
-                        $I++
+                        $I ++
                     }
                 }
                 Remove-Variable Pool
@@ -298,7 +298,7 @@ Function Update-TabControl {
                             $EarningsChart.Series[$Pool].Points[$I].ToolTip = "$($ToolTip[$I])`nTotal: {0:N$($Config.DecimalsMax)} $($Config.Currency)" -f $Daysum[$I]
                         }
                     }
-                    $I++
+                    $I ++
                 }
 
                 $ChartArea.AxisY.Maximum = ($DaySum | Measure-Object -Maximum).Maximum * 1.05
@@ -587,7 +587,7 @@ Function Form_Resize {
             If ($BalancesDGVHeight -gt $TabControl.Height / 2) { 
                 $EarningsChart.Height = $TabControl.Height / 2
                 $BalancesDGV.ScrollBars = "Vertical"
-                $BalancesLabel.Location = [System.Drawing.Point]::new(8, ($TabControl.Height / 2 - 20))
+                $BalancesLabel.Location = [System.Drawing.Point]::new(8, ($TabControl.Height / 2 - 10))
             }
             Else { 
                 $EarningsChart.Height = $TabControl.Height - $BalancesDGVHeight - 46
@@ -601,7 +601,7 @@ Function Form_Resize {
             $EarningsChart.Height = $BalancesLabel.Top + 36
         }
         $BalancesDGV.Location = [System.Drawing.Point]::new(10, $BalancesLabel.Bottom)
-        $BalancesDGV.Height = $TabControl.Height - $BalancesLabel.Bottom - 58
+        $BalancesDGV.Height = $TabControl.Height - $BalancesLabel.Bottom - 48
 
         $LaunchedMinersDGV.Height = $LaunchedMinersDGV.RowTemplate.Height * $Variables.MinersBest_Combo.Count + $LaunchedMinersDGV.ColumnHeadersHeight
         If ($LaunchedMinersDGV.Height -gt $TabControl.Height / 2) { 
