@@ -23,7 +23,7 @@ Version date:   23 April 2023
 #>
 
 class NanoMiner : Miner { 
-    CreateConfigFiles() { 
+    [Void] CreateConfigFiles() { 
         $Parameters = $this.Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue
 
         Try { 
@@ -88,4 +88,3 @@ class NanoMiner : Miner {
         Return $null
     }
 }
-

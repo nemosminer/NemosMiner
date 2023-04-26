@@ -66,4 +66,3 @@ class Nheq : Miner {
         Return $null
     }
 }
-

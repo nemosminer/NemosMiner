@@ -23,7 +23,7 @@ Version date:   23 April 2023
 #>
 
 class Fireice : Miner { 
-    CreateConfigFiles() { 
+    [Void] CreateConfigFiles() { 
         Try { 
             $Parameters = $this.Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue
             $ConfigFile = "$(Split-Path $this.Path)\$($Parameters.ConfigFile.FileName)"
@@ -49,7 +49,7 @@ class Fireice : Miner {
                 $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $Parameters.HwDetectArguments -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.MinerWindowStyle -Priority $this.ProcessPriority -EnvBlock $this.Environment -JobName $this.Info -LogFile $this.LogFile
 
                 If ($this.Process) { 
-                    For ($WaitForThreadsConfig = 0; $WaitForThreadsConfig -le 60; $WaitForThreadsConfig++) { 
+                    For ($WaitForThreadsConfig = 0; $WaitForThreadsConfig -le 60; $WaitForThreadsConfig ++) { 
                         $this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($Parameters.HwDetectArguments)*" }).ProcessId)
                         If ($this.ProcessId  -and (Test-Path -Path $PlatformThreadsConfigFile -PathType Leaf)) { 
                             #Read hw config created by miner

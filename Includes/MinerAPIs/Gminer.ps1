@@ -75,4 +75,3 @@ class Gminer : Miner {
         Return $null
     }
 }
-

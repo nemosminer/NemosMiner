@@ -77,4 +77,3 @@ class Trex : Miner {
         Return $null
     }
 }
-

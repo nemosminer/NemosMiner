@@ -23,7 +23,7 @@ Version date:   23 April 2023
 #>
 
 class XmRig : Miner { 
-    CreateConfigFiles() { 
+    [Void] CreateConfigFiles() { 
         $Parameters = $this.Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue
 
         Try { 
@@ -51,7 +51,7 @@ class XmRig : Miner {
 
                     If ($this.Process) { 
                         $this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($Parameters.HwDetectArguments)*" }).ProcessId)
-                        For ($WaitForThreadsConfig = 0; $WaitForThreadsConfig -le 60; $WaitForThreadsConfig++) { 
+                        For ($WaitForThreadsConfig = 0; $WaitForThreadsConfig -le 60; $WaitForThreadsConfig ++) { 
                             If ($ThreadsConfig = @(Get-Content $ThreadsConfigFile -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue).threads) { 
                                 If ($this.DeviceNames -like "GPU#*") { 
                                     ConvertTo-Json -InputObject @($ThreadsConfig | Sort-Object -Property Index -Unique) -Depth 10 | Out-File -FilePath $ThreadsConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue

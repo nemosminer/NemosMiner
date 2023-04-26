@@ -68,4 +68,3 @@ class Ccminer : Miner {
         Return $null
     }
 }
-

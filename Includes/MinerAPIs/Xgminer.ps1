@@ -112,4 +112,3 @@ class Xgminer : Miner {
         Return $null
     }
 }
-

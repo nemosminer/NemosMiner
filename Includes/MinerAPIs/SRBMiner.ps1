@@ -23,7 +23,6 @@ Version date:   23 April 2023
 #>
 
 class SRBMiner : Miner { 
-
     [Object]GetMinerData () { 
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }

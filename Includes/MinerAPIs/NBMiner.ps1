@@ -75,5 +75,3 @@ class NBMiner : Miner {
         Return $null
     }
 }
-
-
