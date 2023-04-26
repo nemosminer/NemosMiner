@@ -1,6 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -in @("AMD", "INTEL", "NVIDIA"))) { Return }
 
-$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.73/lolMiner_v1.73_Win64.zip"
+$Uri = "https://github.com/Lolliedieb/lolMiner-releases/releases/download/1.75/lolMiner_v1.75_Win64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\lolminer.exe"
 $DeviceEnumerator = "Bus"
@@ -8,6 +8,7 @@ $DeviceEnumerator = "Bus"
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Autolykos2");                 Type = "AMD"; Fee = @(0.015);      MinMemGiB = $MinerPools[0].Autolykos2.DAGSizeGiB + 0.77;   Minerset = 1; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @("RDNA3");                Arguments = " --algo AUTOLYKOS2" }
     [PSCustomObject]@{ Algorithms = @("BeamV3");                     Type = "AMD"; Fee = @(0.01);       MinMemGiB = 6.0;                                           MinerSet = 0; WarmupTimes = @(45, 50); ExcludeGPUArchitecture = @("RDNA3");                Arguments = " --algo BEAM-III" }
+    [PSCustomObject]@{ Algorithms = @("Blake3");                     Type = "AMD"; Fee = @(0.0075);     MinMemGiB = 2.0;                                           Minerset = 1; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @("CGN1", "CGN2");         Arguments = " --algo ALEPH" }
     [PSCustomObject]@{ Algorithms = @("Cuckoo29");                   Type = "AMD"; Fee = @(0.02);       MinMemGiB = 6.0;                                           MinerSet = 0; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @("RDNA3");                Arguments = " --algo C29AE" }
     [PSCustomObject]@{ Algorithms = @("Cuckaroo29B");                Type = "AMD"; Fee = @(0.02);       MinMemGiB = 6.0;                                           Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @("RDNA3");                Arguments = " --algo CR29-40" }
     [PSCustomObject]@{ Algorithms = @("Cuckaroo29S");                Type = "AMD"; Fee = @(0.02);       MinMemGiB = 6.0;                                           Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @("RDNA3");                Arguments = " --algo CR29-32" }
@@ -28,7 +29,7 @@ $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithms = @("EthashLowMem");               Type = "AMD"; Fee = @(0.007);      MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @();                       Arguments = " --algo ETHASH" } # PhoenixMiner-v6.2c is faster
 #   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "Blake3");     Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @();                       Arguments = " --algo ETHASH --dualmode ALEPHDUAL" }
 #   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "kHeavyHash"); Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @("RDNA1");                Arguments = " --algo ETHASH --dualmode KASPADUAL" }
-#   [PSCustomObject]@{ Algorithms = @("IronFish");                   Type = "AMD"; Fee = @(0.0075);     MinMemGiB = 2.0;                                           Minerset = 1; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @();                       Arguments = " --algo IRONFISH" }
+    [PSCustomObject]@{ Algorithms = @("IronFish");                   Type = "AMD"; Fee = @(0.0075);     MinMemGiB = 2.0;                                           Minerset = 1; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @("CGN1", "CGN2");         Arguments = " --algo IRONFISH" }
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Type = "AMD"; Fee = @(0.0075);     MinMemGiB = 2.0;                                           Minerset = 1; WarmupTimes = @(60, 50); ExcludeGPUArchitecture = @("RDNA3");                Arguments = " --algo KASPA" }
     [PSCustomObject]@{ Algorithms = @("NexaPow");                    Type = "AMD"; Fee = @(0.02);       MinMemGiB = 2.0;                                           Minerset = 2; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @("CGN1", "CGN2", "CGN3"); Arguments = " --algo NEXA" }
     [PSCustomObject]@{ Algorithms = @("UbqHash");                    Type = "AMD"; Fee = @(0.007);      MinMemGiB = $MinerPools[0].UbqHash.DAGSizeGiB + 0.77;      MinerSet = 0; WarmupTimes = @(60, 70); ExcludeGPUArchitecture = @("RDNA3");                Arguments = " --algo UBQHASH" }
