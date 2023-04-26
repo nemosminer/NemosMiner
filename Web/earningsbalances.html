@@ -299,7 +299,7 @@
                         footer: function(data) {
                           // Loop through all datasets to get the actual total of the index
                           var total = 0;
-                          for (var i = 0; i < data.length; i++) total += data[i].raw;
+                          for (var i = 0; i < data.length; i ++) total += data[i].raw;
                           return 'Total: ' + total.toFixed(config.DecimalsMax) + ' ' + currency;
                         }
                       },
@@ -479,12 +479,12 @@
                             // build totals
                             $.each(currencies, function(cindex, currency) {
                               if (rates[item.Currency] && rates[currency]) {
-                                  data_sum['growth1'][currency]   += item.Growth1 * rates[item.Currency][currency];
-                                  data_sum['growth6'][currency]   += item.Growth6 * rates[item.Currency][currency];
-                                  data_sum['growth24'][currency]  += item.Growth24 * rates[item.Currency][currency];
+                                  data_sum['growth1'][currency]  += item.Growth1 * rates[item.Currency][currency];
+                                  data_sum['growth6'][currency]  += item.Growth6 * rates[item.Currency][currency];
+                                  data_sum['growth24'][currency] += item.Growth24 * rates[item.Currency][currency];
                                   data_sum['growth168'][currency] += item.Growth168 * rates[item.Currency][currency];
                                   data_sum['growth720'][currency] += item.Growth720 * rates[item.Currency][currency];
-                                  data_sum['balances'][currency]  += item.Balance * rates[item.Currency][currency];
+                                  data_sum['balances'][currency] += item.Balance * rates[item.Currency][currency];
                               }
                             });
 

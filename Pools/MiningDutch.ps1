@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningDutch.ps1
-Version:        4.3.4.3
+Version:        4.3.4.4
 Version date:   05 April 2023
 #>
 

@@ -134,7 +134,11 @@
     }
   },
   "MiningPoolHub": {
-    "Algorithm": [],
+    "Algorithm": [
+      "-Neoscrypt",
+      "-Skein",
+      "-VertHash"
+    ],
     "AutoExchange": true,
     "BalancesKeepAlive": 90, // No expiration communicated by pool
     "BrainConfig": {

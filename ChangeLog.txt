@@ -10,6 +10,22 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.3.4.4 26.04.2023
+=======================================
+
+Changes:
+- Core / Includes.psm1: Remove redundant code
+
+Enhancements:
+- Brains: Workaround for some div/0 errors
+- Core / Includes.psm1: Optimize function 'Add-CoinName'
+- Legacy GUI: Add balance currency tool tips
+
+Miner updates:
+- lolMiner-v1.75
+- TeamBlackMiner-v1.94: Adjust memory limits
+
+
 ChangeLog NemosMiner 4.3.4.3 23.04.2023
 =======================================
 

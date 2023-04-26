@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Hiveon.ps1
-Version:        4.3.4.3
-Version date:   23 April 2023
+Version:        4.3.4.4
+Version date:   26 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -48,7 +48,7 @@ If ($PoolConfig.Wallets) {
             $Request = Invoke-RestMethod -Uri "https://Hiveon.net/api/v1/stats/pool" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec 3
         }
         Catch { 
-            $APICallFails++
+            $APICallFails ++
             Start-Sleep -Seconds ($APICallFails * 3)
         }
     } While (-not $Request -and $APICallFails -lt 3)

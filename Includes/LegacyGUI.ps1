@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           LegacyGUI.psm1
-Version:        4.3.4.3
-Version date:   23 April 2023
+Version:        4.3.4.4
+Version date:   26 April 2023
 #>
 
 # [Void] [System.Windows.Forms.Application]::EnableVisualStyles()
@@ -229,88 +229,92 @@ Function Update-TabControl {
             }
 
             If (Test-Path -Path ".\Data\EarningsChartData.json" -PathType Leaf) { 
-                $Datasource = Get-Content -Path ".\Data\EarningsChartData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+                Try { 
+                    $Datasource = Get-Content -Path ".\Data\EarningsChartData.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
 
-                $ChartTitle = New-Object System.Windows.Forms.DataVisualization.Charting.Title
-                $ChartTitle.Alignment = "TopCenter"
-                $ChartTitle.Font = [System.Drawing.Font]::new("Arial", 10)
-                $ChartTitle.Text = "Earnings of the past $($DataSource.Labels.Count) active days"
-                $EarningsChart.Titles.Clear()
-                $EarningsChart.Titles.Add($ChartTitle)
+                    $ChartTitle = New-Object System.Windows.Forms.DataVisualization.Charting.Title
+                    $ChartTitle.Alignment = "TopCenter"
+                    $ChartTitle.Font = [System.Drawing.Font]::new("Arial", 10)
+                    $ChartTitle.Text = "Earnings of the past $($DataSource.Labels.Count) active days"
+                    $EarningsChart.Titles.Clear()
+                    $EarningsChart.Titles.Add($ChartTitle)
 
-                $ChartArea = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
-                $ChartArea.AxisX.Enabled = 0
-                $ChartArea.AxisX.Interval = 1
-                $ChartArea.AxisY.IsMarginVisible = $false
-                $ChartArea.AxisY.LabelAutoFitStyle = 16
-                $ChartArea.AxisX.LabelStyle.Enabled = $true
-                $ChartArea.AxisX.Maximum = $Datasource.Labels.Count + 1
-                $ChartArea.AxisX.Minimum = 0
-                $ChartArea.AxisX.IsMarginVisible = $false
-                $ChartArea.AxisX.MajorGrid.Enabled = $false
-                $ChartArea.AxisY.Interval = [Math]::Ceiling(($Datasource.DaySum | Measure-Object -Maximum).Maximum / 4)
-                $ChartArea.AxisY.LabelAutoFitStyle = $ChartArea.AxisY.labelAutoFitStyle - 4
-                $ChartArea.AxisY.MajorGrid.Enabled = $true
-                $ChartArea.AxisY.MajorGrid.LineColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"#FFFFFF"
-                $ChartArea.AxisY.Title = $Config.Currency
-                $ChartArea.AxisY.ToolTip = "Total Earnings per day"
-                $ChartArea.BackColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"#2B3232" 
-                $ChartArea.BackGradientStyle = 3
-                $ChartArea.BackSecondaryColor = [System.Drawing.Color]::FromArgb(255, 224, 224, 224) #"#777E7E"
+                    $ChartArea = New-Object System.Windows.Forms.DataVisualization.Charting.ChartArea
+                    $ChartArea.AxisX.Enabled = 0
+                    $ChartArea.AxisX.Interval = 1
+                    $ChartArea.AxisY.IsMarginVisible = $false
+                    $ChartArea.AxisY.LabelAutoFitStyle = 16
+                    $ChartArea.AxisX.LabelStyle.Enabled = $true
+                    $ChartArea.AxisX.Maximum = $Datasource.Labels.Count + 1
+                    $ChartArea.AxisX.Minimum = 0
+                    $ChartArea.AxisX.IsMarginVisible = $false
+                    $ChartArea.AxisX.MajorGrid.Enabled = $false
+                    $ChartArea.AxisY.Interval = [Math]::Ceiling(($Datasource.DaySum | Measure-Object -Maximum).Maximum / 4)
+                    $ChartArea.AxisY.LabelAutoFitStyle = $ChartArea.AxisY.labelAutoFitStyle - 4
+                    $ChartArea.AxisY.MajorGrid.Enabled = $true
+                    $ChartArea.AxisY.MajorGrid.LineColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"#FFFFFF"
+                    $ChartArea.AxisY.Title = $Config.Currency
+                    $ChartArea.AxisY.ToolTip = "Total Earnings per day"
+                    $ChartArea.BackColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"#2B3232" 
+                    $ChartArea.BackGradientStyle = 3
+                    $ChartArea.BackSecondaryColor = [System.Drawing.Color]::FromArgb(255, 224, 224, 224) #"#777E7E"
 
-                $EarningsChart.ChartAreas.Clear()
-                $EarningsChart.ChartAreas.Add($ChartArea)
-                $EarningsChart.Series.Clear()
+                    $EarningsChart.ChartAreas.Clear()
+                    $EarningsChart.ChartAreas.Add($ChartArea)
+                    $EarningsChart.Series.Clear()
 
-                $Color = @(255, 255, 255, 255) #"FFFFFF"
+                    $Color = @(255, 255, 255, 255) #"FFFFFF"
 
-                $DaySum = @(0) * $DataSource.Labels.Count
-                $ToolTip = $DataSource.Labels.Clone()
+                    $DaySum = @(0) * $DataSource.Labels.Count
+                    $ToolTip = $DataSource.Labels.Clone()
 
-                ForEach ($Pool in $DataSource.Earnings.PSObject.Properties.Name) { 
+                    ForEach ($Pool in $DataSource.Earnings.PSObject.Properties.Name) { 
 
-                    $Color = (Get-NextColor -Color $Color -Factors -0, -20, -20, -20)
+                        $Color = (Get-NextColor -Color $Color -Factors -0, -20, -20, -20)
 
-                    $EarningsChart.Series.Add($Pool)
-                    $EarningsChart.Series[$Pool].ChartType = "StackedColumn"
-                    $EarningsChart.Series[$Pool].BorderWidth = 3
-                    $EarningsChart.Series[$Pool].Color = [System.Drawing.Color]::FromArgb($Color[0], $Color[1], $Color[2], $Color[3])
+                        $EarningsChart.Series.Add($Pool)
+                        $EarningsChart.Series[$Pool].ChartType = "StackedColumn"
+                        $EarningsChart.Series[$Pool].BorderWidth = 3
+                        $EarningsChart.Series[$Pool].Color = [System.Drawing.Color]::FromArgb($Color[0], $Color[1], $Color[2], $Color[3])
+
+                        $I = 0
+                        $Datasource.Earnings.$Pool | ForEach-Object { 
+                            $_ *= $Variables.Rates.BTC.($Config.Currency)
+                            $EarningsChart.Series[$Pool].Points.addxy(0, "{0:N$($Variables.Digits)}" -f $_) | Out-Null
+                            $Daysum[$I] += $_
+                            If ($_) { 
+                                $ToolTip[$I] = "$($ToolTip[$I])`n$($Pool): {0:N$($Config.DecimalsMax)} $($Config.Currency)" -f $_
+                            }
+                            $I ++
+                        }
+                    }
+                    Remove-Variable Pool
 
                     $I = 0
-                    $Datasource.Earnings.$Pool | ForEach-Object { 
-                        $_ *= $Variables.Rates.BTC.($Config.Currency)
-                        $EarningsChart.Series[$Pool].Points.addxy(0, "{0:N$($Variables.Digits)}" -f $_) | Out-Null
-                        $Daysum[$I] += $_
-                        If ($_) { 
-                            $ToolTip[$I] = "$($ToolTip[$I])`n$($Pool): {0:N$($Config.DecimalsMax)} $($Config.Currency)" -f $_
+                    $DataSource.Labels | ForEach-Object { 
+                        $ChartArea.AxisX.CustomLabels.Add($I +0.5, $I + 1.5, " $_ ")
+                        $ChartArea.AxisX.CustomLabels[$I].ToolTip = "$($ToolTip[$I])`nTotal: {0:N$($Config.DecimalsMax)} $($Config.Currency)" -f $Daysum[$I]
+                        ForEach ($Pool in ($DataSource.Earnings.PSObject.Properties.Name)) { 
+                            If ($Datasource.Earnings.$Pool[$I]) { 
+                                $EarningsChart.Series[$Pool].Points[$I].ToolTip = "$($ToolTip[$I])`nTotal: {0:N$($Config.DecimalsMax)} $($Config.Currency)" -f $Daysum[$I]
+                            }
                         }
                         $I ++
                     }
-                }
-                Remove-Variable Pool
 
-                $I = 0
-                $DataSource.Labels | ForEach-Object { 
-                    $ChartArea.AxisX.CustomLabels.Add($I +0.5, $I + 1.5, " $_ ")
-                    $ChartArea.AxisX.CustomLabels[$I].ToolTip = "$($ToolTip[$I])`nTotal: {0:N$($Config.DecimalsMax)} $($Config.Currency)" -f $Daysum[$I]
-                    ForEach ($Pool in ($DataSource.Earnings.PSObject.Properties.Name)) { 
-                        If ($Datasource.Earnings.$Pool[$I]) { 
-                            $EarningsChart.Series[$Pool].Points[$I].ToolTip = "$($ToolTip[$I])`nTotal: {0:N$($Config.DecimalsMax)} $($Config.Currency)" -f $Daysum[$I]
-                        }
-                    }
-                    $I ++
+                    $ChartArea.AxisY.Maximum = ($DaySum | Measure-Object -Maximum).Maximum * 1.05
                 }
-
-                $ChartArea.AxisY.Maximum = ($DaySum | Measure-Object -Maximum).Maximum * 1.05
+                Catch {}
             }
-
             If ($Config.BalancesTrackerPollInterval -gt 0) { 
                 If ($Variables.Balances) { 
                     $BalancesLabel.Text = "Balances data - Updated $(($Variables.Balances.Values.LastUpdated | Sort-Object | Select-Object -Last 1).ToLocalTime().ToString())"
 
                     $BalancesDGV.BeginInit()
                     $BalancesDGV.ClearSelection()
+                    $Currency = If ($Config.BalancesShowInMainCurrency) { $Config.Currency } Else { $_.Currency}
                     $BalancesDGV.DataSource = $Variables.Balances.Values | Select-Object @(
+                        @{ Name = "Currency"; Expression = { $_.Currency } }, 
                         @{ Name = "Pool [Currency]"; Expression = { "$($_.Pool) [$($_.Currency)]" } }, 
                         @{ Name = "Balance ($($Config.Currency))"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ($_.Balance * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
                         @{ Name = "Avg. $($Config.Currency)/day"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ($_.AvgDailyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
@@ -321,14 +325,22 @@ Function Update-TabControl {
                         @{ Name = "Payout Threshold"; Expression = { If ($_.PayoutThresholdCurrency -eq "BTC" -and $Config.UsemBTC) { $PayoutThresholdCurrency = "mBTC"; $mBTCfactor = 1000 } Else { $PayoutThresholdCurrency = $_.PayoutThresholdCurrency; $mBTCfactor = 1 }; "{0:P2} of {1} {2} " -f ($_.Balance / $_.PayoutThreshold * $Variables.Rates.($_.Currency).($_.PayoutThresholdCurrency)), ($_.PayoutThreshold * $mBTCfactor), $PayoutThresholdCurrency } }
                     ) | Sort-Object Pool | Out-DataTable
                     If ($BalancesDGV.Columns) { 
-                        $BalancesDGV.Columns[0].FillWeight = 140
-                        $BalancesDGV.Columns[1].FillWeight = 90; $BalancesDGV.Columns[1].DefaultCellStyle.Alignment = "MiddleRight"; $BalancesDGV.Columns[1].HeaderCell.Style.Alignment = "MiddleRight"
+                        $BalancesDGV.Columns[0].Visible = $False
+                        $BalancesDGV.Columns[1].FillWeight = 140 
                         $BalancesDGV.Columns[2].FillWeight = 90; $BalancesDGV.Columns[2].DefaultCellStyle.Alignment = "MiddleRight"; $BalancesDGV.Columns[2].HeaderCell.Style.Alignment = "MiddleRight"
-                        $BalancesDGV.Columns[3].FillWeight = 75; $BalancesDGV.Columns[3].DefaultCellStyle.Alignment = "MiddleRight"; $BalancesDGV.Columns[3].HeaderCell.Style.Alignment = "MiddleRight"
+                        $BalancesDGV.Columns[3].FillWeight = 90; $BalancesDGV.Columns[3].DefaultCellStyle.Alignment = "MiddleRight"; $BalancesDGV.Columns[3].HeaderCell.Style.Alignment = "MiddleRight"
                         $BalancesDGV.Columns[4].FillWeight = 75; $BalancesDGV.Columns[4].DefaultCellStyle.Alignment = "MiddleRight"; $BalancesDGV.Columns[4].HeaderCell.Style.Alignment = "MiddleRight"
                         $BalancesDGV.Columns[5].FillWeight = 75; $BalancesDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $BalancesDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"
-                        $BalancesDGV.Columns[6].FillWeight = 80
-                        $BalancesDGV.Columns[7].FillWeight = 100
+                        $BalancesDGV.Columns[6].FillWeight = 75; $BalancesDGV.Columns[6].DefaultCellStyle.Alignment = "MiddleRight"; $BalancesDGV.Columns[6].HeaderCell.Style.Alignment = "MiddleRight"
+                        $BalancesDGV.Columns[7].FillWeight = 80
+                        $BalancesDGV.Columns[8].FillWeight = 100
+                    }
+                    $BalancesDGV.Rows | ForEach-Object { 
+                        $_.Cells[2].ToolTipText = "$($_.Cells[0].Value) {0:n$($Config.DecimalsMax)}" -f ([Double]$_.Cells[2].Value * $Variables.Rates.($Config.Currency).($_.Cells[0].Value))
+                        $_.Cells[3].ToolTipText = "$($_.Cells[0].Value) {0:n$($Config.DecimalsMax)}" -f ([Double]$_.Cells[3].Value * $Variables.Rates.($Config.Currency).($_.Cells[0].Value))
+                        $_.Cells[4].ToolTipText = "$($_.Cells[0].Value) {0:n$($Config.DecimalsMax)}" -f ([Double]$_.Cells[4].Value * $Variables.Rates.($Config.Currency).($_.Cells[0].Value))
+                        $_.Cells[5].ToolTipText = "$($_.Cells[0].Value) {0:n$($Config.DecimalsMax)}" -f ([Double]$_.Cells[5].Value * $Variables.Rates.($Config.Currency).($_.Cells[0].Value))
+                        $_.Cells[6].ToolTipText = "$($_.Cells[0].Value) {0:n$($Config.DecimalsMax)}" -f ([Double]$_.Cells[6].Value * $Variables.Rates.($Config.Currency).($_.Cells[0].Value))
                     }
                     Form_Resize # To fully show lauched miners gridview
                     $BalancesDGV.EndInit()

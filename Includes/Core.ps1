@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.3.4.3
-Version date:   23 April 2023
+Version:        4.3.4.4
+Version date:   26 April 2023
 #>
 
 using module .\Include.psm1
@@ -29,11 +29,12 @@ using module .\API.psm1
 $Global:ProgressPreference = "Ignore"
 $Global:InformationPreference = "Ignore"
 
-Get-ChildItem -Path ".\Includes\MinerAPIs" -File | ForEach-Object { . $_.FullName }
-
 Do { 
+    $LegacyGUIForm.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) - Runtime: {0:dd} days {0:hh} hrs {0:mm} mins - Path: $($Variables.Mainpath)" -f [TimeSpan]((Get-Date).ToUniversalTime() - $Variables.ScriptStartTime)
+
     Try {
         $Error.Clear()
+        Get-ChildItem -Path ".\Includes\MinerAPIs" -File | ForEach-Object { . $_.FullName }
 
         # Internet connection check
         Try { 
@@ -291,7 +292,7 @@ Do {
 
                     If ($Miner.Status -eq [MinerStatus]::DryRun -or $Miner.Status -eq [MinerStatus]::Running) { 
                         If ($Miner.Status -eq [MinerStatus]::DryRun -or $Miner.GetStatus() -eq [MinerStatus]::Running) { 
-                            $Miner.Cycle++
+                            $Miner.Cycle ++
                             If ($Config.Watchdog) { 
                                 ForEach ($Worker in $Miner.WorkersRunning) { 
                                     If ($WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object PoolRegion -EQ $Worker.Pool.Region | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Sort-Object Kicked | Select-Object -Last 1) { 
@@ -1115,7 +1116,7 @@ Do {
                 If ($Miner.Workers.Pool.DAGSizeGiB -and $Variables.MinersBest_Combo.Devices.Type -contains "CPU") { $Miner.WarmupTimes[0] += 15 <# seconds #>}
 
                 $Miner.DataCollectInterval = $DataCollectInterval
-                $Miner.Activated++
+                $Miner.Activated ++
                 $Miner.Cycle = 0
                 $Miner.PowerUsage = [Double]::NaN
                 $Miner.Hashrates_Live = @($Miner.Workers | ForEach-Object { [Double]::NaN })

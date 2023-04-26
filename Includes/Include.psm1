@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.4.3
-Version date:   23 April 2023
+Version:        4.3.4.4
+Version date:   26 April 2023
 #>
 
 # Window handling
@@ -231,7 +231,7 @@ Class Miner {
         Return $this.ProcessId
     }
 
-    hidden StartDataReader() { 
+    [Void] hidden StartDataReader() { 
         $ScriptBlock = { 
             $ScriptBody = "using module .\Includes\Include.psm1"; $Script = [ScriptBlock]::Create($ScriptBody); . $Script
 
@@ -255,7 +255,7 @@ Class Miner {
         $this | Add-Member -Force @{ DataReaderJob = Start-Job -Name "$($this.Name)_DataReader" -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithms, DataCollectInterval, Devices, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore) }
     }
 
-    hidden StopDataReader() { 
+    [Void] hidden StopDataReader() { 
         If ($this.DataReaderJob) { 
             # Before stopping read data
             If ($this.DataReaderJob.HasMoreData) { $this.Data += @($this.DataReaderJob | Stop-Job | Receive-Job | Select-Object) }
@@ -264,12 +264,12 @@ Class Miner {
         }
     }
 
-    hidden RestartDataReader() { 
+    [Void] hidden RestartDataReader() { 
         $this.StopDataReader()
         $this.StartDataReader()
     }
 
-    hidden StartMining() { 
+    [Void] hidden StartMining() { 
         $this.Info = "{$(($this.Workers.Pool | ForEach-Object { $_.Algorithm, $_.BaseName -join '@' }) -join ' & ')}"
         If ($this.Arguments -and (Test-Json $this.Arguments -ErrorAction Ignore)) { $this.CreateConfigFiles() }
 
@@ -348,7 +348,7 @@ Class Miner {
         }
     }
 
-    SetStatus([MinerStatus]$Status) { 
+    [Void] SetStatus([MinerStatus]$Status) { 
         Switch ($Status) { 
             "DryRun" { 
                 $this.Status = [MinerStatus]::DryRun
@@ -370,7 +370,7 @@ Class Miner {
         }
     }
 
-    hidden StopMining() { 
+    [Void] hidden StopMining() { 
         If ($this.Status -eq [MinerStatus]::Running -or $this.Status -eq [MinerStatus]::DryRun -or $this.StatusMessage -notlike "*$($this.Name)*") { 
             $this.StatusMessage = "Stopping miner '$($this.Name) $($this.Info)'..."
             Write-Message -Level Info $this.StatusMessage
@@ -516,7 +516,7 @@ Class Miner {
         }
     }
 
-    Refresh([Double]$PowerCostBTCperW, [Boolean]$CalculatePowerCost) { 
+    [Void] Refresh([Double]$PowerCostBTCperW, [Boolean]$CalculatePowerCost) { 
         $this.Available = $true
         $this.Benchmark = $false
         $this.Best = $false
@@ -1898,7 +1898,7 @@ Function Get-ArgumentsPerDevice {
         $ValueSeparator = ""
         $Values = ""
 
-        If ($Token -match "(?:^\s[-=]+)" <#supported prefix characters are listed in brackets [-=]#>) { 
+        If ($Token -match "(?:^\s[ -=]+)" <#supported prefix characters are listed in brackets [ -=]#>) { 
             $Prefix = $Matches[0]
             $Token = $Token -split $Matches[0] | Select-Object -Last 1
 
@@ -1923,83 +1923,6 @@ Function Get-ArgumentsPerDevice {
     }
 
     Return $ArgumentsPerDevice
-}
-
-Function Get-ChildItemContent { 
-
-    Param(
-        [Parameter(Mandatory = $true)]
-        [String]$Path, 
-        [Parameter(Mandatory = $false)]
-        [Hashtable]$Parameters = @{ }, 
-        [Parameter(Mandatory = $false)]
-        [Switch]$Threaded = $false, 
-        [Parameter(Mandatory = $false)]
-        [String]$Priority
-    )
-
-    If ($Priority) { ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass = $Priority } Else { $Priority = ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass }
-
-    $ScriptBlock = { 
-        Param(
-            [Parameter(Mandatory = $true)]
-            [String]$Path, 
-            [Parameter(Mandatory = $false)]
-            [Hashtable]$Parameters = @{ }, 
-            [Parameter(Mandatory = $false)]
-            [String]$Priority = "BelowNormal"
-        )
-
-        ([System.Diagnostics.Process]::GetCurrentProcess()).PriorityClass = $Priority
-
-        Function Invoke-ExpressionRecursive ($Expression) { 
-            If ($Expression -is [String]) { 
-                If ($Expression -match '\$') { 
-                    Try { $Expression = Invoke-Expression $Expression }
-                    Catch { $Expression = Invoke-Expression "`"$Expression`"" }
-                }
-            }
-            ElseIf ($Expression -is [PSCustomObject]) { 
-                $Expression.PSObject.Properties.Name | ForEach-Object { 
-                    $Expression.$_ = Invoke-ExpressionRecursive $Expression.$_
-                }
-            }
-            Return $Expression
-        }
-
-        Get-ChildItem -Path $Path -File -ErrorAction SilentlyContinue | ForEach-Object { 
-            $Name = $_.BaseName
-            $Content = @()
-            If ($_.Extension -eq ".ps1") { 
-                $Content = & { 
-                    $Parameters.Keys | ForEach-Object { Set-Variable $_ $Parameters.$_ }
-                    & $_.FullName @Parameters
-                }
-            }
-            Else { 
-                $Content = & { 
-                    $Parameters.Keys | ForEach-Object { Set-Variable $_ $Parameters.$_ }
-                    Try { 
-                        ($_ | Get-Content | ConvertFrom-Json) | ForEach-Object { Invoke-ExpressionRecursive $_ }
-                    }
-                    Catch [ArgumentException] { 
-                        $null
-                    }
-                }
-                If ($null -eq $Content) { $Content = $_ | Get-Content }
-            }
-            $Content | ForEach-Object { 
-                [PSCustomObject]@{ Name = $Name; Content = $_ }
-            }
-        }
-    }
-
-    If ($Threaded) { 
-        Return Start-ThreadJob -Name "Get-ChildItemContent_$($Path -replace '\.\\|\.\*' -replace '\\', '_')" -StreamingHost $null -ScriptBlock $ScriptBlock -ArgumentList $Path, $Parameters, $Priority
-    }
-    Else { 
-        Return & $ScriptBlock -Path $Path -Parameters $Parameters
-    }
 }
 
 Function Invoke-TcpRequest { 
@@ -2349,10 +2272,10 @@ Function Get-Device {
                     $Type_Vendor_Id.($Device.Type) = @{ }
                 }
 
-                $Id++
-                $Vendor_Id.($Device.Vendor)++
-                $Type_Vendor_Id.($Device.Type).($Device.Vendor)++
-                If ($Device.Vendor -in $Variables."Supported$($Device.Type)DeviceVendors") { $Type_Id.($Device.Type)++ }
+                $Id ++
+                $Vendor_Id.($Device.Vendor) ++
+                $Type_Vendor_Id.($Device.Type).($Device.Vendor) ++
+                If ($Device.Vendor -in $Variables."Supported$($Device.Type)DeviceVendors") { $Type_Id.($Device.Type) ++ }
 
                 # Read CPU features
                 $Device | Add-Member CpuFeatures ((Get-CpuId).Features | Sort-Object)
@@ -2406,10 +2329,10 @@ Function Get-Device {
                     $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
                 }
                 ElseIf ($Device.Type -eq "CPU") { 
-                    $Device.Name = "$($Device.Type)#$('{0:D2}' -f $UnsupportedCPUVendorID++)"
+                    $Device.Name = "$($Device.Type)#$('{0:D2}' -f $UnsupportedCPUVendorID ++)"
                 }
                 Else { 
-                    $Device.Name = "$($Device.Type)#$('{0:D2}' -f $UnsupportedGPUVendorID++)"
+                    $Device.Name = "$($Device.Type)#$('{0:D2}' -f $UnsupportedGPUVendorID ++)"
                 }
                 $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB" -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce|Radeon|Intel' -replace '[^ A-Z0-9\.]' -replace '\s+', ' ').Trim()
 
@@ -2417,10 +2340,10 @@ Function Get-Device {
                     $Type_Vendor_Id.($Device.Type) = @{ }
                 }
 
-                $Id++
-                $Vendor_Id.($Device.Vendor)++
-                $Type_Vendor_Id.($Device.Type).($Device.Vendor)++
-                If ($Device.Vendor -in $Variables."Supported$($Device.Type)DeviceVendors") { $Type_Id.($Device.Type)++ }
+                $Id ++
+                $Vendor_Id.($Device.Vendor) ++
+                $Type_Vendor_Id.($Device.Type).($Device.Vendor) ++
+                If ($Device.Vendor -in $Variables."Supported$($Device.Type)DeviceVendors") { $Type_Id.($Device.Type) ++ }
 
                 # Add raw data
                 $Device | Add-Member @{ 
@@ -2480,10 +2403,10 @@ Function Get-Device {
                         $Device.Name = "$($Device.Type)#$('{0:D2}' -f $Device.Type_Id)"
                     }
                     ElseIf ($Device.Type -eq "CPU") { 
-                        $Device.Name = "$($Device.Type)#$('{0:D2}' -f $UnsupportedCPUVendorID++)"
+                        $Device.Name = "$($Device.Type)#$('{0:D2}' -f $UnsupportedCPUVendorID ++)"
                     }
                     Else { 
-                        $Device.Name = "$($Device.Type)#$('{0:D2}' -f $UnsupportedGPUVendorID++)"
+                        $Device.Name = "$($Device.Type)#$('{0:D2}' -f $UnsupportedGPUVendorID ++)"
                     }
                     $Device.Model = ((($Device.Model -split ' ' -replace 'Processor', 'CPU' -replace 'Graphics', 'GPU') -notmatch $Device.Type -notmatch $Device.Vendor -notmatch "$([UInt64]($Device.Memory/1GB))GB") + "$([UInt64]($Device.Memory/1GB))GB") -join ' ' -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce|Radeon|Intel' -replace '[^A-Z0-9 ]' -replace '\s+', ' '
 
@@ -2501,10 +2424,10 @@ Function Get-Device {
                             $Type_Vendor_Index.($Device.Type) = @{ }
                         }
 
-                        $Id++
-                        $Vendor_Id.($Device.Vendor)++
-                        $Type_Vendor_Id.($Device.Type).($Device.Vendor)++
-                        $Type_Id.($Device.Type)++
+                        $Id ++
+                        $Vendor_Id.($Device.Vendor) ++
+                        $Type_Vendor_Id.($Device.Type).($Device.Vendor) ++
+                        $Type_Id.($Device.Type) ++
                     }
 
                     # Add OpenCL specific data
@@ -2530,15 +2453,15 @@ Function Get-Device {
                         $Type_PlatformId_Index.($Device.Type) = @{ }
                     }
 
-                    $Index++
-                    $Type_Index.($Device.Type)++
-                    $Vendor_Index.($Device.Vendor)++
-                    $Type_Vendor_Index.($Device.Type).($Device.Vendor)++
-                    $PlatformId_Index.($PlatformId)++
-                    $Type_PlatformId_Index.($Device.Type).($PlatformId)++
+                    $Index ++
+                    $Type_Index.($Device.Type) ++
+                    $Vendor_Index.($Device.Vendor) ++
+                    $Type_Vendor_Index.($Device.Type).($Device.Vendor) ++
+                    $PlatformId_Index.($PlatformId) ++
+                    $Type_PlatformId_Index.($Device.Type).($PlatformId) ++
                 }
 
-                $PlatformId++
+                $PlatformId ++
             }
 
             $Variables.Devices | Where-Object Model -ne "Remote Display Adapter 0GB" | Where-Object Vendor -ne "CitrixSystemsInc" | Where-Object Bus -Is [Int64] | Sort-Object Bus | ForEach-Object { 
@@ -2565,10 +2488,10 @@ Function Get-Device {
                     $Type_Vendor_Slot.($_.Type) = @{ }
                 }
 
-                $Slot++
-                $Type_Slot.($_.Type)++
-                $Vendor_Slot.($_.Vendor)++
-                $Type_Vendor_Slot.($_.Type).($_.Vendor)++
+                $Slot ++
+                $Type_Slot.($_.Type) ++
+                $Vendor_Slot.($_.Vendor) ++
+                $Type_Vendor_Slot.($_.Type).($_.Vendor) ++
             }
         }
         Catch { 
@@ -2637,13 +2560,13 @@ Function Get-Combination {
 
     $Combination = [PSCustomObject]@{ }
 
-    For ($I = 0; $I -lt $Value.Count; $I++) { 
+    For ($I = 0; $I -lt $Value.Count; $I ++) { 
         $Combination | Add-Member @{ [Math]::Pow(2, $I) = $Value[$I] }
     }
 
     $Combination_Keys = ($Combination | Get-Member -MemberType NoteProperty).Name
 
-    For ($I = $SizeMin; $I -le $SizeMax; $I++) { 
+    For ($I = $SizeMin; $I -le $SizeMax; $I ++) { 
         $X = [Math]::Pow(2, $I) - 1
 
         While ($X -le [Math]::Pow(2, $Value.Count) - 1) { 
@@ -2903,27 +2826,26 @@ Function Add-CoinName {
         [String]$CoinName
     )
 
-    If ($Variables.CoinNames.$Currency -and $Variables.CurrencyAlgorithm.$Currency) { 
-       Return
-    }
-    Else { 
+    If (-not ($Variables.CoinNames.$Currency -and $Variables.CurrencyAlgorithm.$Currency)) { 
         # Get mutex. Mutexes are shared across all threads and processes. 
         # This lets us ensure only one thread is trying to write to the file at a time. 
-        $Mutex = New-Object System.Threading.Mutex($false, "$($PWD -replace '[^A-Z0-9]')_CoinData")
+        $Mutex = New-Object System.Threading.Mutex($false, "$($PWD -replace '[^A-Z0-9]')_Add-CoinName")
 
         # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, update the coin names file and release mutex
         If ($Mutex.WaitOne(1000)) { 
-
             If (-not $Variables.CurrencyAlgorithm.$Currency) { 
                 $Variables.CurrencyAlgorithm.$Currency = Get-Algorithm $Algorithm
                 $Variables.CurrencyAlgorithm | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
             }
-            If (-not $Variables.CoinNames.$Currency) { 
-                $Variables.CoinNames.$Currency = ((Get-Culture).TextInfo.ToTitleCase($CoinName.Trim().ToLower()) -replace '[^A-Z0-9\$\.]' -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin')
-                $Variables.CoinNames | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CoinNames.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
+            If ($CoinName = ((Get-Culture).TextInfo.ToTitleCase($CoinName.Trim().ToLower()) -replace '[^A-Z0-9\$\.]' -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin')) { 
+                If (-not $Variables.CoinNames.$Currency) { 
+                    $Variables.CoinNames.$Currency = $CoinName
+                    $Variables.CoinNames | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CoinNames.json" -ErrorAction SilentlyContinue -Encoding utf8NoBOM -Force
+                }
             }
             [Void]$Mutex.ReleaseMutex()
         }
+        Remove-Variable Mutex -ErrorAction Ignore
     }
 }
 
@@ -3263,7 +3185,7 @@ Function Test-Prime {
         [Double]$Number
     )
 
-    For ([Int64]$i = 2; $i -lt [Int64][Math]::Pow($Number, 0.5); $i++) { If ($Number % $i -eq 0) { Return $false } }
+    For ([Int64]$i = 2; $i -lt [Int64][Math]::Pow($Number, 0.5); $i ++) { If ($Number % $i -eq 0) { Return $false } }
 
     Return $true
 }
