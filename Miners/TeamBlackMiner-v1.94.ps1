@@ -77,7 +77,6 @@ If ($Algorithms) {
                     Default    { "" }
                 }
                 If ($SecondAlgo) { 
-                    If (-not $MinerPools[1].($_.Algorithms[1]).PoolPorts[0]) { Return } #https://github.com/sp-hash/TeamBlackMiner/issues/334
                     $Arguments += " --$($SecondAlgo)-hostname $($MinerPools[1].($_.Algorithms[1]).Host) --$($SecondAlgo)-wallet $($MinerPools[1].($_.Algorithms[1]).User) "
                     $Arguments += If ($MinerPools[1].($_.Algorithms[1]).PoolPorts[1]) { " --$($SecondAlgo)-port $($MinerPools[1].($_.Algorithms[1]).PoolPorts[1])" } Else { " --$($SecondAlgo)-port $($MinerPools[1].($_.Algorithms[1]).PoolPorts[0])" }
                 }
