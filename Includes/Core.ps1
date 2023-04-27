@@ -475,7 +475,7 @@ Do {
                             $_.Available = $true
                             $_.Best = $false
 
-                            If ($Pool = $Variables.PoolsUpdated | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Currency -EQ $_.Currency | Select-Object -First 1) { 
+                            If ($Pool = $Variables.PoolsUpdated | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Select-Object -First 1) { 
                                 $_.Accuracy                 = $Pool.Accuracy
                                 $_.CoinName                 = $Pool.CoinName
                                 $_.Currency                 = $Pool.Currency
@@ -705,7 +705,7 @@ Do {
                         $_.Restart = $false
                     }
                     Else { 
-                        If ($Miner = Compare-Object -PassThru $NewMiners $_ -Property Name, Algorithms, DeviceNames -ExcludeDifferent | Select-Object) { 
+                        If ($Miner = Compare-Object -PassThru $NewMiners $_ -Property Name, Algorithms -ExcludeDifferent | Select-Object) { 
                             # Update existing miners
                             If ($_.Restart = $_.Arguments -ne $Miner.Arguments) { 
                                 $_.Arguments = $Miner.Arguments
