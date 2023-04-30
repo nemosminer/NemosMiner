@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash.ps1
-Version:        4.3.4.4
-Version date:   26 April 2023
+Version:        4.3.4.5
+Version date:   30 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -49,8 +49,12 @@ If ($Wallet) {
 
     Do {
         Try { 
-            If (-not $Request) { $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec 3 }
-            If (-not $RequestAlgodetails) { $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec 3 }
+            If (-not $Request) { 
+                $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec 3
+            }
+            If (-not $RequestAlgodetails) { 
+                $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec 3
+            }
             $Request.miningAlgorithms | ForEach-Object { $Algorithm = $_.Algorithm; $_ | Add-Member -Force @{ algodetails = $RequestAlgodetails.miningAlgorithms | Where-Object { $_.Algorithm -eq $Algorithm } } }
         }
         Catch { 
@@ -75,9 +79,10 @@ If ($Wallet) {
             "GRINCUCKATOO32" { "GRIN"; Break }
             "HANDSHAKE"      { "HNS"; Break }
             "KAWPOW"         { "RVN"; Break }
+            "KHEAVYHASH"     { "KAS"; Break }
             "LBRY"           { "LBC"; Break }
             "OCTOPUS"        { "CFX"; Break }
-            "RandomxMONERO"  { "XMR"; Break }
+            "CRYPTONIGHTR"   { "XMR"; Break }
             "ZELHASH"        { "FLUX"; Break }
             "ZHASH"          { "BTG"; Break }
             Default          { "" }

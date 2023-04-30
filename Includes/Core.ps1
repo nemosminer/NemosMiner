@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.3.4.4
-Version date:   26 April 2023
+Version:        4.3.4.5
+Version date:   30 April 2023
 #>
 
 using module .\Include.psm1
@@ -244,12 +244,13 @@ Do {
                                     }
                                 }
                                 # Add configured power usage
-                                $Config.PowerUsage.GetEnumerator() | Where-Object { $Config.PowerUsage.$_ } | ForEach-Object { 
-                                    If ($Config.PowerUsage.$_) { 
-                                        If ($_ -in @($Variables.EnabledDevices.Name) -and -not $PowerUsageData.$_) { Write-Message -Level Warn "HWiNFO64 cannot read power usage from system for device ($_). Will use configured value of $([Double]$Config.PowerUsage.$_) W." }
-                                        $PowerUsageData.$_ = "$Config.PowerUsage.$_ W"
-                                        If ($Variables.EnabledDevices | Where-Object Name -EQ $_) { ($Variables.EnabledDevices | Where-Object Name -EQ $_).ConfiguredPowerUsage = [Double]$Config.PowerUsage.$_ }
+                                $Variables.Devices.Name | ForEach-Object { 
+                                    If ($ConfiguredPowerUsage = $Config.PowerUsage.$_ -as [Double]) { 
+                                        If ($_ -in @($Variables.EnabledDevices.Name) -and -not $PowerUsageData.$_) { Write-Message -Level Warn "HWiNFO64 cannot read power usage from system for device ($_). Will use configured value of $ConfiguredPowerUsage) W." }
+                                        $PowerUsageData[$_] = "$ConfiguredPowerUsage W"
                                     }
+                                    $Variables.EnabledDevices | Where-Object Name -EQ $_ | ForEach-Object { $_.ConfiguredPowerUsage = $ConfiguredPowerUsage }
+                                    $Variables.Devices | Where-Object Name -EQ $_ | ForEach-Object { $_.ConfiguredPowerUsage = $ConfiguredPowerUsage }
                                 }
 
                                 If ($DeviceNamesMissingSensor = Compare-Object @($Variables.EnabledDevices.Name) @($PowerUsageData.Keys) -PassThru | Where-Object SideIndicator -EQ "<=") { 
@@ -258,20 +259,19 @@ Do {
                                 }
 
                                 # Enable read power usage for configured devices
-                                $Variables.Devices | ForEach-Object { $_.ReadPowerUsage = $_.Name -in @($PowerUsageData.Keys) }
+                                $Variables.EnabledDevices | ForEach-Object { $_.ReadPowerUsage = $_.Name -in @($PowerUsageData.Keys) }
                             }
-                            $Variables.HWInfo64RegValue = [String]$RegValue
                         }
                         Else { 
                             Write-Message -Level Warn "Cannot read power usage info from registry [Key '$RegKey' does not exist - HWiNFO64 not running???] - disabling power usage and profit calculations."
                             $Variables.CalculatePowerCost = $false
                         }
-                        Remove-Variable RegKey, RegValue
+                        Remove-Variable RegKey, RegValue -ErrorAction Ignore
                     }
                     Else { $Variables.CalculatePowerCost = $false }
                 }
                 If (-not $Variables.CalculatePowerCost) { 
-                    $Variables.Devices | ForEach-Object { $_.ReadPowerUsage = $false }
+                    $Variables.EnabledDevices | ForEach-Object { $_.ReadPowerUsage = $false }
                 }
 
                 # Power price
@@ -352,49 +352,51 @@ Do {
                         }
                     }
 
-                    # Do not save data if stat just got removed (Miner.Activated < 1, set by API)
-                    If ($Miner.Activated -gt 0 -and ($Miner.Benchmark -or $Miner.MeasurePowerUsage -or -not $Config.DryRun)) { 
-                        # We don't want to store hashrates if we have less than $MinDataSample
-                        If ($Miner.Data.Count -ge $Miner.MinDataSample -or $Miner.Activated -gt $Variables.WatchdogCount) { 
-                            $Miner.StatEnd = (Get-Date).ToUniversalTime()
-                            $Stat_Span = [TimeSpan]($Miner.StatEnd - $Miner.StatStart)
+                    If ($Miner.Activated -gt 0) { 
+                        # Do not save data if stat just got removed (Miner.Activated < 1, set by API)
+                        If ($Miner.Benchmark -or $Miner.MeasurePowerUsage -or -not $Config.DryRun) { 
+                            # We don't want to store hashrates if we have less than $MinDataSample
+                            If ($Miner.Data.Count -ge $Miner.MinDataSample -or $Miner.Activated -gt $Variables.WatchdogCount) { 
+                                $Miner.StatEnd = (Get-Date).ToUniversalTime()
+                                $Stat_Span = [TimeSpan]($Miner.StatEnd - $Miner.StatStart)
 
-                            ForEach ($Worker in $Miner.WorkersRunning) { 
-                                $Algorithm = $Worker.Pool.Algorithm
-                                $Factor = 1
-                                $LatestMinerSharesData = ($Miner.Data | Select-Object -Last 1 -ErrorAction Ignore).Shares
-                                If ($Miner.Data.Count -gt $Miner.MinDataSample -and -not $Miner.Benchmark -and $Config.SubtractBadShares -and $LatestMinerSharesData.$Algorithm -gt 0) { # Need $Miner.MinDataSample shares before adjusting hashrate
-                                    $Factor = (1 - $LatestMinerSharesData.$Algorithm[1] / $LatestMinerSharesData.$Algorithm[3])
-                                    $Miner_Hashrates.$Algorithm *= $Factor
+                                ForEach ($Worker in $Miner.WorkersRunning) { 
+                                    $Algorithm = $Worker.Pool.Algorithm
+                                    $Factor = 1
+                                    $LatestMinerSharesData = ($Miner.Data | Select-Object -Last 1 -ErrorAction Ignore).Shares
+                                    If ($Miner.Data.Count -gt $Miner.MinDataSample -and -not $Miner.Benchmark -and $Config.SubtractBadShares -and $LatestMinerSharesData.$Algorithm -gt 0) { # Need $Miner.MinDataSample shares before adjusting hashrate
+                                        $Factor = (1 - $LatestMinerSharesData.$Algorithm[1] / $LatestMinerSharesData.$Algorithm[3])
+                                        $Miner_Hashrates.$Algorithm *= $Factor
+                                    }
+                                    $Stat_Name = "$($Miner.Name)_$($Algorithm)_Hashrate"
+                                    $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Hashrates.$Algorithm -Duration $Stat_Span -FaultDetection ($Miner.Data.Count -lt $Miner.MinDataSample -or $Miner.Activated -lt $Variables.WatchdogCount) -ToleranceExceeded ($Variables.WatchdogCount + 1)
+                                    If ($Stat.Updated -gt $Miner.StatStart) { 
+                                        Write-Message -Level Info "Saved hashrate for '$($Stat_Name -replace '_Hashrate$')': $(($Miner_Hashrates.$Algorithm | ConvertTo-Hash) -replace ' ')$(If ($Factor -le 0.999) { " (adjusted by factor $($Factor.ToString('N3')) [Shares total: $($LatestMinerSharesData.$Algorithm[2]), rejected: $($LatestMinerSharesData.$Algorithm[1])])" })$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
+                                        $Miner.StatStart = $Miner.StatEnd
+                                        $Variables.AlgorithmsLastUsed.($Worker.Pool.Algorithm) = @{ Updated = $Stat.Updated; Benchmark = $Miner.Benchmark; MinerName = $Miner.Name }
+                                        $Variables.PoolsLastUsed.($Worker.Pool.BaseName) = $Stat.Updated # most likely this will count at the pool to keep balances alive
+                                    }
+                                    ElseIf ($Miner_Hashrates.$Algorithm -gt 0 -and $Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($Miner_Hashrates.$Algorithm -gt $Stat.Week * 2 -or $Miner_Hashrates.$Algorithm -lt $Stat.Week / 2)) { # Stop miner if new value is outside ±200% of current value
+                                        $Miner.StatusMessage = "$($Miner.Name) $($Miner.Info): Reported hashrate is unreal ($($Algorithm): $(($Miner_Hashrates.$Algorithm | ConvertTo-Hash) -replace ' ') is not within ±200% of stored value of $(($Stat.Week | ConvertTo-Hash) -replace ' '))."
+                                        $Miner.SetStatus([MinerStatus]::Failed)
+                                    }
                                 }
-                                $Stat_Name = "$($Miner.Name)_$($Algorithm)_Hashrate"
-                                $Stat = Set-Stat -Name $Stat_Name -Value $Miner_Hashrates.$Algorithm -Duration $Stat_Span -FaultDetection ($Miner.Data.Count -ge $Miner.MinDataSample) -ToleranceExceeded ($Variables.WatchdogCount + 1)
-                                If ($Stat.Updated -gt $Miner.StatStart) { 
-                                    Write-Message -Level Info "Saved hashrate for '$($Stat_Name -replace '_Hashrate$')': $(($Miner_Hashrates.$Algorithm | ConvertTo-Hash) -replace ' ')$(If ($Factor -le 0.999) { " (adjusted by factor $($Factor.ToString('N3')) [Shares total: $($LatestMinerSharesData.$Algorithm[2]), rejected: $($LatestMinerSharesData.$Algorithm[1])])" })$(If ($Stat.Duration -eq $Stat_Span) { " [Benchmark done]" })."
-                                    $Miner.StatStart = $Miner.StatEnd
-                                    $Variables.AlgorithmsLastUsed.($Worker.Pool.Algorithm) = @{ Updated = $Stat.Updated; Benchmark = $Miner.Benchmark; MinerName = $Miner.Name }
-                                    $Variables.PoolsLastUsed.($Worker.Pool.BaseName) = $Stat.Updated # most likely this will count at the pool to keep balances alive
-                                }
-                                ElseIf ($Miner_Hashrates.$Algorithm -gt 0 -and $Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($Miner_Hashrates.$Algorithm -gt $Stat.Week * 2 -or $Miner_Hashrates.$Algorithm -lt $Stat.Week / 2)) { # Stop miner if new value is outside ±200% of current value
-                                    $Miner.StatusMessage = "$($Miner.Name) $($Miner.Info): Reported hashrate is unreal ($($Algorithm): $(($Miner_Hashrates.$Algorithm | ConvertTo-Hash) -replace ' ') is not within ±200% of stored value of $(($Stat.Week | ConvertTo-Hash) -replace ' '))."
-                                    $Miner.SetStatus([MinerStatus]::Failed)
-                                }
+                                Remove-Variable Worker -ErrorAction Ignore
                             }
-                            Remove-Variable Worker -ErrorAction Ignore
-                        }
-                        # We don't want to store power usage if we have less than $MinDataSample, store even when fluctuating hash rates were recorded
-                        If ($Miner.Data.Count -ge $Miner.MinDataSample -and $Miner.ReadPowerUsage -and ($Miner.Hashrates_Live -gt 0 -or $Miner.Activated -gt $Variables.WatchdogCount)) { 
-                            If ([Double]::IsNaN($PowerUsage)) { $PowerUsage = 0 }
-                            $Stat_Name = "$($Miner.Name)$(If ($Miner.Workers.Count -eq 1) { "_$($Miner.Workers.Pool.Algorithm | Select-Object -First 1)" })_PowerUsage"
-                            $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration $Stat_Span -FaultDetection ($Miner.Data.Count -gt $Miner.MinDataSample) -ToleranceExceeded ($Variables.WatchdogCount + 1)
-                            If ($PowerUsage) { 
-                                If ($Stat.Updated -gt $Miner.StatStart) { 
-                                    Write-Message -Level Info "Saved power usage for '$($Stat_Name -replace '_PowerUsage$')': $($Stat.Live.ToString("N2"))W$(If ($Stat.Duration -eq $Stat_Span) { " [Power usage measurement done]" })."
-                                }
-                                ElseIf ($PowerUsage -gt 0 -and $Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($PowerUsage -gt $Stat.Week * 2 -or $PowerUsage -lt $Stat.Week / 2)) { 
-                                    # Stop miner if new value is outside ±200% of current value
-                                    $Miner.StatusMessage = "$($Miner.Name) $($Miner.Info): Reported power usage is unreal ($($PowerUsage.ToString("N2"))W is not within ±200% of stored value of $(([Double]$Stat.Week).ToString("N2"))W)."
-                                    $Miner.SetStatus([MinerStatus]::Failed)
+                            If ($Miner.ReadPowerUsage) { 
+                                # We don't want to store power usage if we have less than $MinDataSample, store even when fluctuating hash rates were recorded
+                                If ($Miner.Data.Count -ge $Miner.MinDataSample -or $Miner.Activated -gt $Variables.WatchdogCount) { 
+                                    If ([Double]::IsNaN($PowerUsage)) { $PowerUsage = 0 }
+                                    $Stat_Name = "$($Miner.Name)$(If ($Miner.Workers.Count -eq 1) { "_$($Miner.Workers.Pool.Algorithm | Select-Object -First 1)" })_PowerUsage"
+                                    $Stat = Set-Stat -Name $Stat_Name -Value $PowerUsage -Duration $Stat_Span -FaultDetection ($Miner.Data.Count -lt $Miner.MinDataSample -or $Miner.Activated -lt $Variables.WatchdogCount) -ToleranceExceeded ($Variables.WatchdogCount + 1)
+                                    If ($Stat.Updated -gt $Miner.StatStart) { 
+                                        Write-Message -Level Info "Saved power usage for '$($Stat_Name -replace '_PowerUsage$')': $($Stat.Live.ToString("N2"))W$(If ($Stat.Duration -eq $Stat_Span) { " [Power usage measurement done]" })."
+                                    }
+                                    ElseIf ($PowerUsage -gt 0 -and $Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($PowerUsage -gt $Stat.Week * 2 -or $PowerUsage -lt $Stat.Week / 2)) { 
+                                        # Stop miner if new value is outside ±200% of current value
+                                        $Miner.StatusMessage = "$($Miner.Name) $($Miner.Info): Reported power usage is unreal ($($PowerUsage.ToString("N2"))W is not within ±200% of stored value of $(([Double]$Stat.Week).ToString("N2"))W)."
+                                        $Miner.SetStatus([MinerStatus]::Failed)
+                                    }
                                 }
                             }
                         }
@@ -1202,9 +1204,8 @@ Do {
 
         Write-Message -Level Info "Collecting miner data while waiting for next cycle..."
 
-        Start-Sleep -Milliseconds 250
-
         Do { 
+            Start-Sleep -Milliseconds 100
             $Variables.RunningMiners | Select-Object | ForEach-Object { 
                 $Miner = $_
                 If ($Miner.Status -ne [MinerStatus]::DryRun) { 
@@ -1293,9 +1294,7 @@ Do {
         If ($Variables.IdleRunspace.MiningStatus -eq "Idle") { $Variables.EndCycleMessage = " (System activity detected)" }
 
         $Error.Clear()
-        [System.GC]::Collect() | Out-Null
-        [System.GC]::WaitForPendingFinalizers() | Out-Null
-        [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
+        [System.GC]::GetTotalMemory($true) | Out-Null
 
         Write-Message -Level Info "Ending cycle$($Variables.EndCycleMessage)."
     }

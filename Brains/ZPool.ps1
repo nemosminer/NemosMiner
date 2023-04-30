@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool.ps1
-Version:        4.3.4.4
-Version date:   26 April 2023
+Version:        4.3.4.5
+Version date:   30 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -94,11 +94,10 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
         }
 
         ForEach ($Algo in $AlgoData.PSObject.Properties.Name) { 
-            $AlgoData.$Algo.actual_last24h = ($AlgoData.$Algo.actual_last24h -as [Double]) / 1000
+            $AlgoData.$Algo.actual_last24h = $AlgoData.$Algo.actual_last24h / 1000
             $BasePrice = If ($AlgoData.$Algo.actual_last24h) { $AlgoData.$Algo.actual_last24h } Else { $AlgoData.$Algo.estimate_last24h }
 
-            $Currency = $AlgoData.$Algo.Currency
-            If ($Currency) { 
+            If ($Currency = $AlgoData.$Algo.Currency) { 
                 If ($Variables.DagData.Algorithm.$Algo -and $AlgoData.$Algo.height -gt ($Variables.DAGData.Currency.$Currency.BlockHeight)) { 
                     # Keep DAG data data up to date
                     $Variables.DAGData.Currency.$Currency = (Get-DAGData -Blockheight $AlgoData.$Algo.height -Currency $Currency -EpochReserve 2)
@@ -179,10 +178,7 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
         Remove-Variable Algo, AlgoData, CurrenciesArray, CurrenciesData, Name -ErrorAction Ignore
 
         $Error.Clear()
-
-        [System.GC]::Collect() | Out-Null
-        [System.GC]::WaitForPendingFinalizers() | Out-Null
-        [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
+        [System.GC]::GetTotalMemory($true) | Out-Null
 
         Write-Message -Level Debug "Brain '$($BrainName)': $(Get-MemoryUsage)"
         Write-Message -Level Debug "Brain '$($BrainName)': End loop (Duration $($Duration.TotalSeconds) sec.)"

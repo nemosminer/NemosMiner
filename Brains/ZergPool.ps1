@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.3.4.4
-Version date:   26 April 2023
+Version:        4.3.4.5
+Version date:   30 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -96,13 +96,12 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
                 $Currency = If ($Currencies.Currency) { (($Currencies | Sort-Object Estimate)[-1].Currency).Trim() } Else { "" }
             }
             If ($Currency) { 
-                # Add coin name and keep data data up to date
-                If ($AlgoData.$Algo.CoinName -and $Currency) { 
-                    Add-CoinName -Algorithm $Algo -Currency $Currency -CoinName $AlgoData.$Algo.CoinName
-                    If ($Algo -in $Variables.DagData.Algorithm.Keys -and $AlgoData.$Algo.height -gt ($Variables.DAGData.Currency.$Currency.BlockHeight)) { 
-                        $Variables.DAGData.Currency.$Currency = (Get-DAGData -Blockheight $AlgoData.$Algo.height -Currency $Currency -EpochReserve 2)
-                        $Variables.DAGData.Updated."$BrainName Brain" = (Get-Date).ToUniversalTime()
-                    }
+                # Add coin name
+                If ($AlgoData.$Algo.CoinName) { Try { Add-CoinName -Algorithm $Algo -Currency $Currency -CoinName $AlgoData.$Algo.CoinName } Catch { } }
+                # Keep DAG data up to date
+                If ($Algo -in $Variables.DagData.Algorithm.Keys -and $AlgoData.$Algo.height -gt $Variables.DAGData.Currency.$Currency.BlockHeight) { 
+                    $Variables.DAGData.Currency.$Currency = (Get-DAGData -Blockheight $AlgoData.$Algo.height -Currency $Currency -EpochReserve 2)
+                    $Variables.DAGData.Updated."$BrainName Brain" = (Get-Date).ToUniversalTime()
                 }
             }
             $AlgoData.$Algo | Add-Member @{ Currency = $Currency } -Force
@@ -172,10 +171,7 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
         Remove-Variable Algo, AlgoData, CurrenciesArray, CurrenciesData, Name -ErrorAction Ignore
 
         $Error.Clear()
-
-        [System.GC]::Collect() | Out-Null
-        [System.GC]::WaitForPendingFinalizers() | Out-Null
-        [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
+        [System.GC]::GetTotalMemory($true) | Out-Null
 
         Write-Message -Level Debug "Brain '$($BrainName)': $(Get-MemoryUsage)"
         Write-Message -Level Debug "Brain '$($BrainName)': End loop (Duration $($Duration.TotalSeconds) sec.)"

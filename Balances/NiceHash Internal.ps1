@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NiceHash Internal.ps1
-Version:        4.3.4.4
-Version date:   26 April 2023
+Version:        4.3.4.5
+Version date:   30 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -51,7 +51,7 @@ Function Get-NiceHashRequest {
     $Str = "$Key`0$Timestamp`0$Uuid`0`0$Organizationid`0`0$($Method.ToUpper())`0$Endpoint`0extendedResponse=true"
     $Sha = [System.Security.Cryptography.KeyedHashAlgorithm]::Create("HMACSHA256")
     $Sha.Key = [System.Text.Encoding]::UTF8.Getbytes($Secret)
-    $Sign = [System.BitConverter]::ToString($Sha.ComputeHash([System.Text.Encoding]::UTF8.Getbytes(${str})))
+    $Sign = [System.BitConverter]::ToString($Sha.ComputeHash([System.Text.Encoding]::UTF8.Getbytes($str)))
     $Headers = [Hashtable]@{ 
         "X-Time"            = $Timestamp
         "X-Nonce"           = $Uuid
@@ -94,6 +94,9 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.NiceHashAPIKey -and
                 #Total      = [Double]($APIResponse.pendingDetails.totalBalance)
                 Url        = "https://www.nicehash.com/my/mining/rigs/$($Config.PoolsConfig.NiceHash.WorkerName)"
             }
+        }
+        Else { 
+            Return
         }
     }
     Catch { 

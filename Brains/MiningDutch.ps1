@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningDutch.ps1
-Version:        4.3.4.4
-Version date:   26 April 2023
+Version:        4.3.4.5
+Version date:   30 April 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -140,10 +140,7 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
         Remove-Variable Algo, AlgoData, Name -ErrorAction Ignore
 
         $Error.Clear()
-
-        [System.GC]::Collect() | Out-Null
-        [System.GC]::WaitForPendingFinalizers() | Out-Null
-        [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
+        [System.GC]::GetTotalMemory($true) | Out-Null
 
         Write-Message -Level Debug "Brain '$($BrainName)': $(Get-MemoryUsage)"
         Write-Message -Level Debug "Brain '$($BrainName)': End loop (Duration $($Duration.TotalSeconds) sec.)"

@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.3.4.4
-Version date:   23 April 2023
+Version:        4.3.4.5
+Version date:   30 April 2023
 #>
 
 [CmdletBinding()]
@@ -36,13 +36,13 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$AutoReboot = $true, # If true will reboot computer when a miner is completely dead, eg. unresponsive
     [Parameter(Mandatory = $false)]
-    [Switch]$AutoUpdate = $true, # NemosMiner will automatically update to the new version
+    [Switch]$AutoUpdate = $true, # If true will automatically update to the new version
     [Parameter(Mandatory = $false)]
-    [Int]$AutoUpdateCheckInterval = 1, # NemosMiner will periodically check for a new program version every n days (0 to disable)
+    [Int]$AutoUpdateCheckInterval = 1, # If true will periodically check for a new program version every n days (0 to disable)
     [Parameter(Mandatory = $false)]
-    [Switch]$BackupOnAutoUpdate = $true, # NemosMiner will backup installed version before update to the new version
+    [Switch]$BackupOnAutoUpdate = $true, # If true will backup installed version before update to the new version
     [Parameter(Mandatory = $false)]
-    [Double]$BadShareRatioThreshold = 0.05, # Allowed ratio of bad shares (total / bad) as reported by the miner. If the ratio exceeds the configured threshold then the miner will get marked as failed. Allowed values: 0.00 - 1.00. Default of 0 disables this check
+    [Double]$BadShareRatioThreshold = 0.05, # Allowed ratio of bad shares (total / bad) as reported by the miner. If the ratio exceeds the configured threshold then the miner will get marked as failed. Allowed values: 0.00 - 1.00. 0 disables this check
     [Parameter(Mandatory = $false)]
     [Boolean]$BalancesKeepAlive = $true, # If true will force mining at a pool to protect your earnings (some pools auto-purge the wallet after longer periods of inactivity, see '\Data\PoolData.Json' BalancesKeepAlive properties)
     [Parameter(Mandatory = $false)]
@@ -66,7 +66,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$CPUMinerProcessPriority = "-2", # Process priority for CPU miners
     [Parameter(Mandatory = $false)]
-    [String]$Currency = (Get-Culture).NumberFormat.CurrencySymbol, # Main 'real-money' currency, i.e. GBP, USD, AUD, NZD etc. Do not use crypto currencies
+    [String]$Currency = (Get-Culture).NumberFormat.CurrencySymbol, # Default main 'real-money' currency, i.e. GBP, USD, AUD, NZD etc. Do not use crypto currencies
     [Parameter(Mandatory = $false)]
     [Int]$DecimalsMax = 6, # Display numbers with maximal n decimal digits (larger numbers are shown with less decimal digits)
     [Parameter(Mandatory = $false)]
@@ -84,7 +84,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Double]$EarningsAdjustmentFactor = 1, # Default factor with which multiplies the prices reported by ALL pools. Allowed values: 0.0 - 10.0
     [Parameter(Mandatory = $false)]
-    [String[]]$ExcludeDeviceName = @(), # Array of disabled devices, e.g. @("CPU# 00", "GPU# 02");  by default all devices are enabled
+    [String[]]$ExcludeDeviceName = @(), # Array of disabled devices, e.g. @("CPU#00", "GPU#02"); by default all devices are enabled
     [Parameter(Mandatory = $false)]
     [String[]]$ExcludeMinerName = @(), # List of miners to be excluded; Either specify miner short name, e.g. "PhoenixMiner" (without '-v...') to exclude any version of the miner, or use the full miner name incl. version information
     [Parameter(Mandatory = $false)]
@@ -104,9 +104,9 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$Interval = 90, # Average cycle loop duration (seconds), min 60, max 3600
     [Parameter(Mandatory = $false)]
-    [Switch]$LegacyGUI = $false, # If true NemosMiner will start legacy GUI
+    [Switch]$LegacyGUI = $false, # If true will start legacy GUI
     [Parameter(Mandatory = $false)]
-    [Switch]$LegacyGUIStartMinimized = $true, # If true NemosMiner will start legacy GUI as minimized window
+    [Switch]$LegacyGUIStartMinimized = $true, # If true will start legacy GUI as minimized window
     [Parameter(Mandatory = $false)]
     [Switch]$LogBalanceAPIResponse = $false, # If true will log the pool balance API data
     [Parameter(Mandatory = $false)]
@@ -134,7 +134,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$MinerWindowStyle = "minimized", # "minimized": miner window is minimized (default), but accessible; "normal": miner windows are shown normally; "hidden": miners will run as a hidden background task and are not accessible (not recommended)
     [Parameter(Mandatory = $false)]
-    [Switch]$MinerWindowStyleNormalWhenBenchmarking = $true, # If true Miner window is shown normal when benchmarking (recommended to better see miner messages)
+    [Switch]$MinerWindowStyleNormalWhenBenchmarking = $true, # If true miner window is shown normal when benchmarking (recommended to better see miner messages)
     [Parameter(Mandatory = $false)]
     [String]$MiningDutchAPIKey = "", # MiningDutch API Key (required to retrieve balance information)
     [Parameter(Mandatory = $false)]
@@ -198,9 +198,9 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$ShowAccuracy = $true, # Show pool data accuracy column in main text window miner overview
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowAllMiners = $false, # Always show all miners in main text window miner overview (if $false, only the best miners will be shown except when in benchmark / powerusage measurement)
+    [Switch]$ShowAllMiners = $false, # Always show all miners in main text window miner overview (if false, only the best miners will be shown except when in benchmark / powerusage measurement)
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowChangeLog = $true, # If enabled NemosMiner will show the changlog when an update is available
+    [Switch]$ShowChangeLog = $true, # If true will show the changlog when an update is available
     [Parameter(Mandatory = $false)]
     [Switch]$ShowCoinName = $true, # Show CoinName column in main text window miner overview
     [Parameter(Mandatory = $false)]
@@ -210,7 +210,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$ShowEarningBias = $true, # Show miner earning bias column in main text window miner overview
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowMinerFee = $true, # Show miner fee column in main text window miner overview (if fees are available, t.b.d. in miner files, Property '[Double]Fee')
+    [Switch]$ShowMinerFee = $true, # Show miner fee column in main text window miner overview (if fees are available, t.b.d. in miner files, property '[Double]Fee')
     [Parameter(Mandatory = $false)]
     [Switch]$ShowPoolBalances = $false, # Display pool balances & earnings information in main text window, requires BalancesTrackerPollInterval > 0
     [Parameter(Mandatory = $false)]
@@ -232,9 +232,9 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$SSL = "Prefer", # SSL pool connections: One of three values: 'Prefer' (use where available), 'Never' or 'Always' (pools that do not allow SSL are ignored)
     [Parameter(Mandatory = $false)]
-    [Switch]$SSLAllowSelfSignedCertificate = $false, # If $true NemosMiner will allow SSL/TLS connections with self signed certificates (this is a security issue)
+    [Switch]$SSLAllowSelfSignedCertificate = $false, # If true  will allow SSL/TLS connections with self signed certificates (this is a security issue)
     [Parameter(Mandatory = $false)]
-    [String]$StartupMode = $false, # One of 'Idle', 'Paused' or 'Running'. This is the same as the buttons in the Web GUI
+    [String]$StartupMode = $false, # One of 'Idle', 'Paused' or 'Running'. This is the same as the buttons in the legacy & web GUI
     [Parameter(Mandatory = $false)]
     [Boolean]$SubtractBadShares = $true, # If true will deduct rejected shares when calculating effective hashrates
     [Parameter(Mandatory = $false)]
@@ -242,7 +242,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$Transcript = $false, # Enable to write PowerShell transcript files (for debugging)
     [Parameter(Mandatory = $false)]
-    [Switch]$UseColorForMinerStatus = $true, # If true Miners in web and legacy GUI will be shown with colored background depending on status
+    [Switch]$UseColorForMinerStatus = $true, # If true miners in web and legacy GUI will be shown with colored background depending on status
     [Parameter(Mandatory = $false)]
     [Switch]$UsemBTC = $true, # If true will display BTC values in milli BTC
     [Parameter(Mandatory = $false)]
@@ -262,7 +262,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$WatchdogCount = 3, # Number of watchdog timers
     [Parameter(Mandatory = $false)]
-    [Switch]$WebGUI = $true, # If true launch Web GUI (recommended)
+    [Switch]$WebGUI = $true, # If true launch web GUI (recommended)
     [Parameter(Mandatory = $false)]
     [String]$WorkerName = [System.Net.Dns]::GetHostName()
 )
@@ -291,7 +291,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.3.4.4"
+    Version      = [System.Version]"4.3.4.5"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
