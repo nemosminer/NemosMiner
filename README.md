@@ -31,13 +31,15 @@ NemosMiner will automatically convert an existing configuration file.
 *****
 
 **Main features:**
-   - GUI and easy configuration
-   - Auto Benchmarks each algorithm to get optimal speeds
+   - Web & legacy GUI
+   - Easy configuration
+   - Auto benchmark each algorithm to get optimal speeds
    - Fully automated
-   - Auto Downloads Miners
-   - Auto Updates
+   - Auto downloads miner binaries
+   - Auto updates
    - Monitoring
    - Earnings graph
+   - Low developer fee (can be set to 0)
    - Calculate power cost (optional software installation required)
 
 *****
@@ -48,7 +50,7 @@ Easy configuration, easy start:
       1. Edit configuration (http://localhost:3999/configedit.html)
       2. Set your Wallet address(es) and Username(s)
       3. Select your pool(s)
-      4. Save Config
+      4. Save configuration
       5. Start mining
 
       Note: 2. you only need to change the username if you are using MiningDutch, MiningPoolhub or ProHashing
@@ -90,8 +92,6 @@ Easy configuration, easy start:
 
       normal - uses current price data in pool API to calculate profit (no estimates or advanced calculations)
 
-      *Coins - uses advanced calculations, mines only top paying coin in Algo (MiningPoolHub & ZergPool)
-
 
    Developer/Contributors Donation: 
       The list and wallets is stored in [NemosMiner Directory]\Data\DonationData.json
@@ -118,7 +118,7 @@ Easy configuration, easy start:
       You can now optionally monitor all your workers remotely, both in the GUI and via https://nemosminer.com
       Monitoring setup instructions https://nemosminer.com/setup.php
 
-   GUI
+   Web & Legacy GUI
 
       Since version 3.9.9.x (Beta) NemosMiner has a Web GUI making it easy to configure and run.
       NemosMiner relies on config files. No need to edit bat files. Simply run NemosMiner.bat
@@ -169,7 +169,7 @@ Easy configuration, easy start:
       Usage:
          - Edit 'Config\PoolsConfig.json'
          - Add an entry for the pool you want to customize
-            - The name must be the pool base name (omit *24hrs or *Coins), e.g ZergPool (even if you have configured ZergPoolCoins in the pool list)
+            - The name must be the pool base name (omit *24hrs or *Plus), e.g ZergPool (even if you have configured ZergPoolPlus in the pool list)
             - (**careful with json formating ;)**
 
       Note that the GUI only updates default values (valid for ALL pools unless there is pool specific configuration setting defined in 'Config\PoolConfig.json'). Any other changes need to be done manually.
@@ -182,6 +182,12 @@ Easy configuration, easy start:
          - You feel like a pool is exaggerating its estimations by 10% - Set EarningsAdjustmentFactor to 0.9
 
    Pool Variants
+
+   Poolnames ending in *24hr
+      Use calculations based on 24hr prices to get a more stable estimate.
+      NOT sensible to spikes.
+      They show less switching than following current or plus price estimate.
+      lower profitability in exchange for less switching.
 
    Poolnames ending in *Plus
 
@@ -217,7 +223,7 @@ Easy configuration, easy start:
       Do not use the same miner devices in more than one instance as this will give invalid hash rate
       & power usage readings causing incorrect best miner selection.
 
-   Miner switching log
+   Miner Switching Log
 
       Simple miner switching log as csv (\SwitchingLog.csv file found in Logs folder).
       You can easily track switching rate.
