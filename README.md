@@ -184,12 +184,14 @@ Easy configuration, easy start:
    Pool Variants
 
    Poolnames ending in *24hr
+
       Use calculations based on 24hr prices to get a more stable estimate.
       NOT sensible to spikes.
       They show less switching than following current or plus price estimate.
       lower profitability in exchange for less switching.
 
    Poolnames ending in *Plus
+
       Use calculations based on 24hr actual and current estimate prices to get a more realistic estimate.
       Include some trust index based on past 1hr current estimate variation from 24hr.
       AND are NOT sensible to spikes.
