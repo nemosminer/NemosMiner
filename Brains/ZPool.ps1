@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool.ps1
-Version:        4.3.4.5
-Version date:   30 April 2023
+Version:        4.3.4.6
+Version date:   03 May 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -81,8 +81,13 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
             $CurrenciesData.$_.PSObject.Properties.Remove("name")
             $CurrenciesArray.Add($CurrenciesData.$_)
             If ($CurrenciesData.$_.CoinName -and $CurrenciesData.$_.Currency) { 
-                # Add coin name
-                Add-CoinName -Algorithm $CurrenciesData.$_.algo -Currency $CurrenciesData.$_.Currency -CoinName $CurrenciesData.$_.CoinName
+                Try { 
+                    $AlgoData.$Algo | ConvertTo-Json >> $($BrainName).txt
+                    "Add-CoinName -Algorithm $($CurrenciesData.$_.algo) -Currency $($CurrenciesData.$_.Currency) -CoinName $($CurrenciesData.$_.CoinName)" >> $($BrainName).txt
+                    # Add coin name
+                    Add-CoinName -Algorithm $CurrenciesData.$_.algo -Currency $CurrenciesData.$_.Currency -CoinName $CurrenciesData.$_.CoinName
+                }
+                Catch { }
             }
         }
 

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.3.4.5
-Version date:   30 April 2023
+Version:        4.3.4.6
+Version date:   03 May 2023
 #>
 
 using module .\Include.psm1
@@ -30,8 +30,6 @@ $Global:ProgressPreference = "Ignore"
 $Global:InformationPreference = "Ignore"
 
 Do { 
-    $LegacyGUIForm.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) - Runtime: {0:dd} days {0:hh} hrs {0:mm} mins - Path: $($Variables.Mainpath)" -f [TimeSpan]((Get-Date).ToUniversalTime() - $Variables.ScriptStartTime)
-
     Try {
         $Error.Clear()
         Get-ChildItem -Path ".\Includes\MinerAPIs" -File | ForEach-Object { . $_.FullName }
@@ -73,7 +71,6 @@ Do {
                     $_.Info = ""
                     $_.WorkersRunning = [Worker[]]@()
                 }
-                $Variables.WatchdogTimers = @()
                 $Variables.Summary = "Mining is suspended until system is idle<br>again for $($Config.IdleSec) second$(If ($Config.IdleSec -ne 1) { "s" })..."
                 Write-Message -Level Verbose ($Variables.Summary -replace "<br>", " ")
                 $Variables.IdleRunspace | Add-Member MiningStatus "Idle" -Force
@@ -97,7 +94,7 @@ Do {
         If ($Variables.EnabledDevices) { 
             # Remove model information from devices -> will create only one miner instance
             If ($Config.MinerInstancePerDeviceModel) { $Variables.EnabledDevices | ForEach-Object { $_.Model = ($Variables.Devices | Where-Object Name -eq $_.Name).Model } }
-            Else { $Variables.EnabledDevices | Where-Object Type -EQ "GPU" | ForEach-Object { $_.Model = $_.Vendor } }
+            Else { $Variables.EnabledDevices | ForEach-Object { $_.Model = ($Variables.Devices | Where-Object Name -eq $_.Name).Vendor } }
 
             If ($Variables.EndCycleTime) { 
                 $Variables.BeginCycleTime = $Variables.EndCycleTime
@@ -246,7 +243,7 @@ Do {
                                 # Add configured power usage
                                 $Variables.Devices.Name | ForEach-Object { 
                                     If ($ConfiguredPowerUsage = $Config.PowerUsage.$_ -as [Double]) { 
-                                        If ($_ -in @($Variables.EnabledDevices.Name) -and -not $PowerUsageData.$_) { Write-Message -Level Warn "HWiNFO64 cannot read power usage from system for device ($_). Will use configured value of $ConfiguredPowerUsage) W." }
+                                        If ($_ -in @($Variables.EnabledDevices.Name) -and -not $PowerUsageData.$_) { Write-Message -Level Warn "HWiNFO64 cannot read power usage from system for device ($_). Using configured value of $ConfiguredPowerUsage) W." }
                                         $PowerUsageData[$_] = "$ConfiguredPowerUsage W"
                                     }
                                     $Variables.EnabledDevices | Where-Object Name -EQ $_ | ForEach-Object { $_.ConfiguredPowerUsage = $ConfiguredPowerUsage }
@@ -416,7 +413,7 @@ Do {
                 }
                 Catch { 
                     Write-Message -Level Error "Error loading list of unprofitable algorithms. File '.\Data\UnprofitableAlgorithms.json' is not a valid $($Variables.Branding.ProductLabel) JSON data file. Please restore it from your original download."
-                    $Variables.UnprofitableAlgorithms = $null
+                    $Variables.UnprofitableAlgorithms = @{ }
                 }
 
                 # Faster shutdown
@@ -621,11 +618,8 @@ Do {
                             }
                         }
 
-                        # Sort best pools
-                        $SortedAvailablePools = $Pools | Where-Object Available | Sort-Object { $_.Name -notin $Variables.PoolNameToKeepBalancesAlive }, { - $_.StablePrice * $_.Accuracy }
-                        $SortedAvailablePools.Algorithm | Select-Object -Unique | ForEach-Object { 
-                            $SortedAvailablePools | Where-Object Algorithm -EQ $_ | Select-Object -First 1 | ForEach-Object { $_.Best = $true }
-                        }
+                        # Get best pools
+                        $Pools | Where-Object Available | Group-Object Algorithm | ForEach-Object { $_.Group | Sort-Object { $_.BaseName -in $Variables.PoolNameToKeepBalancesAlive }, { $_.Price_Bias } -Bottom 1 | ForEach-Object { $_.Best = $true } }
                     }
                     # Update GUIs as soon as possible
                     If (-not $Variables.Pools) { $Variables.RefreshNeeded = $true }
@@ -639,12 +633,11 @@ Do {
                 }
 
                 Remove-Variable Pools, PoolsDeconfigured, PoolsNew -ErrorAction Ignore
-                [System.GC]::Collect()
 
                 $Variables.PoolsBest = $Variables.Pools | Where-Object Best | Sort-Object Algorithm
 
                 # Tuning parameters require local admin rights
-                $Variables.UseMinerTweaks = ($Variables.IsLocalAdmin -and $Config.UseMinerTweaks)
+                $Variables.UseMinerTweaks = [Boolean]($Variables.IsLocalAdmin -and $Config.UseMinerTweaks)
             }
 
             # Faster shutdown
@@ -668,7 +661,6 @@ Do {
                 If ($MinerPools[0].Keys) { 
                     If (-not ($Variables.Pools -and $Variables.Miners)) { $Variables.Summary = "Loading miners.<br>This will take a while..." }
                     Remove-Variable NewMiners -ErrorAction Ignore
-                    [System.GC]::Collect()
                     Write-Message -Level Info "Loading miners..."
                     $NewMiners = [Miner[]]@()
                     Get-ChildItem -Path ".\Miners\*.ps1" | ForEach-Object { 
@@ -692,7 +684,7 @@ Do {
                         # Properties that need to be set only once and which are not dependent on any config variables
                         $CompareMiners | Where-Object SideIndicator -EQ "=>" | ForEach-Object { 
                             $_.BaseName = $_.Name -split '-' | Select-Object -Index 0
-                            $_.Devices  = [Device[]]($Variables.Devices | Where-Object Name -in $_.DeviceNames)
+                            $_.Devices  = [Device[]]($Variables.EnabledDevices | Where-Object Name -in $_.DeviceNames)
                             $_.Path     = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($_.Path)
                             $_.Version  = $_.Name -split '-' | Select-Object -Index 1
                         }
@@ -787,7 +779,7 @@ Do {
                         # Download miner binaries
                         Write-Message -Level Info "Some miners binaries are missing ($($DownloadList.Count) item$(If ($DownloadList.Count -ne 1) { "s" })), starting downloader..."
                         $Downloader_Parameters = @{ 
-                            Config = $Global:Config
+                            Config = $Config
                             DownloadList = $DownloadList
                             Variables = $Variables
                         }
@@ -823,9 +815,9 @@ Do {
                     $Variables.MinersBest_Combo = $Variables.MinersBest = $Variables.MinersMostProfitable = $Miners
                 }
                 Else { 
-                    If ($Variables.CalculatePowerCost -and -not $Config.IgnorePowerCost) { $Bias = "Profit_Bias" } Else { $Bias = "Earning_Bias" }
+                    $Bias = If ($Variables.CalculatePowerCost -and -not $Config.IgnorePowerCost) { "Profit_Bias" } Else { "Earning_Bias" }
 
-                    # Hack: temporarily make all bias positive, BestMiners_Combos(_Comparison) produces wrong sort order when earnings or profits are negative
+                    # Hack: temporarily make all bias positive, MinersBest_Combos comparison produces wrong sort order when earnings or profits are negative
                     $SmallestBias = [Double][Math]::Abs((($Miners | Where-Object Available | Where-Object { -not [Double]::IsNaN($_.$Bias) }).$Bias | Measure-Object -Minimum).Minimum) * 2
                     $Miners | ForEach-Object { $_.$Bias += $SmallestBias }
 
@@ -973,7 +965,7 @@ Do {
                             $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
                         }
                     }
-                    Remove-Variable Worker -ErrorAction Ignore
+                    Remove-Variable WatchdogTimers, Worker -ErrorAction Ignore
                     $Miner.SetStatus([MinerStatus]::Idle)
                     $Miner.Info = ""
                     $Miner.WorkersRunning = @()
@@ -1269,7 +1261,7 @@ Do {
             }
             Remove-Variable Miner -ErrorAction Ignore
 
-            $Variables.RunningMiners = @($Variables.RunningMiners | Where-Object { $_-notin $Variables.FailedMiners })
+            $Variables.RunningMiners = @($Variables.RunningMiners | Where-Object { $_ -notin $Variables.FailedMiners })
             $Variables.BenchmarkingOrMeasuringMiners = @($Variables.RunningMiners | Where-Object { $_.Activated -gt 0 -and ($_.Benchmark -or $_.MeasurePowerUsage) })
 
             If ($Variables.FailedMiners -and -not $Variables.BenchmarkingOrMeasuringMiners) { 
@@ -1295,6 +1287,7 @@ Do {
 
         $Error.Clear()
         [System.GC]::GetTotalMemory($true) | Out-Null
+        [System.GC]::Collect()
 
         Write-Message -Level Info "Ending cycle$($Variables.EndCycleMessage)."
     }

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.3.4.5
-Version date:   30 April 2023
+Version:        4.3.4.6
+Version date:   03 May 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -97,7 +97,14 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
             }
             If ($Currency) { 
                 # Add coin name
-                If ($AlgoData.$Algo.CoinName) { Try { Add-CoinName -Algorithm $Algo -Currency $Currency -CoinName $AlgoData.$Algo.CoinName } Catch { } }
+                If ($AlgoData.$Algo.CoinName) { 
+                    Try { 
+                        $AlgoData.$Algo | ConvertTo-Json >> $($BrainName).txt
+                        "Add-CoinName -Algorithm $Algo -Currency $Currency -CoinName $($AlgoData.$Algo.CoinName)" >> $($BrainName).txt
+                        Add-CoinName -Algorithm $Algo -Currency $Currency -CoinName $AlgoData.$Algo.CoinName
+                    }
+                    Catch { }
+                }
                 # Keep DAG data up to date
                 If ($Algo -in $Variables.DagData.Algorithm.Keys -and $AlgoData.$Algo.height -gt $Variables.DAGData.Currency.$Currency.BlockHeight) { 
                     $Variables.DAGData.Currency.$Currency = (Get-DAGData -Blockheight $AlgoData.$Algo.height -Currency $Currency -EpochReserve 2)

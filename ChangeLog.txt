@@ -10,6 +10,19 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.3.4.6 03.05.2023
+=======================================
+
+Changes:
+- Core: Use Price_Bias (instead of StablePrice) for best pool selection
+
+Enhancements:
+- Core: Faster code for best pool selection
+
+Fixes:
+- Core: $MinerInstancePerDeviceModel -eq $false not working (Regression from 4.3.3.0)
+
+
 ChangeLog NemosMiner 4.3.4.5 30.04.2023
 =======================================
 
@@ -22,8 +35,8 @@ Miner updates:
 - GMiner-v3.37
 - Rigel-v1.4.5
 - SRBMinerMulti-v2.2.5
-- TeamRedMiner-v0.10.12
 - TeamBlackMiner-v1.94: Remove workaround for https://github.com/sp-hash/TeamBlackMiner/issues/369 (issue is fixed in miner)
+- TeamRedMiner-v0.10.12
 
 
 ChangeLog NemosMiner 4.3.4.4 26.04.2023
