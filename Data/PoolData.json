@@ -255,6 +255,7 @@
     },
     "PoolDebug": false,
     "Region": [
+      "ASIA",
       "EU",
       "US"
     ],
