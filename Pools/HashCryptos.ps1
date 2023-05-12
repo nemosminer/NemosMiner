@@ -37,7 +37,7 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PoolConfig = $Variables.PoolsConfig.$Name
 $PriceField = $PoolConfig.Variant.$PoolVariant.PriceField
 $DivisorMultiplier = $PoolConfig.Variant.$PoolVariant.DivisorMultiplier
-$Hostsuffix = "hashcryptos.com"
+$Hostsuffix = "stratum1.hashcryptos.com"
 $PayoutCurrency = $PoolConfig.Wallets.Keys | Select-Object -First 1
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
 $TransferFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Data\BrainData_" + (Get-Item $MyInvocation.MyCommand.Path).BaseName + ".json"
@@ -71,46 +71,6 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
             Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName
         }
 
-        $HostPrefix = Switch ($Algorithm_Norm) { 
-            "Blake2s"       { "stratum3."; Break }
-            "C11"           { ""; Break }
-            "Cryptonight"   { ""; Break }
-            "Equihash2009"  { "stratum4."; Break }
-            "Equihash1927"  { "stratum4."; Break }
-            "Groestl"       { "stratum3."; Break }
-            "KawPow"        { "stratum4."; Break }
-            "Keccak"        { "stratum3."; Break }
-            "Lbry"          { "stratum4."; Break }
-            "Lyra2RE2"      { "stratum3."; Break }
-            "Lyra2RE3"      { ""; Break }
-            "MyriadGroestl" { "stratum3."; Break }
-            "Neoscrypt"     { "stratum1."; Break }
-            "Nist5"         { ""; Break }
-            "Odocrypt"      { "stratum2."; Break }
-            "Phi2"          { ""; Break }
-            "Quark"         { "stratum3."; Break }
-            "Qubit"         { "stratum3."; Break }
-            "Scrypt"        { "stratum2."; Break }
-            "SHA256"        { "stratum1."; Break }
-            "Skein"         { "stratum3."; Break }
-            "SkunkHash"     { ""; Break }
-            "Tribus"        { "stratum4."; Break }
-            "VertHash"      { "stratum3."; Break }
-            "X11"           { "stratum1."; Break }
-            "X11Ghost"      { "stratum3."; Break }
-            "X13"           { "stratum3."; Break }
-            "X13bcd"        { ""; Break }
-            "X16r"          { ""; Break }
-            "X16s"          { ""; Break }
-            "X17"           { ""; Break }
-            "Yescrypt"      { "stratum4."; Break }
-            "YescryptR16"   { "stratum4."; Break }
-            "YescryptR32"   { "stratum4." ; Break}
-            "Yespower"      { "stratum4."; Break }
-            "YespowerR16"   { "stratum4."; Break }
-            Default         { "" }
-        }
-
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
         $Reasons = [System.Collections.Generic.List[String]]@()
@@ -118,33 +78,30 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
         If ($Request.$_.hashrate_last24h -eq 0) { $Reasons.Add("No hashrate at pool") }
         If ($PoolVariant -match ".+Plus$" -and $Request.$_.$PriceField -eq 0) { $Reasons.Add("Plus price -eq 0")}
 
-        If ($HostPrefix) { 
-
-            [PSCustomObject]@{ 
-                Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
-                Algorithm                = [String]$Algorithm_Norm
-                BaseName                 = [String]$Name
-                Currency                 = [String]$Currency
-                Disabled                 = [Boolean]$Stat.Disabled
-                EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                Fee                      = [Decimal]$Fee
-                Host                     = [String]"$($HostPrefix)$($HostSuffix)"
-                Name                     = [String]$PoolVariant
-                Pass                     = [String]$PoolConfig.WorkerName
-                Port                     = [UInt16]$Request.$_.port
-                PortSSL                  = $null
-                Price                    = [Double]$Stat.Live
-                Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratum1" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
-                Reasons                  = $Reasons
-                Region                   = [String]$PoolConfig.Region
-                SendHashrate             = $false
-                SSLSelfSignedCertificate = $true
-                StablePrice              = [Double]$Stat.Week
-                Updated                  = [DateTime]$Request.$_.Updated
-                User                     = [String]"$($Wallet).$($PoolConfig.WorkerName)"
-                WorkerName               = ""
-                Workers                  = [Int]$Request.$_.workers
-            }
+        [PSCustomObject]@{ 
+            Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
+            Algorithm                = [String]$Algorithm_Norm
+            BaseName                 = [String]$Name
+            Currency                 = [String]$Currency
+            Disabled                 = [Boolean]$Stat.Disabled
+            EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+            Fee                      = [Decimal]$Fee
+            Host                     = [String]$HostSuffix
+            Name                     = [String]$PoolVariant
+            Pass                     = [String]$PoolConfig.WorkerName
+            Port                     = [UInt16]$Request.$_.port
+            PortSSL                  = $null
+            Price                    = [Double]$Stat.Live
+            Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratum1" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
+            Reasons                  = $Reasons
+            Region                   = [String]$PoolConfig.Region
+            SendHashrate             = $false
+            SSLSelfSignedCertificate = $true
+            StablePrice              = [Double]$Stat.Week
+            Updated                  = [DateTime]$Request.$_.Updated
+            User                     = [String]"$($Wallet).$($PoolConfig.WorkerName)"
+            WorkerName               = ""
+            Workers                  = [Int]$Request.$_.workers
         }
     }
 
