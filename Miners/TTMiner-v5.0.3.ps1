@@ -33,7 +33,7 @@ If ($Algorithms) {
 
         $Algorithms | Where-Object { $_.Algorithm -ne "Ethash" -or $MinerPools[0].Ethash.Epoch -le 384 <# Miner supports Ethash up to epoch 384 #> } | ForEach-Object { 
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -ge $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture ) { 
+            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture ) { 
 
                 $Arguments = $_.Arguments
                 $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)" -replace ' '

@@ -1,9 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -ne "NVIDIA" -or $_.OpenCL.DriverVersion -ge "410.48" })) { Return }
 
-$Uri = Switch ($Variables.DriverVersion.OpenCL.NVIDIA ) { 
-    { $_ -ge "455.23" } { "https://github.com/nanopool/nanominer/releases/download/v3.7.7/nanominer-windows-3.7.7-cuda11.zip"; Break }
-    Default             { "https://github.com/nanopool/nanominer/releases/download/v3.7.7/nanominer-windows-3.7.7.zip" }
-}
+$Uri = "https://github.com/nanopool/nanominer/releases/download/v3.8.0/nanominer-windows-3.8.0.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\nanominer.exe"
 $DeviceEnumerator = "Slot"
@@ -16,8 +13,9 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EvrProgPow";    Type = "AMD"; Fee = 0.02;  MinMemGiB = $MinerPools[0].EvrProgPow.DAGSizeGiB + 1.08;   Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 60); ExcludePool = @();                                           ExcludeGPUArchitecture = @(); Arguments = " -algo Evrprogpow" }
     [PSCustomObject]@{ Algorithm = "FiroPow";       Type = "AMD"; Fee = 0.01;  MinMemGiB = $MinerPools[0].FiroPow.DAGSizeGiB + 1.08;      Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePool = @();                                           ExcludeGPUArchitecture = @(); Arguments = " -algo FiroPow" }
     [PSCustomObject]@{ Algorithm = "KawPow";        Type = "AMD"; Fee = 0.02;  MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 1.08;       Minerset = 2; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePool = @("HashCryptos", "MiningDutch", "ProHashing"); ExcludeGPUArchitecture = @(); Arguments = " -algo KawPow" } # TeamRedMiner-v0.10.12 is fastest
+    [PSCustomObject]@{ Algorithm = "kHeavyHash";    Type = "AMD"; Fee = 0.02;  MinMemGiB = 2;                                             Minerset = 2; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePool = @();                                           ExcludeGPUArchitecture = @(); Arguments = " -algo Kaspa" }
     [PSCustomObject]@{ Algorithm = "UbqHash";       Type = "AMD"; Fee = 0.01;  MinMemGiB = $MinerPools[0].UbqHash.DAGSizeGiB + 1.08;      Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePool = @();                                           ExcludeGPUArchitecture = @(); Arguments = " -algo Ubqhash" } # PhoenixMiner-v6.2c is fastest
-    [PSCustomObject]@{ Algorithm = "VertHash";      Type = "AMD"; Fee = 0.01;  MinMemGiB = 3;                                             Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePool = @("ZPool");                                    ExcludeGPUArchitecture = @(); Arguments = " -algo Verthash" }
+    [PSCustomObject]@{ Algorithm = "VertHash";      Type = "AMD"; Fee = 0.01;  MinMemGiB = 3;                                             Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePool = @();                                           ExcludeGPUArchitecture = @(); Arguments = " -algo Verthash" }
 
 #   [PSCustomObject]@{ Algorithm = "Randomx";   Type = "CPU"; Fee = 0.02; Minerset = 3; WarmupTimes = @(45, 0); Arguments = " -algo Randomx" } # ASIC
     [PSCustomObject]@{ Algorithm = "VerusHash"; Type = "CPU"; Fee = 0.02; Minerset = 2; WarmupTimes = @(45, 0); Arguments = " -algo Verushash" }
@@ -27,6 +25,7 @@ $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "INTEL"; Fee = 0.01;  MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 1.08; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePool = @();              ExcludeGPUArchitecture = @(); Arguments = " -algo Ethash" }
     [PSCustomObject]@{ Algorithm = "EvrProgPow";   Type = "INTEL"; Fee = 0.02;  MinMemGiB = $MinerPools[0].EvrProgPow.DAGSizeGiB + 1.08;   Minerset = 2; WarmupTimes = @(45, 0);  ExcludePool = @();              ExcludeGPUArchitecture = @(); Arguments = " -algo Evrprogpow" }
     [PSCustomObject]@{ Algorithm = "KawPow";       Type = "INTEL"; Fee = 0.02;  MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 1.08;       Minerset = 2; WarmupTimes = @(45, 0);  ExcludePool = @("HashCryptos"); ExcludeGPUArchitecture = @(); Arguments = " -algo KawPow" } # Trex-v0.26.8 is fastest
+    [PSCustomObject]@{ Algorithm = "kHeavyHash";   Type = "INTEL"; Fee = 0.02;  MinMemGiB = 2;                                             Minerset = 2; WarmupTimes = @(45, 0);  ExcludePool = @();              ExcludeGPUArchitecture = @(); Arguments = " -algo Kaspa" }
     [PSCustomObject]@{ Algorithm = "Octopus";      Type = "INTEL"; Fee = 0.02;  MinMemGiB = $MinerPools[0].Octopus.DAGSizeGiB + 1.08;      Minerset = 2; WarmupTimes = @(45, 0);  ExcludePool = @();              ExcludeGPUArchitecture = @(); Arguments = " -algo Octopus" } # NBMiner-v42.3 is faster
     [PSCustomObject]@{ Algorithm = "UbqHash";      Type = "INTEL"; Fee = 0.01;  MinMemGiB = $MinerPools[0].UbqHash.DAGSizeGiB + 1.08;      Minerset = 2; WarmupTimes = @(75, 45); ExcludePool = @();              ExcludeGPUArchitecture = @(); Arguments = " -algo Ubqhash" }
 
@@ -37,6 +36,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EvrProgPow";   Type = "NVIDIA"; Fee = 0.02;  MinMemGiB = $MinerPools[0].EvrProgPow.DAGSizeGiB + 1.08;   Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(45, 60); ExcludePool = @();                                           ExcludeGPUArchitecture = @();        Arguments = " -algo Evrprogpow" }
     [PSCustomObject]@{ Algorithm = "FiroPow";      Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = $MinerPools[0].FiroPow.DAGSizeGiB + 1.08;      MinerSet = 0; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(45, 0);  ExcludePool = @();                                           ExcludeGPUArchitecture = @();        Arguments = " -algo FiroPow"}
     [PSCustomObject]@{ Algorithm = "KawPow";       Type = "NVIDIA"; Fee = 0.02;  MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 1.08;       MinerSet = 0; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(45, 0);  ExcludePool = @("HashCryptos", "MiningDutch", "ProHashing"); ExcludeGPUArchitecture = @();        Arguments = " -algo KawPow" } # Trex-v0.26.8 is fastest
+    [PSCustomObject]@{ Algorithm = "kHeavyHash";   Type = "NVIDIA"; Fee = 0.02;  MinMemGiB = 2;                                             Minerset = 2; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(45, 0);  ExcludePool = @();                                           ExcludeGPUArchitecture = @();        Arguments = " -algo Kaspa" }
     [PSCustomObject]@{ Algorithm = "Octopus";      Type = "NVIDIA"; Fee = 0.02;  MinMemGiB = $MinerPools[0].Octopus.DAGSizeGiB + 1.08;      Minerset = 2; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(45, 0);  ExcludePool = @();                                           ExcludeGPUArchitecture = @();        Arguments = " -algo Octopus" } # NBMiner-v42.3 is faster
     [PSCustomObject]@{ Algorithm = "UbqHash";      Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = $MinerPools[0].UbqHash.DAGSizeGiB + 1.08;      Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(45, 0);  ExcludePool = @();                                           ExcludeGPUArchitecture = @();        Arguments = " -algo Ubqhash" } # PhoenixMiner-v6.2c is fastest
 )
@@ -78,8 +78,8 @@ If ($Algorithms) {
                 If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
 
                 If ($_.Algorithm -eq "VertHash") { 
-                    If ((Get-Item -Path $Variables.VerthashDatPath).length -eq 1283457024) { 
-                        If (-not (Get-Item -Path ".\Bin\$($Name)\VertHash.dat").length -eq 1283457024) { 
+                    If ((Get-Item -Path $Variables.VerthashDatPath -ErrorAction Ignore).length -eq 1283457024) { 
+                        If (-not (Get-Item -Path ".\Bin\$($Name)\VertHash.dat" -ErrorAction Ignore).length -eq 1283457024) { 
                             New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath -Force | Out-Null
                         }
                     }

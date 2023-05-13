@@ -114,6 +114,7 @@
   "evrprogpow": "EvrProgPow",
   "firo": "FiroPow",
   "firopow": "FiroPow",
+  "firopowscc": "FiroPowSCC",
   "frkhash": "FrkHash",
   "gr": "GhostRider",
   "graft": "RandomGrft",

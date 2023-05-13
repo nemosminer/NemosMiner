@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.3.4.6
-Version date:   03 May 2023
+Version:        4.3.4.7
+Version date:   13 May 2023
 #>
 
 [CmdletBinding()]
@@ -232,7 +232,7 @@ param(
     [Parameter(Mandatory = $false)]
     [String]$SSL = "Prefer", # SSL pool connections: One of three values: 'Prefer' (use where available), 'Never' or 'Always' (pools that do not allow SSL are ignored)
     [Parameter(Mandatory = $false)]
-    [Switch]$SSLAllowSelfSignedCertificate = $false, # If true  will allow SSL/TLS connections with self signed certificates (this is a security issue)
+    [Switch]$SSLAllowSelfSignedCertificate = $false, # If true will allow SSL/TLS connections with self signed certificates (this is a security issue)
     [Parameter(Mandatory = $false)]
     [String]$StartupMode = $false, # One of 'Idle', 'Paused' or 'Running'. This is the same as the buttons in the legacy & web GUI
     [Parameter(Mandatory = $false)]
@@ -291,7 +291,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.3.4.6"
+    Version      = [System.Version]"4.3.4.7"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell

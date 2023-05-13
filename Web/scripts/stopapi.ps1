@@ -22,7 +22,6 @@ Version:        4.3.4.7
 Version date:   20 October 2022
 #>
 
-# Try running this script as:  http://localhost:3999/scripts/demo.ps1?message=Hello%20World!
+Write-Host "Stop-APIServer"
 
-param($Parameters)
-Write-Output $Parameters.message
+Stop-APIServer

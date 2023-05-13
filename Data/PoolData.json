@@ -314,6 +314,7 @@
       // e.g. "mBTC": 5
     },
     "PoolDebug": false,
+    "ProfitSwitching": true, // Pool changes DAG epoch when best coin switches
     "Region": [
       "asia",
       "eu",
@@ -365,6 +366,7 @@
       "mBTC": 1.5
     },
     "PoolDebug": false,
+    "ProfitSwitching": true, // Pool changes DAG epoch when best coin switches
     "Region": [
       "eu",
       "jp",

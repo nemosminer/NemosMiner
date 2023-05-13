@@ -1,6 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "NVIDIA")) { Return }
 
-$Uri = "https://github.com/rigelminer/rigel/releases/download/1.4.5/rigel-1.4.5-win.zip"
+$Uri = "https://github.com/rigelminer/rigel/releases/download/1.4.7/rigel-1.4.7-win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\Rigel.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -35,7 +35,7 @@ If ($Algorithms) {
             # Windows 10 requires more memory on some algos
             # If ($_.Algorithms[0] -match "Cuckaroo.*|Cuckoo.*" -and [System.Environment]::OSVersion.Version -ge [Version]"10.0.0.0") { $_.MinMemGiB += 1 }
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -ge $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
+            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
 
                 $Arguments = $_.Arguments
                 $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })" -replace ' '
@@ -48,7 +48,7 @@ If ($Algorithms) {
                     $Arguments += Switch ($MinerPools[$Index].$Algorithm.Protocol) { 
                         "ethproxy"     { " --url [$($Index + 1)]ethproxy"; Break }
                         "ethstratum1"  { " --url [$($Index + 1)]ethstratum"; Break }
-                        "ethstratum2"  { " --url [$($Index + 1)]stratum"; Break }
+                        "ethstratum2"  { " --url [$($Index + 1)]ethstratum"; Break }
                         "ethstratumnh" { " --url [$($Index + 1)]ethstratum"; Break }
                         Default        { " --url [$($Index + 1)]stratum" }
                     }

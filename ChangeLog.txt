@@ -10,6 +10,25 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.3.4.7 13.05.2023
+=======================================
+
+Enhancements:
+- Core: Mitigate memory leak
+- Core: Read miner data after getting pool data; this will allow for more stable hash stats
+
+Miner updates:
+- GMiner-v3.40
+- NanoMiner-v3.8
+- Rigel-v1.4.7
+- SRBMinerMulti-v2.2.6
+
+Pool changes
+- HashCryptos: Use 'stratum1.hashcryptos.com' for all algorithms
+- ProHashing: Add region 'ASIA'
+- ZergPool: Workaround for pool sending changing DAG information when mining with option 2 (static coin)
+
+
 ChangeLog NemosMiner 4.3.4.6 03.05.2023
 =======================================
 

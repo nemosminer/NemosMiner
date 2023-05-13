@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.3.4.6
-Version date:   03 May 2023
+Version:        4.3.4.7
+Version date:   13 May 2023
 #>
 
 Function Start-APIServer { 
@@ -318,8 +318,8 @@ Function Start-APIServer {
                                     $Variables.ShowProfit = $Config.ShowProfit
                                     $Variables.ShowProfitBias = $Config.ShowProfitBias
 
-                                    Write-Message -Level Verbose "Web GUI: Configuration saved. It will become fully active in next cycle."
-                                    $Data = "Configuration saved to '$($Variables.ConfigFile)'.`nIt will become fully active in next cycle."
+                                    Write-Message -Level Verbose "Web GUI: Configuration saved. It will become fully active in the next cycle."
+                                    $Data = "Configuration saved to '$($Variables.ConfigFile)'.`nIt will become fully active in the next cycle."
                                 }
                                 Catch { 
                                     $Data = "Error saving configuration file '$($Variables.ConfigFile)'.`n`n[ $($_) ]"
@@ -1080,7 +1080,9 @@ Function Start-APIServer {
                 }
             ) | Out-Null # End of $APIServer
 
-            $Variables.APIRunspace | Add-Member -Force @{ Name = ""; PowerShell = $PowerShell; Handle = $PowerShell.BeginInvoke(); StartTime = $((Get-Date).ToUniversalTime()) }
+            $Variables.APIRunspace | Add-Member -Force @{ Name = ""; PowerShell = $PowerShell; StartTime = $((Get-Date).ToUniversalTime()) }
+
+            $null = $PowerShell.BeginInvoke()
 
             # Wait for API to get ready
             $RetryCount = 3

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.4.6
-Version date:   03 May 2023
+Version:        4.3.4.7
+Version date:   13 May 2023
 #>
 
 # Window handling
@@ -252,7 +252,7 @@ Class Miner {
             }
         }
         # Start Miner data reader
-        $this | Add-Member -Force @{ DataReaderJob = Start-Job -Name "$($this.Name)_DataReader" -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithms, DataCollectInterval, Devices, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore) }
+        $this | Add-Member @{ DataReaderJob = Start-Job -Name "$($this.Name)_DataReader" -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithms, DataCollectInterval, Devices, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore) } -Force
     }
 
     [Void] hidden StopDataReader() { 
@@ -688,7 +688,8 @@ namespace PInvoke.Win32 {
         }
     ) | Out-Null
 
-    $Variables.IdleRunspace | Add-Member -Force @{ Name = "IdleRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
+    $Variables.IdleRunspace | Add-Member @{ Name = "IdleRunspace"; PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()} -Force
+    $null = $PowerShell.BeginInvoke()
 }
 
 Function Stop-IdleDetection { 
@@ -704,7 +705,7 @@ Function Stop-IdleDetection {
 
 Function Start-Mining { 
 
-    If (-not $Variables.CoreRunspace) { 
+    If (-not $Global:CoreRunspace) { 
         $Variables.Summary = "Starting mining processes..."
         Write-Message -Level Verbose ($Variables.Summary -replace "<br>", " ")
 
@@ -728,21 +729,21 @@ Function Start-Mining {
         $PowerShell = [PowerShell]::Create()
         $PowerShell.Runspace = $Runspace
         [Void]$PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
-
-        $Variables.CoreRunspace = @{ Name = "CoreRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
+        $Global:CoreRunspace = @{ PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
+        $null = $PowerShell.BeginInvoke()
 
         $Variables.Summary = "Mining processes are running."
     }
 }
 
 Function Stop-Mining { 
-    
+
     Param(
         [Parameter(Mandatory = $false)]
         [Switch]$Quick = $false
     )
 
-    If ($Variables.CoreRunspace) { 
+    If ($Global:CoreRunspace) { 
         $Variables.Summary = "Stopping mining processes..."
         Write-Message -Level Verbose ($Variables.Summary -replace "<br>", " ")
 
@@ -759,9 +760,8 @@ Function Stop-Mining {
             $_.WorkersRunning = @()
         }
 
-        $Variables.CoreRunspace.PowerShell.Runspace.Dispose()
-        If ($Variables.CoreRunspace.PowerShell) { $Variables.CoreRunspace.PowerShell.Dispose() }
-        $Variables.Remove("CoreRunspace")
+        $Global:CoreRunspace.PowerShell.Runspace.Dispose()
+        Remove-Variable CoreRunspace -Scope Global -ErrorAction Ignore
     }
 
     If ($Variables.NewMiningStatus -eq "Idle") { 
@@ -809,7 +809,8 @@ Function Start-Brain {
                     $PowerShell.Runspace = $Runspace
                     [Void]$Powershell.AddScript($BrainScript)
 
-                    $Variables.Brains.$_ = @{ Name = "BrainRunspace_$($_)"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
+                    $Variables.Brains.$_ = @{ Name = "BrainRunspace_$($_)"; PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
+                    $null = $PowerShell.BeginInvoke()
 
                     $BrainsStarted += $_
                 }
@@ -1030,7 +1031,7 @@ Function Get-Rate {
 
             $TSymBatches | ForEach-Object { 
                 (Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$($_)$($Config.CryptoCompareAPIKeyParam)&extraParams=$($Variables.Branding.BrandWebSite) Version $($Variables.Branding.Version)" -TimeoutSec 5 -ErrorAction Ignore).BTC | ForEach-Object { 
-                    $_.PSObject.Properties | ForEach-Object { $Rates.BTC | Add-Member @{ "$($_.Name)" = ($_.Value) } -Force }
+                    $_.PSObject.Properties | Select-Object | ForEach-Object { $Rates.BTC | Add-Member @{ "$($_.Name)" = $_.Value } -Force }
                 }
             }
 
@@ -1203,7 +1204,7 @@ Function Read-MonitoringData {
             # Calculate some additional properties and format others
             $Workers | ForEach-Object { 
                 # Convert the unix timestamp to a datetime object, taking into account the local time zone
-                $_ | Add-Member -Force @{ date = [TimeZone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($_.lastseen)) }
+                $_ | Add-Member @{ date = [TimeZone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($_.lastseen)) } -Force
 
                 # If a machine hasn't reported in for > 10 minutes, mark it as offline
                 $TimeSince = New-TimeSpan -Start $_.date -End (Get-Date)
@@ -3305,16 +3306,19 @@ Function Update-DAGData {
             Write-Message -Level Warn "Failed to load DAG data from '$Url'."
         }
     }
+    If ($Variables.DAGdata.Algorithm.FiroPow) { 
+        # SCC firo variant
+        $Variables.DAGdata.Algorithm.FiroPowSCC = $Variables.DAGdata.Algorithm.FiroPow.Clone()
+    }
+    If ($Variables.DAGdata.Currency.FIRO) { 
+        # SCC firo variant
+        $Variables.DAGdata.Currency.SCC = $Variables.DAGdata.Currency.FIRO.Clone()
+        $Variables.DAGdata.Currency.SCC.Algorithm = "FiroPowSCC"
+        $Variables.DAGdata.Currency.SCC.CoinName = "StakeCubeCoin"
+    }
 
     If ($Variables.DAGdata.Updated.Values -gt $Variables.Timer) { 
         #At least one DAG was updated, get maximum DAG size per algorithm
-
-        If ($Variables.DAGdata.Currency.FIRO) { # SCC firo variant
-            $Variables.DAGdata.Currency.SCC = $Variables.DAGdata.Currency.FIRO.Clone()
-            $Variables.DAGdata.Currency.SCC.Algorithm = "FiroPowSSC"
-            $Variables.DAGdata.Currency.SCC.CoinName = "StakeCubeCoin"
-        }
-
         $DagDataKeys = @($Variables.DAGdata.Currency.Keys) # Store as array to avoid error 'An error occurred while enumerating through a collection: Collection was modified; enumeration operation may not execute..'
 
         ForEach ($Algorithm in @($DagDataKeys | ForEach-Object { $Variables.DAGdata.Currency.$_.Algorithm } | Select-Object)) { 

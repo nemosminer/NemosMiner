@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool.ps1
-Version:        4.3.4.6
-Version date:   03 May 2023
+Version:        4.3.4.7
+Version date:   13 May 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -82,12 +82,13 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
             $CurrenciesArray.Add($CurrenciesData.$_)
             If ($CurrenciesData.$_.CoinName -and $CurrenciesData.$_.Currency) { 
                 Try { 
-                    $AlgoData.$Algo | ConvertTo-Json >> $($BrainName).txt
-                    "Add-CoinName -Algorithm $($CurrenciesData.$_.algo) -Currency $($CurrenciesData.$_.Currency) -CoinName $($CurrenciesData.$_.CoinName)" >> $($BrainName).txt
                     # Add coin name
                     Add-CoinName -Algorithm $CurrenciesData.$_.algo -Currency $CurrenciesData.$_.Currency -CoinName $CurrenciesData.$_.CoinName
                 }
-                Catch { }
+                Catch { 
+                    $CurrenciesData.$_.algo | ConvertTo-Json >> $($BrainName).txt
+                    "Add-CoinName -Algorithm $($CurrenciesData.$_.algo) -Currency $($CurrenciesData.$_.Currency) -CoinName $($CurrenciesData.$_.CoinName)" >> $($BrainName).txt
+                }
             }
         }
 
@@ -97,6 +98,13 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
             $AlgoData.($_.name) | Add-Member Currency $BestCurrency.currency -Force
             $AlgoData.($_.name) | Add-Member CoinName $BestCurrency.coinname -Force
         }
+
+        # SCC firo variant
+        If ($AlgoData.firopow -and $AlgoData.firopow.Currency -eq "SCC") { 
+            $AlgoData | Add-Member firopowscc $AlgoData.firopow -Force
+            $AlgoData.firopowscc.name = "firopowscc"
+            $AlgoData.PSObject.Properties.Remove("firopow")
+         }
 
         ForEach ($Algo in $AlgoData.PSObject.Properties.Name) { 
             $AlgoData.$Algo.actual_last24h = $AlgoData.$Algo.actual_last24h / 1000
