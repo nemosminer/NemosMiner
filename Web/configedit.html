@@ -152,7 +152,7 @@
                     <div style="padding-top: 0.2rem" title="Enter Proxy IP address and port&#10;e.g. 192.168.1.1:3128"> Proxy address:port
                       <input type="text" id="Proxy" name="Proxy" maxlength=22 size=30>
                     </div>
-                    <div style="padding-top: 0.5rem" title="If enabled NemosMiner will open firewall ports for all miners&#10;Admin rights required (or you must accept the UAC prompts)">
+                    <div style="padding-top: 0.4rem" title="If enabled NemosMiner will open firewall ports for all miners&#10;Admin rights required (or you must accept the UAC prompts)">
                       <input type="checkbox" class="toggle-switch" id="OpenFirewallPorts" name="OpenFirewallPorts"> Open firewall ports (admin rights required)
                     </div>
                     <div style="padding-top: 0.3rem" title="Display numbers with maximal n decimal digits&#10;(larger numbers are shown with less decimal digits)&#10;&#10;(min=0, max=10, default=6)" for="DecimalsMax">Display numbers with maximal
@@ -190,7 +190,7 @@
                           </select>
                           <label for="SSL"> SSL for pool connections</label>
                         </div>
-                        <div style="padding-top: 0.5rem" title="Some pools use self signed certificates for SSL and/or TLS encryption&#10;&#10;Note: This is a security issue and allows 'Man in the middle attacks'">
+                        <div style="padding-top: 0.4rem" title="Some pools use self signed certificates for SSL and/or TLS encryption&#10;&#10;Note: This is a security issue and allows 'Man in the middle attacks'">
                           <input type="checkbox" class="toggle-switch" id="SSLAllowSelfSignedCertificate" name="SSLAllowSelfSignedCertificate"> Allow SSL/TLS connections with self signed certificates
                         </div>
                       </fieldset>
@@ -369,7 +369,7 @@
                           <option value='light' title="Information about miners run in the past, failed miners & watchdog timers will not be shown">light</option>
                         </select>
                       </div>
-                      <div style="padding-top: 0.8rem" title="Show the 'PowerCost' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'c' in the text window while waiting for the next cycle">
+                      <div style="padding-top: 0.5rem" title="Show the 'PowerCost' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'c' in the text window while waiting for the next cycle">
                         <input type="checkbox" class="toggle-switch" id="ShowPowerCost" name="ShowPowerCost"> Show power cost column
                       </div>
                       <div style="padding-top: 0.5rem" title="Show the 'PowerUsage' column in the text window&#10;(requires 'Calculate Power Cost' to be enabled)&#10;&#10;Can be toggled by pressing 'w' in the text window while waiting for the next cycle">
@@ -441,7 +441,7 @@
                       <div style="padding-top: 0.3rem" title="NemosMiner will periodically check for a new program version&#10;(min=0, max=30, default=1 days).&#10;Set to 0 to disable checking for new versions"> Check for new version every
                         <input type="number" id="AutoUpdateCheckInterval" name="AutoUpdateCheckInterval" min=0 max=50 step=1 value=15> days
                       </div>
-                      <div style="padding-top: 0.5rem" title="Automatically update NemosMiner to the newest program version&#10;NemosMiner will check for a new version on each start&#10;and every n days as configured by 'AutoUpdateCheckInterval'">
+                      <div style="padding-top: 0.4rem" title="Automatically update NemosMiner to the newest program version&#10;NemosMiner will check for a new version on each start&#10;and every n days as configured by 'AutoUpdateCheckInterval'">
                         <input type="checkbox" class="toggle-switch" id="AutoUpdate" name="AutoUpdate"> Automatically install newest version
                       </div>
                       <div style="padding-top: 0.6rem" title="If enabled NemosMiner will show the changlog when an update is available">
