@@ -111,9 +111,9 @@ Do {
                     $Variables.EndCycleTime = $Variables.Timer.AddSeconds($Config.Interval)
                 }
 
-                $Variables.CycleStarts += $Variables.Timer
-                $Variables.CycleStarts = @($Variables.CycleStarts | Select-Object -Last (3, ($Config.SyncWindow + 1) | Measure-Object -Maximum).Maximum)
-                $Variables.SyncWindowDuration = ($Variables.CycleStarts | Select-Object -Last 1) - ($Variables.CycleStarts | Select-Object -First 1)
+                $Variables.ContinousCycleStarts += $Variables.Timer
+                $Variables.ContinousCycleStarts = @($Variables.ContinousCycleStarts | Select-Object -Last (3, ($Config.SyncWindow + 1) | Measure-Object -Maximum).Maximum)
+                $Variables.SyncWindowDuration = ($Variables.ContinousCycleStarts | Select-Object -Last 1) - ($Variables.ContinousCycleStarts | Select-Object -First 1)
 
                 # Set minimum Watchdog count 3
                 $Variables.WatchdogCount = (3, $Config.WatchdogCount | Measure-Object -Maximum).Maximum
@@ -374,7 +374,7 @@ Do {
                                 $_.Workers                  = $Pool.Workers
                                 $_.WorkerName               = $Pool.WorkerName
                             }
-                            If ($Variables.DAGdata.Currency.($_.Currency).BlockHeight) { 
+                            If (-not $Config.PoolData.($_.BaseName).ProfitSwitching -and $Variables.DAGdata.Currency.($_.Currency).BlockHeight) { 
                                 $_.BlockHeight = $Variables.DAGdata.Currency.($_.Currency).BlockHeight
                                 $_.Epoch       = $Variables.DAGdata.Currency.($_.Currency).Epoch
                                 $_.DAGSizeGiB  = $Variables.DAGdata.Currency.($_.Currency).DAGsize / 1GB 
@@ -390,12 +390,12 @@ Do {
                         }
 
                         # Pool data is older than earliest CycleStart, decay price
-                        If ($Variables.CycleStarts.Count -ge $Config.SyncWindow) { 
+                        If ($Variables.ContinousCycleStarts.Count -ge $Config.SyncWindow) { 
                             $Pools = @($Pools | Where-Object { $_.Updated -gt (Get-Date).AddDays(-1) }) # Remove Pools that have not been updated for 1 day
-                            $MaxPoolAge = $Config.SyncWindow * $Config.SyncWindow * $Config.SyncWindow * ($Variables.CycleStarts[-1] - $Variables.CycleStarts[0]).TotalMinutes
+                            $MaxPoolAge = $Config.SyncWindow * $Config.SyncWindow * $Config.SyncWindow * ($Variables.ContinousCycleStarts[-1] - $Variables.ContinousCycleStarts[0]).TotalMinutes
                             $Pools | ForEach-Object { 
-                                If ([Math]::Floor(($Variables.CycleStarts[-1] - $_.Updated).TotalMinutes) -gt $MaxPoolAge) { $_.Reasons += "Data too old" }
-                                ElseIf ($_.Updated -lt $Variables.CycleStarts[0]) { $_.Price_Bias = $_.Price * $_.Accuracy * [Math]::Pow(0.9, ($Variables.CycleStarts[0] - $_.Updated).TotalMinutes) }
+                                If ([Math]::Floor(($Variables.ContinousCycleStarts[-1] - $_.Updated).TotalMinutes) -gt $MaxPoolAge) { $_.Reasons += "Data too old" }
+                                ElseIf ($_.Updated -lt $Variables.ContinousCycleStarts[0]) { $_.Price_Bias = $_.Price * $_.Accuracy * [Math]::Pow(0.9, ($Variables.ContinousCycleStarts[0] - $_.Updated).TotalMinutes) }
                             }
                         }
 
@@ -454,7 +454,7 @@ Do {
                             $Pools | Where-Object Available | Group-Object -Property Algorithm, Name | ForEach-Object { 
                                 # Suspend algorithm@pool if > 50% of all possible miners for algorithm failed
                                 $WatchdogCount = ($Variables.WatchdogCount, (($Variables.Miners | Where-Object Algorithm2 -contains $_.Group[0].Algorithm).Count / 2) | Measure-Object -Maximum).Maximum + 1
-                                If ($PoolsToSuspend = $_.Group | Where-Object { @($Variables.WatchdogTimers | Where-Object Algorithm -EQ $_.Algorithm | Where-Object PoolName -EQ $_.Name | Where-Object Kicked -LT $Variables.CycleStarts[-2]).Count -gt $WatchdogCount }) { 
+                                If ($PoolsToSuspend = $_.Group | Where-Object { @($Variables.WatchdogTimers | Where-Object Algorithm -EQ $_.Algorithm | Where-Object PoolName -EQ $_.Name | Where-Object Kicked -LT $Variables.ContinousCycleStarts[-2]).Count -gt $WatchdogCount }) { 
                                     $PoolsToSuspend | ForEach-Object { $_.Reasons += "Algorithm@Pool suspended by watchdog" }
                                     Write-Message -Level Warn "Algorithm@Pool '$($_.Group[0].Algorithm)@$($_.Group[0].Name)' is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object Algorithm -EQ $_.Group[0].Algorithm | Where-Object PoolName -EQ $_.Group[0].Name | Where-Object Kicked -LT $Variables.Timer).Kicked | Sort-Object | Select-Object -First 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))."
                                 }
@@ -524,7 +524,7 @@ Do {
 
                 If ($Miner.Status -eq [MinerStatus]::DryRun -or $Miner.Status -eq [MinerStatus]::Running) { 
                     If ($Miner.Status -eq [MinerStatus]::DryRun -or $Miner.GetStatus() -eq [MinerStatus]::Running) { 
-                        $Miner.Cycle ++
+                        $Miner.ContinousCycle ++
                         If ($Config.Watchdog) { 
                             ForEach ($Worker in $Miner.WorkersRunning) { 
                                 If ($WatchdogTimer = $Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object PoolName -EQ $Worker.Pool.Name | Where-Object PoolRegion -EQ $Worker.Pool.Region | Where-Object Algorithm -EQ $Worker.Pool.Algorithm | Sort-Object Kicked | Select-Object -Last 1) { 
@@ -694,7 +694,7 @@ Do {
 
             If ($Miners -and $Variables.PoolsBest) { 
                 $Miners | ForEach-Object { 
-                    If ($_.KeepRunning = ($_.Status -eq [MinerStatus]::Running -or $_.Status -eq [MinerStatus]::DryRun) -and -not ($_.Benchmark -or $_.MeasurePowerUsage -or $Variables.DonationRandom) -and $_.Cycle -lt $Config.MinCycle) { # Minimum numbers of full cycles not yet reached
+                    If ($_.KeepRunning = ($_.Status -eq [MinerStatus]::Running -or $_.Status -eq [MinerStatus]::DryRun) -and -not ($_.Benchmark -or $_.MeasurePowerUsage -or $Variables.DonationRandom) -and $_.ContinousCycle -lt $Config.MinCycle) { # Minimum numbers of full cycles not yet reached
                         $_.Restart = $false
                     }
                     Else { 
@@ -1108,9 +1108,12 @@ Do {
                 # Add extra time when CPU mining and miner requires DAG creation
                 If ($Miner.Workers.Pool.DAGSizeGiB -and $Variables.MinersBest_Combo.Devices.Type -contains "CPU") { $Miner.WarmupTimes[0] += 15 <# seconds #>}
 
+                # Stat just got removed (Miner.Activated < 1, set by API)
+                If ($Miner.Activated -le 0) { $Miner.Activated = 0 }
+
                 $Miner.DataCollectInterval = $DataCollectInterval
                 $Miner.Activated ++
-                $Miner.Cycle = 0
+                $Miner.ContinousCycle = 0
                 $Miner.PowerUsage = [Double]::NaN
                 $Miner.Hashrates_Live = @($Miner.Workers | ForEach-Object { [Double]::NaN })
                 $Miner.PowerUsage_Live = [Double]::NaN
@@ -1149,8 +1152,6 @@ Do {
                 $Miner.RestartDataReader()
             }
 
-            If ($Miner.Activated -le 0) { $Miner.Activated = 1 } # Stat just got removed (Miner.Activated < 1, set by API)
-
             $Message = ""
             If ($Miner.Benchmark) { $Message = "Benchmark " }
             If ($Miner.Benchmark -and $Miner.MeasurePowerUsage) { $Message = "$($Message)and " }
@@ -1179,7 +1180,7 @@ Do {
         Get-Job -State "Stopped" -ErrorAction Ignore | Receive-Job -ErrorAction Ignore | Out-Null
         Get-Job -State "Stopped" -ErrorAction Ignore | Remove-Job -Force -ErrorAction Ignore
 
-        If ($Variables.CycleStarts.Count -eq 1) { 
+        If ($Variables.ContinousCycleStarts.Count -eq 1) { 
             # Ensure a full cycle on first loop
             $Variables.EndCycleTime = (Get-Date).ToUniversalTime().AddSeconds($Config.Interval)
         }
@@ -1244,7 +1245,7 @@ Do {
                                 $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' has not provided first data sample in $($Miner.WarmupTimes[0]) seconds."
                                 $Miner.SetStatus([MinerStatus]::Failed)
                                 $Variables.FailedMiners += $Miner
-                                Break
+                                Continue
                             }
                             ElseIf ($Miner.Data.Count -ge 2 -and ($Miner.Data | Select-Object -Last 1).Date.AddSeconds((($Miner.DataCollectInterval * 3.5), 10 | Measure-Object -Maximum).Maximum) -lt (Get-Date).ToUniversalTime()) { 
                                 # Miner stuck - no sample received in last few data collect intervals
@@ -1252,7 +1253,7 @@ Do {
                                 $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' has not updated data for more than $((($Miner.DataCollectInterval * 3.5), 10 | Measure-Object -Maximum).Maximum) seconds."
                                 $Miner.SetStatus([MinerStatus]::Failed)
                                 $Variables.FailedMiners += $Miner
-                                Break
+                                Continue
                             }
                         }
                     }
