@@ -39,6 +39,9 @@ $null = [ProcessDPI]::SetProcessDPIAware()
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
 Function CheckBoxSwitching_Click { 
+
+    $LegacyGUIForm.Cursor = [System.Windows.Forms.Cursors]::WaitCursor
+
     $SwitchingDisplayTypes = @()
     $SwitchingPageControls | ForEach-Object { If ($_.Checked) { $SwitchingDisplayTypes += $_.Tag } }
     If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { 
@@ -65,6 +68,8 @@ Function CheckBoxSwitching_Click {
     Else { $SwitchingLogLabel.Text = "Switching Log - no data" }
 
     $SwitchingLogClearButton.Enabled = [Boolean]$SwitchingDGV.Columns
+
+    $LegacyGUIForm.Cursor = [System.Windows.Forms.Cursors]::Normal
 }
 
 Function Set-DataGridViewDoubleBuffer {
@@ -389,7 +394,7 @@ Function Update-TabControl {
                         @{ Name = "Algorithm(s)"; Expression = { $_.Algorithms -join ' & ' } }, 
                         @{ Name = "Pool(s)"; Expression = { $_.Workers.Pool.Name -join ' & ' } }, 
                         @{ Name = "Hashrate(s)"; Expression = { If (-not $_.Benchmark) { ($_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } } }
-                        If ($RadioButtonMinersUnavailable.checked -or $RadioButtonMiners.checked) { @{ Name = "Reason"; Expression = { $_.Reasons -join ', '} } }
+                        If ($RadioButtonMinersUnavailable.checked -or $RadioButtonMiners.checked) { @{ Name = "Reason(s)"; Expression = { $_.Reasons -join ', '} } }
                     ) | Sort-Object @{ Expression = { $_.Best }; Descending = $true }, "Device(s)", Miner | Out-DataTable
                     If ($MinersDGV.Columns) { 
                         $MinersDGV.Columns[0].Visible = $False
@@ -452,7 +457,7 @@ Function Update-TabControl {
                         @{ Name = "PortSSL"; Expression = { "$(If ($_.PortSSL) { $_.PortSSL } Else { "-" })" } }
                         @{ Name = "Earnings`nAdjustment`nFactor"; Expression = { $_.EarningsAdjustmentFactor } }
                         @{ Name = "Fee"; Expression = { "{0:p2}" -f $_.Fee } }
-                        If ($RadioButtonPoolsUnavailable.checked -or $RadioButtonPools.checked) { @{ Name = "Reason"; Expression = { $_.Reasons -join ', '} } }
+                        If ($RadioButtonPoolsUnavailable.checked -or $RadioButtonPools.checked) { @{ Name = "Reason(s)"; Expression = { $_.Reasons -join ', '} } }
                     ) | Sort-Object Algorithm | Out-DataTable
                     If ($PoolsDGV.Columns) { 
                         $PoolsDGV.Columns[0].FillWeight = 80
@@ -1181,6 +1186,7 @@ $RadioButtonMinersBest.Location = [System.Drawing.Point]::new(0, 0)
 $RadioButtonMinersBest.Text = "Best Miners"
 $RadioButtonMinersBest.Width = 110
 $RadioButtonMinersBest.Add_Click({ Update-TabControl })
+$Tooltip.SetToolTip($RadioButtonMinersBest, "These are the best miners per algorithm and device.")
 
 $RadioButtonMinersUnavailable = New-Object System.Windows.Forms.RadioButton
 $RadioButtonMinersUnavailable.AutoSize = $false
@@ -1190,6 +1196,7 @@ $RadioButtonMinersUnavailable.Location = [System.Drawing.Point]::new($RadioButto
 $RadioButtonMinersUnavailable.Text = "Unavailable Miners"
 $RadioButtonMinersUnavailable.Width = 154
 $RadioButtonMinersUnavailable.Add_Click({ Update-TabControl })
+$Tooltip.SetToolTip($RadioButtonMinersUnavailable, "These are all unavailable miners.`nThe column 'Reason(s)' shows the filter criteria(s) that made the miner unavailable.")
 
 $RadioButtonMiners = New-Object System.Windows.Forms.RadioButton
 $RadioButtonMiners.AutoSize = $false
@@ -1199,6 +1206,7 @@ $RadioButtonMiners.Location = [System.Drawing.Point]::new(($RadioButtonMinersBes
 $RadioButtonMiners.Text = "All Miners"
 $RadioButtonMiners.Width = 100
 $RadioButtonMiners.Add_Click({ Update-TabControl })
+$Tooltip.SetToolTip($RadioButtonMiners, "These are all miners.`nNote: NemosMiner will only create miners for algorithms that have at least one available pool.")
 
 $MinersLabel = New-Object System.Windows.Forms.Label
 $MinersLabel.AutoSize = $false
@@ -1261,6 +1269,7 @@ $RadioButtonPoolsBest.Text = "Best Pools"
 $RadioButtonPoolsBest.Width = 100
 $RadioButtonPoolsBest.Checked = $true
 $RadioButtonPoolsBest.Add_Click({ Update-TabControl })
+$Tooltip.SetToolTip($RadioButtonPoolsBest, "This is the list of the best paying pool for each algorithm.")
 
 $RadioButtonPoolsUnavailable = New-Object System.Windows.Forms.RadioButton
 $RadioButtonPoolsUnavailable.AutoSize = $false
@@ -1271,6 +1280,7 @@ $RadioButtonPoolsUnavailable.Tag = ""
 $RadioButtonPoolsUnavailable.Text = "Unavailable Pools"
 $RadioButtonPoolsUnavailable.Width = 150
 $RadioButtonPoolsUnavailable.Add_Click({ Update-TabControl })
+$Tooltip.SetToolTip($RadioButtonPoolsUnavailable, "This is the pool data of all unavailable pools.`nThe column 'Reason(s)' shows the filter criteria(s) that made the pool unavailable.")
 
 $RadioButtonPools = New-Object System.Windows.Forms.RadioButton
 $RadioButtonPools.AutoSize = $false
@@ -1281,6 +1291,7 @@ $RadioButtonPools.Tag = ""
 $RadioButtonPools.Text = "All Pools"
 $RadioButtonPools.Width = 100
 $RadioButtonPools.Add_Click({ Update-TabControl })
+$Tooltip.SetToolTip($RadioButtonPools, "This is the pool data of all configured pools.")
 
 $PoolsLabel = New-Object System.Windows.Forms.Label
 $PoolsLabel.AutoSize = $false
