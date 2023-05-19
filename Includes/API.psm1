@@ -24,7 +24,7 @@ Version date:   13 May 2023
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.5.2.0"
+    $APIVersion = "0.5.2.1"
 
     If ($Variables.APIRunspace.AsyncObject.IsCompleted -or $Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
         Stop-APIServer
@@ -311,12 +311,17 @@ Function Start-APIServer {
                                     $Variables.ShowEarning = $Config.ShowEarning
                                     $Variables.ShowEarningBias = $Config.ShowEarningBias
                                     $Variables.ShowMinerFee = $Config.ShowMinerFee
+                                    $Variables.ShowPool = $Config.ShowPool
                                     $Variables.ShowPoolBalances = $Config.ShowPoolBalances
                                     $Variables.ShowPoolFee = $Config.ShowPoolFee
                                     $Variables.ShowPowerCost = $Config.ShowPowerCost
                                     $Variables.ShowPowerUsage = $Config.ShowPowerUsage
                                     $Variables.ShowProfit = $Config.ShowProfit
                                     $Variables.ShowProfitBias = $Config.ShowProfitBias
+                                    $Variables.ShowCoinName = $Config.ShowCoinName
+                                    $Variables.ShowCurrency = $Config.ShowCurrency
+                                    $Variables.ShowUser = $Config.ShowUser
+                                    $Variables.UIStyle = $Config.UIStyle
 
                                     Write-Message -Level Verbose "Web GUI: Configuration saved. It will become fully active in the next cycle."
                                     $Data = "Configuration saved to '$($Variables.ConfigFile)'.`nIt will become fully active in the next cycle."

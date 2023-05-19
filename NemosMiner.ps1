@@ -25,12 +25,11 @@ Version:        4.3.4.7
 Version date:   13 May 2023
 #>
 
-[CmdletBinding()]
 param(
     [Parameter(Mandatory = $false)]
     [String[]]$Algorithm = @(), # i.e. @("Ethash", "Equihash", "Cryptonight") etc.
     [Parameter(Mandatory = $false)] 
-    [String]$APILogfile = "", # API will log all requests to this file, to disable leave empty
+    [String]$APILogfile = "", # API will log all requests to this file, leave empty to disable
     [Parameter(Mandatory = $false)]
     [Int]$APIPort = 3999, # TCP Port for API & Web GUI
     [Parameter(Mandatory = $false)]
@@ -438,6 +437,7 @@ $Variables.ShowAllMiners = $Config.ShowAllMiners
 $Variables.ShowEarning = $Config.ShowEarning
 $Variables.ShowEarningBias = $Config.ShowEarningBias
 $Variables.ShowMinerFee = $Config.ShowMinerFee
+$Variables.ShowPool = $Config.ShowPool
 $Variables.ShowPoolBalances = $Config.ShowPoolBalances
 $Variables.ShowPoolFee = $Config.ShowPoolFee
 $Variables.ShowPowerCost = $Config.ShowPowerCost
@@ -619,7 +619,7 @@ Function MainLoop {
                         $ButtonStop.Enabled = $true
                     }
 
-                    If ($Variables.CycleStarts -eq 1) { 
+                    If ($Variables.ContinousCycleStarts -eq 1) { 
                         $Variables.Summary = "$($Variables.Branding.ProductLabel) is getting ready.<br>Please wait..."
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                         Write-Host "`n"
