@@ -161,7 +161,7 @@ Class Miner {
     [Boolean]$Benchmark = $false # derived from stats
     [Boolean]$Best = $false
     [String]$CommandLine
-    [Int]$Cycle = 0 # Counter, miner has been running continously for n loops
+    [Int]$ContinousCycle = 0 # Counter, miner has been running continously for n loops
     [Int]$DataCollectInterval = 5 # Seconds
     [String[]]$DeviceNames = @() # derived from devices
     [Device[]]$Devices = @()
@@ -410,7 +410,7 @@ Class Miner {
             Algorithms        = $this.WorkersRunning.Pool.Algorithm -join "; "
             Benchmark         = $this.Benchmark
             CommandLine       = ""
-            Cycle             = $this.Cycle
+            Cycle             = $this.ContinousCycle
             DeviceNames       = $this.DeviceNames -join "; "
             Duration          = "{0:hh\:mm\:ss}" -f ($this.EndTime - $this.BeginTime)
             Earning           = $this.Earning
@@ -715,7 +715,7 @@ Function Start-Mining {
         $Variables.Miners = [Miner[]]@()
         $Variables.MinersBest_Combo = [Miner[]]@()
 
-        $Variables.CycleStarts = @()
+        $Variables.ContinousCycleStarts = @()
 
         $Runspace = [RunspaceFactory]::CreateRunspace()
         $Runspace.ApartmentState = "STA"
@@ -773,7 +773,7 @@ Function Stop-Mining {
     $Variables.MiningEarning = $Variables.MiningProfit = $Variables.MiningPowerCost = [Double]::NaN
     $Variables.EndCycleTime = $null
     $Variables.WatchdogTimers = @()
-    $Variables.CycleStarts = @()
+    $Variables.ContinousCycleStarts = @()
 
     [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
 
