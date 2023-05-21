@@ -30,7 +30,7 @@ Miner changes:
 - NanoMiner-v3.8.1
 - SRBMinerMulti-v2.2.7
 
-Pool changes:
+Pool updates:
 - ZergPool: Removed workaround for pool sending changing DAG information when mining with option 2 (issue @ pool is fixed)
 
 
