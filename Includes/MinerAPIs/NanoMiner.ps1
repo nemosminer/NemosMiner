@@ -18,12 +18,12 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NanoMiner.ps1
-Version:        4.3.4.7
-Version date:   13 May 2023
+Version:        4.3.4.8
+Version date:   21 May 2023
 #>
 
 class NanoMiner : Miner { 
-    [Void] CreateConfigFiles() { 
+    [Void]CreateConfigFiles() { 
         $Parameters = $this.Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue
 
         Try { 
@@ -56,19 +56,22 @@ class NanoMiner : Miner {
         If (-not $Data) { Return $null }
 
         $HashRate = [PSCustomObject]@{ }
-        $HashRate_Name = $this.Algorithms[0]
+        $HashRate_Name = ""
         $HashRate_Value = [Double]0
 
         $Shares = [PSCustomObject]@{ }
         $Shares_Accepted = [Int64]0
         $Shares_Rejected = [Int64]0
 
-        $Data.Algorithms | ForEach-Object { ($_ | Get-Member -MemberType NoteProperty).Name } | Select-Object -Unique | ForEach-Object { 
-            $HashRate_Value = [Double]($Data.Algorithms.$_.Total.Hashrate | Measure-Object -Sum).Sum
+        $Algorithms = @($Data.Algorithms | ForEach-Object { ($_ | Get-Member -MemberType NoteProperty).Name } | Select-Object -Unique)
+
+        ForEach ($Algorithm in $Algorithms) { 
+            $HashRate_Name = Get-Algorithm $this.Algorithms[$Algorithms.IndexOf($Algorithm)]
+            $HashRate_Value = [Double]($Data.Algorithms.$Algorithm.Total.Hashrate | Measure-Object -Sum).Sum
             $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
-            $Shares_Accepted = [Int64]($Data.Algorithms.$_.Total.Accepted | Measure-Object -Sum).Sum
-            $Shares_Rejected = [Int64]($Data.Algorithms.$_.Total.Denied | Measure-Object -Sum).Sum
+            $Shares_Accepted = [Int64]($Data.Algorithms.$Algorithm.Total.Accepted | Measure-Object -Sum).Sum
+            $Shares_Rejected = [Int64]($Data.Algorithms.$Algorithm.Total.Denied | Measure-Object -Sum).Sum
             $Shares_Invalid = [Int64]0
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
         }

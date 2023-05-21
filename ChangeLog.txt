@@ -10,6 +10,30 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.3.4.8 21.05.2023
+=======================================
+
+Changes:
+- Core: Renamed miner property 'Cycle' to 'ContinousCycle'
+
+Enhancements
+- Core: Only print one error message per failed miner
+- Web GUI: Add more tooltips
+
+Fixes:
+- Core: If a miner does not send data on time do not stop collecting benchmark data for other miners
+- Core: Fixed a 'Failed to add miner' condition
+- Legacy GUI: Configuration item 'ShowPool' not showing pool column
+- Web GUI: Keep currency in column header when reordering column order
+
+Miner changes:
+- NanoMiner-v3.8.1
+- SRBMinerMulti-v2.2.7
+
+Pool changes:
+- ZergPool: Removed workaround for pool sending changing DAG information when mining with option 2 (issue @ pool is fixed)
+
+
 ChangeLog NemosMiner 4.3.4.7 13.05.2023
 =======================================
 
@@ -180,7 +204,7 @@ ChangeLog NemosMiner 4.3.3.1 02.04.2023
 
 Changes:
 - Legacy GUI: Enhance colour contrast in earnings graph
-- Revert 'Merge Config & PoolsConfig file' (as in revoked 4.3.3.0)
+- Revert 'Merge Config & PoolsConfig file' (introduced in revoked 4.3.3.0)
 
 Enhancements:
 - BalancesTracker: Keep Earnings data for 365 days
@@ -481,7 +505,7 @@ Enhancements:
 - Web GUI: Resize tables when window gets resized
 
 Fixes:
-- Algorithm filter in config broken (regression from 4.2.3.1)
+- Algorithm filter in Configuration broken (regression from 4.2.3.1)
 - Balances / HiveOn: Could not get balances
 - Core / APIServer.ps1: Coredump when API port was blocked and then freed
 - ClaymoreDualME-v2.7: Incorrect memory requirement calculation
@@ -945,7 +969,7 @@ ChangeLog NemosMiner 4.0.2.6 07.08.2022
 
 Enhancements:
 - Core: Add properties 'Benchmark' & 'MinerName' to 'AlgorithmsLastUsed.json' file
-- Core: Do not use transfer files for brain pool data (pool config property 'UseTransferFile')
+- Core: Do not use transfer files for brain pool data (pool Configuration property 'UseTransferFile')
 - Core: Optimize memory management (garbage collection)
 - Core: Run brain jobs only once per interval to reduce pool API load
 - Core / Legacy GUI: Write date/time & level information to messages
@@ -1137,7 +1161,7 @@ Enhancements:
 - Core: Always load DAG data from file, update when new data is available
 - Web GUI / Balances: Minimize API requests
 - Web GUI / Balances: More compact layout
-- Web GUI / Config Editor: Display currency names
+- Web GUI / Configuration Editor: Display currency names
 
 Fixes:
 - Core / Includes.psm1 Function 'Get-DefaultAlgorithm' broken
@@ -1146,7 +1170,7 @@ Fixes:
 - NBMiner: Changed download link to NemosMiner repo (original DL links are dead)
 - Web GUI / Balances: Invalid tootip values calculated when 'UsemBTC' is true (Regression from 4.0.0.36)
 - Web GUI / Earnings chart: Graph not updating automatically
-- Web GUI / Config editor: 'DefaultAlgorithm' broken
+- Web GUI / Configuration editor: 'DefaultAlgorithm' broken
 
 Miner updates:
 - GMiner-v3.01
@@ -1205,7 +1229,7 @@ Fixes:
 - Core / Get-Device: Removed ' 0GB' from CPU model name (Regression from 4.0.0.25)
 - Miners: EthashLowMem 'l=[nnn]' GB parameter is now using GB instead of GiB (ProHashing has fixed API error)
 - Miners: SPMinerVertHash-v5 not creating any miner objects
-- Web GUI / Config editor: Editing config broken when config file contained invalid region
+- Web GUI / Configuration editor: Editing Configuration broken when Configuration file contained invalid region
 
 Miner updates:
 - MiniZ-v1.8z3

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.4.7
-Version date:   13 May 2023
+Version:        4.3.4.8
+Version date:   21 May 2023
 #>
 
 # Window handling
@@ -259,7 +259,7 @@ Class Miner {
         If ($this.DataReaderJob) { 
             # Before stopping read data
             If ($this.DataReaderJob.HasMoreData) { $this.Data += @($this.DataReaderJob | Stop-Job | Receive-Job | Select-Object) }
-            $this.DataReaderJob | Get-Job | Remove-Job | Out-Null
+            $this.DataReaderJob | Get-Job -ErrorAction Ignore | Remove-Job | Out-Null
             $this.DataReaderJob = $null
         }
     }
@@ -389,10 +389,8 @@ Class Miner {
         }
 
         If ($this.Process) { 
-            If ($this.Process | Get-Job) { 
-                $this.Process | Get-Job | Stop-Job | Receive-Job | Out-Null
-                $this.Process | Get-Job | Remove-Job -Force
-            }
+            $this.Process | Get-Job -ErrorAction Ignore | Stop-Job | Receive-Job | Out-Null
+            $this.Process | Get-Job -ErrorAction Ignore | Remove-Job -ErrorAction Ignore -Force
             $this.Active += $this.Process.PSEndTime - $this.Process.PSBeginTime
             $this.Process = $null
         }
@@ -2101,7 +2099,6 @@ Function Get-CpuId {
 
 Function Get-GPUArchitectureAMD { 
 
-    [CmdLetBinding()]
     param(
         [string]$Model,
         [string]$Architecture = ""
@@ -2136,7 +2133,6 @@ Function Get-GPUArchitectureAMD {
 
 Function Get-GPUArchitectureNvidia { 
 
-    [CmdLetBinding()]
     param(
         [string]$Model,
         [string]$ComputeCapability = ""
@@ -2706,7 +2702,6 @@ public static class Kernel32
 
 Function Start-SubProcess { 
 
-    [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true)]
         [String]$FilePath, 

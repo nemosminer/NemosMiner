@@ -314,14 +314,14 @@
       // e.g. "mBTC": 5
     },
     "PoolDebug": false,
-    "ProfitSwitching": true, // Pool changes DAG epoch when best coin switches
+    "ProfitSwitching": false, // Pool changes DAG epoch when best coin switches
     "Region": [
       "asia",
       "eu",
       "n/a (Anycast)",
       "na"
     ],
-    "SSL": "prefer",
+    "SSL": "false",
     "Variant": {
       "ZergPool": {
         "DivisorMultiplier": 1000000,

@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.3.4.7
-Version date:   13 May 2023
+Version:        4.3.4.8
+Version date:   21 May 2023
 #>
 
 param(
@@ -290,7 +290,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.3.4.7"
+    Version      = [System.Version]"4.3.4.8"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell

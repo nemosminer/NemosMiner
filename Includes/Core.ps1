@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.3.4.7
-Version date:   13 May 2023
+Version:        4.3.4.8
+Version date:   21 May 2023
 #>
 
 using module .\Include.psm1
@@ -136,7 +136,7 @@ Do {
                     If (($Variables.DonationLog.Start | Sort-Object | Select-Object -Last 1).Date -ne (Get-Date).Date) { 
                         If (-not $Variables.DonationStart) { 
                             If ($Config.Donation -ge (1440 - [Int](Get-Date).TimeOfDay.TotalMinutes)) { 
-                                $Variables.DonationStart = (Get-Date)
+                                $Variables.DonationStart = Get-Date
                             }
                             Else { 
                                 $Variables.DonationStart = (Get-Date).AddMinutes((Get-Random -Minimum 0 -Maximum (1440 - $Config.Donation - [Int](Get-Date).TimeOfDay.TotalMinutes)))
@@ -374,7 +374,7 @@ Do {
                                 $_.Workers                  = $Pool.Workers
                                 $_.WorkerName               = $Pool.WorkerName
                             }
-                            If (-not $Config.PoolData.($_.BaseName).ProfitSwitching -and $Variables.DAGdata.Currency.($_.Currency).BlockHeight) { 
+                            If (-not $Variables.PoolData.($_.BaseName).ProfitSwitching -and $Variables.DAGdata.Currency.($_.Currency).BlockHeight) { 
                                 $_.BlockHeight = $Variables.DAGdata.Currency.($_.Currency).BlockHeight
                                 $_.Epoch       = $Variables.DAGdata.Currency.($_.Currency).Epoch
                                 $_.DAGSizeGiB  = $Variables.DAGdata.Currency.($_.Currency).DAGsize / 1GB 
@@ -666,7 +666,7 @@ Do {
                         & $_
                     } | ForEach-Object { 
                         Try { 
-                            $_ | Add-Member MinDataSample  ([Int]($Config.MinDataSample * (($_.Algorithms | Select-Object | ForEach-Object { $Config.MinDataSampleAlgoMultiplier.$_ }), 1 | Measure-Object -Maximum).Maximum))
+                            $_ | Add-Member MinDataSample ($Config.MinDataSample * (($_.Algorithms | Select-Object | ForEach-Object { $Config.MinDataSampleAlgoMultiplier.$_ }) + 1 | Measure-Object -Maximum).Maximum)
                             $_ | Add-Member ProcessPriority $(If ($_.Type -eq "CPU") { $Config.CPUMinerProcessPriority } Else { $Config.GPUMinerProcessPriority })
                             $_ | Add-Member Workers ([Worker[]]@(ForEach ($Algorithm in $_.Algorithms) { @{ Pool = $AllPools.$Algorithm; Fee = If ($Config.IgnoreMinerFee) { 0 } Else { $_.Fee | Select-Object -Index $_.Algorithms.IndexOf($Algorithm) } } }))
                             $_.PSObject.Properties.Remove("Fee")

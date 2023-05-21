@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Xgminer.ps1
-Version:        4.3.4.7
-Version date:   13 May 2023
+Version:        4.3.4.8
+Version date:   21 May 2023
 #>
 
 class Xgminer : Miner { 
