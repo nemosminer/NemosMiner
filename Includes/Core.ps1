@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.3.4.8
+Version:        4.3.4.9
 Version date:   21 May 2023
 #>
 
@@ -301,7 +301,7 @@ Do {
                 $PoolTimeStamp = If ($Variables.PoolDataCollectedTimeStamp) { $Variables.PoolDataCollectedTimeStamp } Else { $Variables.ScriptStartTime }
 
                 # Wait for all brains
-                While (($Variables.Brains.Keys | Where-Object { $Variables.Brains.$_.Updated -ge $PoolTimeStamp }).Count -lt $Variables.Brains.Keys.Count -and (Get-Date).ToUniversalTime() -lt $Variables.Timer.AddSeconds($Variables.PoolTimeout)) { 
+                While (($Variables.Brains.Keys | Select-Object | Where-Object { $Variables.Brains.$_.Updated -ge $PoolTimeStamp }).Count -lt $Variables.Brains.Keys.Count -and (Get-Date).ToUniversalTime() -lt $Variables.Timer.AddSeconds($Variables.PoolTimeout)) { 
                     Start-Sleep -Seconds 1
                 }
 
@@ -666,14 +666,15 @@ Do {
                         & $_
                     } | ForEach-Object { 
                         Try { 
-                            $_ | Add-Member MinDataSample ($Config.MinDataSample * (($_.Algorithms | Select-Object | ForEach-Object { $Config.MinDataSampleAlgoMultiplier.$_ }) + 1 | Measure-Object -Maximum).Maximum)
+                            $M = $_
+                            $_ | Add-Member MinDataSample ($Config.MinDataSample * (@(1) + @($_.Algorithms | Select-Object | ForEach-Object { $Config.MinDataSampleAlgoMultiplier.$_ }) | Measure-Object -Maximum).Maximum)
                             $_ | Add-Member ProcessPriority $(If ($_.Type -eq "CPU") { $Config.CPUMinerProcessPriority } Else { $Config.GPUMinerProcessPriority })
                             $_ | Add-Member Workers ([Worker[]]@(ForEach ($Algorithm in $_.Algorithms) { @{ Pool = $AllPools.$Algorithm; Fee = If ($Config.IgnoreMinerFee) { 0 } Else { $_.Fee | Select-Object -Index $_.Algorithms.IndexOf($Algorithm) } } }))
                             $_.PSObject.Properties.Remove("Fee")
                             $NewMiners += $_ -as $_.API
                         }
                         Catch { 
-                            Write-Message -Level Error "Failed to add Miner '$($_.Name)' as '$($_.API)' ($($_ | ConvertTo-Json -Compress))"
+                            Write-Message -Level Error "Failed to add Miner '$($M.Name)' as '$($M.API)' ($($M | ConvertTo-Json -Compress))"
                         }
                     }
                     Remove-Variable Algorithm -ErrorAction Ignore

@@ -13,11 +13,11 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 # NVIDIA Enable Hardware-Accelerated GPU Scheduling
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "AMD"; MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB+ 0.77;        ExcludePool = @(); MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --opencl --opencl-devices" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "AMD"; MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.77; ExcludePool = @(); MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --opencl --opencl-devices" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "AMD"; MinMemGiB = 0.77; ExcludePool = @(); MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --opencl --opencl-devices" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "AMD"; MinMemGiB = 0.77; ExcludePool = @(); MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --opencl --opencl-devices" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
 
-    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.77;      ExcludePool = @(); MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --cuda --cuda-devices" } # PhoenixMiner-v6.2c is fastest but has dev fee
-#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB+ 0.77; ExcludePool = @(); MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --cuda --cuda-devices" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; MinMemGiB = 0.77; ExcludePool = @(); MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --cuda --cuda-devices" } # PhoenixMiner-v6.2c is fastest but has dev fee
+#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; MinMemGiB = 0.77; ExcludePool = @(); MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --cuda --cuda-devices" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
@@ -26,6 +26,10 @@ $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).PoolPor
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePool }
 
 If ($Algorithms) { 
+
+    $Algorithms | ForEach-Object { 
+        $_.MinMemGiB += $MinerPools[0].($_.Algorithm).DAGSizeGiB
+    }
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 

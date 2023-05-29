@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiningDutch.ps1
-Version:        4.3.4.8
+Version:        4.3.4.9
 Version date:   21 May 2023
 #>
 
@@ -91,7 +91,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
                     Disabled                 = [Boolean]$Stat.Disabled
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                     Fee                      = [Decimal]$Fee
-                    Host                     = "$($Region).$($Algorithm).$($HostSuffix)" -replace "^eu\."
+                    Host                     = "$($Region).$($HostSuffix)"
                     Name                     = [String]$PoolVariant
                     Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
                     Port                     = [UInt16]$Request.$_.port

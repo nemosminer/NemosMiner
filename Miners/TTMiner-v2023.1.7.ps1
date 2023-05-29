@@ -9,23 +9,23 @@ $Path = ".\Bin\$($Name)\TT-Miner.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "EtcHash";          Fee = 0.01; MinMemGiB = $MinerPools[0].Etchash.DAGSizeGiB + 0.82;      Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo EtcHash" }
-    [PSCustomObject]@{ Algorithm = "Ethash";           Fee = 0.01; MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.82;       Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo Ethash" }
-#   [PSCustomObject]@{ Algorithm = "EthashLowMem";     Fee = 0.01; MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.81; Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo Ethash" }
-    [PSCustomObject]@{ Algorithm = "EvrProPow";        Fee = 0.01; MinMemGiB = $MinerPools[0].EvrProgPow.DAGSizeGiB + 0.82;   Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo EvrProgPow" }
-    [PSCustomObject]@{ Algorithm = "FiroPow";          Fee = 0.01; MinMemGiB = $MinerPools[0].FiroPow.DAGSizeGiB + 1.24;      Minerset = 2; WarmupTimes = @(90, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo FiroPow" }
-#   [PSCustomObject]@{ Algorithm = "FiroPowSCC";       Fee = 0.01; MinMemGiB = $MinerPools[0].FiroPowSCC.DAGSizeGiB + 0.82;   Minerset = 2; WarmupTimes = @(90, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -coin SCC" } # Invalid shares
-    [PSCustomObject]@{ Algorithm = "Ghostrider";       Fee = 0.01; MinMemGiB = 1;                                             Minerset = 2; WarmupTimes = @(60, 0);   ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo Ghostrider" }
-    [PSCustomObject]@{ Algorithm = "KawPow";           Fee = 0.01; MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.82;       Minerset = 2; WarmupTimes = @(90, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @("HashCryptos"); Arguments = " -algo KawPow" }
-    [PSCustomObject]@{ Algorithm = "Mike";             Fee = 0.01; MinMemGiB = 1;                                             MinerSet = 0; WarmupTimes = @(120, 30); ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo Mike" }
-    [PSCustomObject]@{ Algorithm = "ProgPowEpic";      Fee = 0.02; MinMemGiB = $MinerPools[0].ProgPowEpic.DAGSizeGiB + 0.82;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -coin EPIC" }
-    [PSCustomObject]@{ Algorithm = "ProgPowSero";      Fee = 0.01; MinMemGiB = $MinerPools[0].ProgPowSero.DAGSizeGiB + 0.82;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -coin SERO" }
-    [PSCustomObject]@{ Algorithm = "ProgPowVeil";      Fee = 0.01; MinMemGiB = $MinerPools[0].ProgPowVeil.DAGSizeGiB + 0.82;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -coin VEIL" }
-    [PSCustomObject]@{ Algorithm = "ProgPowZano";      Fee = 0.01; MinMemGiB = $MinerPools[0].ProgPowZano.DAGSizeGiB +0.82;   Minerset = 1; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -coin ZANO" }
-    [PSCustomObject]@{ Algorithm = "ProgPowVeriblock"; Fee = 0.01; MinMemGiB = 1;                                             Minerset = 2; WarmupTimes = @(45, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo vProgPow" }
-    [PSCustomObject]@{ Algorithm = "SHA256dt";         Fee = 0.01; MinMemGiB = 1;                                             Minerset = 1; WarmupTimes = @(30, 30);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo Sha256dt" }
-    [PSCustomObject]@{ Algorithm = "SHA512256d";       Fee = 0.01; MinMemGiB = 1;                                             Minerset = 1; WarmupTimes = @(30, 30);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo Sha512256D" }
-    [PSCustomObject]@{ Algorithm = "UbqHash";          Fee = 0.01; MinMemGiB = $MinerPools[0].UbqHash.DAGSizeGiB + 0.82;      Minerset = 1; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo UbqHash" }
+    [PSCustomObject]@{ Algorithm = "EtcHash";          Fee = 0.01; MinMemGiB = 0.82; Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo EtcHash" }
+    [PSCustomObject]@{ Algorithm = "Ethash";           Fee = 0.01; MinMemGiB = 0.82; Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo Ethash" }
+#   [PSCustomObject]@{ Algorithm = "EthashLowMem";     Fee = 0.01; MinMemGiB = 0.81; Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo Ethash" }
+    [PSCustomObject]@{ Algorithm = "EvrProPow";        Fee = 0.01; MinMemGiB = 0.82; Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo EvrProgPow" }
+    [PSCustomObject]@{ Algorithm = "FiroPow";          Fee = 0.01; MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(90, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo FiroPow" }
+#   [PSCustomObject]@{ Algorithm = "FiroPowSCC";       Fee = 0.01; MinMemGiB = 0.82; Minerset = 2; WarmupTimes = @(90, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -coin SCC" } # Invalid shares
+    [PSCustomObject]@{ Algorithm = "Ghostrider";       Fee = 0.01; MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(60, 0);   ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo Ghostrider" }
+    [PSCustomObject]@{ Algorithm = "KawPow";           Fee = 0.01; MinMemGiB = 0.82; Minerset = 2; WarmupTimes = @(90, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @("HashCryptos"); Arguments = " -algo KawPow" }
+    [PSCustomObject]@{ Algorithm = "Mike";             Fee = 0.01; MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(120, 30); ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo Mike" }
+    [PSCustomObject]@{ Algorithm = "ProgPowEpic";      Fee = 0.02; MinMemGiB = 0.82; Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -coin EPIC" }
+    [PSCustomObject]@{ Algorithm = "ProgPowSero";      Fee = 0.01; MinMemGiB = 0.82; Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -coin SERO" }
+    [PSCustomObject]@{ Algorithm = "ProgPowVeil";      Fee = 0.01; MinMemGiB = 0.82; Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -coin VEIL" }
+    [PSCustomObject]@{ Algorithm = "ProgPowZano";      Fee = 0.01; MinMemGiB = 0.82; Minerset = 1; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -coin ZANO" }
+    [PSCustomObject]@{ Algorithm = "ProgPowVeriblock"; Fee = 0.01; MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(45, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo vProgPow" }
+    [PSCustomObject]@{ Algorithm = "SHA256dt";         Fee = 0.01; MinMemGiB = 1;    Minerset = 1; WarmupTimes = @(30, 30);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo Sha256dt" }
+    [PSCustomObject]@{ Algorithm = "SHA512256d";       Fee = 0.01; MinMemGiB = 1;    Minerset = 1; WarmupTimes = @(30, 30);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo Sha512256D" }
+    [PSCustomObject]@{ Algorithm = "UbqHash";          Fee = 0.01; MinMemGiB = 0.82; Minerset = 1; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -algo UbqHash" }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
@@ -34,6 +34,10 @@ $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).PoolPor
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePool }
 
 If ($Algorithms) { 
+
+    $Algorithms | ForEach-Object { 
+        $_.MinMemGiB += $MinerPools[0].($_.Algorithm).DAGSizeGiB
+    }
 
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 

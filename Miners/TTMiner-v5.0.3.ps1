@@ -6,17 +6,17 @@ $Path = ".\Bin\$($Name)\TT-Miner.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = "Eaglesong";    MinMemGiB = 2;                                             Minerset = 3; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo EAGLESONG" } # ASIC
-    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.62;       Minerset = 0; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo ETHASH -intensity 15" }
-#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.61; Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithm = "KawPow";       MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.62;       Minerset = 2; WarmupTimes = @(90, 60); ExcludeGPUArchitecture = @(); ExcludePool = @("HashCryptos", "MiningDutch", "ProHashing"); Arguments = " -algo KAWPOW" }
-#   [PSCustomObject]@{ Algorithm = "Lyra2RE3";     MinMemGiB = 2;                                             Minerset = 2; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo LYRA2V3" } # ASIC
-    [PSCustomObject]@{ Algorithm = "MTP";          MinMemGiB = 3;                                             Minerset = 2; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo MTP -intensity 21" } # Algorithm is dead
-    [PSCustomObject]@{ Algorithm = "ProgPowEpic";  MinMemGiB = $MinerPools[0].ProgPowEpic.DAGSizeGiB + 0.62;  Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo PROGPOW -coin EPIC" }
-    [PSCustomObject]@{ Algorithm = "ProgPowSero";  MinMemGiB = $MinerPools[0].ProgPowSero.DAGSizeGiB + 0.62;  Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo PROGPOW -coin SERO" }
-    [PSCustomObject]@{ Algorithm = "ProgPowVeil";  MinMemGiB = $MinerPools[0].ProgPowVeil.DAGSizeGiB + 0.62;  Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo PROGPOW -coin VEIL" }
-    [PSCustomObject]@{ Algorithm = "ProgPowZano";  MinMemGiB = $MinerPools[0].ProgPowZano.DAGSizeGiB + 0.62;  MinerSet = 0; WarmupTimes = @(60, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo PROGPOWZ -coin ZANO" }
-    [PSCustomObject]@{ Algorithm = "UbqHash";      MinMemGiB = $MinerPools[0].UbqHash.DAGSizeGiB + 0.62;      MinerSet = 0; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo UBQHASH -intensity 15" }
+#   [PSCustomObject]@{ Algorithm = "Eaglesong";    MinMemGiB = 2;    Minerset = 3; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo EAGLESONG" } # ASIC
+    [PSCustomObject]@{ Algorithm = "Ethash";       MinMemGiB = 0.62; Minerset = 0; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo ETHASH -intensity 15" }
+#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; MinMemGiB = 0.61; Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo ETHASH -intensity 15" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "KawPow";       MinMemGiB = 0.62; Minerset = 2; WarmupTimes = @(90, 60); ExcludeGPUArchitecture = @(); ExcludePool = @("HashCryptos", "MiningDutch", "ProHashing"); Arguments = " -algo KAWPOW" }
+#   [PSCustomObject]@{ Algorithm = "Lyra2RE3";     MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo LYRA2V3" } # ASIC
+    [PSCustomObject]@{ Algorithm = "MTP";          MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo MTP -intensity 21" } # Algorithm is dead
+    [PSCustomObject]@{ Algorithm = "ProgPowEpic";  MinMemGiB = 0.62; Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo PROGPOW -coin EPIC" }
+    [PSCustomObject]@{ Algorithm = "ProgPowSero";  MinMemGiB = 0.62; Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo PROGPOW -coin SERO" }
+    [PSCustomObject]@{ Algorithm = "ProgPowVeil";  MinMemGiB = 0.62; Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo PROGPOW -coin VEIL" }
+    [PSCustomObject]@{ Algorithm = "ProgPowZano";  MinMemGiB = 0.62; MinerSet = 0; WarmupTimes = @(60, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo PROGPOWZ -coin ZANO" }
+    [PSCustomObject]@{ Algorithm = "UbqHash";      MinMemGiB = 0.62; MinerSet = 0; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePool = @();                                           Arguments = " -algo UBQHASH -intensity 15" }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
@@ -25,6 +25,10 @@ $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).PoolPor
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePool }
 
 If ($Algorithms) { 
+
+    $Algorithms |  ForEach-Object { 
+        $_.MinMemGiB += $MinerPools[0].($_.Algorithm).DAGSizeGiB
+    }
 
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 

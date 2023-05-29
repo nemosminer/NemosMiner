@@ -1,12 +1,12 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "NVIDIA")) { Return }
 
-$Uri = "https://github.com/Minerx117/miners/releases/download/CcminerMemeHash/CcminerMemeHash-2.5.5.8.zip"
+$Uri = "https://github.com/Minerx117/miners/releases/download/CcminerMemeHash/ccMiner-Memehash-2.5.5.9.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "MemeHash";  MinMemGiB = 1; MinerSet = 1; WarmupTimes = @(30, 0); ExcludeGPUArchitecture = @("Other"); Arguments = " --algo memehash" }
+    [PSCustomObject]@{ Algorithm = "MemeHash";  MinMemGiB = 1; MinerSet = 1; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @("Other"); Arguments = " --algo memehash" }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet

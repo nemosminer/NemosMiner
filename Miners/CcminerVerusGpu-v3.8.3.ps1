@@ -1,12 +1,12 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "NVIDIA" -and $_.OpenCL.ComputeCapability -ge 7.5 })) { Return }
 
-$Uri = "https://github.com/Minerx117/miner-binaries/releases/download/v3.8/ccminerGPU38.7z"
+$Uri = "https://github.com/Minerx117/miners/releases/download/CcminerVerusHash/ccminer_GPU_3_8_3.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "VerusHash"; MinMemGiB = 2; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo verus --intensity 21" }
+    [PSCustomObject]@{ Algorithm = "VerusHash"; MinMemGiB = 2; MinerSet = 0; WarmupTimes = @(30, 0); Arguments = " --algo verus --intensity 23" }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet

@@ -115,8 +115,10 @@
     "PoolDebug": false,
     "Region": [
       "americas",
-      "asia",
-      "eu"
+      "europe",
+      "hongkong",
+      "moscow",
+      "singapore"
     ],
     "Variant": {
       "MiningDutch": {

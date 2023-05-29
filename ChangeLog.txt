@@ -10,6 +10,30 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.3.4.9 29.05.2023
+=======================================
+
+Enhancements:
+- Core: Add regions 'Russia' & 'Singapore'
+
+Fixes:
+- Miners: Hyperlinks to miner web GUIs not shown
+- SRB Miner API: Workaround for https://github.com/doktor83/SRBMiner-Multi/issues/283
+
+Miner changes:
+- CcminerMemeHash-v2.5.5.9
+- CcminerVerusCpu-v3.8.3
+- CcminerVerusGpu-v3.8.3
+- NanoMiner-v3.8.1: Disabled VerusHash algorithm (https://github.com/nanopool/nanominer/issues/389)
+- NanoMiner-v3.8.1: Disabled DAG miners (https://github.com/nanopool/nanominer/issues/387)
+- NheqMiner-v0.8.2.ps1 (removed, mainnet has changed, miner is no longer compatible)
+- Rigel-v1.4.8
+- SRBMinerMulti-v2.2.8
+
+Pool changes:
+- MiningDutch: Add stratums for Hongkong, Russia & Singapore, remove algorithm from stratum url
+
+
 ChangeLog NemosMiner 4.3.4.8 21.05.2023
 =======================================
 
