@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           SRBminer.ps1
-Version:        4.3.4.8
+Version:        4.3.4.9
 Version date:   21 May 2023
 #>
 
@@ -44,6 +44,7 @@ class SRBMiner : Miner {
         $HashRate = [PSCustomObject]@{ }
         $HashRate_Name = [String]$this.Algorithms[0]
         $HashRate_Value = [Double]$Data.algorithms[0].hashrate.$Type.total
+        If ($this.Algorithms[0] -eq "MemeHash" -and $this.Devices.Type -eq "AMD") { $HashRate_Value /= 1000 } # Temp fix for https://github.com/doktor83/SRBMiner-Multi/issues/283
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
         $Shares = [PSCustomObject]@{ }
