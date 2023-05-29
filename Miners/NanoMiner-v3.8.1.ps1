@@ -22,7 +22,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("VertHash");                   Type = "AMD"; Fee = 0.01;  MinMemGiB = 3;    Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @(); Arguments = @(" -algo Verthash") }
 
 #   [PSCustomObject]@{ Algorithms = @("Randomx");   Type = "CPU"; Fee = 0.02; Minerset = 3; WarmupTimes = @(45, 0); ExcludePools = @(@(), @()); Arguments = @(" -algo Randomx") } # ASIC
-    [PSCustomObject]@{ Algorithms = @("VerusHash"); Type = "CPU"; Fee = 0.02; Minerset = 2; WarmupTimes = @(45, 0); ExcludePools = @(@(), @()); Arguments = @(" -algo Verushash") }
+#   [PSCustomObject]@{ Algorithms = @("VerusHash"); Type = "CPU"; Fee = 0.02; Minerset = 2; WarmupTimes = @(45, 0); ExcludePools = @(@(), @()); Arguments = @(" -algo Verushash") } # https://github.com/nanopool/nanominer/issues/389
 
   # [PSCustomObject]@{ Algorithms = @("EtcHash");                    Type = "INTEL"; Fee = 0.01;  MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 45); ExcludePools = @(@(), @());              ExcludeGPUArchitecture = @(); Arguments = @(" -algo Etchash") }
   # [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");      Type = "INTEL"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(45, 45); ExcludePools = @(@(), @());              ExcludeGPUArchitecture = @(); Arguments = @(" -algo Etchash", " -algo Kaspa") }
