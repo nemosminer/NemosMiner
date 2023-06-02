@@ -1,6 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0" })) { Return }
 
-$Uri = "https://github.com/Minerx117/miners/releases/download/TeamRedMiner/teamredminer-v0.10.12-win.zip§"
+$Uri = "https://github.com/Minerx117/miners/releases/download/TeamRedMiner/teamredminer-v0.10.12-win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\teamredminer.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
