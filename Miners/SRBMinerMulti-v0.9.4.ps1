@@ -39,7 +39,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "ProgPowVeriblock";  Fee = @(0.0065); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 30); Arguments = " --disable-cpu -algorithm progpow_veriblock" }
     [PSCustomObject]@{ Algorithm = "ProgPowanoZ";       Fee = @(0.0065); MinMemGiB = 1.24; Minerset = 0; WarmupTimes = @(45, 30); Arguments = " --disable-cpu -algorithm progpow_zano" }
     [PSCustomObject]@{ Algorithm = "SHA3d";             Fee = @(0.0085); MinMemGiB = 1;    Minerset = 0; WarmupTimes = @(30, 30); Arguments = " --disable-cpu -algorithm sha3d" } # FPGU
-    [PSCustomObject]@{ Algorithm = "VerusHash";         Fee = @(0.0085); MinMemGiB = 1;    Minerset = 0; WarmupTimes = @(30, 30); Arguments = " --disable-cpu -algorithm verushash" }
+#   [PSCustomObject]@{ Algorithm = "VerusHash";         Fee = @(0.0085); MinMemGiB = 1;    Minerset = 0; WarmupTimes = @(30, 30); Arguments = " --disable-cpu -algorithm verushash" }
     [PSCustomObject]@{ Algorithm = "VertHash";          Fee = @(0.0125); MinMemGiB = 1;    Minerset = 0; WarmupTimes = @(30, 30); Arguments = " --disable-cpu -algorithm verthash --verthash-dat-path ..\.$($Variables.VerthashDatPath)" }
     [PSCustomObject]@{ Algorithm = "Yescrypt";          Fee = @(0.0085); MinMemGiB = 1;    Minerset = 0; WarmupTimes = @(90, 30); Arguments = " --disable-cpu -algorithm yescrypt" }
 )

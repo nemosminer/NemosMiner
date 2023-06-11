@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.3.4.9
-Version date:   21 May 2023
+Version:        4.3.4.10
+Version date:   11 June 2023
 #>
 
 using module .\Include.psm1
@@ -224,7 +224,7 @@ Do {
                         $RegKey = "HKCU:\Software\HWiNFO64\VSB"
                         If ($RegValue = Get-ItemProperty -Path $RegKey -ErrorAction Ignore) { 
                             If ([String]$Variables.HWInfo64RegValue -eq [String]$RegValue) { 
-                                Write-Message -Level Warn "Power usage info in registry has not been updated [HWiNFO64 not running???] - disabling power usage and profit calculations."
+                                Write-Message -Level Warn "Power usage data in registry has not been updated [HWiNFO64 not running???] - disabling power usage and profit calculations."
                                 $Variables.CalculatePowerCost = $false
                             }
                             Else { 
@@ -243,7 +243,7 @@ Do {
                                 # Add configured power usage
                                 $Variables.Devices.Name | ForEach-Object { 
                                     If ($ConfiguredPowerUsage = $Config.PowerUsage.$_ -as [Double]) { 
-                                        If ($_ -in @($Variables.EnabledDevices.Name) -and -not $PowerUsageData.$_) { Write-Message -Level Warn "HWiNFO64 cannot read power usage from system for device ($_). Using configured value of $ConfiguredPowerUsage) W." }
+                                        If ($_ -in @($Variables.EnabledDevices.Name) -and -not $PowerUsageData.$_) { Write-Message -Level Warn "HWiNFO64 cannot read power usage data for device ($_). Using configured value of $ConfiguredPowerUsage) W." }
                                         $PowerUsageData[$_] = "$ConfiguredPowerUsage W"
                                     }
                                     $Variables.EnabledDevices | Where-Object Name -EQ $_ | ForEach-Object { $_.ConfiguredPowerUsage = $ConfiguredPowerUsage }
@@ -251,7 +251,7 @@ Do {
                                 }
 
                                 If ($DeviceNamesMissingSensor = Compare-Object @($Variables.EnabledDevices.Name) @($PowerUsageData.Keys) -PassThru | Where-Object SideIndicator -EQ "<=") { 
-                                    Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [missing sensor config for $($DeviceNamesMissingSensor -join ', ')] - disabling power usage and profit calculations."
+                                    Write-Message -Level Warn "HWiNFO64 sensor naming is invalid [missing sensor configuration for $($DeviceNamesMissingSensor -join ', ')] - disabling power usage and profit calculations."
                                     $Variables.CalculatePowerCost = $false
                                 }
 
@@ -260,7 +260,7 @@ Do {
                             }
                         }
                         Else { 
-                            Write-Message -Level Warn "Cannot read power usage info from registry [Key '$RegKey' does not exist - HWiNFO64 not running???] - disabling power usage and profit calculations."
+                            Write-Message -Level Warn "Cannot read power usage data from registry [Key '$RegKey' does not exist - HWiNFO64 not running???] - disabling power usage and profit calculations."
                             $Variables.CalculatePowerCost = $false
                         }
                         Remove-Variable RegKey, RegValue -ErrorAction Ignore
@@ -1192,7 +1192,6 @@ Do {
         $Variables.EndCycleMessage = ""
 
         $Variables.RefreshTimestamp = (Get-Date).ToUniversalTime()
-        $Variables.StatusText = "Waiting $($Variables.TimeToSleep) seconds... | Next refresh: $((Get-Date).AddSeconds($Variables.TimeToSleep).ToString('g'))"
         $Variables.RefreshNeeded = $true
 
         Write-Message -Level Info "Collecting miner data while waiting for next cycle..."
