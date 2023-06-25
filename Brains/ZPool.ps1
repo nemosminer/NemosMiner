@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool.ps1
-Version:        4.3.4.10
-Version date:   11 June 2023
+Version:        4.3.4.11
+Version date:   25 June 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -107,7 +107,7 @@ While ($BrainConfig = $Config.PoolsConfig.$BrainName.BrainConfig) {
          }
 
         ForEach ($Algo in $AlgoData.PSObject.Properties.Name) { 
-            $AlgoData.$Algo.actual_last24h = $AlgoData.$Algo.actual_last24h / 1000
+            If ($AlgoData.$Algo.actual_last24h) { $AlgoData.$Algo.actual_last24h /= 1000 }
             $BasePrice = If ($AlgoData.$Algo.actual_last24h) { $AlgoData.$Algo.actual_last24h } Else { $AlgoData.$Algo.estimate_last24h }
 
             If ($Currency = $AlgoData.$Algo.Currency) { 

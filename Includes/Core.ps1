@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        4.3.4.10
-Version date:   11 June 2023
+Version:        4.3.4.9
+Version date:   21 May 2023
 #>
 
 using module .\Include.psm1
@@ -1003,7 +1003,7 @@ Do {
                 $_.Status = "Unavailable"
                 $_.StatusMessage = $null
             }
-            ElseIf ($_.Status -eq "Unavailable")  { 
+            ElseIf ($_.Status -eq "Unavailable") { 
                 $_.Status = "Idle"
                 $_.StatusMessage = $null
             }
@@ -1215,14 +1215,17 @@ Do {
                     }
                     Else { 
                         If ($Process = Get-Process | Where-Object Id -EQ $Miner.ProcessId) { 
-                            # Set miner priority, some miners reset priority on their own
-                            $Process.PriorityClass = $Global:PriorityNames.($Miner.ProcessPriority)
-                            # Set window title
-                            $WindowTitle = "$($Miner.Devices.Name -join ","): $($Miner.Name) $($Miner.Info)"
-                            If ($Miner.Benchmark -and -not $Miner.MeasurePowerUsage) { $WindowTitle += " (Benchmarking)" }
-                            ElseIf ($Miner.Benchmark -and $Miner.MeasurePowerUsage) { $WindowTitle += " (Benchmarking and measuring power usage)" }
-                            ElseIf (-not $Miner.Benchmark -and $Miner.MeasurePowerUsage) { $WindowTitle += " (Measuring power usage)" }
-                            [Win32]::SetWindowText($Process.MainWindowHandle, $WindowTitle) | Out-Null
+                            Try { 
+                                # Set miner priority, some miners reset priority on their own
+                                $Process.PriorityClass = $Global:PriorityNames.($Miner.ProcessPriority)
+                                # Set window title
+                                $WindowTitle = "$($Miner.Devices.Name -join ","): $($Miner.Name) $($Miner.Info)"
+                                If ($Miner.Benchmark -and -not $Miner.MeasurePowerUsage) { $WindowTitle += " (Benchmarking)" }
+                                ElseIf ($Miner.Benchmark -and $Miner.MeasurePowerUsage) { $WindowTitle += " (Benchmarking and measuring power usage)" }
+                                ElseIf (-not $Miner.Benchmark -and $Miner.MeasurePowerUsage) { $WindowTitle += " (Measuring power usage)" }
+                                [Win32]::SetWindowText($Process.MainWindowHandle, $WindowTitle) | Out-Null
+                            }
+                            Catch {}
                         }
                         If ($Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object)) { 
                             $Sample = $Samples | Select-Object -Last 1
@@ -1289,7 +1292,7 @@ Do {
         Write-Message -Level Info "Ending cycle$($Variables.EndCycleMessage)."
     }
     Catch { 
-        Write-Message -Level Error "Error in file $(($_.InvocationInfo.ScriptName -Split "\\" | Select-Object -Last 2) -join "\") line $($_.InvocationInfo.ScriptLineNumber) detected. Respawning core..."
+        Write-Message -Level Error "Error in file $(($_.InvocationInfo.ScriptName -Split "\\" | Select-Object -Last 2) -join "\") line $($_.InvocationInfo.ScriptLineNumber) detected. Restarting core..."
         "$(Get-Date -Format "yyyy-MM-dd_HH:mm:ss")" >> "Logs\Error.txt"
         $_.Exception | Format-List -Force >> "Logs\Error.txt"
         $_.InvocationInfo | Format-List -Force >> "Logs\Error.txt"

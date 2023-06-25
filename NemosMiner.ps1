@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.3.4.10
-Version date:   11 June 2023
+Version:        4.3.4.11
+Version date:   25 June 2023
 #>
 
 param(
@@ -290,7 +290,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.3.4.10"
+    Version      = [System.Version]"4.3.4.11"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -847,7 +847,7 @@ Function MainLoop {
         If ($Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
             If ($Config.UIStyle -ne "full") { 
                 $Variables.UIStyle = "full"
-                Write-Host "$(If ($Variables.MinersNeedingBenchmark) { "Benchmarking" })$(If ($Variables.MinersNeedingBenchmark -and $Variables.MinersNeedingPowerUsageMeasurement) { " / " })$(If ($Variables.MinersNeedingPowerUsageMeasurement) { "Measuring power usage" }): Temporarily switched UI style to 'Full' (Information about miners run in the past, failed miners & watchdog timers will $(If ($Variables.UIStyle -eq "light") { "not " })be shown)" -ForegroundColor Yellow
+                Write-Host "$(If ($Variables.MinersNeedingBenchmark) { "Benchmarking" })$(If ($Variables.MinersNeedingBenchmark -and $Variables.MinersNeedingPowerUsageMeasurement) { " / " })$(If ($Variables.MinersNeedingPowerUsageMeasurement) { "Measuring power usage" }): Temporarily switched UI style to 'Full' (Information about miners run in the past, failed miners & watchdog timers will be shown)" -ForegroundColor Yellow
             }
         }
 
@@ -878,7 +878,6 @@ Function MainLoop {
                 $MinersDeviceGroup = @($_.Group)
                 $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object Benchmark)
                 $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object Enabled | Where-Object MeasurePowerUsage)
-                $MinersDeviceGroup = @($MinersDeviceGroup | Where-Object { $Variables.ShowAllMiners -or $_.MostProfitable -or $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 })
                 $MinersDeviceGroup | Where-Object { 
                     $Variables.ShowAllMiners -or <#List all miners#>
                     $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <#List all miners when benchmarking#>
@@ -919,7 +918,7 @@ Function MainLoop {
 
         If ($Variables.UIStyle -eq "full" -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
             If ($ProcessesIdle = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Idle" -and $_.GetActiveLast().ToLocalTime().AddHours(24) -gt (Get-Date) })) { 
-                Write-Host " $($ProcessesIdle.Count) previously executed $(If ($ProcessesIdle.Count -eq 1) { "miner" } Else { "miners" }) in the past 24 hrs:"
+                Write-Host " $($ProcessesIdle.Count) previously executed miner$(If ($ProcessesIdle.Count -ne 1) { "s" }) in the past 24 hrs:"
                 [System.Collections.ArrayList]$Miner_Table = @(
                     @{ Label = "Hashrate(s)"; Expression = { (($_.Workers.Hashrate | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ') -replace '\s+', ' ' }; Align = "right" }
                     If ($Config.CalculatePowerCost -and $Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W" } }; Align = "right" } }

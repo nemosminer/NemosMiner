@@ -21,27 +21,27 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Equihash1445");               Type = "AMD"; Fee = @(0.01);       MinMemGiB = 3.0;  Minerset = 1; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @("RDNA3");                Arguments = " --coin $(If ($MinerPools[0].Equihash1445.Currency -in @("BTCZ", "BTG", "EXCC", "XSG")) { $MinerPools[0].Equihash1445.Currency } Else { "AUTO144_5" })" } # FPGA
     [PSCustomObject]@{ Algorithms = @("Equihash1927");               Type = "AMD"; Fee = @(0.01);       MinMemGiB = 3.0;  MinerSet = 0; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @("RDNA3");                Arguments = " --coin $(If ($MinerPools[0].Equihash1927.Currency -in @("YEC", "ZCL", "ZER")) { $MinerPools[0].Equihash1927.Currency } Else { "AUTO192_7" })" } # FPGA
     [PSCustomObject]@{ Algorithms = @("EtcHash");                    Type = "AMD"; Fee = @(0.007);      MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @();                       Arguments = " --algo ETCHASH" } # PhoenixMiner-v6.2c is faster
-    [PSCustomObject]@{ Algorithms = @("EtcHash", "Blake3");          Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @();                       Arguments = " --algo ETCHASH --dualmode ALEPHDUAL" }
-    [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");      Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @("RDNA1");                Arguments = " --algo ETCHASH --dualmode KASPADUAL" }
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "Blake3");          Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();                       Arguments = " --algo ETCHASH --dualmode ALEPHDUAL" }
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");      Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @("RDNA1");                Arguments = " --algo ETCHASH --dualmode KASPADUAL" }
     [PSCustomObject]@{ Algorithms = @("Ethash");                     Type = "AMD"; Fee = @(0.007);      MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @();                       Arguments = " --algo ETHASH" } # PhoenixMiner-v6.2c is faster
-    [PSCustomObject]@{ Algorithms = @("Ethash", "Blake3");           Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @();                       Arguments = " --algo ETHASH --dualmode ALEPHDUAL" }
-    [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @("RDNA1");                Arguments = " --algo ETHASH --dualmode KASPADUAL" }
+    [PSCustomObject]@{ Algorithms = @("Ethash", "Blake3");           Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();                       Arguments = " --algo ETHASH --dualmode ALEPHDUAL" }
+    [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @("RDNA1");                Arguments = " --algo ETHASH --dualmode KASPADUAL" }
 #   [PSCustomObject]@{ Algorithms = @("EthashLowMem");               Type = "AMD"; Fee = @(0.007);      MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @();                       Arguments = " --algo ETHASH" } # PhoenixMiner-v6.2c is faster
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "Blake3");     Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @();                       Arguments = " --algo ETHASH --dualmode ALEPHDUAL" }
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "kHeavyHash"); Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @("RDNA1");                Arguments = " --algo ETHASH --dualmode KASPADUAL" }
+#   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "Blake3");     Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();                       Arguments = " --algo ETHASH --dualmode ALEPHDUAL" }
+#   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "kHeavyHash"); Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @("RDNA1");                Arguments = " --algo ETHASH --dualmode KASPADUAL" }
     [PSCustomObject]@{ Algorithms = @("IronFish");                   Type = "AMD"; Fee = @(0.0075);     MinMemGiB = 2.0;  Minerset = 1; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @("GCN1", "GCN2");         Arguments = " --algo IRONFISH" }
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Type = "AMD"; Fee = @(0.0075);     MinMemGiB = 2.0;  Minerset = 1; WarmupTimes = @(60, 50); ExcludeGPUArchitecture = @("RDNA3");                Arguments = " --algo KASPA" }
     [PSCustomObject]@{ Algorithms = @("NexaPow");                    Type = "AMD"; Fee = @(0.02);       MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3"); Arguments = " --algo NEXA" }
     [PSCustomObject]@{ Algorithms = @("UbqHash");                    Type = "AMD"; Fee = @(0.007);      MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 70); ExcludeGPUArchitecture = @("RDNA3");                Arguments = " --algo UBQHASH" }
-    [PSCustomObject]@{ Algorithms = @("UbqHash", "Blake3");          Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 70); ExcludeGPUArchitecture = @("RDNA3");                Arguments = " --algo UBQHASH --dualmode ALEPHDUAL" }
-    [PSCustomObject]@{ Algorithms = @("UbqHash", "kHeavyHash");      Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 70); ExcludeGPUArchitecture = @("RDNA1", "RDNA3");       Arguments = " --algo UBQHASH --dualmode KASPADUAL" }
+    [PSCustomObject]@{ Algorithms = @("UbqHash", "Blake3");          Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @("RDNA3");                Arguments = " --algo UBQHASH --dualmode ALEPHDUAL" }
+    [PSCustomObject]@{ Algorithms = @("UbqHash", "kHeavyHash");      Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @("RDNA1", "RDNA3");       Arguments = " --algo UBQHASH --dualmode KASPADUAL" }
 
     [PSCustomObject]@{ Algorithms = @("Autolykos2");                 Type = "INTEL"; Fee = @(0.015);      MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @(); Arguments = " --algo AUTOLYKOS2" }
     [PSCustomObject]@{ Algorithms = @("BeamV3");                     Type = "INTEL"; Fee = @(0.01);       MinMemGiB = 6.0;  Minerset = 2; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @(); Arguments = " --algo BEAM-III" }
     [PSCustomObject]@{ Algorithms = @("Equihash1254");               Type = "INTEL"; Fee = @(0.015);      MinMemGiB = 3.0;  Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); Arguments = " --coin ZEL" }
     [PSCustomObject]@{ Algorithms = @("Equihash1445");               Type = "INTEL"; Fee = @(0.01);       MinMemGiB = 3.0;  Minerset = 2; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @(); Arguments = " --coin $(If ($MinerPools[0].Equihash1445.Currency -in @("BTCZ", "BTG", "EXCC", "XSG")) { $MinerPools[0].Equihash1445.Currency } Else { "AUTO144_5" })" } # FPGA
     [PSCustomObject]@{ Algorithms = @("EtcHash");                    Type = "INTEL"; Fee = @(0.007);      MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); Arguments = " --algo ETCHASH" } # PhoenixMiner-v6.2c is faster
-    [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");      Type = "INTEL"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); Arguments = " --algo ETCHASH --dualmode KASPADUAL" }
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");      Type = "INTEL"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo ETCHASH --dualmode KASPADUAL" }
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Type = "INTEL"; Fee = @(0.0075);     MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 50); ExcludeGPUArchitecture = @(); Arguments = " --algo KASPA" }
 
     [PSCustomObject]@{ Algorithms = @("Autolykos2");                 Type = "NVIDIA"; Fee = @(0.015);      MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @();                  Arguments = " --algo AUTOLYKOS2" }
@@ -60,26 +60,42 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Equihash1927");               Type = "NVIDIA"; Fee = @(0.01);       MinMemGiB = 3.0;  MinerSet = 1; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @();                  Arguments = " --coin $(If ($MinerPools[0].Equihash1927.Currency -in @("YEC", "ZCL", "ZER")) { $MinerPools[0].Equihash1927.Currency } Else { "AUTO192_7" })" } # FPGA
     [PSCustomObject]@{ Algorithms = @("Equihash2109");               Type = "NVIDIA"; Fee = @(0.01);       MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @();                  Arguments = " --algo EQUI210_9" }
     [PSCustomObject]@{ Algorithms = @("EtcHash");                    Type = "NVIDIA"; Fee = @(0.007);      MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @();                  Arguments = " --algo ETCHASH" } # PhoenixMiner-v6.2c is faster
-    [PSCustomObject]@{ Algorithms = @("EtcHash", "Blake3");          Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @();                  Arguments = " --algo ETCHASH --dualmode ALEPHDUAL" }
-    [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");      Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 1; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @();                  Arguments = " --algo ETCHASH --dualmode KASPADUAL" } # No hash rate for kHeavyHash
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "Blake3");          Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();                  Arguments = " --algo ETCHASH --dualmode ALEPHDUAL" }
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");      Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 1; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();                  Arguments = " --algo ETCHASH --dualmode KASPADUAL" } # No hash rate for kHeavyHash
     [PSCustomObject]@{ Algorithms = @("Ethash");                     Type = "NVIDIA"; Fee = @(0.007);      MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @();                  Arguments = " --algo ETHASH" } # PhoenixMiner-v6.2c is faster
-    [PSCustomObject]@{ Algorithms = @("Ethash", "Blake3");           Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @();                  Arguments = " --algo ETHASH --dualmode ALEPHDUAL" }
-    [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @();                  Arguments = " --algo ETHASH --dualmode KASPADUAL" }
+    [PSCustomObject]@{ Algorithms = @("Ethash", "Blake3");           Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();                  Arguments = " --algo ETHASH --dualmode ALEPHDUAL" }
+    [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();                  Arguments = " --algo ETHASH --dualmode KASPADUAL" }
 #   [PSCustomObject]@{ Algorithms = @("EthashLowMem");               Type = "NVIDIA"; Fee = @(0.007);      MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @();                  Arguments = " --algo ETHASH" } # PhoenixMiner-v6.2c is faster
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "Blake3");     Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @();                  Arguments = " --algo ETHASH --dualmode ALEPHDUAL" }
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "kHeavyHash"); Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 70); ExcludeGPUArchitecture = @();                  Arguments = " --algo ETHASH --dualmode KASPADUAL" }
+#   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "Blake3");     Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();                  Arguments = " --algo ETHASH --dualmode ALEPHDUAL" }
+#   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "kHeavyHash"); Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();                  Arguments = " --algo ETHASH --dualmode KASPADUAL" }
 #   [PSCustomObject]@{ Algorithms = @("IronFish");                   Type = "NVIDIA"; Fee = @(0.0075);     MinMemGiB = 2.0;  Minerset = 1; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @();                  Arguments = " --algo IRONFISH" }
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Type = "NVIDIA"; Fee = @(0.0075);     MinMemGiB = 2.0;  MinerSet = 0; WarmupTimes = @(60, 50); ExcludeGPUArchitecture = @();                  Arguments = " --algo KASPA" }
     [PSCustomObject]@{ Algorithms = @("NexaPow");                    Type = "NVIDIA"; Fee = @(0.02);       MinMemGiB = 2.0;  Minerset = 1; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @("Other", "Pascal"); Arguments = " --algo NEXA" }
     [PSCustomObject]@{ Algorithms = @("UbqHash");                    Type = "NVIDIA"; Fee = @(0.007);      MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 70); ExcludeGPUArchitecture = @();                  Arguments = " --algo UBQHASH" }
-    [PSCustomObject]@{ Algorithms = @("UbqHash", "Blake3");          Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 70); ExcludeGPUArchitecture = @();                  Arguments = " --algo UBQHASH --dualmode ALEPHDUAL" }
-    [PSCustomObject]@{ Algorithms = @("UbqHash", "kHeavyHash");      Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 70); ExcludeGPUArchitecture = @();                  Arguments = " --algo UBQHASH --dualmode KASPADUAL" }
+    [PSCustomObject]@{ Algorithms = @("UbqHash", "Blake3");          Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @();                  Arguments = " --algo UBQHASH --dualmode ALEPHDUAL" }
+    [PSCustomObject]@{ Algorithms = @("UbqHash", "kHeavyHash");      Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @();                  Arguments = " --algo UBQHASH --dualmode KASPADUAL" }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).PoolPorts -and (-not $_.Algorithms[1] -or $MinerPools[1].($_.Algorithms[1]).PoolPorts) }
 
 If ($Algorithms) { 
+
+    # MaxDualImpact for 2. algorithm; The maximum impact on the eth mining speed in dual mining in %. Default is * for automatic mode
+    $MaxDualImpactValues = @("*", 5, 10, 15, 20)
+
+    # Build command sets for MaxDualImpact
+    $Algorithms = $Algorithms | ForEach-Object { 
+        If ($_.Algorithms[1]) { 
+            ForEach ($MaxDualImpact in $MaxDualImpactValues) { 
+                $_ | Add-Member MaxDualImpact $MaxDualImpact -Force
+                $_.PsObject.Copy()
+            }
+        }
+        Else { 
+            $_
+        }
+    }
 
     $Algorithms | Where-Object MinMemGiB | ForEach-Object { 
         $_.MinMemGiB += $MinerPools[0].($_.Algorithms[0]).DAGSizeGiB
@@ -99,7 +115,12 @@ If ($Algorithms) {
                 $Algorithm0 = $_.Algorithms[0]
                 $Algorithm1 = $_.Algorithms[1]
                 $Arguments = $_.Arguments
-                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)$(If ($Algorithm1) { "-$($Algorithm0)&$($Algorithm1)" })" -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)$(If ($Algorithm1) { "-$($Algorithm0)&$($Algorithm1)" })$(If ($_.MaxDualImpact -gt 0) { "-$($_.MaxDualImpact)" })" -replace ' '
+
+                If ($Algorithm1 -and -not $_.MaxDualImpact) { 
+                    # Allow extra time for auto tuning
+                    $_.WarmupTimes[1] = 60
+                }
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo", "coin") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
@@ -116,9 +137,10 @@ If ($Algorithms) {
                 }
 
                 If ($Algorithm1) { 
-                    $Arguments += " --maxdualimpact 5 --dualpool $($MinerPools[1].$Algorithm1.Host):$($MinerPools[1].$Algorithm1.PoolPorts | Select-Object -Last 1)"
+                    $Arguments += " --dualpool $($MinerPools[1].$Algorithm1.Host):$($MinerPools[1].$Algorithm1.PoolPorts | Select-Object -Last 1)"
                     $Arguments += " --dualuser $($MinerPools[1].$Algorithm1.User)$(If ($MinerPools[1].$Algorithm1.WorkerName) { ".$($MinerPools[1].$Algorithm1.WorkerName)" })"
                     $Arguments += " --dualpass $($MinerPools[1].$Algorithm1.Pass)$(If ($MinerPools[1].$Algorithm1.BaseName -eq "ProHashing" -and $Algorithm1 -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].$Algorithm1.DAGSizeGiB))" })"
+                    $Arguments += " --maxdualimpact $($_.MaxDualImpact)"
                     $Arguments += If ($MinerPools[1].$Algorithm1.PoolPorts[1]) { " --dualtls on" } Else { " --dualtls off" }
                 }
 
@@ -128,7 +150,7 @@ If ($Algorithms) {
                     Arguments   = ("$($Arguments) --log off --apiport $MinerAPIPort --shortstats 1 --longstats 5 --digits 6 --watchdog exit --dns-over-https 1 --devicesbypcie --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0}:0' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     DeviceNames = $AvailableMiner_Devices.Name
                     Fee         = $_.Fee
-                    MinerSet     = $_.MinerSet
+                    MinerSet    = $_.MinerSet
                     Name        = $Miner_Name
                     Path        = $Path
                     Port        = $MinerAPIPort

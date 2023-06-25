@@ -184,11 +184,11 @@
                         </div>
                         <div style="padding-top: 0.5rem" title="This setting definines how miners will connect to the pools">
                           <select id="SSL">
-                            <option value="Never" title="Never use SSL for pool connections">Never use</option>
-                            <option value="Prefer" title="Prefer SSL pool connections">Prefer</option>
-                            <option value="Always" title="Always use SSL for pool connections&#10;Pools that do not support SSL connections are ignored&#10;&#10;Note: This setting might reduce earnings because not all pools & miners support SSL connections">Always use</option>
+                            <option value="Never" title="Never use SSL/TLS for pool connections">Never use</option>
+                            <option value="Prefer" title="Prefer SSL/TLS pool connections">Prefer</option>
+                            <option value="Always" title="Always use SSL/TLS for pool connections&#10;Pools that do not support SSL/TLS connections are ignored&#10;&#10;Note: This setting might reduce earnings because not all pools & miners support SSL connections">Always use</option>
                           </select>
-                          <label for="SSL"> SSL for pool connections</label>
+                          <label for="SSL"> SSL/TLS for pool connections</label>
                         </div>
                         <div style="padding-top: 0.4rem" title="Some pools use self signed certificates for SSL and/or TLS encryption&#10;&#10;Note: This is a security issue and allows 'Man in the middle attacks'">
                           <input type="checkbox" class="toggle-switch" id="SSLAllowSelfSignedCertificate" name="SSLAllowSelfSignedCertificate"> Allow SSL/TLS connections with self signed certificates
@@ -735,6 +735,9 @@
               if (config.SSL === 'Never' || config.SSL === 'Prefer' || config.SSL === 'Always') document.getElementById('SSL').value = config.SSL;
               else document.getElementById('SSL').value = 'Prefer';
               if (config.SSLAllowSelfSignedCertificate) document.getElementById('SSLAllowSelfSignedCertificate').checked = true;
+              $(document.getElementById('SSL')).click(function (event) {
+                document.getElementById('SSLAllowSelfSignedCertificate').disabled = (document.getElementById('SSL').value === 'Never');
+              });
 
               // Select the Region closest to your Location
               // Fill region list

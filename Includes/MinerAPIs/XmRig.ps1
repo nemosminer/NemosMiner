@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           XmRig.ps1
-Version:        4.3.4.10
-Version date:   11 June 2023
+Version:        4.3.4.11
+Version date:   25 June 2023
 #>
 
 class XmRig : Miner { 

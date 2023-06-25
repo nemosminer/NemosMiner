@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.4.10
-Version date:   11 June 2023
+Version:        4.3.4.11
+Version date:   25 June 2023
 #>
 
 # Window handling
@@ -71,8 +71,8 @@ Class Device {
     [Boolean]$ReadPowerUsage = $false
     [PSCustomObject]$Reg
     [Int]$Slot = 0
-    [String]$Status = "Idle"
     [DeviceState]$State = [DeviceState]::Enabled
+    [String]$Status = "Idle"
     [String]$Type
     [Int]$Type_Id
     [Int]$Type_Index
@@ -220,7 +220,8 @@ Class Miner {
     }
 
     [String]GetCommandLineParameters() { 
-        Return (Get-CommandLineParameter $this.Arguments)
+        If ($this.Arguments -and (Test-Json -Json $this.Arguments -ErrorAction Ignore)) { $this.Arguments = ($this.Arguments | ConvertFrom-Json).Arguments }
+        Return $this.Arguments
     }
 
     [String]GetCommandLine() { 
@@ -847,8 +848,6 @@ Function Stop-Brain {
 
         If ($BrainsStopped.Count -gt 0) { Write-Message -Level Info  "Pool brain backgound job$(If ($BrainsStopped.Count -gt 1) { "s" }) for '$(($BrainsStopped | Sort-Object) -join ", ")' stopped." }
     }
-
-    [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
 }
 
 Function Start-BalancesTracker { 
@@ -893,6 +892,8 @@ Function Stop-BalancesTracker {
         $Variables.BalancesTrackerRunspace.PowerShell.Runspace.Dispose()
         If ($Variables.BalancesTrackerRunspace.PowerShell) { $Variables.BalancesTrackerRunspace.PowerShell.Dispose() }
         $Variables.Remove("BalancesTrackerRunspace")
+
+        [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
 
         $Variables.Summary += "<br>Balances Tracker background process stopped."
         Write-Message -Level Info "Balances Tracker background process stopped."
@@ -991,45 +992,42 @@ Function Get-DefaultAlgorithm {
     Return
 }
 
-Function Get-CommandLineParameter { 
-    Param(
-        [Parameter(Mandatory = $false)]
-        [String]$Arguments
-    )
-
-    If ($Arguments -and (Test-Json -Json $Arguments -ErrorAction Ignore)) { $Arguments = ($Arguments | ConvertFrom-Json).Arguments }
-    Return $Arguments
-}
-
 Function Get-Rate { 
-    # Read exchange rates from min-api.cryptocompare.com, use stored data as fallback
-    $RatesCacheFileName = "Cache\Rates.json"
-    If (-not $Variables.Rates) { $Variables.Rates = Get-Content -Path $RatesCacheFileName -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue }
+
+    $RatesCacheFileName = "$($Variables.MainPath)\Cache\Rates.json"
 
     # Use stored currencies from last run
     If (-not $Variables.BalancesCurrencies -and $Config.BalancesTrackerPollInterval) { $Variables.BalancesCurrencies = $Variables.Rates.PSObject.Properties.Name | Where-Object { $_ -eq  ($_ -replace "^m") } }
 
-    $Variables.AllCurrencies = @(@($Config.Currency) + @($Config.Wallets.Keys) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies)) -replace "mBTC", "BTC" | Sort-Object -Unique
+    $Variables.AllCurrencies = @(@(@($Config.Currency) + @($Config.Wallets.Keys) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies) | Select-Object) -replace "mBTC", "BTC" | Sort-Object -Unique)
 
     If (-not $Variables.Rates.BTC.($Config.Currency) -or (Compare-Object @($Variables.Rates.PSObject.Properties.Name | Select-Object) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "=>") -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-(3, $Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum))) { 
         Try { 
-            $Rates = [PSCustomObject]@{ BTC = [PSCustomObject]@{} }
             $TSymBatches = @()
             $TSyms = "BTC"
-            $Variables.AllCurrencies | Where-Object { $_ -ne "mBTC" } | Select-Object -Unique | ForEach-Object { 
-                If ($TSyms.Length -lt (100 - $_.length -1)) { 
+            $Variables.AllCurrencies | Where-Object { $_ -ne "BTC" } | ForEach-Object { 
+                If (($TSyms.Length + $_.Length) -lt 99) {
                     $TSyms = "$TSyms,$($_)"
                 }
                 Else { 
                     $TSymBatches += $TSyms
-                    $TSyms = "$_"
+                    $TSyms = $_
                 }
             }
             $TSymBatches += $TSyms
 
+            $Rates = [PSCustomObject]@{ BTC = [PSCustomObject]@{ } }
             $TSymBatches | ForEach-Object { 
-                (Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$($_)$($Config.CryptoCompareAPIKeyParam)&extraParams=$($Variables.Branding.BrandWebSite) Version $($Variables.Branding.Version)" -TimeoutSec 5 -ErrorAction Ignore).BTC | ForEach-Object { 
-                    $_.PSObject.Properties | Select-Object | ForEach-Object { $Rates.BTC | Add-Member @{ "$($_.Name)" = $_.Value } -Force }
+                $Response = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$($_)$(If ($Config.CryptoCompareAPIKeyParam) { "&api_key=$($Config.CryptoCompareAPIKeyParam)" })&extraParams=$($Variables.Branding.BrandWebSite) Version $($Variables.Branding.Version)" -TimeoutSec 5 -ErrorAction Ignore
+                If ($Response.BTC) { 
+                    $Response.BTC | ForEach-Object { 
+                        $_.PSObject.Properties | Select-Object | ForEach-Object { $Rates.BTC | Add-Member @{ "$($_.Name)" = $_.Value } -Force }
+                    }
+                }
+                Else { 
+                    If ($Response.Message -eq "You are over your rate limit please upgrade your account!") { 
+                        Write-Message -Level Error "min-api.cryptocompare.com API rate exceeded. You need to register an account with cryptocompare.com and add the API key to the configuration file as 'CryptoCompareAPIKeyParam'."
+                     }
                 }
             }
 
@@ -1069,6 +1067,8 @@ Function Get-Rate {
             }
         }
         Catch { 
+            # Read exchange rates from min-api.cryptocompare.com, use stored data as fallback
+            $RatesCache = (Get-Content -Path $RatesCacheFileName -ErrorAction SilentlyContinue | ConvertFrom-Json -ErrorAction SilentlyContinue)
             If ($RatesCache.PSObject.Properties.Name) { 
                 $Variables.Rates = $RatesCache
                 $Variables.RatesUpdated = "FromFile: $((Get-Item -Path $RatesCacheFileName).CreationTime.ToUniversalTime())"
@@ -1229,7 +1229,7 @@ Function Get-TimeSince {
     )
 
     $TimeSpan = New-TimeSpan -Start $TimeStamp -End (Get-Date)
-    $TimeSince= ""
+    $TimeSince = ""
 
     If ($TimeSpan.Days -ge 1) { $TimeSince += " {0:n0} day$(If ($TimeSpan.Days -ne 1) { "s" })" -f $TimeSpan.Days }
     If ($TimeSpan.Hours -ge 1) { $TimeSince += " {0:n0} hour$(If ($TimeSpan.Hours -ne 1) { "s" })" -f $TimeSpan.Hours }
@@ -1311,7 +1311,7 @@ Function Read-Config {
 
     Function Get-DefaultConfig { 
 
-        $DefaultConfig = @{}
+        $DefaultConfig = @{ }
 
         $DefaultConfig.ConfigFileVersion = $Variables.Branding.Version.ToString()
         $Variables.FreshConfig = $true
@@ -1335,7 +1335,7 @@ Function Read-Config {
     }
 
     # Load the configuration
-    $Local:Config = @{}
+    $Local:Config = @{ }
     If (Test-Path -Path $ConfigFile -PathType Leaf) { 
         New-Variable Config ([Hashtable]((Get-Content $ConfigFile | ConvertFrom-Json -AsHashtable -ErrorAction Ignore | Select-Object))) -Scope "Local" -Force -ErrorAction Stop
         If ($Local:Config.Keys.Count -eq 0 -or $Local:Config -isnot [Hashtable]) { 
@@ -1387,7 +1387,7 @@ Function Read-Config {
             $Variables.PoolsConfigFileTimestamp = (Get-Item -Path $Variables.PoolsConfigFile).LastWriteTime
         }
         Catch { 
-            $Variables.PoolsConfigData = [Ordered]@{}
+            $Variables.PoolsConfigData = [Ordered]@{ }
             Write-Message -Level Warn "Pools configuration file '$($Variables.PoolsConfigFile)' is corrupt and will be ignored."
         }
     }
@@ -1500,7 +1500,7 @@ Function Write-Config {
 }
 
 Function Edit-File { 
-    # Opens file in notepad. Notepad will remain in foreground until notepad is closed.
+    # Opens file in notepad. Notepad will remain in foreground until closed.
 
     Param(
         [Parameter(Mandatory = $false)]

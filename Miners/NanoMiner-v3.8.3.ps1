@@ -92,22 +92,6 @@ If ($Algorithms) {
                     $Arguments += " -rigPassword $($MinerPools[$Index].$Algorithm.Pass)$(If ($MinerPools[$Index].$Algorithm.BaseName -eq "ProHashing" -and $_.Algorithms[$Index] -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].$Algorithm.DAGSizeGiB))" })"
                     $Arguments += " -devices $(($AvailableMiner_Devices | Sort-Object Name -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')"
 
-                    If ($_.Algorithms[$Index] -eq "VertHash") { 
-                        If ((Get-Item -Path $Variables.VerthashDatPath -ErrorAction Ignore).length -eq 1283457024) { 
-                            If (-not (Get-Item -Path ".\Bin\$($Name)\VertHash.dat" -ErrorAction Ignore).length -eq 1283457024) { 
-                                New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath -Force | Out-Null
-                            }
-                        }
-                        Else { 
-                            $PrerequisitePath = $Variables.VerthashDatPath
-                            $PrerequisiteURI = "https://github.com/Minerx117/miners/releases/download/Verthash.Dat/VertHash.dat"
-                        }
-                    }
-                    Else { 
-                        $PrerequisitePath = ""
-                        $PrerequisiteURI = ""
-                    }
-    
                     $Index ++
                 }
                 Remove-Variable Algorithm
@@ -116,6 +100,22 @@ If ($Algorithms) {
 
                 # Apply tuning parameters
                 If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
+
+                If ($_.Algorithms -contains "VertHash") { 
+                    If ((Get-Item -Path $Variables.VerthashDatPath -ErrorAction Ignore).length -eq 1283457024) { 
+                        If (-not (Get-Item -Path ".\Bin\$($Name)\VertHash.dat" -ErrorAction Ignore).length -eq 1283457024) { 
+                            New-Item -ItemType HardLink -Path ".\Bin\$($Name)\VertHash.dat" -Target $Variables.VerthashDatPath -Force | Out-Null
+                        }
+                    }
+                    Else { 
+                        $PrerequisitePath = $Variables.VerthashDatPath
+                        $PrerequisiteURI = "https://github.com/Minerx117/miners/releases/download/Verthash.Dat/VertHash.dat"
+                    }
+                }
+                Else { 
+                    $PrerequisitePath = ""
+                    $PrerequisiteURI = ""
+                }
 
                 [PSCustomObject]@{ 
                     Algorithms       = @($_.Algorithms | Select-Object)

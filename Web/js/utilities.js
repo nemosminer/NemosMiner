@@ -108,7 +108,6 @@ function formatPools(data) {
   // This function can alter the returned data before building the table, formatting it in a way
   // that is easier to display and manipulate in a table
   $.each(data, function(index, item) {
-    // Format miner link
     if (config.UsemBTC) factor = 1000;
     else factor = 1;
     item.tPrice = item.Price * factor;
@@ -239,8 +238,7 @@ function formatPorts(value) {
 };
 
 function formatArrayAsSortedString(value) {
-  if (value === '') return ''
-  if (value == null) return '';
+  if (value === '' || value == null) return '';
   return value.sort().join(', ');
 };
 
