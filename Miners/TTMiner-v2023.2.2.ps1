@@ -3,7 +3,7 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "NVIDIA")) { Return }
 
 $Uri = Switch ($Variables.DriverVersion.CUDA) { 
-    { $_ -ge "11.0" } { "https://github.com/TrailingStop/TT-Miner-release/releases/download/2023.2.0/TT-Miner-2023.2.0.zip"; Break }
+    { $_ -ge "11.0" } { "https://github.com/TrailingStop/TT-Miner-release/releases/download/2023.2.2/TT-Miner-2023.2.2.zip"; Break }
     Default           { Return }
 }
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
@@ -18,7 +18,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EvrProPow";        Fee = 0.01; MinMemGiB = 0.82; Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -a EvrProgPow" }
     [PSCustomObject]@{ Algorithm = "FiroPow";          Fee = 0.01; MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(90, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -a FiroPow" }
     [PSCustomObject]@{ Algorithm = "FiroPowSCC";       Fee = 0.01; MinMemGiB = 0.82; Minerset = 2; WarmupTimes = @(90, 0);   ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -c SCC" }
-    [PSCustomObject]@{ Algorithm = "Ghostrider";       Fee = 0.01; MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(60, 0);   ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -a Ghostrider" }
+    [PSCustomObject]@{ Algorithm = "Ghostrider";       Fee = 0.01; MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(90, 0);   ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -a Ghostrider" }
     [PSCustomObject]@{ Algorithm = "KawPow";           Fee = 0.01; MinMemGiB = 0.82; Minerset = 2; WarmupTimes = @(90, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @("HashCryptos"); Arguments = " -a KawPow" }
     [PSCustomObject]@{ Algorithm = "Mike";             Fee = 0.01; MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(120, 30); ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -a Mike" }
     [PSCustomObject]@{ Algorithm = "ProgPowEpic";      Fee = 0.05; MinMemGiB = 0.82; Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePool = @();              Arguments = " -c EPIC" }
@@ -60,14 +60,14 @@ If ($Algorithms) {
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
+                If ($MinerPools[0].($_.Algorithm).Currency -in @("AKA", "ALPH", "ALT", "ARL", "AVS", "BBC", "BCH", "BLACK", "BTC", "BTRM", "BUT", "CLO", "CLORE", "EGEM", "ELH", "EPIC", "ETC", "ETHF", "ETHO", "ETHW", "ETP", "EVOX", "EVR", "EXP", "FIRO", "FITA", "FRENS", "GRAMS", "GSPC", "HVQ", "JGC", "KAW", "LAB", "LTR", "MEWC", "NAPI", "NEOX", "NOVO", "OCTA", "PAPRY", "PRCO", "REDE", "RTM", "RVN", "RXD", "SATO", "SATOX", "SCC", "SERO", "THOON", "TTM", "UBQ", "VBK", "VEIL", "VKAX", "VTE", "XNA", "YERB", "ZANO", "ZELS", "ZIL")) { 
+                    $Arguments = " -c $($MinerPools[0].($_.Algorithm).Currency)"
+                }
                 $Arguments += " -P $(If ($MinerPools[0].($_.Algorithm).Protocol -eq "ethproxy" -or $_.Algorithm -eq "ProgPowZano") { "stratum1+tcp://" } Else { "stratum+tcp://" })"
                 $Arguments += "$($MinerPools[0].($_.Algorithm).User)"
                 If ($MinerPools[0].($_.Algorithm).WorkerName) { $Arguments += ".$($MinerPools[0].($_.Algorithm).WorkerName)" }
                 $Arguments += ":$($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].($_.Algorithm).DAGSizeGiB))" })"
                 $Arguments += "@$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts[0])"
-                If ($MinerPools[0].($_.Algorithm).Currency -in @("ARL", "BBC", "BTRM", "BUT", "CLO", "ETC", "ETP", "EVOX", "EVR", "EXP", "FIRO", "FITA", "GSPC", "HVQ", "JGC", "KAW", "LAB", "MEOW", "NAPI", "NEOX", "PRCO", "REDE", "RTM", "RVN", "SATO", "THOON", "TTM", "UBQ", "VTE", "YERB", "VBK", "Mike")) { 
-                    $Arguments += " -c $($MinerPools[0].($_.Algorithm).Currency)"
-                }
                 If (-not $MinerPools[0].($_.Algorithm).SendHashrate) { $Arguments += " -no-hashrate" }
 
                 [PSCustomObject]@{ 

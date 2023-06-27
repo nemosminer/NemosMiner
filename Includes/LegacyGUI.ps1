@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           LegacyGUI.psm1
-Version:        4.3.4.11
-Version date:   25 June 2023
+Version:        4.3.4.12
+Version date:   27 June 2023
 #>
 
 # [Void] [System.Windows.Forms.Application]::EnableVisualStyles()

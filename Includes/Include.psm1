@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.4.11
-Version date:   25 June 2023
+Version:        4.3.4.12
+Version date:   27 June 2023
 #>
 
 # Window handling
@@ -728,8 +728,9 @@ Function Start-Mining {
         $PowerShell = [PowerShell]::Create()
         $PowerShell.Runspace = $Runspace
         [Void]$PowerShell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
-        $Global:CoreRunspace = @{ PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
         $null = $PowerShell.BeginInvoke()
+
+        $Global:CoreRunspace = @{ PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
 
         $Variables.Summary = "Mining processes are running."
     }
@@ -807,9 +808,9 @@ Function Start-Brain {
                     $PowerShell = [PowerShell]::Create()
                     $PowerShell.Runspace = $Runspace
                     [Void]$Powershell.AddScript($BrainScript)
+                    $null = $PowerShell.BeginInvoke()
 
                     $Variables.Brains.$_ = @{ Name = "BrainRunspace_$($_)"; PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
-                    $null = $PowerShell.BeginInvoke()
 
                     $BrainsStarted += $_
                 }
@@ -837,8 +838,6 @@ Function Stop-Brain {
         $Brains | Where-Object { $Variables.Brains.$_ } | ForEach-Object { 
             # Stop Brains
             $Variables.Brains.$_.PowerShell.Runspace.Dispose() | Out-Null
-            If ($Variables.Brains.$_.PowerShell) { $Variables.Brains.$_.PowerShell.Dispose() }
-
             $Variables.Brains.Remove($_)
             $Variables.BrainData.PSObject.Properties.Remove($_)
             $BrainsStopped += $_
@@ -871,8 +870,9 @@ Function Start-BalancesTracker {
                 $PowerShell = [PowerShell]::Create()
                 $PowerShell.Runspace = $Runspace
                 [Void]$PowerShell.AddScript("$($Variables.MainPath)\Includes\BalancesTracker.ps1")
+                $null = $PowerShell.BeginInvoke()
 
-                $Variables.BalancesTrackerRunspace = @{ Name = "BalancesTrackerRunspace"; Handle = $PowerShell.BeginInvoke(); PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
+                $Variables.BalancesTrackerRunspace = @{ Name = "BalancesTrackerRunspace"; PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime()}
 
             }
             Catch { 
@@ -890,7 +890,6 @@ Function Stop-BalancesTracker {
     If ($Variables.BalancesTrackerRunspace) { 
 
         $Variables.BalancesTrackerRunspace.PowerShell.Runspace.Dispose()
-        If ($Variables.BalancesTrackerRunspace.PowerShell) { $Variables.BalancesTrackerRunspace.PowerShell.Dispose() }
         $Variables.Remove("BalancesTrackerRunspace")
 
         [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
@@ -1121,25 +1120,25 @@ Function Write-Message {
                 }
             }
         }
-
-        If ($Level -in $Config.LogToFile) { 
-            # Get mutex. Mutexes are shared across all threads and processes. 
-            # This lets us ensure only one thread is trying to write to the file at a time. 
-            $Mutex = New-Object System.Threading.Mutex($false, $Variables.Branding.ProductLabel)
-
-            $Variables.LogFile = "$($Variables.MainPath)\Logs\$($Variables.Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd").log"
-
-            # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
-            If ($Mutex.WaitOne(1000)) { 
-                $Message | Out-File -FilePath $Variables.LogFile -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-                [Void]$Mutex.ReleaseMutex()
-            }
-            Else { 
-                Write-Error -Message "Log file is locked, unable to write message to '$($LogFile)'."
-            }
-        }
     }
     Catch { }
+
+    If ($Level -in $Config.LogToFile) { 
+        # Get mutex. Mutexes are shared across all threads and processes. 
+        # This lets us ensure only one thread is trying to write to the file at a time. 
+        $Mutex = New-Object System.Threading.Mutex($false, $Variables.Branding.ProductLabel)
+
+        $Variables.LogFile = "$($Variables.MainPath)\Logs\$($Variables.Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd").log"
+
+        # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
+        If ($Mutex.WaitOne(1000)) { 
+            $Message | Out-File -FilePath $Variables.LogFile -Append -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+            [Void]$Mutex.ReleaseMutex()
+        }
+        Else { 
+            Write-Error -Message "Log file is locked, unable to write message to '$($LogFile)'."
+        }
+    }
 }
 
 Function Write-MonitoringData { 

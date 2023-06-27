@@ -10,6 +10,20 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.3.4.12 28.06.2023
+========================================
+
+Changes:
+- Core: minor code optimizations
+
+Miner updates:
+- CcminerMemeHash-v2.5.5.9: Set dev fee to 4%
+- JayddeeCpu-v3.22.3
+- KawpowMiner-v1.2.4: Exclude pool 'MiningDutch'
+- SRBMinerMulti-v2.3.0
+- TTMiner-v2023.2.2
+
+
 ChangeLog NemosMiner 4.3.4.11 25.06.2023
 ========================================
 

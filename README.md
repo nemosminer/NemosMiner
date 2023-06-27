@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable algorithm
 
-Updated 25 June 2023
+Updated 27 June 2023
 
 
 Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
@@ -22,7 +22,7 @@ NemosMiner code is partly based on
 - NPlusMiner which can be found here: https://github.com/MrPlusGH/NPlusMiner (Project is no longer maintained)
 
 
-Note: NemosMiner Version 4.x is **NOT backwards compatible** with the 3.8.x code base.
+Note: NemosMiner Version 4.x is **NOT backwards compatible** with the 3.x code base.
 It is highly recommended to install this version to a new directory.
 
 Some configuration options have changed. See 'Changed Config Items.txt' for more information.
@@ -120,9 +120,10 @@ Easy configuration, easy start:
 
    Web & Legacy GUI
 
-      Since version 3.9.9.x (Beta) NemosMiner has a Web GUI making it easy to configure and run.
       NemosMiner relies on config files. No need to edit bat files. Simply run NemosMiner.bat
       Set the config in the Web GUI (http://localhost:3999/configedit.html), apply & start mining
+      Version 3.9.9.x (Beta) and later has a Web GUI making it easy to configure and run.
+
 
 ![alt text](https://github.com/Minerx117/miners/releases/download/Pictures/NemosMiner_Dashboard.png "NemosMiner Web GUI Dashboard")
 

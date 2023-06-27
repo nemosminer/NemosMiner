@@ -1,6 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "CPU" -or $_.Type -eq "INTEL" -or ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0") -or ($_.Type -eq "NVIDIA" -and $_.OpenCL.DriverVersion -ge "510.00") })) { Return }
 
-$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/2.2.9/SRBMiner-Multi-2-2-9-win64.zip"
+$Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/2.3.0/SRBMiner-Multi-2-3-0-win64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -81,6 +81,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("YescryptR16");              Type = "AMD"; Fee = @(0.0085);       MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(90, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm yescryptr16") }
     [PSCustomObject]@{ Algorithms = @("YescryptR32");              Type = "AMD"; Fee = @(0.0085);       MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(90, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm yescryptr32") }
 
+    [PSCustomObject]@{ Algorithms = @("APEPEPoW");             Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(30, 30);  ExcludePools = @(@(), @()); Arguments = @(" --disable-gpu --algorithm memehash_apepepow") }
     [PSCustomObject]@{ Algorithms = @("Argon2d16000");         Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @()); Arguments = @(" --disable-gpu --algorithm argon2d_16000") }
     [PSCustomObject]@{ Algorithms = @("Argon2d500");           Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @()); Arguments = @(" --disable-gpu --algorithm argon2d_dynamic") }
     [PSCustomObject]@{ Algorithms = @("Argon2Chukwa");         Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(30, 15);  ExcludePools = @(@(), @()); Arguments = @(" --disable-gpu --algorithm argon2id_chukwa") }
