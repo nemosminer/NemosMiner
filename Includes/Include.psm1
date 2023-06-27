@@ -1025,7 +1025,7 @@ Function Get-Rate {
                 }
                 Else { 
                     If ($Response.Message -eq "You are over your rate limit please upgrade your account!") { 
-                        Write-Message -Level Error "min-api.cryptocompare.com API rate exceeded. You need to register an account with cryptocompare.com and add the API key to the configuration file as 'CryptoCompareAPIKeyParam'."
+                        Write-Message -Level Error "min-api.cryptocompare.com API rate exceeded. You need to register an account with cryptocompare.com and add the API key as 'CryptoCompareAPIKeyParam' to the configuration file '$($Variables.ConfigFile)'."
                      }
                 }
             }
