@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.3.4.12
-Version date:   27 June 2023
+Version:        4.3.5.0
+Version date:   01 July 2023
 #>
 
 param(
@@ -290,7 +290,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.3.4.12"
+    Version      = [System.Version]"4.3.5.0"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -414,6 +414,17 @@ If (Get-Item .\* -Stream Zone.*) {
 }
 
 Write-Message -Level Verbose "Setting variables..."
+
+# Align CUDA id with nvidia-smi order
+$env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID'
+# For AMD
+$env:GPU_FORCE_64BIT_PTR = 1
+$env:GPU_MAX_HEAP_SIZE = 100
+$env:GPU_USE_SYNC_OBJECTS = 1
+$env:GPU_MAX_ALLOC_PERCENT = 100
+$env:GPU_SINGLE_ALLOC_PERCENT = 100
+$env:GPU_MAX_WORKGROUP_SIZE = 256
+
 $Variables.BrainData = [PSCustomObject]@{ }
 $Variables.Brains = @{ }
 $Variables.IsLocalAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
@@ -459,7 +470,7 @@ $Variables.Devices = [Device[]](Get-Device -Refresh)
 $Variables.Devices | Where-Object { $_.Type -eq "CPU" -and $_.Vendor -notin $Variables.SupportedCPUDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Unsupported CPU Vendor: '$($_.Vendor)'" }
 $Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -notin $Variables.SupportedGPUDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Unsupported GPU Vendor: '$($_.Vendor)'" }
 
-$Variables.Devices | Where-Object Name -In $Config.ExcludeDeviceName | Where-Object { $_.State -NE [DeviceState]::Unsupported } | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
+$Variables.Devices | Where-Object Name -in $Config.ExcludeDeviceName | Where-Object { $_.State -ne [DeviceState]::Unsupported } | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
 # Load CUDA version table
 $Variables.CUDAVersionTable = Get-Content -Path ".\Data\CUDAVersion.json" | ConvertFrom-Json -AsHashtable
@@ -494,16 +505,6 @@ If ($Config.WebGUI) {
     Start-APIServer
     Start-LogReader # To bring SnakeTail back in focus
 }
-
-# Align CUDA id with nvidia-smi order
-$env:CUDA_DEVICE_ORDER = 'PCI_BUS_ID'
-# For AMD
-$env:GPU_FORCE_64BIT_PTR = 1
-$env:GPU_MAX_HEAP_SIZE = 100
-$env:GPU_USE_SYNC_OBJECTS = 1
-$env:GPU_MAX_ALLOC_PERCENT = 100
-$env:GPU_SINGLE_ALLOC_PERCENT = 100
-$env:GPU_MAX_WORKGROUP_SIZE = 256
 
 # Rename existing switching log
 If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { Get-ChildItem -Path ".\Logs\SwitchingLog.csv" -File | Rename-Item -NewName { "SwitchingLog$($_.LastWriteTime.toString('_yyyy-MM-dd_HH-mm-ss')).csv" } }

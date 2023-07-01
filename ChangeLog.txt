@@ -10,7 +10,26 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
-ChangeLog NemosMiner 4.3.4.12 28.06.2023
+ChangeLog NemosMiner 4.3.5.0 01.07.2023
+========================================
+
+Core:
+- Core: minor code optimizations
+- Include.psm1 / Get-Rate: Do not query exchange rates on each interval if no exchange is available for some currencies
+
+Fixes:
+- Include.psm1 / Update-ConfigFile: Enforce valid values for $Region
+
+Miner updates:
+- BzMiner-v15.4.0 (New)
+- Rigel-v1.6.0
+- XmRig-v6.19.3
+
+Pool changes:
+- NiceHash: Improve compatibility with some coins (only use currency & coin name if there is only one coin available per algorithm)
+
+
+ChangeLog NemosMiner 4.3.4.12 27.06.2023
 ========================================
 
 Changes:
@@ -29,7 +48,7 @@ ChangeLog NemosMiner 4.3.4.11 25.06.2023
 
 Changes:
 - Core: minor code optimizations
-- Includes.psm1 / Get-Rate: Add message if API quota is exceeded
+- Include.psm1 / Get-Rate: Add message if API quota is exceeded
 
 Miner updates:
 - lolMiner-v1.76: Add intensities for dual mining
@@ -41,7 +60,7 @@ ChangeLog NemosMiner 4.3.4.10 11.06.2023
 ========================================
 
 Miner updates:
-- NanoMiner-v3.8.3
+- NanoMiner-v3.8.3 (Enabled DAG & VerusHash algorithms)
 - Rigel-v1.5.2
 - SRBMinerMulti-v2.2.9
 - TeamRedMiner-v0.10.13
@@ -62,7 +81,7 @@ Miner changes:
 - CcminerVerusCpu-v3.8.3
 - CcminerVerusGpu-v3.8.3
 - NanoMiner-v3.8.1: Disabled VerusHash algorithm (https://github.com/nanopool/nanominer/issues/389)
-- NanoMiner-v3.8.1: Disabled DAG miners (https://github.com/nanopool/nanominer/issues/387)
+- NanoMiner-v3.8.1: Disabled DAG algorithms (https://github.com/nanopool/nanominer/issues/387)
 - NheqMiner-v0.8.2.ps1 (removed, mainnet has changed, miner is no longer compatible)
 - Rigel-v1.4.8
 - SRBMinerMulti-v2.2.8
@@ -147,11 +166,11 @@ ChangeLog NemosMiner 4.3.4.4 26.04.2023
 =======================================
 
 Changes:
-- Core / Includes.psm1: Remove redundant code
+- Core / Include.psm1: Remove redundant code
 
 Enhancements:
 - Brains: Workaround for some div/0 errors
-- Core / Includes.psm1: Optimize function 'Add-CoinName'
+- Core / Include.psm1: Optimize function 'Add-CoinName'
 - Legacy GUI: Add balance currency tool tips
 
 Miner updates:
@@ -167,7 +186,7 @@ Changes:
 
 Enhancements:
 - Brains: Add error logging
-- Core / Includes.psm1: Optimize Get-Rate (less disk reads)
+- Core / Include.psm1: Optimize Get-Rate (less disk reads)
 - Legacy & Web GUI / Pool data: Show Price in mBTC when $UsemBIT -eq $true
 - Legacy GUI: Optimize table draw speed
 - Web GUI: Add 'Primary Pool (Variant)' & 'Secondary Pool (Variant)' columns to miner tables (hidden by default)
@@ -193,7 +212,7 @@ Fixes:
 - Brains / ZergPool: Change sort order to select best paying currency
 - Brains / ZergPool: Default pool fee not set (Regression from 4.3.4.1)
 - Brains: Invalid Plus price calculation (Regression from v4.3.4.1)
-- Core / Includes.psm1: Add-CoinName not updating data files
+- Core / Include.psm1: Add-CoinName not updating data files
 
 Miner updates:
 - GMiner-v3.33
@@ -417,7 +436,7 @@ Enhancements:
 
 Fixes:
 - Core: Incorrect hash rate stored if miner failed when re-benchmarking
-- Core / Includes.psm1: Get-SortedObject not sorting recursively
+- Core / Include.psm1: Get-SortedObject not sorting recursively
 - GMiner-v3.28: Incorrect miner name for dual algorithm mode
 
 Miner updates:
@@ -473,7 +492,7 @@ Enhancements:
 Fixes:
 - Brains / ProHashing: Continous memory consumption growth
 - Brains / ZPool: Continous memory consumption growth
-- Core / Includes.psm1: Continous memory consumption growth in functions 'Get-CommandLineParameter', 'Get-Rate', 'Get-SortedObject'
+- Core / Include.psm1: Continous memory consumption growth in functions 'Get-CommandLineParameter', 'Get-Rate', 'Get-SortedObject'
 - GMiner-v3-27: Fix 'Beamv3' for Nvidia broken and causing continous memory consumption growth
 - NanoMiner-v3.7.6: Causing continous memory consumption growth
 
@@ -597,7 +616,7 @@ Fixes:
 - Core: Miners without valid stats had invalid update date
 - Core: Renamed 'ProgPowZ' to 'ProgPowZano'
 - Core: Core dump in Includes/Core.ps1 (Regression from 4.2.2.3 - thanks to Szentigrade)
-- Core / Includes.psm1: Get-EquihashCoinPers: Invalid Equihash pers string
+- Core / Include.psm1: Get-EquihashCoinPers: Invalid Equihash pers string
 - TeamBlackMiner: Fix memory requirements for KawPow
 - Web GUI: Renamed 'Most Profitable Miners' to 'Best Miners'
 - Web GUI: Add local currency to correct colum header even when colum order is changed
@@ -969,7 +988,7 @@ ChangeLog NemosMiner 4.1.1.0 27.08.2022
 =======================================
 
 Enhancements:
-- Core / Miners: Use Equihash personalisation strings where available (new function Includes.psm1/Get-EquihashCoinPers)
+- Core / Miners: Use Equihash personalisation strings where available (new function Include.psm1/Get-EquihashCoinPers)
 - Core, Miners & Pools: Support for SSL pool connections; New configuration item 'SSL': One of three values: 'Prefer' (use where available), 'Never' or 'Always' (pools that do not allow SSL are ignored)
 
 Fixes:
@@ -1011,8 +1030,8 @@ Enhancements:
 - Web GUI / Pools: Hide 'region' column
 
 Fixes:
-- Core / Includes.psm1: Cosmetic error message "Remove-Variable: Cannot find a variable with the name 'Workers'" in 'Read-MonitoringData'
-- Core / Includes.psm1: Get-Rates did not add mBTC values when using cached values
+- Core / Include.psm1: Cosmetic error message "Remove-Variable: Cannot find a variable with the name 'Workers'" in 'Read-MonitoringData'
+- Core / Include.psm1: Get-Rates did not add mBTC values when using cached values
 
 Miner changes:
 - lolMiner-v1.54
@@ -1225,7 +1244,7 @@ Enhancements:
 - Web GUI / Configuration Editor: Display currency names
 
 Fixes:
-- Core / Includes.psm1 Function 'Get-DefaultAlgorithm' broken
+- Core / Include.psm1 Function 'Get-DefaultAlgorithm' broken
 - Core: Stop all running miners if no more pools are available
 - Invalid Ergo (ERG) DAG size (Thanks to Rainbowminer)
 - NBMiner: Changed download link to NemosMiner repo (original DL links are dead)
@@ -1854,7 +1873,7 @@ Changelog NemosMiner 4.0.0.14 (RC14) 09.01.2022
 
 Core:
 - Minor code improvements, cleanup variables
-- Core / Includes.psm1: Remove obsolete parameter 'ManualConfig'
+- Core / Include.psm1: Remove obsolete parameter 'ManualConfig'
 - OpenCL: Fix compatibility
 
 Miner Updates:

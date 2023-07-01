@@ -27,7 +27,7 @@ If ($Algorithms) {
 
         [PSCustomObject]@{ 
             Algorithms  = @($_.Algorithm)
-            API         = "Ccminer"
+            API         = "CcMiner"
             Arguments   = ("$($Arguments) --url stratum+tcp://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts[0]) --user $($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" }) --pass $($MinerPools[0].($_.Algorithm).Pass) --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --statsavg 1 --retry-pause 1 --api-bind $MinerAPIPort" -replace "\s+", " ").trim()
             DeviceNames = $AvailableMiner_Devices.Name
             MinerSet    = $_.MinerSet

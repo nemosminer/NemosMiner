@@ -18,16 +18,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           MiniZ.ps1
-Version:        4.3.4.12
-Version date:   27 June 2023
+Version:        4.3.5.0
+Version date:   01 July 2023
 #>
 
 class MiniZ : Miner { 
     [Object]GetMinerData () { 
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
-        $PowerUsage = [Double]0
-
         $Request = '{ "id":"0", "method":"getstat" }'
         $Response = ""
 
@@ -53,6 +51,7 @@ class MiniZ : Miner {
         $Shares_Invalid = [Int64]0
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
 
+        $PowerUsage = [Double]0
         If ($this.ReadPowerUsage) { 
             $PowerUsage = $this.GetPowerUsage()
         }

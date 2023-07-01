@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Xgminer.ps1
-Version:        4.3.4.12
+Version:        4.3.5.0
 Version date:   27 June 2023
 #>
 
@@ -26,8 +26,6 @@ class Xgminer : Miner {
     [Object]GetMinerData () { 
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
-        $PowerUsage = [Double]0
-
         $Request = @{ command = "summary$(If ($this.Algorithms[1]) { "+summary2" } )"; parameter = "" } | ConvertTo-Json -Compress
         $Response = ""
 
@@ -97,6 +95,7 @@ class Xgminer : Miner {
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
             }
 
+        $PowerUsage = [Double]0
         If ($this.ReadPowerUsage) { 
             $PowerUsage = $this.GetPowerUsage()
         }
