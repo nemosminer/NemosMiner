@@ -69,24 +69,28 @@ If ($Wallet) {
         $Algorithm = $_.Algorithm
         $Algorithm_Norm = Get-Algorithm $Algorithm
 
-        $Currency = Switch ($Algorithm) {
-            "AUTOLYKOS"      { "ERG"; Break }
-            "BEAMV3"         { "BEAM"; Break }
-            "CUCKOOCYCLE"    { "AE"; Break }
-            "EAGLESONG"      { "CKB"; Break }
-            "ETCHASH"        { "ETC"; Break }
-            "GRINCUCKATOO31" { "GRIN"; Break }
-            "GRINCUCKATOO32" { "GRIN"; Break }
-            "HANDSHAKE"      { "HNS"; Break }
-            "KAWPOW"         { "RVN"; Break }
-            "KHEAVYHASH"     { "KAS"; Break }
-            "LBRY"           { "LBC"; Break }
-            "OCTOPUS"        { "CFX"; Break }
-            "CRYPTONIGHTR"   { "XMR"; Break }
-            "ZELHASH"        { "FLUX"; Break }
-            "ZHASH"          { "BTG"; Break }
-            Default          { "" }
-        }
+        $Currencies = Get-CurrencyFromAlgorithm $Algorithm_Norm
+        $Currency = If ($Currencies.Count -eq 1) { $Currencies } Else { "" }
+        # $Currency = Switch ($Algorithm) { 
+        #     "AUTOLYKOS"      { "ERG"; Break }
+        #     "BEAMV3"         { "BEAM"; Break }
+        #     "CUCKOOCYCLE"    { "AE"; Break }
+        #     "EAGLESONG"      { "CKB"; Break }
+        #     "ETCHASH"        { "ETC"; Break }
+        #     "GRINCUCKATOO31" { "GRIN"; Break }
+        #     "GRINCUCKATOO32" { "GRIN"; Break }
+        #     "HANDSHAKE"      { "HNS"; Break }
+        #     "KAWPOW"         { "RVN"; Break }
+        #     "KHEAVYHASH"     { "KAS"; Break }
+        #     "LBRY"           { "LBC"; Break }
+        #     "NEXAPOW"        { "NEXA"; Break }
+        #     "OCTOPUS"        { "CFX"; Break }
+        #     "CRYPTONIGHTR"   { "XMR"; Break }
+        #     "VERUSHASH"      { "VRSC"; Break }
+        #     "ZELHASH"        { "FLUX"; Break }
+        #     "ZHASH"          { "BTG"; Break }
+        #     Default          { "" }
+        # }
 
         $Divisor = 100000000
 
