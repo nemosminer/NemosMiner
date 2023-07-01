@@ -1,20 +1,22 @@
 $Devices = $Variables.EnabledDevices
 
 $Uri = Switch ($Variables.DriverVersion.CUDA) { 
-    { $_ -ge "11.6" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.1-xmrig/xmrig-6.18.1-msvc-cuda11_6-win64.7z"; Break }
-    { $_ -ge "11.5" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.1-xmrig/xmrig-6.18.1-msvc-cuda11_5-win64.7z"; Break }
-    { $_ -ge "11.4" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.1-xmrig/xmrig-6.18.1-msvc-cuda11_4-win64.7z"; Break }
-    { $_ -ge "11.3" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.1-xmrig/xmrig-6.18.1-msvc-cuda11_3-win64.7z"; Break }
-    { $_ -ge "11.2" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.1-xmrig/xmrig-6.18.1-msvc-cuda11_2-win64.7z"; Break }
-    { $_ -ge "11.1" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.1-xmrig/xmrig-6.18.1-msvc-cuda11_1-win64.7z"; Break }
-    { $_ -ge "11.0" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.1-xmrig/xmrig-6.18.1-msvc-cuda11_0-win64.7z"; Break }
-    { $_ -ge "10.2" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.1-xmrig/xmrig-6.18.1-msvc-cuda10_2-win64.7z"; Break }
-    { $_ -ge "10.1" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.1-xmrig/xmrig-6.18.1-msvc-cuda10_1-win64.7z"; Break }
-    { $_ -ge "10.0" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.1-xmrig/xmrig-6.18.1-msvc-cuda10_0-win64.7z"; Break }
-    { $_ -ge "9.2" }  { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.1-xmrig/xmrig-6.18.1-msvc-cuda9_2-win64.7z"; Break }
-    { $_ -ge "9.1" }  { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.1-xmrig/xmrig-6.18.1-msvc-cuda9_1-win64.7z"; Break }
-    { $_ -ge "9.0" }  { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.1-xmrig/xmrig-6.18.1-msvc-cuda9_0-win64.7z"; Break }
-    Default           { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.18.1-xmrig/xmrig-6.18.1-msvc-cuda8_0-win64.7z"; Break }
+    { $_ -ge "11.8" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.19.3-xmrig/xmrig-6.19.3-msvc-cuda11_8-win64.7z"; Break }
+    { $_ -ge "11.7" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.19.9-xmrig/xmrig-6.19.3-msvc-cuda11_7-win64.7z"; Break }
+    { $_ -ge "11.6" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.19.9-xmrig/xmrig-6.19.3-msvc-cuda11_6-win64.7z"; Break }
+    { $_ -ge "11.5" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.19.9-xmrig/xmrig-6.19.3-msvc-cuda11_5-win64.7z"; Break }
+    { $_ -ge "11.4" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.19.9-xmrig/xmrig-6.19.3-msvc-cuda11_4-win64.7z"; Break }
+    { $_ -ge "11.3" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.19.9-xmrig/xmrig-6.19.3-msvc-cuda11_3-win64.7z"; Break }
+    { $_ -ge "11.2" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.19.9-xmrig/xmrig-6.19.3-msvc-cuda11_2-win64.7z"; Break }
+    { $_ -ge "11.1" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.19.9-xmrig/xmrig-6.19.3-msvc-cuda11_1-win64.7z"; Break }
+    { $_ -ge "11.0" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.19.9-xmrig/xmrig-6.19.3-msvc-cuda11_0-win64.7z"; Break }
+    { $_ -ge "10.2" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.19.9-xmrig/xmrig-6.19.3-msvc-cuda10_2-win64.7z"; Break }
+    { $_ -ge "10.1" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.19.9-xmrig/xmrig-6.19.3-msvc-cuda10_1-win64.7z"; Break }
+    { $_ -ge "10.0" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.19.9-xmrig/xmrig-6.19.3-msvc-cuda10_0-win64.7z"; Break }
+    { $_ -ge "9.2" }  { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.19.9-xmrig/xmrig-6.19.3-msvc-cuda9_2-win64.7z"; Break }
+    { $_ -ge "9.1" }  { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.19.9-xmrig/xmrig-6.19.3-msvc-cuda9_1-win64.7z"; Break }
+    { $_ -ge "9.0" }  { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.19.9-xmrig/xmrig-6.19.3-msvc-cuda9_0-win64.7z"; Break }
+    Default           { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.19.9-xmrig/xmrig-6.19.3-msvc-cuda8_0-win64.7z"; Break }
 }
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\xmrig.exe"
