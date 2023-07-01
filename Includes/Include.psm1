@@ -249,6 +249,7 @@ Class Miner {
                 }
             }
             Catch { 
+                $_ > DataReader.error
                 Return
             }
         }
@@ -1000,7 +1001,7 @@ Function Get-Rate {
 
     $Variables.AllCurrencies = @(@(@($Config.Currency) + @($Config.Wallets.Keys) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies) | Select-Object) -replace "mBTC", "BTC" | Sort-Object -Unique)
 
-    If (-not $Variables.Rates.BTC.($Config.Currency) -or (Compare-Object @($Variables.Rates.PSObject.Properties.Name | Select-Object) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "=>") -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-(3, $Config.BalancesTrackerPollInterval | Measure-Object -Maximum).Maximum))) { 
+    If (-not $Variables.Rates.BTC.($Config.Currency) -or (Compare-Object @(@($Variables.Rates.PSObject.Properties.Name | Select-Object) + @($Variables.RatesMissingCurrencies | Select-Object)) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "=>") -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-(3, ($Config.BalancesTrackerPollInterval, 15 | Measure-Object -Minimum).Minimum | Measure-Object -Maximum).Maximum))) { 
         Try { 
             $TSymBatches = @()
             $TSyms = "BTC"
@@ -1041,7 +1042,6 @@ Function Get-Rate {
 
                 # Add mBTC
                 If ($Config.UsemBTC) { 
-                    $Currencies = $Rates.BTC.PSObject.Properties.Name
                     $Currencies | ForEach-Object { 
                         $Currency = $_
                         $mCurrency = "m$($Currency)"
@@ -1058,7 +1058,7 @@ Function Get-Rate {
                         }
                     }
                 }
-                Write-Message -Level Info "Loaded currency exchange rates from 'min-api.cryptocompare.com'.$(If ($MissingCurrencies = Compare-Object $Currencies $Variables.AllCurrencies -PassThru) { " API does not provide rates for '$($MissingCurrencies -join ', ')'." })"
+                Write-Message -Level Info "Loaded currency exchange rates from 'min-api.cryptocompare.com'.$(If ($Variables.RatesMissingCurrencies = Compare-Object $Currencies $Variables.AllCurrencies -PassThru) { " API does not provide rates for '$($Variables.RatesMissingCurrencies -join ', ')'." })"
                 $Variables.Rates = $Rates
                 $Variables.RatesUpdated = (Get-Date).ToUniversalTime()
 
@@ -1219,7 +1219,6 @@ Function Read-MonitoringData {
 }
 
 Function Get-TimeSince { 
-
     # Show friendly time since in days, hours, minutes and seconds
 
     Param(
@@ -1240,6 +1239,7 @@ Function Get-TimeSince {
 }
 
 Function Merge-Hashtable { 
+
     Param(
         [Parameter(Mandatory = $true)]
         [Hashtable]$HT1, 
@@ -1586,6 +1586,7 @@ Function Get-SortedObject {
 }
 
 Function Enable-Stat { 
+
     Param(
         [Parameter(Mandatory = $true)]
         [String]$Name
@@ -1618,6 +1619,7 @@ Function Enable-Stat {
 }
 
 Function Disable-Stat { 
+
     Param(
         [Parameter(Mandatory = $true)]
         [String]$Name
@@ -1871,7 +1873,6 @@ Function Remove-Stat {
 }
 
 Function Get-ArgumentsPerDevice { 
-
     # filters the arguments to contain only argument values for selected devices
     # if an argument has multiple values, only the values for the available devices are included
     # arguments with a single value are valid for all devices and remain untouched
@@ -1961,7 +1962,6 @@ Function Invoke-TcpRequest {
 }
 
 Function Get-CpuId { 
-
     # Brief : gets CPUID (CPU name and registers)
 
     # OS Features
@@ -2098,24 +2098,26 @@ Function Get-CpuId {
 
 Function Get-GPUArchitectureAMD { 
 
-    param(
-        [string]$Model,
-        [string]$Architecture = ""
+    Param(
+        [Parameter(Mandatory = $true)]
+        [String]$Model,
+        [Parameter(Mandatory = $false)]
+        [String]$Architecture = ""
     )
 
     $Model = $Model -replace "[^A-Z0-9]"
     $Architecture = $Architecture -replace ":.+$" -replace "[^A-Za-z0-9]+"
 
     Try { 
-        $GPUArchitectureDB_AMD = Get-Content "Data\GPUArchitectureAMD.json" | ConvertFrom-Json -ErrorAction Ignore
+        $GPUArchitectureDB = Get-Content "Data\GPUArchitectureAMD.json" | ConvertFrom-Json -ErrorAction Ignore
 
-        ForEach($GPUArchitecture in $GPUArchitectureDB_AMD.PSObject.Properties) { 
+        ForEach($GPUArchitecture in $GPUArchitectureDB.PSObject.Properties) { 
             $Arch_Match = $GPUArchitecture.Value -join "|"
             If ($Architecture -match $Arch_Match) { 
                 Return $GPUArchitecture.Name
             }
         }
-        ForEach($GPUArchitecture in $GPUArchitectureDB_AMD.PSObject.Properties) { 
+        ForEach($GPUArchitecture in $GPUArchitectureDB.PSObject.Properties) { 
             $Arch_Match = $GPUArchitecture.Value -join "|"
             If ($Model -match $Arch_Match) { 
                 Return $GPUArchitecture.Name
@@ -2132,31 +2134,31 @@ Function Get-GPUArchitectureAMD {
 
 Function Get-GPUArchitectureNvidia { 
 
-    param(
-        [string]$Model,
-        [string]$ComputeCapability = ""
+    Param(
+        [Parameter(Mandatory = $true)]
+        [String]$Model,
+        [Parameter(Mandatory = $false)]
+        [String]$ComputeCapability = ""
     )
 
     $Model = $Model -replace "[^A-Z0-9]"
     $ComputeCapability = $ComputeCapability -replace "[^\d\.]"
 
     Try { 
-        $GPUArchitectureDB_Nvidia = Get-Content "Data\GPUArchitectureNvidia.json" | ConvertFrom-Json -ErrorAction Ignore
+        $GPUArchitectureDB = Get-Content "Data\GPUArchitectureNvidia.json" | ConvertFrom-Json -ErrorAction Ignore
 
-        ForEach ($GPUArchitecture in $GPUArchitectureDB_Nvidia.PSObject.Properties) { 
+        ForEach ($GPUArchitecture in $GPUArchitectureDB.PSObject.Properties) { 
             If ($ComputeCapability -in $GPUArchitecture.Value.Compute) { 
                 Return $GPUArchitecture.Name
             }
         }
-        Remove-Variable GPUArchitecture
 
-        ForEach ($GPUArchitecture in $GPUArchitectureDB_Nvidia.PSObject.Properties) { 
+        ForEach ($GPUArchitecture in $GPUArchitectureDB.PSObject.Properties) { 
             $Model_Match = $GPUArchitecture.Value.Model -join "|"
             If ($Model -match $Model_Match) {
                 Return $GPUArchitecture.Name
             }
         }
-        Remove-Variable GPUArchitecture
     } 
     Catch { 
         If ($Error.Count) { $Error.RemoveAt(0) }
@@ -2525,7 +2527,6 @@ Filter ConvertTo-Hash {
 }
 
 Function Get-DecimalsFromValue { 
-
     # Used to limit absolute length of number
     # The larger the value, the less decimal digits are returned
     # Maximal $DecimalsMax decimals are returned
@@ -2577,7 +2578,6 @@ Function Get-Combination {
 }
 
 Function Invoke-CreateProcess { 
-
     # Based on https://github.com/FuzzySecurity/PowerShell-Suite/blob/master/Invoke-CreateProcess.ps1
 
     Param (
@@ -2857,6 +2857,26 @@ Function Get-CoinName {
     Return
 }
 
+Function Get-CurrencyFromAlgorithm { 
+
+    Param(
+        [Parameter(Mandatory = $false)]
+        [String]$Algorithm
+    )
+
+    If ($Algorithm) { 
+        If ($Currencies = @($Variables.CurrencyAlgorithm.Keys | Where-Object { $Variables.CurrencyAlgorithm.$_ -eq $Algorithm } )) { 
+            Return $Currencies
+        }
+
+        $Variables.CurrencyAlgorithm = Get-Content -Path ".\Data\CurrencyAlgorithm.json" | ConvertFrom-Json -AsHashtable
+        If ($Currencies = @($Variables.CurrencyAlgorithm.Keys | Where-Object { $Variables.CurrencyAlgorithm.$_ -eq $Algorithm } )) { 
+            Return $Currencies
+        }
+    }
+    Return $null
+}
+
 Function Get-EquihashCoinPers {
 
     Param(
@@ -2912,7 +2932,6 @@ Function Get-PoolBaseName {
 }
 
 Function Get-NMVersion { 
-
     # Updater always logs all messages to screen
     $ConfigLogToScreen = $Config.LogToScreen
     $Config.LogToScreen = @("Info", "Warn", "Error", "Verbose", "Debug")
@@ -3122,16 +3141,14 @@ Function Update-ConfigFile {
         Write-Message -Level Info "Pool configuration has changed ($($OldPoolName -join ', ') -> $($Config.PoolName -join ', ')). Please verify your configuration."
     }
     # Available regions have changed
-    If (-not (Get-Region $Config.Region -List)) { 
+    If (-not ($Config.Region -in (Get-Region $Config.Region -List))) { 
         $OldRegion = $Config.Region
         # Write message about new mining regions
-        $Config.Region = Switch ($Config.Region) { 
+        $Config.Region = Switch ($OldRegion) { 
             "Brazil"       { "USA West"; Break }
             "Europe East"  { "Europe"; Break }
             "Europe North" { "Europe"; Break }
-            "HongKong"     { "Asia"; Break }
             "India"        { "Asia"; Break }
-            "Russia"       { "Europe"; Break }
             "US"           { "USA West"; Break }
             Default        { "Europe" }
         }
@@ -3464,16 +3481,11 @@ Function Get-DAGdata {
 }
 
 Function Out-DataTable { 
-
     # based on http://thepowershellguy.com/blogs/posh/archive/2007/01/21/powershell-gui-scripblock-monitor-script.aspx
 
     [CmdletBinding()]
     Param(
-        [Parameter(
-            Position = 0,
-            Mandatory = $true,
-            ValueFromPipeline = $true
-        )]
+        [Parameter(Position = 0, Mandatory = $true, ValueFromPipeline = $true)]
         [PSObject[]]$InputObject
     )
 
