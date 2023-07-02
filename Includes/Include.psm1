@@ -249,7 +249,6 @@ Class Miner {
                 }
             }
             Catch { 
-                $_ > DataReader.error
                 Return
             }
         }
