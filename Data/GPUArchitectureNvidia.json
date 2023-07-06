@@ -27,6 +27,15 @@
       "^RTXA\\d{4}"
     ]
   },
+  "Blackwell": {
+    "Compute": [
+      "10.0"
+    ],
+    "Model": [
+      "^GB\\d",
+      "^RTX50\\d{2}"
+    ]
+  },
   "Hopper": {
     "Compute": [
       "9.0"
