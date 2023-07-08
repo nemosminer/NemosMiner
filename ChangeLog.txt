@@ -19,8 +19,8 @@ Fixes:
 Improvements:
 - Core: Only check network status when no new pools or a miner failed
 - Web GUI / Pools: Make 'Protocol' a dropdown list
-- Web GUI: Update 'FontAwesome' to verston 6.40
-- Web GUI: Update 'jQuery' to verston 3.70
+- Web GUI: Update 'FontAwesome' to version 6.40
+- Web GUI: Update 'jQuery' to version 3.70
 
 Miner changes:
 - BzMiner-v15.4.1
