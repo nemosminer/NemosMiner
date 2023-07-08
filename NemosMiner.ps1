@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.3.5.0
-Version date:   01 July 2023
+Version:        4.3.5.1
+Version date:   08 July 2023
 #>
 
 param(
@@ -290,7 +290,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.3.5.0"
+    Version      = [System.Version]"4.3.5.1"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -345,6 +345,7 @@ Start-LogReader
 
 Write-Message -Level Info "Starting $($Variables.Branding.ProductLabel)® v$($Variables.Branding.Version) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru"
 If (-not $Variables.FreshConfig) { Write-Message -Level Info "Using configuration file '$($Variables.ConfigFile)'." }
+Write-Message -Level Info "PWSH version $($PSVersiontable.PSVersion)"
 Write-Host ""
 
 #Prerequisites check

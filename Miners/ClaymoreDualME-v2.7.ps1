@@ -38,11 +38,10 @@ If ($Algorithms) {
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                 $Arguments += Switch ($MinerPools[0].($_.Algorithm).Protocol) { 
-                    "ethproxy"     { " -esm 1" }
-                    "ethstratum"   { " -esm 0" }
-                    "ethstratum1"  { " -esm 4" }
-                    "ethstratum2"  { " -esm 4" }
-                    "ethstratumnh" { " -esm 4" }
+                    "ethproxy"     { " -esm 1"; Break }
+                    "ethstratum1"  { " -esm 4"; Break }
+                    "ethstratum2"  { " -esm 4"; Break }
+                    "ethstratumnh" { " -esm 4"; Break }
                     Default        { " -esm 0" }
                 }
                 $Arguments += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { " -epool stratum+ssl" } Else { " -epool stratum+tcp" }

@@ -31,10 +31,9 @@ If ($Algorithms) {
 
                 $Protocol = Switch ($MinerPools[0].($_.Algorithm).Protocol) { 
                     "ethproxy"     { "stratum1"; Break }
-                    "ethstratum"   { "stratum1"; Break }
                     "ethstratum1"  { "stratum2"; Break }
                     "ethstratum2"  { "stratum2"; Break }
-                    Default        { "stratum"; Break }
+                    Default        { "stratum" }
                 }
                 $Protocol += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "+tls" } Else { "+tcp" }
                 [PSCustomObject]@{ 

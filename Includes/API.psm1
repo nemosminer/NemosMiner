@@ -18,13 +18,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           API.psm1
-Version:        4.3.5.0
-Version date:   01 July 2023
+Version:        4.3.5.1
+Version date:   08 July 2023
 #>
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.5.2.2"
+    $APIVersion = "0.5.2.3"
 
     If ($Variables.APIRunspace.AsyncObject.IsCompleted -or $Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
         Stop-APIServer
@@ -594,7 +594,7 @@ Function Start-APIServer {
                                         Remove-Stat -Name $_.Name
                                         $Data += "$($_.Name -replace "_$($Parameters.Type)")`n"
                                     }
-                                    Write-Message -Level Info "Web GUI: Removed $($TempStats.Count) $($Parameters.Type) stat file$(If ($TempStats.Count -ne 1) { "s" })."
+                                    Write-Message -Level Info "Web GUI: Removed $($TempStats.Count) $($Parameters.Type.ToLower()) stat file$(If ($TempStats.Count -ne 1) { "s" })."
                                     If ($Parameters.Type -eq "Hashrate") { $Data += "`nReset $($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)H/s $($Parameters.Type)." }
                                     ElseIf ($Parameters.Type -eq "PowerUsage") { $Data += "`nReset $($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)W $($Parameters.Type)." }
                                     ElseIf ($Parameters.Type -eq "Profit") { $Data += "`nReset $($TempStats.Count) pool stat file$(if ($TempStats.Count -ne 1) { "s" })." }

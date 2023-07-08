@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZergPool.ps1
-Version:        4.3.5.0
-Version date:   01 July 2023
+Version:        4.3.5.1
+Version date:   08 July 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -76,7 +76,6 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
         $Reasons = [System.Collections.Generic.List[String]]@()
         If ($Request.$_.noautotrade -eq 1 -and $Request.$_.Currency -ne $PayoutCurrency) { $Reasons.Add("Conversion disabled at pool") }
         If ($Request.$_.hashrate_shared -eq 0) { $Reasons.Add("No hashrate at pool") }
-        If ($PoolVariant -match ".+Plus$" -and $Request.$_.$PriceField -eq 0) { $Reasons.Add("Plus price -eq 0")}
 
         ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
             If ($Region = $Regions | Where-Object { $_ -eq "n/a (Anycast)" -or (Get-Region $_) -eq $Region_Norm }) { 

@@ -1,45 +1,47 @@
+const enumstatus = ['Running', 'DryRun', 'Idle', 'Failed', 'Disabled', 'Unavailable'];
+
 function formatMiners(data) {
   // This function can alter the returned data before building the table, formatting it in a way
   // that is easier to display and manipulate in a table
   $.each(data, function(index, item) {
-    // Format miner link
-    if (item.MinerUri && item.Best && item.Status == 0) item.tName = '<a href="' + item.MinerUri + '" target ="_blank">' + item.Name + '</a>';
-    else item.tName = item.Name;
+    try {
+      // Format miner link
+      if (item.MinerUri && item.Best && item.Status == 0) item.tName = '<a href="' + item.MinerUri + '" target ="_blank">' + item.Name + '</a>';
+      else item.tName = item.Name;
 
-    // Format the device(s)
-    if (item.DeviceNames) item.tDevices = formatArrayAsSortedString(item.DeviceNames);
-    else item.tDevices = '';
+      // Format the device(s)
+      if (item.DeviceNames) item.tDevices = formatArrayAsSortedString(item.DeviceNames);
+      else item.tDevices = '';
 
-    // Format the pool and algorithm data
-    if (item.Workers.length > 0) {
-      item.tPrimaryMinerFee = item.Workers[0].Fee;
-      item.tPrimaryHashrate = item.Workers[0].Hashrate;
-      if (item.Workers[0].Pool) {
-        item.tPrimaryAlgorithm = item.Workers[0].Pool.Algorithm;
-        item.tPrimaryCurrency = item.Workers[0].Pool.Currency;
-        item.tPrimaryCoinName = item.Workers[0].Pool.CoinName;
-        item.tPrimaryPool = item.Workers[0].Pool.BaseName;
-        item.tPrimaryPoolVariant = item.Workers[0].Pool.Name;
-        item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
-        item.tPrimaryPoolUser = item.Workers[0].Pool.User;
-      }
-      if (item.Workers.length > 1) {
-        item.tSecondaryHashrate = item.Workers[1].Hashrate;
-        item.tSecondaryMinerFee = item.Workers[1].Fee;
-        if (item.Workers[1].Pool) {
-          item.tSecondaryAlgorithm = item.Workers[1].Pool.Algorithm;
-          item.tSecondaryCurrency = item.Workers[1].Pool.Currency;
-          item.tSecondaryCoinName = item.Workers[1].Pool.CoinName;
-          item.tSecondaryPool = item.Workers[1].Pool.BaseName;
-          item.tSecondaryPoolVariant = item.Workers[1].Pool.Name;
-          item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
-          item.tSecondaryPoolUser = item.Workers[1].Pool.User;
+      // Format the pool and algorithm data
+      if (typeof item.Workers === 'object' && item.Workers.length > 0) {
+        item.tPrimaryMinerFee = item.Workers[0].Fee;
+        item.tPrimaryHashrate = item.Workers[0].Hashrate;
+        if (item.Workers[0].Pool) {
+          item.tPrimaryAlgorithm = item.Workers[0].Pool.Algorithm;
+          item.tPrimaryCurrency = item.Workers[0].Pool.Currency;
+          item.tPrimaryCoinName = item.Workers[0].Pool.CoinName;
+          item.tPrimaryPool = item.Workers[0].Pool.BaseName;
+          item.tPrimaryPoolVariant = item.Workers[0].Pool.Name;
+          item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
+          item.tPrimaryPoolUser = item.Workers[0].Pool.User;
+        }
+        if (item.Workers.length > 1) {
+          item.tSecondaryHashrate = item.Workers[1].Hashrate;
+          item.tSecondaryMinerFee = item.Workers[1].Fee;
+          if (item.Workers[1].Pool) {
+            item.tSecondaryAlgorithm = item.Workers[1].Pool.Algorithm;
+            item.tSecondaryCurrency = item.Workers[1].Pool.Currency;
+            item.tSecondaryCoinName = item.Workers[1].Pool.CoinName;
+            item.tSecondaryPool = item.Workers[1].Pool.BaseName;
+            item.tSecondaryPoolVariant = item.Workers[1].Pool.Name;
+            item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
+            item.tSecondaryPoolUser = item.Workers[1].Pool.User;
+          }
         }
       }
-    }
 
-    try {
-      if (item.WorkersRunning.length > 0) {
+      if (typeof item.WorkersRunning === 'object' && item.WorkersRunning.length > 0) {
         item.tPrimaryMinerFee = item.WorkersRunning[0].Fee;
         item.tPrimaryHashrate = item.WorkersRunning[0].Hashrate;
         if (item.WorkersRunning[0].Pool) {
@@ -66,39 +68,40 @@ function formatMiners(data) {
           }
         }
       }
+
+      // Format margin of error
+      if (isNaN(item.Earning_Accuracy)) item.tEarningAccuracy = 'n/a'; 
+      else item.tEarningAccuracy = formatPercent(item.Earning_Accuracy);
+
+      // Format the live speed(s)
+      if (item.Hashrates_Live) {
+        if (item.Hashrates_Live.length > 0) item.tPrimaryHashrateLive = item.Hashrates_Live[0];
+        if (item.Hashrates_Live.length > 1) item.tSecondaryHashrateLive = item.Hashrates_Live[1];
+      }
+
+      // Format Total Mining Duration (TimeSpan)
+      if (item.TotalMiningDuration.Ticks > 0) item.tTotalMiningDuration = formatTimeSpan(item.TotalMiningDuration);
+      else item.tTotalMiningDuration = "n/a";
+
+      // Format Mining Duration (DateTime)
+      if (item.BeginTime == "0001-01-01T00:00:00") item.tMiningDuration = "n/a";
+      else item.tMiningDuration = formatTimeSince(item.BeginTime).replace(' ago' ,'').replace('-', 'just started');
+
+      // Format status
+      item.tStatus = enumstatus[item.Status];
+
+      // Format status message
+      if (item.StatusMessage) item.tStatusMessage = item.StatusMessage.replace(/ \{.+/g, '');
+      else item.tStatusMessage = item.tStatus;
+
+      //Format warmup times
+      if (item.WarmupTimes.length > 1) {
+        item.tWarmupTimes0 = item.WarmupTimes[0];
+        item.tWarmupTimes1 = item.WarmupTimes[1];
+      }
     }
-    catch (error) { }
-
-    // Format margin of error
-    if (isNaN(item.Earning_Accuracy)) item.tEarningAccuracy = 'n/a'; 
-    else item.tEarningAccuracy = formatPercent(item.Earning_Accuracy);
-
-    // Format the live speed(s)
-    if (item.Hashrates_Live) {
-      if (item.Hashrates_Live.length > 0) item.tPrimaryHashrateLive = item.Hashrates_Live[0];
-      if (item.Hashrates_Live.length > 1) item.tSecondaryHashrateLive = item.Hashrates_Live[1];
-    }
-
-    // Format Total Mining Duration (TimeSpan)
-    if (item.TotalMiningDuration.Ticks > 0) item.tTotalMiningDuration = formatTimeSpan(item.TotalMiningDuration);
-    else item.tTotalMiningDuration = "n/a";
-
-    // Format Mining Duration (DateTime)
-    if (item.BeginTime == "0001-01-01T00:00:00") item.tMiningDuration = "n/a";
-    else item.tMiningDuration = formatTimeSince(item.BeginTime).replace(' ago' ,'').replace('-', 'just started');
-
-    // Format status
-    const enumstatus = ['Running', 'DryRun', 'Idle', 'Failed', 'Disabled', 'Unavailable'];
-    item.tStatus = enumstatus[item.Status];
-
-    // Format status message
-    if (item.StatusMessage) item.tStatusMessage = item.StatusMessage.replace(/ \{.+/g, '');
-    else item.tStatusMessage = item.tStatus;
-
-    //Format warmup times
-    if (item.WarmupTimes.length > 1) {
-      item.tWarmupTimes0 = item.WarmupTimes[0];
-      item.tWarmupTimes1 = item.WarmupTimes[1];
+    catch (error) { 
+      console.error(item);
     }
   });
   return data;

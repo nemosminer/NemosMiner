@@ -70,11 +70,12 @@ If ($Algorithms) {
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algorithm") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                 $Arguments += Switch ($MinerPools[0].($_.Algorithm).Protocol) { 
-                    "minerproxy"   { " --esm 1"; Break }
                     "ethproxy"     { " --esm 0"; Break }
                     "ethstratum1"  { " --esm 1"; Break }
                     "ethstratum2"  { " --esm 2"; Break }
                     "ethstratumnh" { " --esm 2"; Break }
+                    "minerproxy"   { " --esm 1"; Break }
+                    Default        { "" }
                 }
                 $Arguments += " --pool $($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) --wallet $($MinerPools[0].($_.Algorithm).User)"
                 If ($MinerPools[0].($_.Algorithm).WorkerName) { " --worker $($MinerPools[0].($_.Algorithm).WorkerName)" }

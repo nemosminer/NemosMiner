@@ -10,10 +10,36 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 - Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
 
+ChangeLog NemosMiner 4.3.5.1 08.07.2023
+========================================
+
+Fixes:
+- Core: Miner benchmark not ending when miner crashed in warmup phase after first data sample
+
+Improvements:
+- Core: Only check network status when no new pools or a miner failed
+- Web GUI / Pools: Make 'Protocol' a dropdown list
+- Web GUI: Update 'FontAwesome' to verston 6.40
+- Web GUI: Update 'jQuery' to verston 3.70
+
+Miner changes:
+- BzMiner-v15.4.1
+- GMiner-v3.41
+- NanoMiner-v3.8.4
+- Rigel-v1.6.2
+- RplantCpu-v5.0.33a: Algorithm 'APEPEPoW' only (most other algos are broken: https://github.com/rplant8/cpuminer-opt-rplant/issues/45)
+- TeamRedMiner-v0.10.14
+- Wildrig-v0.36.10
+- XmRig-v6.20.0
+
+Pool changes:
+- Remove reason 'Plus price -eq 0'
+
+
 ChangeLog NemosMiner 4.3.5.0 01.07.2023
 ========================================
 
-Core:
+Improvements:
 - Core: minor code optimizations
 - Include.psm1 / Get-Rate: Do not query exchange rates on each interval if no exchange is available for some currencies
 

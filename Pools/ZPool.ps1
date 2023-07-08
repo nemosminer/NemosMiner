@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           ZPool.ps1
-Version:        4.3.5.0
-Version date:   01 July 2023
+Version:        4.3.5.1
+Version date:   08 July 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -69,7 +69,6 @@ If ($PriceField -and $Wallet) {
         $Reasons = [System.Collections.Generic.List[String]]@()
         # If ($Request.$_.error) { $Reasons.Add($Request.$_.error) }
         If ($Request.$_.hashrate_last24h -eq 0) { $Reasons.Add("No hashrate at pool") }
-        If ($PoolVariant -match ".+Plus$" -and $Request.$_.$PriceField -eq 0) { $Reasons.Add("Plus price -eq 0")}
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 

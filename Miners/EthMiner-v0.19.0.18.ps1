@@ -51,9 +51,9 @@ If ($Algorithms) {
                 $Pass = "$($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].($_.Algorithm).DAGSizeGiB))" })"
 
                 $Protocol = Switch ($MinerPools[0].($_.Algorithm).Protocol) { 
-                    "ethstratum1"  { "stratum2" }
-                    "ethstratum2"  { "stratum3" }
-                    "ethstratumnh" { "stratum2" }
+                    "ethstratum1"  { "stratum2"; Break }
+                    "ethstratum2"  { "stratum3"; Break }
+                    "ethstratumnh" { "stratum2"; Break }
                     Default        { "stratum" }
                 }
                 $Protocol += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { "+tls" } Else { "+tcp" }

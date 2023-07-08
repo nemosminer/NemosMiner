@@ -8,9 +8,9 @@ $DeviceEnumerator = "Type_Vendor_Index"
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Autolykos2");           Fee = @(0.02);       MinMemGiB = 1.08; MinerSet = 0; Tuning = " --mt 3"; WarmupTimes = @(45, 0);   Arguments = " --algo autolykos2 --intensity 25" }
     [PSCustomObject]@{ Algorithms = @("Blake3");               Fee = @(0.01);       MinMemGiB = 2;    Minerset = 2; Tuning = " --mt 3"; WarmupTimes = @(45, 0);   Arguments = " --algo blake3 --intensity 25" }
-    [PSCustomObject]@{ Algorithms = @("EtcHash");              Fee = @(0.01);       MinMemGiB = 1.08; Minerset = 1; Tuning = " --mt 3"; WarmupTimes = @(60, 5);   Arguments = " --algo etchash --intensity 25" } # GMiner-v3.40 is fastest
+    [PSCustomObject]@{ Algorithms = @("EtcHash");              Fee = @(0.01);       MinMemGiB = 1.08; Minerset = 1; Tuning = " --mt 3"; WarmupTimes = @(60, 5);   Arguments = " --algo etchash --intensity 25" } # GMiner-v3.41 is fastest
     [PSCustomObject]@{ Algorithms = @("EtcHash", "Blake3");    Fee = @(0.01, 0.01); MinMemGiB = 1.08; Minerset = 2; Tuning = " --mt 3"; WarmupTimes = @(60, 15);  Arguments = " --algo etchash --dual-algo blake3 --lhr-tune -1 --lhr-autotune-interval 1" }
-    [PSCustomObject]@{ Algorithms = @("Ethash");               Fee = @(0.01);       MinMemGiB = 1.08; Minerset = 1; Tuning = " --mt 3"; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --intensity 25" } # GMiner-v3.40 is fastest
+    [PSCustomObject]@{ Algorithms = @("Ethash");               Fee = @(0.01);       MinMemGiB = 1.08; Minerset = 1; Tuning = " --mt 3"; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --intensity 25" } # GMiner-v3.41 is fastest
     [PSCustomObject]@{ Algorithms = @("Ethash", "Autolykos2"); Fee = @(0.01, 0.02); MinMemGiB = 8;    Minerset = 2; Tuning = " --mt 3"; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --dual-algo autolykos2 --lhr-tune -1 --lhr-autotune-interval 1" }
     [PSCustomObject]@{ Algorithms = @("Ethash", "Blake3");     Fee = @(0.01, 0.01); MinMemGiB = 1.08; Minerset = 2; Tuning = " --mt 3"; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --dual-algo blake3 --lhr-tune -1 --lhr-autotune-interval 1" }
     [PSCustomObject]@{ Algorithms = @("Ethash", "FiroPow");    Fee = @(0.01, 0.01); MinMemGiB = 10;   Minerset = 2; Tuning = " --mt 3"; WarmupTimes = @(255, 15); Arguments = " --algo ethash --dual-algo firopow --lhr-tune -1" }
@@ -18,7 +18,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Ethash", "Octopus");    Fee = @(0.01, 0.02); MinMemGiB = 8;    Minerset = 2; Tuning = " --mt 3"; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --dual-algo octopus --lhr-tune -1" }
 #   [PSCustomObject]@{ Algorithms = @("EthashLowMem");         Fee = @(0.01);       MinMemGiB = 1.08; Minerset = 2; Tuning = " --mt 3"; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --intensity 25" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithms = @("FiroPow");              Fee = @(0.01);       MinMemGiB = 1.08; Minerset = 1; Tuning = " --mt 3"; WarmupTimes = @(60, 30);  Arguments = " --algo firopow --intensity 25" }
-    [PSCustomObject]@{ Algorithms = @("KawPow");               Fee = @(0.01);       MinMemGiB = 1.08; Minerset = 1; Tuning = " --mt 3"; WarmupTimes = @(45, 20);  Arguments = " --algo kawpow --intensity 25" } # XmRig-v6.19.3 is almost as fast but has no fee
+    [PSCustomObject]@{ Algorithms = @("KawPow");               Fee = @(0.01);       MinMemGiB = 1.08; Minerset = 1; Tuning = " --mt 3"; WarmupTimes = @(45, 20);  Arguments = " --algo kawpow --intensity 25" } # XmRig-v6.20.0 is almost as fast but has no fee
     [PSCustomObject]@{ Algorithms = @("MTP");                  Fee = @(0.01);       MinMemGiB = 3;    Minerset = 2; Tuning = " --mt 3"; WarmupTimes = @(30, 15);  Arguments = " --algo mtp --intensity 21" } # Algorithm is dead
     [PSCustomObject]@{ Algorithms = @("MTPTcr");               Fee = @(0.01);       MinMemGiB = 3;    Minerset = 2; Tuning = " --mt 3"; WarmupTimes = @(30, 15);  Arguments = " --algo mtp-tcr --intensity 21" }
     [PSCustomObject]@{ Algorithms = @("Multi");                Fee = @(0.01);       MinMemGiB = 2;    Minerset = 2; Tuning = " --mt 3"; WarmupTimes = @(30, 0);   Arguments = " --algo multi --intensity 25" }
@@ -62,7 +62,7 @@ If ($Algorithms) {
                     "ethstratum1"  { " --url stratum2"; Break }
                     "ethstratum2"  { " --url stratum2"; Break }
                     "ethstratumnh" { " --url stratum2"; Break }
-                    Default        { " --url stratum"; Break }
+                    Default        { " --url stratum" }
                 }
                 $Arguments += If ($MinerPools[0].$Algorithm0.PoolPorts[1]) { "+ssl" } Else { "+tcp" }
                 $Arguments += "://$($MinerPools[0].$Algorithm0.Host):$($MinerPools[0].$Algorithm0.PoolPorts | Select-Object -Last 1)"
@@ -79,8 +79,9 @@ If ($Algorithms) {
                         "ethstratum1"  { " --url2 stratum2"; Break }
                         "ethstratum2"  { " --url2 stratum2"; Break }
                         "ethstratumnh" { " --url2 stratum2"; Break }
+                        Default        { " --url2 stratum" }
                     }
-                    $Arguments += If ($MinerPools[1].$Algorithm1.PoolPorts[1]) { "ssl" } Else { "+tcp" }
+                    $Arguments += If ($MinerPools[1].$Algorithm1.PoolPorts[1]) { "+ssl" } Else { "+tcp" }
                     $Arguments += "://$($MinerPools[1].$Algorithm1.Host):$($MinerPools[1].$Algorithm1.PoolPorts | Select-Object -Last 1)"
                     $Arguments += " --user2 $($MinerPools[1].$Algorithm1.User)"
                     $Arguments += " --pass2 $($MinerPools[1].$Algorithm1.Pass)$(If ($MinerPools[1].$Algorithm1.BaseName -eq "ProHashing" -and $_.Algorithms -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].$Algorithm1.DAGSizeGiB))" })"

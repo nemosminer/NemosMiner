@@ -6,18 +6,18 @@ $Path = ".\Bin\$($Name)\PhoenixMiner.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithms = @("EtcHash");                 Type = "AMD"; Fee = @(0.0065);   MinMemGiB = 2 * $MinerPools[0].Etchash.DAGSizeGiB + 0.77;  MinerSet = 0; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();                  Arguments = " -amd -eres 1 -coin ETC" } # GMiner-v3.40 is just as fast, PhoenixMiner-v6.2c is maybe faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithms = @("EtcHash");                 Type = "AMD"; Fee = @(0.0065);   MinMemGiB = 2 * $MinerPools[0].Etchash.DAGSizeGiB + 0.77;  MinerSet = 0; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();                  Arguments = " -amd -eres 1 -coin ETC" } # GMiner-v3.41 is just as fast, PhoenixMiner-v6.2c is maybe faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithms = @("EtcHash", "Blake2s");      Type = "AMD"; Fee = @(0.009, 0); MinMemGiB = 2 * $MinerPools[0].Etchash.DAGSizeGiB + 0.77;  MinerSet = 0; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();                  Arguments = " -amd -eres 1 -coin ETC -dcoin blake2s" }
-    [PSCustomObject]@{ Algorithms = @("Ethash");                  Type = "AMD"; Fee = @(0.0065);   MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.77;       MinerSet = 0; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();                  Arguments = " -amd -eres 1" } # GMiner-v3.40 is just as fast, PhoenixMiner-v6.2c is maybe faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithms = @("Ethash");                  Type = "AMD"; Fee = @(0.0065);   MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.77;       MinerSet = 0; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();                  Arguments = " -amd -eres 1" } # GMiner-v3.41 is just as fast, PhoenixMiner-v6.2c is maybe faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithms = @("Ethash", "Blake2s");       Type = "AMD"; Fee = @(0.009, 0); MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.77;       MinerSet = 0; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();                  Arguments = " -amd -eres 1 -dcoin blake2s" }
 #   [PSCustomObject]@{ Algorithms = @("EthashLowMem");            Type = "AMD"; Fee = @(0.0065);   MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.77; Minerset = 2; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();                  Arguments = " -amd -eres 1" } # GMiner-v3.10 is just as fast, PhoenixMiner-v6.2c is maybe faster, but I see lower speed at the pool
 #   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "Blake2s"); Type = "AMD"; Fee = @(0.009, 0); MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.77; Minerset = 2; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("RDNA1", "RDNA2");  Arguments = " -amd -eres 1 -dcoin blake2s" }
     [PSCustomObject]@{ Algorithms = @("UbqHash");                 Type = "AMD"; Fee = @(0.0065);   MinMemGiB = $MinerPools[0].UbqHash.DAGSizeGiB + 0.77;      MinerSet = 0; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();                  Arguments = " -amd -eres 1 -coin UBQ" }
     [PSCustomObject]@{ Algorithms = @("UbqHash", "Blake2s");      Type = "AMD"; Fee = @(0.009, 0); MinMemGiB = $MinerPools[0].UbqHash.DAGSizeGiB + 0.77;      MinerSet = 0; Tuning = " -mi 12 -straps 1"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("RDNA1", "RDNA2");  Arguments = " -amd -eres 1 -coin UBQ -dcoin blake2s" }
       
-    [PSCustomObject]@{ Algorithms = @("EtcHash");                 Type = "NVIDIA"; Fee = @(0.0065);   MinMemGiB = 2 * $MinerPools[0].Etchash.DAGSizeGiB + 0.77;  Minerset = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(45, 15); Arguments = " -nvidia -eres 1 -coin ETC" } # GMiner-v3.40 is just as fast, PhoenixMiner-v6.2c is maybe faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithms = @("EtcHash");                 Type = "NVIDIA"; Fee = @(0.0065);   MinMemGiB = 2 * $MinerPools[0].Etchash.DAGSizeGiB + 0.77;  Minerset = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(45, 15); Arguments = " -nvidia -eres 1 -coin ETC" } # GMiner-v3.41 is just as fast, PhoenixMiner-v6.2c is maybe faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithms = @("EtcHash", "Blake2s");      Type = "NVIDIA"; Fee = @(0.009, 0); MinMemGiB = 2 * $MinerPools[0].Etchash.DAGSizeGiB + 0.77;  MinerSet = 0; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(45, 15); Arguments = " -nvidia -eres 1 -coin ETC -dcoin blake2s" }
-    [PSCustomObject]@{ Algorithms = @("Ethash");                  Type = "NVIDIA"; Fee = @(0.0065);   MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.77;       Minerset = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(45, 15); Arguments = " -nvidia -eres 1" } # GMiner-v3.40 is just as fast, PhoenixMiner-v6.2c is maybe faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithms = @("Ethash");                  Type = "NVIDIA"; Fee = @(0.0065);   MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.77;       Minerset = 1; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(45, 15); Arguments = " -nvidia -eres 1" } # GMiner-v3.41 is just as fast, PhoenixMiner-v6.2c is maybe faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithms = @("Ethash", "Blake2s");       Type = "NVIDIA"; Fee = @(0.009, 0); MinMemGiB = $MinerPools[0].Ethash.DAGSizeGiB + 0.77;       MinerSet = 0; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(45, 15); Arguments = " -nvidia -eres 1 -dcoin blake2s" }
 #   [PSCustomObject]@{ Algorithms = @("EthashLowMem");            Type = "NVIDIA"; Fee = @(0.0065);   MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.77; Minerset = 2; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(45, 15); Arguments = " -nvidia -eres 1" } # TTMiner-v5.0.3 is fastest
 #   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "Blake2s"); Type = "NVIDIA"; Fee = @(0.009, 0); MinMemGiB = $MinerPools[0].EthashLowMem.DAGSizeGiB + 0.77; Minerset = 2; Tuning = " -mi 12 -vmt1 15 -vmt2 12 -vmt3 0 -vmr 15 -mcdag 1"; WarmupTimes = @(45, 15); Arguments = " -nvidia -eres 1 -dcoin blake2s" }
@@ -80,12 +80,13 @@ If ($Algorithms) {
 
                 $Arguments += " -pool $(If ($MinerPools[0].$Algorithm0.PoolPorts[1]) { "ssl://" })$($MinerPools[0].$Algorithm0.Host):$($MinerPools[0].$Algorithm0.PoolPorts | Select-Object -Last 1) -wal $($MinerPools[0].$Algorithm0.User)"
                 $Arguments += Switch ($MinerPools[0].$Algorithm0.Protocol) {
-                    "minerproxy"   { " -proto 1"; Break }
                     "ethproxy"     { " -proto 2"; Break }
-                    "qtminer"      { " -proto 3"; Break }
+                    "minerproxy"   { " -proto 1"; Break }
                     "ethstratum1"  { " -proto 4"; Break }
                     "ethstratum2"  { " -proto 5"; Break }
-                    Default        { " -proto 1"; Break }
+                    "ethstratumnh" { " -proto 5"; Break }
+                    "qtminer"      { " -proto 3"; Break }
+                    Default        { " -proto 1" }
                 }
                 If ($MinerPools[0].$Algorithm0.PoolPorts[1]) { $Arguments += " -weakssl" }
                 If ($MinerPools[0].$Algorithm0.WorkerName) { $Arguments += " -worker $($MinerPools[0].$Algorithm0.WorkerName)" }

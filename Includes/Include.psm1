@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           include.ps1
-Version:        4.3.5.0
-Version date:   01 July 2023
+Version:        4.3.5.1
+Version date:   08 July 2023
 #>
 
 # Window handling
@@ -163,6 +163,7 @@ Class Miner {
     [String]$CommandLine
     [Int]$ContinousCycle = 0 # Counter, miner has been running continously for n loops
     [Int]$DataCollectInterval = 5 # Seconds
+    [DateTime]$DataSampleTimestamp = 0 # Newest sample
     [String[]]$DeviceNames = @() # derived from devices
     [Device[]]$Devices = @()
     [Boolean]$Disabled = $false
@@ -284,6 +285,7 @@ Class Miner {
             $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.WindowStyle -Priority $this.ProcessPriority -EnvBlock $this.EnvVars -WindowTitle "$($this.Devices.Name -join ","): $($this.Name) $($this.Info)" -JobName $this.Name -LogFile $this.LogFile
         }
         $this.Devices | ForEach-Object { $_.Status = $this.StatusMessage }
+        $this.DataSampleTimestamp = [DateTime]0 
 
         Write-Message -Level Verbose $this.CommandLine
 
@@ -1872,6 +1874,7 @@ Function Remove-Stat {
 }
 
 Function Get-ArgumentsPerDevice { 
+
     # filters the arguments to contain only argument values for selected devices
     # if an argument has multiple values, only the values for the available devices are included
     # arguments with a single value are valid for all devices and remain untouched
@@ -3453,7 +3456,7 @@ Function Get-EpochLength {
         "EVR"   { Return 12000 }
         "FIRO"  { Return 1300 }
         "RVN"   { Return 7500 }
-        Default { return 30000 }
+        Default { Return 30000 }
     }
 }
 

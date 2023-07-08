@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           HashCryptos.ps1
-Version:        4.3.5.0
-Version date:   01 July 2023
+Version:        4.3.5.1
+Version date:   08 July 2023
 #>
 
 using module ..\Includes\Include.psm1
@@ -74,9 +74,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
         $Reasons = [System.Collections.Generic.List[String]]@()
-        If ($Request.$_.hashrate -eq 0) { $Reasons.Add("No hashrate at pool") }
-        If ($Request.$_.hashrate_last24h -eq 0) { $Reasons.Add("No hashrate at pool") }
-        If ($PoolVariant -match ".+Plus$" -and $Request.$_.$PriceField -eq 0) { $Reasons.Add("Plus price -eq 0")}
+        If ($Request.$_.hashrate -eq 0 -or $Request.$_.hashrate_last24h -eq 0) { $Reasons.Add("No hashrate at pool") }
 
         [PSCustomObject]@{ 
             Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))

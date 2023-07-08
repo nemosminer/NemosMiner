@@ -1,6 +1,6 @@
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -ne "NVIDIA" -or $_.OpenCL.DriverVersion -ge "460.27.03" })) { Return }
 
-$Uri = "https://github.com/bzminer/bzminer/releases/download/v15.4.0/bzminer_v15.4.0_windows.zip"
+$Uri = "https://github.com/bzminer/bzminer/releases/download/v15.4.1/bzminer_v15.4.1_windows.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\bzminer.exe"
 $DeviceEnumerator = "Bus"
@@ -24,28 +24,28 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Ethash");  Type = "INTEL"; Fee = 0.005;  MinMemGiB = 1.08; Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 20); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a ethash") }
 
     [PSCustomObject]@{ Algorithms = @("Autolykos2");               Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.08; Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a ergo") }
-    [PSCustomObject]@{ Algorithms = @("Autolykos2", "kHeavyHash"); Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a ergo", " --a2 kaspa") }
-    [PSCustomObject]@{ Algorithms = @("Autolykos2", "SHA512256d"); Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a ergo", " --a2 radiant") }
+    [PSCustomObject]@{ Algorithms = @("Autolykos2", "kHeavyHash"); Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 40); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a ergo", " --a2 kaspa") }
+    [PSCustomObject]@{ Algorithms = @("Autolykos2", "SHA512256d"); Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 40); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a ergo", " --a2 radiant") }
     [PSCustomObject]@{ Algorithms = @("Blake3");                   Type = "NVIDIA"; Fee = 0.005; MinMemGiB = 2;    Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a alph") }
     [PSCustomObject]@{ Algorithms = @("EtcHash");                  Type = "NVIDIA"; Fee = 0.005; MinMemGiB = 1.08; Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 20); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a etchash") }
-    [PSCustomObject]@{ Algorithms = @("EtcHash", "Blake3");        Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a etchash", " --a2 alph") }
-    [PSCustomObject]@{ Algorithms = @("EtcHash", "IronFish");      Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a etchash", " --a2 ironfish") }
-    [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");    Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a etchash", " --a2 kaspa") }
-    [PSCustomObject]@{ Algorithms = @("EtcHash", "SHA512256d");    Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a etchash", " --a2 radiant") }
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "Blake3");        Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 40); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a etchash", " --a2 alph") }
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "IronFish");      Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 40); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a etchash", " --a2 ironfish") }
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");    Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 40); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a etchash", " --a2 kaspa") }
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "SHA512256d");    Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 40); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a etchash", " --a2 radiant") }
     [PSCustomObject]@{ Algorithms = @("Ethash");                   Type = "NVIDIA"; Fee = 0.005; MinMemGiB = 1.08; MinerSet = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 20); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a ethash") }
-    [PSCustomObject]@{ Algorithms = @("EtHash", "Blake3");         Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a ethash", " --a2 alph") }
-    [PSCustomObject]@{ Algorithms = @("EtHash", "IronFish");       Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a ethash", " --a2 ironfish") }
-    [PSCustomObject]@{ Algorithms = @("EtHash", "kHeavyHash");     Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a ethash", " --a2 kaspa") }
-    [PSCustomObject]@{ Algorithms = @("EtHash", "SHA512256d");     Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a ethash", " --a2 radiant") }
-    [PSCustomObject]@{ Algorithms = @("IronFish");                 Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 2;    Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a ironfish") }
+    [PSCustomObject]@{ Algorithms = @("EtHash", "Blake3");         Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 40); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a ethash", " --a2 alph") }
+    [PSCustomObject]@{ Algorithms = @("EtHash", "IronFish");       Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 40); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a ethash", " --a2 ironfish") }
+    [PSCustomObject]@{ Algorithms = @("EtHash", "kHeavyHash");     Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 40); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a ethash", " --a2 kaspa") }
+    [PSCustomObject]@{ Algorithms = @("EtHash", "SHA512256d");     Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 40); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a ethash", " --a2 radiant") }
+    [PSCustomObject]@{ Algorithms = @("IronFish");                 Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 2;    Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 40); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a ironfish") }
     [PSCustomObject]@{ Algorithms = @("KawPow");                   Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.08; MinerSet = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a rvn") }
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");               Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 2;    Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a kaspa") }
     [PSCustomObject]@{ Algorithms = @("NexaPow");                  Type = "NVIDIA"; Fee = 0.02;  MinMemGiB = 3;    MinerSet = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a nexa") }
     [PSCustomObject]@{ Algorithms = @("OctaSpace");                Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 3;    Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a octa") }
-    [PSCustomObject]@{ Algorithms = @("OctaSpace", "Blake3");      Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 3;    Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a octa", " --a2 alph") }
-    [PSCustomObject]@{ Algorithms = @("OctaSpace", "IronFish");    Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 3;    Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a octa", " --a2 ironfish") }
-    [PSCustomObject]@{ Algorithms = @("OctaSpace", "kHeavyHash");  Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 3;    Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a octa", " --a2 kaspa") }
-    [PSCustomObject]@{ Algorithms = @("OctaSpace", "SHA512256d");  Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 3;    Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a octa", " --a2 radiant") }
+    [PSCustomObject]@{ Algorithms = @("OctaSpace", "Blake3");      Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 3;    Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 40); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a octa", " --a2 alph") }
+    [PSCustomObject]@{ Algorithms = @("OctaSpace", "IronFish");    Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 3;    Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 40); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a octa", " --a2 ironfish") }
+    [PSCustomObject]@{ Algorithms = @("OctaSpace", "kHeavyHash");  Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 3;    Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 40); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a octa", " --a2 kaspa") }
+    [PSCustomObject]@{ Algorithms = @("OctaSpace", "SHA512256d");  Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 3;    Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 40); ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a octa", " --a2 radiant") }
     [PSCustomObject]@{ Algorithms = @("SHA512256d");               Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1;    Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a radiant") }
     [PSCustomObject]@{ Algorithms = @("SHA256dt");                 Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1;    Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a novo") }
     [PSCustomObject]@{ Algorithms = @("SHA3d");                    Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1;    Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -a kylacoin") }
@@ -75,7 +75,12 @@ If ($Algorithms) {
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
 
                 $Arguments = "$($_.Arguments[0])"
-                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })" -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })$(If ($_.DualMiningIntensity -gt 0) { "-$($_.DualMiningIntensity)" })" -replace ' '
+
+                If ($Algorithm1 -and -not $_.DualMiningIntensity) { 
+                    # Allow extra time for auto tuning
+                    $_.WarmupTimes[1] = 60
+                }
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo", "cuda", "opencl", "pers", "proto") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
@@ -85,7 +90,7 @@ If ($Algorithms) {
                     "ethstratum1"  { $Arguments += " -p ethstratum"; Break }
                     "ethstratum2"  { $Arguments += " -p ethstratum2"; Break }
                     "ethstratumnh" { $Arguments += " -p ethstratum"; Break }
-                    Default        { $Arguments += " -p stratum" }
+                    Default        { $Arguments += " -p stratum"}
                 }
                 $Arguments += If ($MinerPools[0].($_.Algorithms[0]).PoolPorts[1]) { "+ssl://" } Else { "+tcp://" }
                 $Arguments += "$($MinerPools[0].($_.Algorithms[0]).Host):$($MinerPools[0].($_.Algorithms[0]).PoolPorts | Select-Object -Last 1)"
