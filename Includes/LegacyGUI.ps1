@@ -285,7 +285,7 @@ Function Update-TabControl {
                         $I = 0
                         $Datasource.Earnings.$Pool | ForEach-Object { 
                             $_ *= $Variables.Rates.BTC.($Config.Currency)
-                            $EarningsChart.Series[$Pool].Points.addxy(0, "{0:N$($Variables.Digits)}" -f $_) | Out-Null
+                            $EarningsChart.Series[$Pool].Points.addxy(0, $_) | Out-Null
                             $Daysum[$I] += $_
                             If ($_) { 
                                 $ToolTip[$I] = "$($ToolTip[$I])`n$($Pool): {0:N$($Config.DecimalsMax)} $($Config.Currency)" -f $_
