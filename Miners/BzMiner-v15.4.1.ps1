@@ -120,7 +120,7 @@ If ($Algorithms) {
                 [PSCustomObject]@{ 
                     Algorithms       = @($_.Algorithms | Select-Object)
                     API              = "BzMiner"
-                    Arguments        = ("$Arguments --no_watchdog --http_enabled 1 --http_port $MinerAPIPort --disable $((($Devices | Where-Object { $_.State -ne [DeviceState]::Unsupported } | Where-Object { $_.Type -in @("AMD", "INTEL", "NVIDIA") } | Where-Object { $_ -notin $AvailableMiner_Devices }).$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0}:0' -f $_ }) -join ' ')" -replace "\s+", " ").trim()
+                    Arguments        = ("$Arguments --no_watchdog --http_enabled 1 --http_port $MinerAPIPort $(If ($Devices | Where-Object { $_.State -ne [DeviceState]::Unsupported } | Where-Object { $_.Type -in @("AMD", "INTEL", "NVIDIA") } | Where-Object { $_ -notin $AvailableMiner_Devices }) { "--disable $((($Devices | Where-Object { $_.State -ne [DeviceState]::Unsupported } | Where-Object { $_.Type -in @("AMD", "INTEL", "NVIDIA") } | Where-Object { $_ -notin $AvailableMiner_Devices }).$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0}:0' -f $_ }) -join ' ')" }) " -replace "\s+", " ").trim()
                     DeviceNames      = $AvailableMiner_Devices.Name
                     Fee              = $_.Fee
                     MinerSet         = $_.MinerSet
