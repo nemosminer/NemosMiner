@@ -99,7 +99,7 @@
               $.ajax({
                 async: false,
                 dataType: 'text',
-                url: '/functions/log/get?lines=100', 
+                url: '/functions/log/get?lines=500', 
                 success: function(result) {
                   document.getElementById('logtext').innerHTML = result.replaceAll('&', '&amp').replaceAll('<', '&lt').replaceAll('>', '&gt;').replaceAll("'", '&#39;').replaceAll('"', '&quot;');;
                 }
@@ -131,7 +131,7 @@
                 $url = '/functions/stat/remove';
                 $payload = {
                   'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms}))),
-                  'Type' : 'Hashrate'
+                  'Type' : 'PowerUsage'
                 };
                 $('.modal-body').load($url, $payload, function() {
                   $('.modal-title').text($('#btn-re-measure').text());
@@ -179,6 +179,7 @@
             });
 
             $table.bootstrapTable({
+              async: 'true',
               onLoadSuccess: function() {
                 if (config.CalculatePowerCost == true) {
                   $table.bootstrapTable('showColumn', 'Profit_Bias');
@@ -257,7 +258,7 @@
 
             $(document).ready(function () {
               tailf();
-              setInterval('tailf()', 1000);
+              setInterval('tailf()', 500);
               $(".addlocalcurrency").each(function () {
                 this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.Currency + ')';
               });

@@ -104,6 +104,7 @@
             var $table = $('#miners');
 
             $table.bootstrapTable({
+              async: 'true',
               onLoadSuccess: function() {
                 if (config.CalculatePowerCost == true) {
                   $table.bootstrapTable('showColumn', 'Profit_Bias');
@@ -196,7 +197,7 @@
                   $url = '/functions/stat/remove';
                   $payload = {
                     'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms}))),
-                    'Type' : 'Hashrate'
+                    'Type' : 'PowerUsage'
                   };
                   $('.modal-body').load($url, $payload, function() {
                     $('.modal-title').text($('#btn-re-measure').text());
