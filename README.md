@@ -278,7 +278,7 @@ If you use older drivers some miners will not be available.
 
 **Recommended/optimal Windows AMD driver**
 
-[Windows 10/11 AMD GPU Driver 4/27/2023](https://www.amd.com/en/support)
+[Windows 10/11 AMD GPU Driver 7/25/2023](https://www.amd.com/en/support)
 
    NemosMiner is currently tested on the following Rigs: 
 
