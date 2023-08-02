@@ -17,20 +17,20 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           NanoMiner.ps1
-Version:        4.3.5.1
-Version date:   08 July 2023
+File:           \Includes\MinerAPIs\NanoMiner.ps1
+Version:        4.3.6.0
+Version date:   31 July 2023
 #>
 
-class NanoMiner : Miner { 
+Class NanoMiner : Miner { 
     [Void]CreateConfigFiles() { 
-        $Parameters = $this.Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue
+        $Parameters = $this.Arguments | ConvertFrom-Json  -ErrorAction Ignore
 
         Try { 
             $ConfigFile = "$(Split-Path $this.Path)\$($Parameters.ConfigFile.FileName)"
             #Write config files. Do not overwrite existing files to preserve optional manual customization
             If (-not (Test-Path -Path $ConfigFile -PathType Leaf)) { 
-                $Parameters.ConfigFile.Content | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+                $Parameters.ConfigFile.Content | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM  -ErrorAction Ignore
             }
         }
         Catch { 
@@ -75,11 +75,15 @@ class NanoMiner : Miner {
         }
 
         $PowerUsage = [Double]0
-        If ($this.ReadPowerUsage) { 
-            $PowerUsage = $this.GetPowerUsage()
-        }
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 
+            If ($this.ReadPowerUsage) { 
+                ForEach ($Device in $Data.Devices) { [Double]$PowerUsage += $Device.PSObject.Members.Value.Power }
+                If (-not $PowerUsage) { 
+                    $PowerUsage = $this.GetPowerUsage()
+                }
+            }
+
             Return [PSCustomObject]@{ 
                 Date       = (Get-Date).ToUniversalTime()
                 HashRate   = $HashRate

@@ -21,8 +21,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.3.5.1
-Version date:   08 July 2023
+Version:        4.3.6.0
+Version date:   31 July 2023
 #>
 
 param(
@@ -211,7 +211,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$ShowMinerFee = $true, # Show miner fee column in main text window miner overview (if fees are available, t.b.d. in miner files, property '[Double]Fee')
     [Parameter(Mandatory = $false)]
-    [Switch]$ShowPoolBalances = $false, # Display pool balances & earnings information in main text window, requires BalancesTrackerPollInterval > 0
+    [Switch]$ShowPoolBalances = $false, # Display pool balances & earnings information in main text window, requires BalancesTrackerPollInterval -gt 0
     [Parameter(Mandatory = $false)]
     [Switch]$ShowPool = $true, # Show pool column in main text window miner overview
     [Parameter(Mandatory = $false)]
@@ -268,9 +268,6 @@ param(
 
 Set-Location (Split-Path $MyInvocation.MyCommand.Path)
 
-$Global:ErrorActionPreference = "Continue"
-$Global:ProgressPreference = "SilentlyContinue"
-
 @"
 NemosMiner
 Copyright (c) 2018-$((Get-Date).Year) Nemo, MrPlus & UselessGuru
@@ -290,7 +287,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.3.5.1"
+    Version      = [System.Version]"4.3.6.0"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -324,13 +321,13 @@ $Variables.PoolsConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolve
 $Variables.BalancesTrackerConfigFile = "$($ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Config.BalancesTrackerConfigFile))".Replace("$(Convert-Path ".\")\", ".\")
 
 $Variables.AllCommandLineParameters = [Ordered]@{ }
-$MyInvocation.MyCommand.Parameters.Keys | Where-Object { $_ -ne "ConfigFile" } | Where-Object { Get-Variable $_ -ErrorAction Ignore } | Sort-Object | ForEach-Object { 
+$MyInvocation.MyCommand.Parameters.psBase.Keys | Where-Object { $_ -ne "ConfigFile" } | Where-Object { Get-Variable $_ -ErrorAction Ignore } | Sort-Object | ForEach-Object { 
     $Variables.AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly
     If ($MyInvocation.MyCommandLineParameters.$_ -is [Switch]) { $Variables.AllCommandLineParameters.$_ = [Boolean]$Variables.AllCommandLineParameters.$_ }
 }
 
 # Read configuration
-Read-Config -ConfigFile $Variables.ConfigFile
+[Void](Read-Config -ConfigFile $Variables.ConfigFile)
 
 # Update config file to include all new config items
 If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFileVersion) -lt $Variables.Branding.Version) { 
@@ -396,8 +393,8 @@ Catch {
     Add-Type -Path ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
 }
 
-Import-Module NetSecurity -ErrorAction SilentlyContinue
-Import-Module Defender -ErrorAction SilentlyContinue -SkipEditionCheck
+Import-Module NetSecurity  -ErrorAction Ignore
+Import-Module Defender  -ErrorAction Ignore -SkipEditionCheck
 
 $Variables.VerthashDatPath = ".\Cache\VertHash.dat"
 If (Test-Path -Path $Variables.VerthashDatPath -PathType Leaf) { 
@@ -408,7 +405,7 @@ If (Test-Path -Path $Variables.VerthashDatPath -PathType Leaf) {
 # Unblock files
 If (Get-Item .\* -Stream Zone.*) { 
     Write-Host "Unblocking files that were downloaded from the internet..." -ForegroundColor Yellow
-    If (Get-Command "Unblock-File" -ErrorAction SilentlyContinue) { Get-ChildItem -Path . -Recurse | Unblock-File }
+    If (Get-Command "Unblock-File" -ErrorAction Ignore) { Get-ChildItem -Path . -Recurse | Unblock-File }
     If ((Get-Command "Get-MpPreference") -and (Get-MpComputerStatus) -and (Get-MpPreference).ExclusionPath -notcontains (Convert-Path .)) { 
         Start-Process "pwsh" "-Command Import-Module Defender; Add-MpPreference -ExclusionPath '$(Convert-Path .)'" -Verb runAs
     }
@@ -426,7 +423,7 @@ $env:GPU_MAX_ALLOC_PERCENT = 100
 $env:GPU_SINGLE_ALLOC_PERCENT = 100
 $env:GPU_MAX_WORKGROUP_SIZE = 256
 
-$Variables.BrainData = [PSCustomObject]@{ }
+$Variables.BrainData = @{ }
 $Variables.Brains = @{ }
 $Variables.IsLocalAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]"Administrator")
 $Variables.Miners = [Miner[]]@()
@@ -438,10 +435,11 @@ $Variables.ScriptStartTime = (Get-Process -id $PID).StartTime.ToUniversalTime()
 $Variables.SuspendCycle = $false
 $Variables.WatchdogTimers = @()
 
-$Variables.RegexAlgoIsEthash = "^Etc?hash|^UbqHash"
-$Variables.RegexAlgoIsProgPow = "^KawPow|^ProgPow|^FiroPow"
+$Variables.RegexAlgoIsEthash = "^Autolykos2|^Etc?hash|^UbqHash"
+$Variables.RegexAlgoIsProgPow = "^EvrProgPow|^KawPow|^ProgPow|^FiroPow"
+$Variables.RegexAlgoHasDAG = "^Autolykos2|^Etc?hash|^EvrProgPow|^FiroPow|^KawPow|^Octopus|^ProgPow|^UbqHash"
 
-Get-Rate | Out-Null
+[Void](Get-Rate)
 
 # Set operational values for text window
 $Variables.ShowAccuracy = $Config.ShowAccuracy
@@ -460,6 +458,12 @@ $Variables.ShowCoinName = $Config.ShowCoinName
 $Variables.ShowCurrency = $Config.ShowCurrency
 $Variables.ShowUser = $Config.ShowUser
 $Variables.UIStyle = $Config.UIStyle
+
+# Start Web GUI
+If ($Config.WebGUI) { 
+    Start-APIServer
+    Start-LogReader # To bring SnakeTail back in focus
+}
 
 $Variables.Summary = "Loading miner device information...<br>This may take a while."
 Write-Message -Level Verbose ($Variables.Summary -replace "<br>", " ")
@@ -497,14 +501,8 @@ $Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "NVIDIA
 
 # Driver version changed
 If ((Get-Content -Path ".\Cache\DriverVersion.json" | ConvertFrom-Json | ConvertTo-Json -Compress) -ne ($Variables.DriverVersion | ConvertTo-Json -Compress)) { 
-    If (Test-Path -Path ".\Cache\DriverVersion.json" -PathType Leaf) { Write-Message -Level Warn "Graphis card driver version data changed. It is recommended to re-download all binaries." }
+    If (Test-Path -Path ".\Cache\DriverVersion.json" -PathType Leaf) { Write-Message -Level Warn "Graphis card driver version data changed. It is recommended to re-benchmark all miners." }
     $Variables.DriverVersion | ConvertTo-Json | Out-File -FilePath ".\Cache\DriverVersion.json" -Encoding utf8NoBOM -Force
-}
-
-# Start Web GUI
-If ($Config.WebGUI) { 
-    Start-APIServer
-    Start-LogReader # To bring SnakeTail back in focus
 }
 
 # Rename existing switching log
@@ -530,10 +528,10 @@ Function MainLoop {
     # Core watchdog. Sometimes core loop gets stuck
     If (-not $Variables.SuspendCycle -and $Variables.EndCycleTime -and $Variables.MiningStatus -eq "Running" -and (Get-Date).ToUniversalTime() -gt $Variables.EndCycleTime.AddSeconds(10 * $Config.Interval)) { 
         Write-Message -Level Warn "Core cycle is stuck - restarting..."
-        Stop-Mining -Quick
+        Stop-Core -Quick
         $Variables.EndCycleTime = (Get-Date).ToUniversalTime()
         $Variables.MiningStatus = $Variables.NewMiningStatus
-        Start-Mining
+        Start-Core
     }
 
     # If something (pause button, idle timer, WebGUI/config) has set the RestartCycle flag, stop and start mining to switch modes immediately
@@ -552,7 +550,7 @@ Function MainLoop {
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                         Write-Host "`n"
                     }
-                    Stop-Mining
+                    Stop-Core
                     Stop-Brain
                     Stop-IdleDetection
                     Stop-BalancesTracker
@@ -579,9 +577,9 @@ Function MainLoop {
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                         Write-Host "`n"
                     }
-                    Stop-Mining
+                    Stop-Core
                     Stop-IdleDetection
-                    Stop-Brain @($Variables.Brains.Keys | Where-Object { $_ -notin (Get-PoolBaseName $Config.PoolName) })
+                    Stop-Brain @($Variables.Brains.psBase.Keys | Where-Object { $_ -notin (Get-PoolBaseName $Config.PoolName) })
                     Start-Brain @(Get-PoolBaseName $Config.PoolName)
                     Start-BalancesTracker
                     Write-MonitoringData | Out-Null
@@ -608,8 +606,7 @@ Function MainLoop {
                         Write-Host "`n"
                     }
                     Start-Brain @(Get-PoolBaseName $Config.PoolName)
-                    Start-BalancesTracker
-                    Start-Mining
+                    Start-Core
 
                     If ($LegacyGUIform) { 
                         $MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel) is running"
@@ -809,13 +806,14 @@ Function MainLoop {
         $host.UI.RawUI.WindowTitle = $LegacyGUIForm.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) - Runtime: {0:dd} days {0:hh} hrs {0:mm} mins - Path: $($Variables.Mainpath)" -f [TimeSpan]((Get-Date).ToUniversalTime() - $Variables.ScriptStartTime)
 
         # Refresh selected tab
-        Update-TabControl
+        If ($Config.LegacyGUI) { Update-TabControl }
 
-        $MiningSummaryLabel.Text = $Variables.Summary -replace "<br>", "`n" -replace "Power Cost", "`nPower Cost" -replace " / ", "/" -replace "&ensp;", " " -replace "   ", "  "
-
-        If ($Variables.MiningProfit -ge 0) { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Green }
-        ElseIf ($Variables.MiningProfit -lt 0) { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Red }
-        Else { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Black }
+        If ($LegacyGUIform) {
+            $MiningSummaryLabel.Text = $Variables.Summary -replace "<br>", "`n" -replace "Power Cost", "`nPower Cost" -replace " / ", "/" -replace "&ensp;", " " -replace "   ", "  "
+            If ($Variables.MiningProfit -ge 0) { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Green }
+            ElseIf ($Variables.MiningProfit -lt 0) { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Red }
+            Else { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Black }
+        }
 
         If ($Variables.Timer) { Clear-Host }
 
@@ -875,27 +873,26 @@ Function MainLoop {
                 If ($Variables.ShowCurrency) { @{ Label = "Currency"; Expression = { If ($_.Workers.Pool.Currency) { $_.Workers.Pool.Currency } } } }
                 If ($Variables.ShowCoinName) { @{ Label = "CoinName"; Expression = { If ($_.Workers.Pool.CoinName) { $_.Workers.Pool.CoinName } } } }
             )
-            $SortBy = If ($Variables.CalculatePowerCost) { "Profit" } Else { "Earning" }
+            $Bias = If ($Variables.CalculatePowerCost) { "Profit_Bias" } Else { "Earning_Bias" }
             $Variables.Miners | Where-Object Available | Group-Object -Property { [String]$_.DeviceNames } | Sort-Object Name | ForEach-Object { 
-                $MinersDeviceGroup = @($_.Group)
+                $MinersDeviceGroup = $_.Group
                 $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object Benchmark)
                 $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object Enabled | Where-Object MeasurePowerUsage)
                 $MinersDeviceGroup | Where-Object { 
-                    $Variables.ShowAllMiners -or <#List all miners#>
-                    $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <#List all miners when benchmarking#>
-                    $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 -or <#List all miners when measuring power usage#>
-                    $_.$SortBy -ge ($MinersDeviceGroup.$SortBy | Sort-Object -Descending | Select-Object -Index (($MinersDeviceGroup.Count, 5 | Measure-Object -Minimum).Minimum - 1)) -or <#Always list at least the top 5 miners per device group#>
-                    $_.$SortBy -ge (($MinersDeviceGroup.$SortBy | Sort-Object -Descending -Top 1) * 0.5) <#Always list the better 50% miners per device group#>
-                } | Sort-Object -Property DeviceName, @{ Expression = { $_.Benchmark }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage }; Descending = $true }, @{ Expression = { $_.KeepRunning }; Descending = $true }, @{ Expression = { $_.Prioritize }; Descending = $true }, @{ Expression = { $_."$($SortBy)_Bias" }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithms[0] }; Descending = $false }, @{ Expression = { $_.Algorithms[1] }; Descending = $false } | 
-                Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (@($_).Count -ne 1) { "s" })"; Expression = { "$($_.DeviceNames -join ',') [$(($Variables.Devices | Where-Object Name -In $_.DeviceNames).Model -join ', ')]" } } -AutoSize | Out-Host
+                    $Config.ShowAllMiners -or <#List all miners#>
+                    $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <# List all miners when benchmarking #>
+                    $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 -or <# List all miners when measuring power usage #>
+                    $_.$Bias -ge ($MinersDeviceGroup.$Bias | Sort-Object -Bottom 5 | Select-Object -Index 0) <# Always list at least the top 5 miners per device group #>
+                } | Sort-Object -Property DeviceName, @{ Expression = { $_.Benchmark }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage }; Descending = $true }, @{ Expression = { $_.KeepRunning }; Descending = $true }, @{ Expression = { $_.Prioritize }; Descending = $true }, @{ Expression = { $_.$Bias }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithms[0] }; Descending = $false }, @{ Expression = { $_.Algorithms[1] }; Descending = $false } | 
+                Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (($_.Group.Devices.Name | Sort-Object -Unique).Count -gt 1) { " group" })"; Expression = { "$($_.DeviceNames -join ',') [$(($Variables.Devices | Where-Object Name -In $_.DeviceNames).Model -join ', ')]" } } -AutoSize | Out-Host
 
                 # Display benchmarking progress
                 If ($MinersDeviceGroupNeedingBenchmark) { 
-                    "Benchmarking for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingBenchmark.Count) miner$(If ($MinersDeviceGroupNeedingBenchmark.Count -gt 1) { 's' }) left to complete benchmark." | Out-Host
+                    "Benchmarking for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.Devices.Name | Sort-Object -Unique) -Join ',')' in progress: $($MinersDeviceGroupNeedingBenchmark.Count) miner$(If ($MinersDeviceGroupNeedingBenchmark.Count -gt 1) { 's' }) left to complete benchmark." | Out-Host
                 }
                 # Display power usage measurement progress
                 If ($MinersDeviceGroupNeedingPowerUsageMeasurement) { 
-                    "Power usage measurement for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring." | Out-Host
+                    "Power usage measurement for device$(If (($MinersDeviceGroup.Devices.Name | Sort-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring." | Out-Host
                 }
             }
         }
@@ -997,4 +994,6 @@ While ($true) {
         [Void](MainLoop)
         Start-Sleep -Milliseconds 100
     }
+
+    $Error.Clear()
 }

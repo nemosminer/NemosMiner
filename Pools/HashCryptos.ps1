@@ -18,12 +18,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           HashCryptos.ps1
-Version:        4.3.5.1
-Version date:   08 July 2023
+File:           \Pools\HashCryptos.ps1
+Version:        4.3.6.0
+Version date:   31 July 2023
 #>
-
-using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
@@ -34,32 +32,34 @@ param(
 $ProgressPreference = "SilentlyContinue"
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
+$Hostsuffix = "stratum1.hashcryptos.com"
+
 $PoolConfig = $Variables.PoolsConfig.$Name
 $PriceField = $PoolConfig.Variant.$PoolVariant.PriceField
 $DivisorMultiplier = $PoolConfig.Variant.$PoolVariant.DivisorMultiplier
-$Hostsuffix = "stratum1.hashcryptos.com"
-$PayoutCurrency = $PoolConfig.Wallets.Keys | Select-Object -First 1
+$PayoutCurrency = $PoolConfig.Wallets.psBase.Keys | Select-Object -First 1
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
-$TransferFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Data\BrainData_" + (Get-Item $MyInvocation.MyCommand.Path).BaseName + ".json"
+
+$BrainDataFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Data\BrainData_" + (Get-Item $MyInvocation.MyCommand.Path).BaseName + ".json"
 
 If ($DivisorMultiplier -and $PriceField -and $Wallet) { 
 
-    $StartTime = (Get-Date)
     Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
+    $StartTime = (Get-Date)
 
     Try { 
         If ($Variables.Brains.$Name) { 
             $Request = $Variables.BrainData.$Name
         }
         Else { 
-            $Request = Get-Content $TransferFile -ErrorAction Stop | ConvertFrom-Json
+            $Request = Get-Content $BrainDataFile -ErrorAction Stop | ConvertFrom-Json
         }
     }
     Catch { Return }
 
     If (-not $Request.PSObject.Properties.Name) { Return }
 
-    $Request.PSObject.Properties.Name | ForEach-Object { 
+    $Request.PSObject.Properties.Name | Where-Object { $Request.$_.Updated -ge $Variables.Brains.$Name."Updated" } | ForEach-Object { 
         $Algorithm = $_
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $Currency = "$($Request.$_.currency)".Trim()
@@ -68,7 +68,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
 
         # Add coin name
         If ($Request.$_.CoinName -and $Currency) { 
-            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName
+            [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName)
         }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
@@ -103,6 +103,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
         }
     }
 
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
     Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 

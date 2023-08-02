@@ -17,12 +17,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           ProHashing.ps1
-Version:        4.3.5.1
-Version date:   08 July 2023
+File:           \Balances\ProHashing.ps1
+Version:        4.3.6.0
+Version date:   31 July 2023
 #>
-
-using module ..\Includes\Include.psm1
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Url = "https://prohashing.com/customer/dashboard"
@@ -38,9 +36,9 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.ProHashingAPIKey) {
         $APIResponse = Invoke-RestMethod $Request -TimeoutSec $Config.PoolAPITimeout -ErrorAction Ignore
 
         If ($Config.LogBalanceAPIResponse) { 
-            "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-            $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+            "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
+            $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
+            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
         }
 
         If ($APIResponse.status -eq "success") { 
@@ -52,17 +50,17 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.ProHashingAPIKey) {
                         Currency = $APIResponse.data.balances.$_.abbreviation
                         Wallet   = $Config.ProHashingUserName
                         Pending  = 0
-                        Balance  = [Double]($APIResponse.data.balances.$_.balance)
-                        Unpaid   = [Double]($APIResponse.data.balances.$_.Unpaid)
-                        Paid     = [Double]($APIResponse.data.balances.$_.paid24h)
-                        # Total    = [Double]($APIResponse.data.balances.$_.total) # total unpaid + total paid, reset after payout
+                        Balance  = [Double]$APIResponse.data.balances.$_.balance
+                        Unpaid   = [Double]$APIResponse.data.balances.$_.Unpaid
+                        Paid     = [Double]$APIResponse.data.balances.$_.paid24h
+                        # Total    = [Double]$APIResponse.data.balances.$_.total # total unpaid + total paid, reset after payout
                         Url      = $Url
                     }
                 }
             }
             ELse { 
                 # Remove non present (paid) balances
-                $Variables.BalanceData = $Variables.BalanceData | Where-Object Pool -ne $Name
+                $Variables.BalancesData = $Variables.BalancesData | Where-Object Pool -ne $Name
             }
         }
     }

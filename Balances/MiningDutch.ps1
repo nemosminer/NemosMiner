@@ -17,12 +17,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           MiningDutch.ps1
-Version:        4.3.5.1
-Version date:   08 July 2023
+File:           \Balances\MiningDutch.ps1
+Version:        4.3.6.0
+Version date:   31 July 2023
 #>
-
-using module ..\Includes\Include.psm1
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $RetryCount = 3
@@ -46,7 +44,7 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.MiningDutchAPIKey) 
                         $RetryCount = 3
 
                         If ($Config.LogBalanceAPIResponse) { 
-                            @{ $Currency = $APIResponse } | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name)_$($Currency).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+                            @{ $Currency = $APIResponse } | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name)_$($Currency).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
                         }
 
                         [PSCustomObject]@{ 
@@ -56,7 +54,7 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.MiningDutchAPIKey) 
                             Wallet          = $Config.MiningDutchUserName
                             Pending         = [Double]$APIResponse.unconfirmed
                             Balance         = [Double]$APIResponse.confirmed
-                            Unpaid          = ([Double]$APIResponse.confirmed + [Double]$APIResponse.unconfirmed)
+                            Unpaid          = [Double]$APIResponse.confirmed + [Double]$APIResponse.unconfirmed
                             Url             = "https://www.mining-dutch.nl//index.php?page=earnings"
                         }
                     }

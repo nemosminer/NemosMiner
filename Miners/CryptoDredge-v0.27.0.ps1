@@ -1,4 +1,27 @@
-If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "NVIDIA" -and [Double]$_.OpenCL.ComputeCapability -ge 5.0 -and $_.Architecture -ne "Other" })) { Return }
+<#
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
+
+NemosMiner is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+NemosMiner is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+#>
+
+<#
+Product:        NemosMiner
+Version:        4.3.6.0
+Version date:   31 July 2023
+#>
+
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" -and $_.Architecture -ne "Other" })) { Return }
 
 $Uri = Switch ($Variables.DriverVersion.CUDA) { 
     { $_ -ge "11.4" } { "https://github.com/CryptoDredge/miner/releases/download/v0.27.0/CryptoDredge_0.27.0_cuda_11.4_windows.zip"; Break }
@@ -21,7 +44,6 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightUpx";    Fee = 0.01; MinMemGiB = 2;    ExcludePool = @();                MinerSet = 0; WarmupTimes = @(30, 0);  Arguments = " --algo cnupx2 --intensity 8" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhv";    Fee = 0.01; MinMemGiB = 1;    ExcludePool = @();                Minerset = 2; WarmupTimes = @(75, 15); Arguments = " --algo cnhaven --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Ethash";            Fee = 0.01; MinMemGiB = 0.72; ExcludePool = @("MiningPoolHub"); Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo ethash" }
-#   [PSCustomObject]@{ Algorithm = "EthashLowMem";      Fee = 0.01; MinMemGiB = 0.72; ExcludePool = @("MiningPoolHub"); Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo ethash" }
     [PSCustomObject]@{ Algorithm = "FiroPow";           Fee = 0.01; MinMemGiB = 1.25; ExcludePool = @();                Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo firopow" }
     [PSCustomObject]@{ Algorithm = "KawPow";            Fee = 0.01; MinMemGiB = 0.72; ExcludePool = @();                Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo kawpow --intensity 8" } # TTMiner-v5.0.3 is fastest
 )
@@ -34,7 +56,7 @@ $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).BaseNam
 If ($Algorithms) { 
 
     $Algorithms | ForEach-Object { 
-        $_.MinMemGiB += $MinerPools[0].($_.Algorithm).DAGSizeGiB
+        $_.MinMemGiB += $AllMinerPools.($_.Algorithm).DAGSizeGiB
     }
 
     $Devices | Select-Object Model -Unique | ForEach-Object { 
@@ -49,14 +71,14 @@ If ($Algorithms) {
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB | Where-Object { [Double]$_.OpenCL.ComputeCapability -ge $MinComputeCapability }) { 
 
                 $Arguments = $_.Arguments
-                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)" -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo", "intensity") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $Arguments += " --url stratum+tcp://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts[0]) --user $($MinerPools[0].($_.Algorithm).User)"
-                If ($MinerPools[0].($_.Algorithm).WorkerName) { $Arguments += " --worker $($MinerPools[0].($_.Algorithm).WorkerName)" }
-                $Arguments += " --pass $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].($_.Algorithm).DAGSizeGiB))" })"
+                $Arguments += " --url stratum+tcp://$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts[0]) --user $($AllMinerPools.($_.Algorithm).User)"
+                If ($AllMinerPools.($_.Algorithm).WorkerName) { $Arguments += " --worker $($AllMinerPools.($_.Algorithm).WorkerName)" }
+                $Arguments += " --pass $($AllMinerPools.($_.Algorithm).Pass)"
 
                 [PSCustomObject]@{ 
                     Algorithms  = @($_.Algorithm)

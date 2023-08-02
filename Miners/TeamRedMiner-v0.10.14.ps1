@@ -1,3 +1,26 @@
+<#
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
+
+NemosMiner is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+NemosMiner is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+#>
+
+<#
+Product:        NemosMiner
+Version:        4.3.6.0
+Version date:   31 July 2023
+#>
+
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0" })) { Return }
 
 $Uri = "https://github.com/todxx/teamredminer/releases/download/v0.10.14/teamredminer-v0.10.14-win.zip"
@@ -11,7 +34,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Autolykos2", "IronFish");     Fee = @(0.025); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=autolykos2" } # Pools with support at this time are Herominers, Flexpool and Kryptex
     [PSCustomObject]@{ Algorithms = @("Chukwa");                     Fee = @(0.025); MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=trtl_chukwa" }
     [PSCustomObject]@{ Algorithms = @("Chukwa2");                    Fee = @(0.025); MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=trtl_chukwa2" }
-    [PSCustomObject]@{ Algorithms = @("CryptonightCcx");             Fee = @(0.025); MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" } # SRBMinerMulti-v2.3.0 is fastest
+    [PSCustomObject]@{ Algorithms = @("CryptonightCcx");             Fee = @(0.025); MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" } # SRBMinerMulti-v2.3.1 is fastest
     [PSCustomObject]@{ Algorithms = @("CryptonightHeavy");           Fee = @(0.025); MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_heavy --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
     [PSCustomObject]@{ Algorithms = @("CryptonightHaven");           Fee = @(0.025); MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_haven --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
     [PSCustomObject]@{ Algorithms = @("CryptonightHeavyTube");       Fee = @(0.025); MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_saber --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
@@ -28,11 +51,8 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Ethash");                     Fee = @(0.01);  MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 65);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=ethash" } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Fee = @(0.01);  MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 65);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=ethash" } # PhoenixMiner-v6.2c is fastest
 #   [PSCustomObject]@{ Algorithms = @("Ethash", "IronFish");         Fee = @(0.01);  MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 65);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=ethash" } # Pools with support at this time are Herominers, Flexpool and Kryptex
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem");               Fee = @(0.01);  MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 65);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=ethash" }
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "kHeavyHash"); Fee = @(0.01);  MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 65);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=ethash" }
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "IronFish");   Fee = @(0.01);  MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(45, 65);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=ethash" } # Pools with support at this time are Herominers, Flexpool and Kryptex
     [PSCustomObject]@{ Algorithms = @("FiroPow");                    Fee = @(0.02);  MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 65);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA3");                   Arguments = " --algo=firopow" } # Wildrig-v0.36.10is fastest on Polaris
-    [PSCustomObject]@{ Algorithms = @("IronFish");                   Fee = @(0.025); MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "_RDNA1", "_RDNA2", "_RDNA3"); Arguments = " --algo=ironfish" } # Pools with support at this time are Herominers, Flexpool and Kryptex
+    [PSCustomObject]@{ Algorithms = @("IronFish");                   Fee = @(0.025); MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "_RDNA1");                  Arguments = " --algo=ironfish" } # Pools with support at this time are Herominers, Flexpool and Kryptex
     [PSCustomObject]@{ Algorithms = @("KawPow");                     Fee = @(0.02);  MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 65);  ExcludePools = @(@("MiningPoolHub"), @()); ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA3");                   Arguments = " --algo=kawpow" } # Wildrig-v0.36.10is fastest on Polaris
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Fee = @(0.01);  MinMemGiB = 2.0;  MinerSet = 0; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=kas" }
 #   [PSCustomObject]@{ Algorithms = @("Lyra2Z");                     Fee = @(0.03);  MinMemGiB = 2.0;  MinerSet = 0; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=lyra2z" } # ASIC
@@ -54,7 +74,7 @@ $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).Bas
 If ($Algorithms) { 
 
     $Algorithms | ForEach-Object { 
-        $_.MinMemGiB += $MinerPools[0].($_.Algorithms[0]).DAGSizeGiB
+        $_.MinMemGiB += $AllMinerPools.($_.Algorithms[0]).DAGSizeGiB
     }
 
     $Devices | Select-Object Model -Unique | ForEach-Object { 
@@ -69,33 +89,28 @@ If ($Algorithms) {
                 $Algorithm0 = $_.Algorithms[0]
                 $Algorithm1 = $_.Algorithms[1]
                 $Arguments = $_.Arguments
-                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)$(If ($Algorithm1) { "-$($Algorithm0)&$($Algorithm1)" })" -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)$(If ($Algorithm1) { "-$($Algorithm0)&$($Algorithm1)" })" -replace ' '
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo", "autotune", "rig_id") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $Arguments += " --pool_force_ensub --url=$(If ($MinerPools[0].$Algorithm0.PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($MinerPools[0].$Algorithm0.Host):$($MinerPools[0].$Algorithm0.PoolPorts | Select-Object -Last 1)"
-                $Arguments += Switch ($MinerPools[0].$Algorithm0.Protocol) { 
+                $Arguments += " --pool_force_ensub --url=$(If ($AllMinerPools.$Algorithm0.PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($AllMinerPools.$Algorithm0.Host):$($AllMinerPools.$Algorithm0.PoolPorts | Select-Object -Last 1)"
+                $Arguments += Switch ($AllMinerPools.$Algorithm0.Protocol) { 
                     "ethstratumnh" { " --eth_stratum_mode=nicehash" }
                 }
-                $Arguments += " --user=$($MinerPools[0].$Algorithm0.User)$(If ($MinerPools[0].$Algorithm0.WorkerName) { ".$($MinerPools[0].$Algorithm0.WorkerName)" })"
-                $Arguments += " --pass=$($MinerPools[0].$Algorithm0.Pass)$(If ($MinerPools[0].$Algorithm0.BaseName -eq "ProHashing" -and $Algorithm0 -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].$Algorithm0.DAGSizeGiB))" })"
+                $Arguments += " --user=$($AllMinerPools.$Algorithm0.User)$(If ($AllMinerPools.$Algorithm0.WorkerName) { ".$($AllMinerPools.$Algorithm0.WorkerName)" })"
+                $Arguments += " --pass=$($AllMinerPools.$Algorithm0.Pass)"
 
-                If ($Algorithm1 -eq "kHeavyHash") { 
-                    $Arguments += " --kas" 
-                    $Arguments += " --url=$(If ($MinerPools[1].$Algorithm1.PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($MinerPools[1].$Algorithm1.Host):$($MinerPools[1].$Algorithm1.PoolPorts | Select-Object -Last 1)"
-                    $Arguments += " --user=$($MinerPools[1].$Algorithm1.User)$(If ($MinerPools[1].$Algorithm1.WorkerName) { ".$($MinerPools[1].$Algorithm1.WorkerName)" })"
-                    $Arguments += " --pass=$($MinerPools[1].$Algorithm1.Pass)"
-                    $Arguments += " --kas_end"
+                If ($Algorithm1 -eq "IronFish") { $Arguments += " --iron" }
+                If ($Algorithm1 -eq "kHeavyHash") { $Arguments += " --kas" }
+                If ($Algorithm1) { 
+                    $Arguments += " --url=$(If ($AllMinerPools.$Algorithm1.PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($AllMinerPools.$Algorithm1.Host):$($AllMinerPools.$Algorithm1.PoolPorts | Select-Object -Last 1)"
+                    $Arguments += " --user=$($AllMinerPools.$Algorithm1.User)$(If ($AllMinerPools.$Algorithm1.WorkerName) { ".$($AllMinerPools.$Algorithm1.WorkerName)" })"
+                    $Arguments += " --pass=$($AllMinerPools.$Algorithm1.Pass)"
                 }
-                If ($Algorithm1 -eq "IronFish") { 
-                    $Arguments += " --iron" 
-                    $Arguments += " --url=$(If ($MinerPools[1].$Algorithm1.PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($MinerPools[1].$Algorithm1.Host):$($MinerPools[1].$Algorithm1.PoolPorts | Select-Object -Last 1)"
-                    $Arguments += " --user=$($MinerPools[1].$Algorithm1.User)$(If ($MinerPools[1].$Algorithm1.WorkerName) { ".$($MinerPools[1].$Algorithm1.WorkerName)" })"
-                    $Arguments += " --pass=$($MinerPools[1].$Algorithm1.Pass)"
-                    $Arguments += " --iron_end"
-                }
-                
+                If ($Algorithm1 -eq "IronFish") { $Arguments += " --iron_end" }
+                If ($Algorithm1 -eq "kHeavyHash") { $Arguments += " --kas_end" }
+
                 If ($Algorithm0 -match "^Et(c)hash.+" -and $AvailableMiner_Devices.Model -notmatch "^Radeon RX [0-9]{3} ") { $_.Fee = @(0.0075) } # Polaris cards 0.75%
 
                 If ($Algorithm1 -eq "VertHash" -and (Get-Item -Path $Variables.VerthashDatPath -ErrorAction Ignore).length -ne 1283457024) { 

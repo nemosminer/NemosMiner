@@ -1,4 +1,27 @@
-If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "NVIDIA")) { Return }
+<#
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
+
+NemosMiner is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+NemosMiner is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+#>
+
+<#
+Product:        NemosMiner
+Version:        4.3.6.0
+Version date:   31 July 2023
+#>
+
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
 
 $Uri = "https://github.com/trexminer/T-Rex/releases/download/0.26.8/t-rex-0.26.8-win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
@@ -16,7 +39,6 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Ethash", "FiroPow");    Fee = @(0.01, 0.01); MinMemGiB = 10;   Minerset = 2; Tuning = " --mt 3"; WarmupTimes = @(255, 15); Arguments = " --algo ethash --dual-algo firopow --lhr-tune -1" }
     [PSCustomObject]@{ Algorithms = @("Ethash", "KawPow");     Fee = @(0.01, 0.01); MinMemGiB = 10;   Minerset = 2; Tuning = " --mt 3"; WarmupTimes = @(255, 15); Arguments = " --algo ethash --dual-algo kawpow --lhr-tune -1" }
     [PSCustomObject]@{ Algorithms = @("Ethash", "Octopus");    Fee = @(0.01, 0.02); MinMemGiB = 8;    Minerset = 2; Tuning = " --mt 3"; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --dual-algo octopus --lhr-tune -1" }
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem");         Fee = @(0.01);       MinMemGiB = 1.08; Minerset = 2; Tuning = " --mt 3"; WarmupTimes = @(60, 15);  Arguments = " --algo ethash --intensity 25" } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithms = @("FiroPow");              Fee = @(0.01);       MinMemGiB = 1.08; Minerset = 1; Tuning = " --mt 3"; WarmupTimes = @(60, 30);  Arguments = " --algo firopow --intensity 25" }
     [PSCustomObject]@{ Algorithms = @("KawPow");               Fee = @(0.01);       MinMemGiB = 1.08; Minerset = 1; Tuning = " --mt 3"; WarmupTimes = @(45, 20);  Arguments = " --algo kawpow --intensity 25" } # XmRig-v6.20.0 is almost as fast but has no fee
     [PSCustomObject]@{ Algorithms = @("MTP");                  Fee = @(0.01);       MinMemGiB = 3;    Minerset = 2; Tuning = " --mt 3"; WarmupTimes = @(30, 15);  Arguments = " --algo mtp --intensity 21" } # Algorithm is dead
@@ -36,7 +58,7 @@ $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).Poo
 If ($Algorithms) { 
 
     $Algorithms | ForEach-Object { 
-        $_.MinMemGiB += $MinerPools[0].($_.Algorithms[0]).DAGSizeGiB
+        $_.MinMemGiB += $AllMinerPools.($_.Algorithms[0]).DAGSizeGiB
     }
 
     $Devices | Select-Object Model -Unique | ForEach-Object { 
@@ -51,41 +73,41 @@ If ($Algorithms) {
                 $Algorithm0 = $_.Algorithms[0]
                 $Algorithm1 = $_.Algorithms[1]
                 $Arguments = $_.Arguments
-                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)$(If ($Algorithm1) { "-$($Algorithm0)&$($Algorithm1)" })" -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)$(If ($Algorithm1) { "-$($Algorithm0)&$($Algorithm1)" })" -replace ' '
 
                 If ($AvailableMiner_Devices | Where-Object MemoryGiB -le 2) { $Arguments = $Arguments -replace " --intensity [0-9\.]+" }
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo", "dual-algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $Arguments += Switch ($MinerPools[0].$Algorithm0.Protocol) { 
+                $Arguments += Switch ($AllMinerPools.$Algorithm0.Protocol) { 
                     "ethstratum1"  { " --url stratum2"; Break }
                     "ethstratum2"  { " --url stratum2"; Break }
                     "ethstratumnh" { " --url stratum2"; Break }
                     Default        { " --url stratum" }
                 }
-                $Arguments += If ($MinerPools[0].$Algorithm0.PoolPorts[1]) { "+ssl" } Else { "+tcp" }
-                $Arguments += "://$($MinerPools[0].$Algorithm0.Host):$($MinerPools[0].$Algorithm0.PoolPorts | Select-Object -Last 1)"
-                $Arguments += " --user $($MinerPools[0].$Algorithm0.User)"
-                $Arguments += " --pass $($MinerPools[0].$Algorithm0.Pass)$(If ($MinerPools[0].$Algorithm0.BaseName -eq "ProHashing" -and $_.Algorithms -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].$Algorithm0.DAGSizeGiB))" })"
-                If ($MinerPools[0].$Algorithm0.WorkerName) { $Arguments += " --worker $($MinerPools[0].$Algorithm0.WorkerName)" }
+                $Arguments += If ($AllMinerPools.$Algorithm0.PoolPorts[1]) { "+ssl" } Else { "+tcp" }
+                $Arguments += "://$($AllMinerPools.$Algorithm0.Host):$($AllMinerPools.$Algorithm0.PoolPorts | Select-Object -Last 1)"
+                $Arguments += " --user $($AllMinerPools.$Algorithm0.User)"
+                $Arguments += " --pass $($AllMinerPools.$Algorithm0.Pass)"
+                If ($AllMinerPools.$Algorithm0.WorkerName) { $Arguments += " --worker $($AllMinerPools.$Algorithm0.WorkerName)" }
 
-                If ($MinerPools[0].$Algorithm0.Currency -in @("CLO", "ETC", "ETH", "ETHW", "ETP", "EXP", "MUSIC", "PIRL", "RVN", "TCR", "UBQ", "VBK", "ZCOIN", "ZELS")) { 
-                    $Arguments += " --coin $($MinerPools[0].$Algorithm0.Currency)"
+                If ($AllMinerPools.$Algorithm0.Currency -in @("CLO", "ETC", "ETH", "ETHW", "ETP", "EXP", "MUSIC", "PIRL", "RVN", "TCR", "UBQ", "VBK", "ZCOIN", "ZELS")) { 
+                    $Arguments += " --coin $($AllMinerPools.$Algorithm0.Currency)"
                 }
 
                 If ($Algorithm1) { 
-                    $Arguments += Switch ($MinerPools[1].$Algorithm1.Protocol) { 
+                    $Arguments += Switch ($AllMinerPools.$Algorithm1.Protocol) { 
                         "ethstratum1"  { " --url2 stratum2"; Break }
                         "ethstratum2"  { " --url2 stratum2"; Break }
                         "ethstratumnh" { " --url2 stratum2"; Break }
                         Default        { " --url2 stratum" }
                     }
-                    $Arguments += If ($MinerPools[1].$Algorithm1.PoolPorts[1]) { "+ssl" } Else { "+tcp" }
-                    $Arguments += "://$($MinerPools[1].$Algorithm1.Host):$($MinerPools[1].$Algorithm1.PoolPorts | Select-Object -Last 1)"
-                    $Arguments += " --user2 $($MinerPools[1].$Algorithm1.User)"
-                    $Arguments += " --pass2 $($MinerPools[1].$Algorithm1.Pass)$(If ($MinerPools[1].$Algorithm1.BaseName -eq "ProHashing" -and $_.Algorithms -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].$Algorithm1.DAGSizeGiB))" })"
-                    If ($MinerPools[1].$Algorithm1.WorkerName) { $Arguments += " --worker2 $($MinerPools[1].$Algorithm1.WorkerName)" }
+                    $Arguments += If ($AllMinerPools.$Algorithm1.PoolPorts[1]) { "+ssl" } Else { "+tcp" }
+                    $Arguments += "://$($AllMinerPools.$Algorithm1.Host):$($AllMinerPools.$Algorithm1.PoolPorts | Select-Object -Last 1)"
+                    $Arguments += " --user2 $($AllMinerPools.$Algorithm1.User)"
+                    $Arguments += " --pass2 $($AllMinerPools.$Algorithm1.Pass)"
+                    If ($AllMinerPools.$Algorithm1.WorkerName) { $Arguments += " --worker2 $($AllMinerPools.$Algorithm1.WorkerName)" }
                 }
 
                 # Apply tuning parameters

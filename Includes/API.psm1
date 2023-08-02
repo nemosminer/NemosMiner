@@ -17,9 +17,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           API.psm1
-Version:        4.3.5.1
-Version date:   08 July 2023
+File:           \Includes\API.psm1
+Version:        4.3.6.0
+Version date:   31 July 2023
 #>
 
 Function Start-APIServer { 
@@ -49,6 +49,9 @@ Function Start-APIServer {
 
             # Setup runspace to launch the API webserver in a separate thread
             $Variables.APIRunspace = [RunspaceFactory]::CreateRunspace()
+            $Variables.APIRunspace.ApartmentState = "STA"
+            $Variables.APIRunspace.Name = "APIServer"
+            $Variables.APIRunspace.ThreadOptions = "ReuseThread"
             $Variables.APIRunspace.Open()
             Get-Variable -Scope Global | Where-Object Name -in @("Config", "Stats", "Variables") | ForEach-Object { 
                 $Variables.APIRunspace.SessionStateProxy.SetVariable($_.Name, $_.Value)
@@ -96,7 +99,7 @@ Function Start-APIServer {
                         # Determine the requested resource and parse query strings
                         $Path = $Request.Url.LocalPath
 
-                        If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore}
+                        If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore }
 
                         If ($Request.HttpMethod -eq "GET") { 
                             # Parse any parameters in the URL - $Request.Url.Query looks like "+ ?a=b&c=d&message=Hello%20world"
@@ -143,8 +146,8 @@ Function Start-APIServer {
                         Switch ($Path) { 
                             "/functions/algorithm/disable" { 
                                 # Disable algorithm@pool in poolsconfig.json
-                                $PoolBaseNames = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).BaseName
-                                $Algorithms = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).Algorithm
+                                $PoolBaseNames = @($Parameters.Pools | ConvertFrom-Json  -ErrorAction Ignore).BaseName
+                                $Algorithms = @($Parameters.Pools | ConvertFrom-Json  -ErrorAction Ignore).Algorithm
                                 If ($Pools = @($Variables.Pools | Where-Object { $_.BaseName -in $PoolBaseNames -and $_.Algorithm -in $Algorithms })) { 
                                     $PoolsConfig = Get-Content -Path $Config.PoolsConfigFile | ConvertFrom-Json
                                     ForEach ($Pool in $Pools) { 
@@ -172,8 +175,8 @@ Function Start-APIServer {
                             }
                             "/functions/algorithm/enable" { 
                                 # Enable algorithm@pool in poolsconfig.json
-                                $PoolBaseNames = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).BaseName
-                                $Algorithms = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).Algorithm
+                                $PoolBaseNames = @($Parameters.Pools | ConvertFrom-Json  -ErrorAction Ignore).BaseName
+                                $Algorithms = @($Parameters.Pools | ConvertFrom-Json  -ErrorAction Ignore).Algorithm
                                 If ($Pools = @($Variables.Pools | Where-Object { $_.BaseName -in $PoolBaseNames -and $_.Algorithm -in $Algorithms })) { 
                                     $PoolsConfig = Get-Content -Path $Config.PoolsConfigFile | ConvertFrom-Json
                                     ForEach ($Pool in $Pools) { 
@@ -205,10 +208,10 @@ Function Start-APIServer {
                             }
                             "/functions/balancedata/remove" { 
                                 If ($Parameters.Data) { 
-                                    $BalanceDataEntries = $Variables.BalanceData
-                                    $Variables.BalanceData = @((Compare-Object $Variables.BalanceData @($Parameters.Data | ConvertFrom-Json -ErrorAction SilentlyContinue) -PassThru -Property DateTime, Pool, Currency, Wallet) | Where-Object SideIndicator -eq "<=" | Select-Object -ExcludeProperty SideIndicator)
-                                    $Variables.BalanceData | ConvertTo-Json | Out-File ".\Data\BalancesTrackerData.json"
-                                    $RemovedEntriesCount = $BalanceDataEntries.Count - $Variables.BalanceData.Count
+                                    $BalanceDataEntries = $Variables.BalancesData
+                                    $Variables.BalancesData = @((Compare-Object $Variables.BalancesData @($Parameters.Data | ConvertFrom-Json  -ErrorAction Ignore) -PassThru -Property DateTime, Pool, Currency, Wallet) | Where-Object SideIndicator -eq "<=" | Select-Object -ExcludeProperty SideIndicator)
+                                    $Variables.BalancesData | ConvertTo-Json | Out-File ".\Data\BalancesTrackerData.json"
+                                    $RemovedEntriesCount = $BalanceDataEntries.Count - $Variables.BalancesData.Count
                                     If ($RemovedEntriesCount-gt 0) { 
                                         $Message = "$RemovedEntriesCount $(If ($RemovedEntriesCount -eq 1) { "balance data entry" } Else { "balance data entries" }) removed."
                                         Write-Message -Level Verbose "Web GUI: $Message"
@@ -338,7 +341,6 @@ Function Start-APIServer {
                             }
                             "/functions/file/showcontent" {
                                 $Data = (Get-Content -Path $Parameters.FileName -Raw)
-                                # $Data = (Get-Content -Path $Parameters.FileName -Raw) -replace "(?<!\x0d)\x0a", "<br>"
                                 $ContentType = "text/html"
                                 Break
                             }
@@ -398,9 +400,9 @@ Function Start-APIServer {
                             }
                             "/functions/stat/disable" { 
                                 If ($Parameters.Pools) { 
-                                    $Names = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).Name
-                                    $Algorithms = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).Algorithm
-                                    $Currencies = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).Currency
+                                    $Names = @($Parameters.Pools | ConvertFrom-Json  -ErrorAction Ignore).Name
+                                    $Algorithms = @($Parameters.Pools | ConvertFrom-Json  -ErrorAction Ignore).Algorithm
+                                    $Currencies = @($Parameters.Pools | ConvertFrom-Json  -ErrorAction Ignore).Currency
                                     If ($Pools = @($Variables.Pools | Select-Object | Where-Object { $_.Name -in $Names -and $_.Algorithm -in $Algorithms -and $_.Currency -in $Currencies })) { 
                                         $Pools | ForEach-Object { 
                                             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
@@ -421,13 +423,12 @@ Function Start-APIServer {
                                     Break
                                 }
                                 ElseIf ($Parameters.Miners) { 
-                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithms)) { 
+                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json  -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
                                         $Miners | Sort-Object Name, Algorithms | ForEach-Object { 
                                             $Data += "$($_.Name) ($($_.Algorithms -join " & "))`n"
                                             ForEach ($Worker in $_.Workers) { 
                                                 Disable-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
-                                                $W
-                                                orker.Hashrate = [Double]::NaN
+                                                $Worker.Hashrate = [Double]::NaN
                                             }
                                             Remove-Variable Worker
                                             $_.Disabled = $true
@@ -447,9 +448,9 @@ Function Start-APIServer {
                             }
                             "/functions/stat/enable" { 
                                 If ($Parameters.Pools) { 
-                                    $Names = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).Name
-                                    $Algorithms = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).Algorithm
-                                    $Currencies = @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue).Currency
+                                    $Names = @($Parameters.Pools | ConvertFrom-Json  -ErrorAction Ignore).Name
+                                    $Algorithms = @($Parameters.Pools | ConvertFrom-Json  -ErrorAction Ignore).Algorithm
+                                    $Currencies = @($Parameters.Pools | ConvertFrom-Json  -ErrorAction Ignore).Currency
                                     If ($Pools = @($Variables.Pools | Select-Object | Where-Object { $_.Name -in $Names -and $_.Algorithm -in $Algorithms -and $_.Currency -in $Currencies})) { 
                                         $Pools | ForEach-Object { 
                                             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
@@ -470,7 +471,7 @@ Function Start-APIServer {
                                     Break
                                 }
                                 ElseIf ($Parameters.Miners) { 
-                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithms)) { 
+                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json  -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
                                         $Miners | Sort-Object Name, Algorithms | ForEach-Object { 
                                             $Data += "$($_.Name) ($($_.Algorithms -join " & "))`n"
                                             ForEach ($Worker in $_.Workers) { 
@@ -494,7 +495,7 @@ Function Start-APIServer {
                                 }
                             }
                             "/functions/stat/get" { 
-                                $TempStats = @(If ($null -ne $Parameters.Value) { @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Live -eq $Parameters.Value } | ForEach-Object { $Stats.$_ }) } Else { @($Stats) })
+                                $TempStats = @(If ($null -ne $Parameters.Value) { @($Stats.psBase.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats[$_].Live -eq $Parameters.Value } | ForEach-Object { $Stats[$_] }) } Else { @($Stats) })
 
                                 If ($TempStats) { 
                                     If ($null -ne $Parameters.Value) { 
@@ -513,7 +514,7 @@ Function Start-APIServer {
                             }
                             "/functions/stat/remove" { 
                                 If ($Parameters.Pools) { 
-                                    If ($Pools = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Algorithm, Currency, Name)) { 
+                                    If ($Pools = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @($Parameters.Pools | ConvertFrom-Json  -ErrorAction Ignore | Select-Object) -Property Algorithm, Currency, Name)) { 
                                         $Pools | Sort-Object Name | ForEach-Object { 
                                             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
                                             $Data += "$($Stat_Name)`n"
@@ -533,7 +534,7 @@ Function Start-APIServer {
                                     Break
                                 }
                                 ElseIf ($Parameters.Miners -and $Parameters.Type -eq "Hashrate") { 
-                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithms)) { 
+                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json  -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
                                         $Miners | Sort-Object Name, Algorithms | ForEach-Object { 
                                             $_.Activated = 0 # To allow 3 attempts
                                             $_.Available = $true
@@ -565,7 +566,7 @@ Function Start-APIServer {
                                     Break
                                 }
                                 ElseIf ($Parameters.Miners -and $Parameters.Type -eq "PowerUsage") { 
-                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithms)) { 
+                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json  -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
                                         $Miners | Sort-Object Name, Algorithms | ForEach-Object { 
                                             If ($_.Earning -eq 0) { $_.Available = $true }
                                             If ($Variables.CalculatePowerCost) { 
@@ -587,14 +588,14 @@ Function Start-APIServer {
                                     }
                                     Break
                                 }
-                                If ($Parameters.Value) { $TempStats = @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats.$_.Live -eq $Parameters.Value } | ForEach-Object { $Stats.$_ }) }
-                                Else { $TempStats = @($Stats.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | ForEach-Object { $Stats.$_ }) } 
+                                If ($Parameters.Value) { $TempStats = @($Stats.psBase.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | Where-Object { $Stats[$_].Live -eq $Parameters.Value } | ForEach-Object { $Stats[$_] }) }
+                                Else { $TempStats = @($Stats.psBase.Keys | Where-Object { $_ -like "*$($Parameters.Type)" } | ForEach-Object { $Stats[$_] }) } 
                                 If ($TempStats) {
                                     $TempStats | Sort-Object Name | ForEach-Object { 
                                         Remove-Stat -Name $_.Name
                                         $Data += "$($_.Name -replace "_$($Parameters.Type)")`n"
                                     }
-                                    Write-Message -Level Info "Web GUI: Removed $($TempStats.Count) $($Parameters.Type.ToLower()) stat file$(If ($TempStats.Count -ne 1) { "s" })."
+                                    Write-Message -Level Info "Web GUI: Removed $($TempStats.Count)$(If ($Parameters.Type) { " $($Parameters.Type.ToLower())" }) stat file$(If ($TempStats.Count -ne 1) { "s" })."
                                     If ($Parameters.Type -eq "Hashrate") { $Data += "`nReset $($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)H/s $($Parameters.Type)." }
                                     ElseIf ($Parameters.Type -eq "PowerUsage") { $Data += "`nReset $($TempStats.Count) stat file$(if ($TempStats.Count -ne 1) { "s" }) with $($Parameters.Value)W $($Parameters.Type)." }
                                     ElseIf ($Parameters.Type -eq "Profit") { $Data += "`nReset $($TempStats.Count) pool stat file$(if ($TempStats.Count -ne 1) { "s" })." }
@@ -606,7 +607,7 @@ Function Start-APIServer {
                             }
                             "/functions/stat/set" { 
                                 If ($Parameters.Miners -and $Parameters.Type -eq "Hashrate" -and $null -ne $Parameters.Value) { 
-                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue | Select-Object) -Property Name, Algorithms)) {
+                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json  -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) {
                                         $Miners | Sort-Object Name, Algorithms | ForEach-Object {
                                             $_.Data = @()
                                             If ($Parameters.Value -le 0 -and $Parameters.Type -eq "Hashrate") { $_.Available = $false; $_.Disabled = $true }
@@ -646,12 +647,12 @@ Function Start-APIServer {
                                     $Data = $Variables.($Key -replace '\\|/','.' -split '\.' | Select-Object -Last 1) | Get-SortedObject | ConvertTo-Json -Depth 10
                                 }
                                 Else { 
-                                    $Data = $Variables.Keys | Sort-Object | ConvertTo-Json -Depth 1
+                                    $Data = $Variables.psBase.Keys | Sort-Object | ConvertTo-Json -Depth 1
                                 }
                                 Break
                             }
                             "/functions/watchdogtimers/remove" { 
-                                ForEach ($Miner in ($Parameters.Miners | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
+                                ForEach ($Miner in ($Parameters.Miners | ConvertFrom-Json  -ErrorAction Ignore)) { 
                                     If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object MinerName -EQ $Miner.Name | Where-Object { $_.Algorithm -in $Miner.Algorithms })) {
                                         # Remove Watchdog timers
                                         $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
@@ -665,7 +666,7 @@ Function Start-APIServer {
                                     }
                                 }
                                 Remove-Variable Miner
-                                ForEach ($Pool in ($Parameters.Pools | ConvertFrom-Json -ErrorAction SilentlyContinue)) { 
+                                ForEach ($Pool in ($Parameters.Pools | ConvertFrom-Json  -ErrorAction Ignore)) { 
                                     If ($WatchdogTimers = @($Variables.WatchdogTimers | Where-Object PoolName -EQ $Pool.Name | Where-Object Algorithm -EQ $Pool.Algorithm)) {
                                         # Remove Watchdog timers
                                         $Variables.WatchdogTimers = @($Variables.WatchdogTimers | Where-Object { $_ -notin $WatchdogTimers })
@@ -720,7 +721,7 @@ Function Start-APIServer {
                                 Break
                             }
                             "/balancedata" { 
-                                $Data = ConvertTo-Json -Depth 10 @($Variables.BalanceData | Sort-Object DateTime -Descending)
+                                $Data = ConvertTo-Json -Depth 10 @($Variables.BalancesData | Sort-Object DateTime -Descending)
                                 Break
                             }
                             "/btc" { 
@@ -955,7 +956,7 @@ Function Start-APIServer {
                                 break
                             }
                             "/regions" { 
-                                $Data = ConvertTo-Json -Depth 10 @($Variables.Regions.PSObject.Properties.Value | Sort-Object -Unique)
+                                $Data = ConvertTo-Json -Depth 10 @($Variables.Regions[0] | Sort-Object)
                                 Break
                             }
                             "/regionsdata" { 
@@ -1085,7 +1086,7 @@ Function Start-APIServer {
                 }
             ) | Out-Null # End of $APIServer
 
-            $Variables.APIRunspace | Add-Member -Force @{ Name = ""; PowerShell = $PowerShell; StartTime = $((Get-Date).ToUniversalTime()) }
+            $Variables.APIRunspace | Add-Member -Force @{ PowerShell = $PowerShell; StartTime = $((Get-Date).ToUniversalTime()) }
 
             $null = $PowerShell.BeginInvoke()
 
@@ -1120,6 +1121,8 @@ Function Stop-APIServer {
         If ($Variables.APIRunspace.PowerShell) { $Variables.APIRunspace.PowerShell.Dispose() }
         $Variables.APIRunspace.Close()
         $Variables.Remove("APIRunspace")
+
+        $Error.Clear()
+        #[System.GC]::Collect()
     }
-    [System.GC]::GetTotalMemory("forcefullcollection") | Out-Null
 }

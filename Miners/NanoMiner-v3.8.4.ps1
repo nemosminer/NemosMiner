@@ -1,4 +1,27 @@
-If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -ne "NVIDIA" -or $_.OpenCL.DriverVersion -ge "455.23" })) { Return }
+<#
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
+
+NemosMiner is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+NemosMiner is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+#>
+
+<#
+Product:        NemosMiner
+Version:        4.3.6.0
+Version date:   31 July 2023
+#>
+
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -ne "NVIDIA" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge "455.23") })) { Return }
 
 $Uri = "https://github.com/nanopool/nanominer/releases/download/v3.8.4/nanominer-windows-3.8.4.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
@@ -12,8 +35,6 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");      Type = "AMD"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @(); Arguments = @(" -algo Etchash"," -algo Kaspa") } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithms = @("Ethash");                     Type = "AMD"; Fee = 0.01;  MinMemGiB = 1.08; Minerset = 2; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @(); Arguments = @(" -algo Ethash") } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Type = "AMD"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @(); Arguments = @(" -algo Ethash"," -algo Kaspa") } # PhoenixMiner-v6.2c is fastest
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem");               Type = "AMD"; Fee = 0.01;  MinMemGiB = 1.08; Minerset = 2; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @(); Arguments = @(" -algo Ethash") } # PhoenixMiner-v6.2c is fastest
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "kHeavyHash"); Type = "AMD"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @(); Arguments = @(" -algo Ethash"," -algo Kaspa") } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithms = @("EvrProgPow");                 Type = "AMD"; Fee = 0.02;  MinMemGiB = 1.08; Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @(); Arguments = @(" -algo Evrprogpow") }
     [PSCustomObject]@{ Algorithms = @("FiroPow");                    Type = "AMD"; Fee = 0.01;  MinMemGiB = 1.08; Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @(); Arguments = @(" -algo FiroPow") }
     [PSCustomObject]@{ Algorithms = @("KawPow");                     Type = "AMD"; Fee = 0.02;  MinMemGiB = 1.08; Minerset = 2; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@("HashCryptos", "MiningDutch", "ProHashing"), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -algo KawPow") } # TeamRedMiner-v0.10.14 is fastest
@@ -28,8 +49,6 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");      Type = "INTEL"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(45, 45); ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @(); Arguments = @(" -algo Etchash", " -algo Kaspa") }
     [PSCustomObject]@{ Algorithms = @("Ethash");                     Type = "INTEL"; Fee = 0.01;  MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @(); Arguments = @(" -algo Ethash") }
     [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Type = "INTEL"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @(); Arguments = @(" -algo Ethash", " -algo Kaspa") }
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem");               Type = "INTEL"; Fee = 0.01;  MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @(); Arguments = @(" -algo Ethash") }
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "kHeavyHash"); Type = "INTEL"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @(); Arguments = @(" -algo Ethash"," -algo Kaspa") }
     [PSCustomObject]@{ Algorithms = @("EvrProgPow");                 Type = "INTEL"; Fee = 0.02;  MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @(); Arguments = @(" -algo Evrprogpow") }
     [PSCustomObject]@{ Algorithms = @("KawPow");                     Type = "INTEL"; Fee = 0.02;  MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(@("HashCryptos", "MiningDutch", "ProHashing"), @()); ExcludeGPUArchitecture = @(); Arguments = @(" -algo KawPow") } # Trex-v0.26.8 is fastest
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Type = "INTEL"; Fee = 0.02;  MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @(); Arguments = @(" -algo Kaspa") }
@@ -42,8 +61,6 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");      Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @();        Arguments = @(" -algo Etchash", " -algo Kaspa") } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithms = @("Ethash");                     Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.08; MinerSet = 2; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @("Other"); Arguments = @(" -algo Ethash") } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; MinerSet = 2; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @("Other"); Arguments = @(" -algo Ethash", " -algo Kaspa") } # PhoenixMiner-v6.2c is fastest
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem");               Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.08; Minerset = 2; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @("Other"); Arguments = @(" -algo Ethash") } # TTMiner-v5.0.3 is fastest
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "kHeavyHash"); Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.24; Minerset = 2; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @("Other"); Arguments = @(" -algo Ethash", " -algo Kaspa") } # TTMiner-v5.0.3 is fastest
     [PSCustomObject]@{ Algorithms = @("EvrProgPow");                 Type = "NVIDIA"; Fee = 0.02;  MinMemGiB = 1.08; Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @();        Arguments = @(" -algo Evrprogpow") }
     [PSCustomObject]@{ Algorithms = @("FiroPow");                    Type = "NVIDIA"; Fee = 0.01;  MinMemGiB = 1.08; MinerSet = 0; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @();        Arguments = @(" -algo FiroPow") }
     [PSCustomObject]@{ Algorithms = @("KawPow");                     Type = "NVIDIA"; Fee = 0.02;  MinMemGiB = 1.08; MinerSet = 0; Tuning = " -coreClocks +20 -memClocks +100"; WarmupTimes = @(45, 0);  ExcludePools = @(@("HashCryptos", "MiningDutch", "ProHashing"), @()); ExcludeGPUArchitecture = @();        Arguments = @(" -algo KawPow") } # Trex-v0.26.8 is fastest
@@ -60,7 +77,7 @@ $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).Bas
 If ($Algorithms) { 
 
     $Algorithms | Where-Object MinMemGiB | ForEach-Object { 
-        $_.MinMemGiB += $MinerPools[0].($_.Algorithms[0]).DAGSizeGiB
+        $_.MinMemGiB += $AllMinerPools.($_.Algorithms[0]).DAGSizeGiB
     }
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
@@ -75,7 +92,7 @@ If ($Algorithms) {
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or $_.MemoryGiB -ge $MinMemGiB } | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
 
                 $Arguments = ""
-                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })" -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })" -replace ' '
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algorithm") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
@@ -83,13 +100,13 @@ If ($Algorithms) {
                 $Index = 0
                 ForEach ($Algorithm in $_.Algorithms) { 
 
-                    $WorkerName = If ($MinerPools[$Index].$Algorithm.WorkerName) { "$($MinerPools[$Index].$Algorithm.WorkerName)" } Else { $MinerPools[$Index].$Algorithm.User -split "\." | Select-Object -Last 1 }
+                    $WorkerName = If ($AllMinerPools.$Algorithm.WorkerName) { "$($AllMinerPools.$Algorithm.WorkerName)" } Else { $AllMinerPools.$Algorithm.User -split "\." | Select-Object -Last 1 }
 
                     $Arguments += "$($_.Arguments[$Index])"
-                    $Arguments += If ($MinerPools[$Index].$Algorithm.PoolPorts[1] -and $MinerPools[$Index].$Algorithm.SSLSelfSignedCertificate -eq $false) { " -pool1 $($MinerPools[$Index].$Algorithm.Host):$($MinerPools[$Index].$Algorithm.PoolPorts[1])" } Else { " -pool1 $($MinerPools[$Index].$Algorithm.Host):$($MinerPools[$Index].$Algorithm.PoolPorts[0]) -useSSL false" }
-                    $Arguments += " -wallet $($MinerPools[$Index].$Algorithm.User -replace "\.$WorkerName")"
+                    $Arguments += If ($AllMinerPools.$Algorithm.PoolPorts[1] -and $AllMinerPools.$Algorithm.SSLSelfSignedCertificate -eq $false) { " -pool1 $($AllMinerPools.$Algorithm.Host):$($AllMinerPools.$Algorithm.PoolPorts[1])" } Else { " -pool1 $($AllMinerPools.$Algorithm.Host):$($AllMinerPools.$Algorithm.PoolPorts[0]) -useSSL false" }
+                    $Arguments += " -wallet $($AllMinerPools.$Algorithm.User -replace "\.$WorkerName")"
                     $Arguments += " -rigName '$WorkerName'"
-                    $Arguments += " -rigPassword $($MinerPools[$Index].$Algorithm.Pass)$(If ($MinerPools[$Index].$Algorithm.BaseName -eq "ProHashing" -and $_.Algorithms[$Index] -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].$Algorithm.DAGSizeGiB))" })"
+                    $Arguments += " -rigPassword $($AllMinerPools.$Algorithm.Pass)"
                     $Arguments += " -devices $(($AvailableMiner_Devices | Sort-Object Name -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')"
 
                     $Index ++

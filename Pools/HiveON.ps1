@@ -18,12 +18,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           Hiveon.ps1
-Version:        4.3.5.1
-Version date:   08 July 2023
+File:           \Pools\Hiveon.ps1
+Version:        4.3.6.0
+Version date:   31 July 2023
 #>
-
-using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
@@ -34,12 +32,13 @@ param(
 $ProgressPreference = "SilentlyContinue"
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
+
 $PoolConfig = $Variables.PoolsConfig.$Name
 
 If ($PoolConfig.Wallets) { 
 
-    $StartTime = (Get-Date)
     Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
+    $StartTime = (Get-Date)
 
     $APICallFails = 0
 
@@ -57,46 +56,48 @@ If ($PoolConfig.Wallets) {
 
     $Request.cryptoCurrencies | Where-Object { $Variables.Rates.($_.name).BTC } | ForEach-Object { 
         $Currency = "$($_.name)".Trim()
-        $Algorithm_Norm = Get-AlgorithmFromCurrency $Currency
-        $Divisor = [Double]$_.profitPerPower
+        If ($Algorithm_Norm = Get-AlgorithmFromCurrency $Currency) { 
+            $Divisor = [Double]$_.profitPerPower
 
-        # Add coin name
-        If ($_.title -and $Currency) { 
-            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $_.title.Trim().ToLower()
-        }
+            # Add coin name
+            If ($_.title -and $Currency) { 
+                [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $_.title.Trim().ToLower())
+            }
 
-        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
+            $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
 
-        $Reasons = [System.Collections.Generic.List[String]]@()
-        If ($Request.stats.($_.name).hashrate -eq 0) { $Reasons.Add("No hashrate at pool") }
+            $Reasons = [System.Collections.Generic.List[String]]@()
+            If ($Request.stats.($_.name).hashrate -eq 0) { $Reasons.Add("No hashrate at pool") }
 
-        [PSCustomObject]@{ 
-            Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
-            Algorithm                = [String]$Algorithm_Norm
-            BaseName                 = [String]$Name
-            Currency                 = [String]$Currency
-            Disabled                 = [Boolean]$Stat.Disabled
-            EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-            Fee                      = 0
-            Host                     = [String]$_.servers[0].host
-            Name                     = [String]$PoolVariant
-            Pass                     = "x"
-            Port                     = If ($PoolConfig.SSL -eq "Always") { 0 } Else { [UInt16]$_.servers[0].ports[0] }
-            PortSSL                  = If ($PoolConfig.SSL -eq "Never") { 0 } Else { [UInt16]$_.servers[0].ssl_ports[0] }
-            Price                    = [Double]$Stat.Live
-            Protocol                 = "ethproxy"
-            Reasons                  = $Reasons
-            Region                   = [String]$PoolConfig.Region
-            SendHashrate             = $false
-            SSLSelfSignedCertificate = $false
-            StablePrice              = [Double]$Stat.Week
-            Updated                  = [DateTime]$Stat.Updated
-            User                     = If ($PoolConfig.Wallets.$Currency) { "$($PoolConfig.Wallets.$Currency).$($PoolConfig.WorkerName)" } Else { "" }
-            Workers                  = [Int]$Request.stats.($_.name).workers
-            WorkerName               = ""
+            [PSCustomObject]@{ 
+                Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
+                Algorithm                = [String]$Algorithm_Norm
+                BaseName                 = [String]$Name
+                Currency                 = [String]$Currency
+                Disabled                 = [Boolean]$Stat.Disabled
+                EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
+                Fee                      = 0
+                Host                     = [String]$_.servers[0].host
+                Name                     = [String]$PoolVariant
+                Pass                     = "x"
+                Port                     = If ($PoolConfig.SSL -eq "Always") { 0 } Else { [UInt16]$_.servers[0].ports[0] }
+                PortSSL                  = If ($PoolConfig.SSL -eq "Never") { 0 } Else { [UInt16]$_.servers[0].ssl_ports[0] }
+                Price                    = [Double]$Stat.Live
+                Protocol                 = "ethproxy"
+                Reasons                  = $Reasons
+                Region                   = [String]$PoolConfig.Region
+                SendHashrate             = $false
+                SSLSelfSignedCertificate = $false
+                StablePrice              = [Double]$Stat.Week
+                Updated                  = [DateTime]$Stat.Updated
+                User                     = If ($PoolConfig.Wallets.$Currency) { "$($PoolConfig.Wallets.$Currency).$($PoolConfig.WorkerName)" } Else { "" }
+                Workers                  = [Int]$Request.stats.($_.name).workers
+                WorkerName               = ""
+            }
         }
     }
 
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
     Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 

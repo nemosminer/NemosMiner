@@ -18,12 +18,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           ProHashing.ps1
-Version:        4.3.5.1
-Version date:   08 July 2023
+File:           \Pools\ProHashing.ps1
+Version:        4.3.6.0
+Version date:   31 July 2023
 #>
-
-using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
@@ -34,30 +32,32 @@ param(
 $ProgressPreference = "SilentlyContinue"
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
+$HostSuffix = "mining.prohashing.com"
+
 $PoolConfig = $Variables.PoolsConfig.$Name
 $DivisorMultiplier = $PoolConfig.Variant.$PoolVariant.DivisorMultiplier
-$HostSuffix = "mining.prohashing.com"
 $PriceField = $PoolConfig.Variant.$PoolVariant.PriceField
-$TransferFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Data\BrainData_" + (Get-Item $MyInvocation.MyCommand.Path).BaseName + ".json"
+
+$BrainDataFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Data\BrainData_" + (Get-Item $MyInvocation.MyCommand.Path).BaseName + ".json"
 
 If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) { 
 
-    $StartTime = (Get-Date)
     Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
+    $StartTime = (Get-Date)
 
     Try { 
         If ($Variables.Brains.$Name) { 
             $Request = $Variables.BrainData.$Name
         }
         Else { 
-            $Request = Get-Content $TransferFile -ErrorAction Stop | ConvertFrom-Json
+            $Request = Get-Content $BrainDataFile -ErrorAction Stop | ConvertFrom-Json
         }
     }
     Catch { Return }
 
     If (-not $Request.PSObject.Properties.Name) { Return }
 
-    $Request.PSObject.Properties.Name | ForEach-Object { 
+    $Request.PSObject.Properties.Name | Where-Object { $Request.$_.Updated -ge $Variables.Brains.$Name."Updated" } | ForEach-Object { 
         $Algorithm = $Request.$_.name
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $Currency = $Request.$_.currency
@@ -67,7 +67,7 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
 
         # Add coin name
         If ($Request.$_.CoinName -and $Currency) { 
-            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName
+            [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName)
         }
 
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
@@ -75,7 +75,7 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
         $Reasons = [System.Collections.Generic.List[String]]@()
         If ($Request.$_.hashrate -eq 0) { $Reasons.Add("No hashrate at pool") }
 
-        ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
+        ForEach ($Region_Norm in $Variables.Regions[$Config.Region]) { 
             If ($Region = $PoolConfig.Region | Where-Object { (Get-Region $_) -eq $Region_Norm }) { 
 
                 [PSCustomObject]@{ 
@@ -106,7 +106,8 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
             }
         }
     }
-    
+
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
     Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 

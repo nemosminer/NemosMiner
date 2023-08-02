@@ -21,18 +21,15 @@ Version:        4.3.6.0
 Version date:   31 July 2023
 #>
 
-If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "NVIDIA" -and $_.OpenCL.DriverVersion -ge "450.80.02" })) { Return }
 
-$Uri = Switch ($Variables.DriverVersion.CUDA) { 
-    { $_ -ge "11.1" } { "https://github.com/Minerx117/miners/releases/download/Suprminer/suprminer-winx86_64_cuda11_1_v2.zip" }
-    Default { Return }
-}
+$Uri = "https://github.com/OneZeroMiner/onezerominer/releases/download/v1.2.2/onezerominer-win64-1.2.2.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\suprminer.exe"
-$DeviceEnumerator = "Type_Vendor_Index"
+$Path = ".\Bin\$($Name)\onezerominer.exe"
+$DeviceEnumerator = "Type_Vendor_Slot"
 
-$Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "HeavyHash"; MinMemGiB = 1; MinerSet = 0; WarmupTimes = @(75, 0); Arguments = " --algo obtc" } # FPGA
+$Algorithms = [PSCustomObject[]]@( 
+    [PSCustomObject]@{ Algorithm = "DynexSolve"; Fee = @(0.03); MinMemGiB = 2; Minerset = 2; WarmupTimes = @(120, 0); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --algo dynex") }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
@@ -40,30 +37,27 @@ $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm) }
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] }
 
 If ($Algorithms) { 
-
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 
-        $Miner_Devices = $Devices | Where-Object Model -EQ $_.Model
+        $Miner_Devices = @($Devices | Where-Object Model -EQ $_.Model) 
         $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1)
 
         $Algorithms | ForEach-Object { 
 
+            $Arguments = $_.Arguments
+
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB) { 
 
-                $Arguments = $_.Arguments
                 $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
 
                 # Get arguments for available miner devices
-                # $_.Arguments = Get-ArgumentsPerDevice -Arguments $_.Arguments -ExcludeArguments @("algo", "statsavg") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
-
-                If ($AvailableMiner_Devices.Count -gt 1) { $_.Arguments += " --intensity 15"} # Default intensities too high if more than one GPU
+                # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                 [PSCustomObject]@{ 
+                    API         = "OneZero"
+                    Arguments   = ("$($Arguments) --pool $($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts[0]) --wallet $($AllMinerPools.($_.Algorithm).User)$(If ($AllMinerPools.($_.Algorithm).WorkerName) { ".$($AllMinerPools.($_.Algorithm).WorkerName)" }) --pass $($AllMinerPools.($_.Algorithm).Pass) --api-port $MinerAPIPort --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     Algorithms  = @($_.Algorithm)
-                    API         = "CcMiner"
-                    Arguments   = ("$($_.Arguments) --url stratum+tcp://$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts[0]) --user $($AllMinerPools.($_.Algorithm).User)$(If ($AllMinerPools.($_.Algorithm).WorkerName) { ".$($AllMinerPools.($_.Algorithm).WorkerName)" }) --pass $($AllMinerPools.($_.Algorithm).Pass) --retry-pause 1 --api-bind $MinerAPIPort --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     DeviceNames = $AvailableMiner_Devices.Name
-                    Fee         = 0.01
                     MinerSet    = $_.MinerSet
                     Name        = $Miner_Name
                     Path        = $Path

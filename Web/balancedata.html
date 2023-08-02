@@ -54,6 +54,7 @@
             var $table = $('#balanceobjects');
 
             $table.bootstrapTable({
+              async: 'true',
               onAll: function() { 
                 try {
                   document.getElementById('btn-remove-entry').disabled = !Boolean($table.bootstrapTable('getSelections').length);

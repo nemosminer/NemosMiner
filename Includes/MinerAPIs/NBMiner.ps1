@@ -17,12 +17,12 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           NBMiner.ps1
-Version:        4.3.5.1
-Version date:   08 July 2023
+File:           \Includes\MinerAPIs\NBMiner.ps1
+Version:        4.3.6.0
+Version date:   31 July 2023
 #>
 
-class NBMiner : Miner { 
+Class NBMiner : Miner { 
     [Object]GetMinerData () { 
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
@@ -59,11 +59,15 @@ class NBMiner : Miner {
         }
 
         $PowerUsage = [Double]0
-        If ($this.ReadPowerUsage) { 
-            $PowerUsage = $this.GetPowerUsage()
-        }
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 
+            If ($this.ReadPowerUsage) { 
+                $PowerUsage = [Double]($Data.miner | Measure-Object total_power_consume -Sum).Sum
+                If (-not $PowerUsage) { 
+                    $PowerUsage = $this.GetPowerUsage()
+                }
+            }
+
             Return [PSCustomObject]@{ 
                 Date       = (Get-Date).ToUniversalTime()
                 HashRate   = $HashRate

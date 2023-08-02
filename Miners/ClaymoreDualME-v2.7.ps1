@@ -1,4 +1,27 @@
-If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $Variables.DriverVersion.CIM.AMD -le "20.45.01.28") -or $_.Type -eq "NVIDIA" })) { Return } # Only supports AMD drivers until 20.12.1
+<#
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
+
+NemosMiner is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+NemosMiner is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+#>
+
+<#
+Product:        NemosMiner
+Version:        4.3.6.0
+Version date:   31 July 2023
+#>
+
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $Variables.DriverVersion.CIM.AMD -le "20.45.01.28") -or $_.OpenCL.ComputeCapability -ge "5.0" })) { Return } # Only supports AMD drivers until 20.12.1
 
 $Uri = "https://github.com/just-a-miner/moreepochs/releases/download/v2.7/MoreEpochs_Mod_of_Claymore_ETH_Miner_v15Win_by_JustAMiner_v2.7.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
@@ -7,10 +30,8 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = [PSCustomObject[]]@( 
     [PSCustomObject]@{ Algorithm = "Ethash";       Type = "AMD"; Fee = 0.006; MinMemGiB = 0.77; Minerset = 2; Tuning = " -rxboost 1"; WarmupTimes = @(45, 0); Arguments = " -platform 1" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "AMD"; Fee = 0.006; MinMemGiB = 0.77; Minerset = 2; Tuning = " -rxboost 1"; WarmupTimes = @(45, 0); Arguments = " -platform 1" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
 
     [PSCustomObject]@{ Algorithm = "Ethash";       Type = "NVIDIA"; Fee = 0.006; MinMemGiB = 0.77; Minerset = 2; Tuning = " -strap 1"; WarmupTimes = @(45, 0); Arguments = " -platform 2" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-#   [PSCustomObject]@{ Algorithm = "EthashLowMem"; Type = "NVIDIA"; Fee = 0.006; MinMemGiB = 0.77; Minerset = 2; Tuning = " -strap 1"; WarmupTimes = @(45, 0); Arguments = " -platform 2" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
@@ -19,7 +40,7 @@ $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).PoolPor
 If ($Algorithms) { 
 
     $Algorithms | ForEach-Object { 
-        $_.MinMemGiB += $MinerPools[0].($_.Algorithm).DAGSizeGiB
+        $_.MinMemGiB += $AllMinerPools.($_.Algorithm).DAGSizeGiB
     }
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
@@ -32,23 +53,23 @@ If ($Algorithms) {
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB) { 
 
                 $Arguments = $_.Arguments
-                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)" -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $Arguments += Switch ($MinerPools[0].($_.Algorithm).Protocol) { 
+                $Arguments += Switch ($AllMinerPools.($_.Algorithm).Protocol) { 
                     "ethproxy"     { " -esm 1"; Break }
                     "ethstratum1"  { " -esm 4"; Break }
                     "ethstratum2"  { " -esm 4"; Break }
                     "ethstratumnh" { " -esm 4"; Break }
                     Default        { " -esm 0" }
                 }
-                $Arguments += If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { " -epool stratum+ssl" } Else { " -epool stratum+tcp" }
-                $Arguments += "://$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) -ewal $($MinerPools[0].($_.Algorithm).User)"
-                $Arguments += " -epsw $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].($_.Algorithm).DAGSizeGiB))" })"
-                If ($MinerPools[0].($_.Algorithm).WorkerName) { $Arguments += " -eworker $($MinerPools[0].($_.Algorithm).WorkerName)" }
-                If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { $Arguments += " -checkcert 0" }
+                $Arguments += If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { " -epool stratum+ssl" } Else { " -epool stratum+tcp" }
+                $Arguments += "://$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts | Select-Object -Last 1) -ewal $($AllMinerPools.($_.Algorithm).User)"
+                $Arguments += " -epsw $($AllMinerPools.($_.Algorithm).Pass)"
+                If ($AllMinerPools.($_.Algorithm).WorkerName) { $Arguments += " -eworker $($AllMinerPools.($_.Algorithm).WorkerName)" }
+                If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { $Arguments += " -checkcert 0" }
 
                 # Apply tuning parameters
                 If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }

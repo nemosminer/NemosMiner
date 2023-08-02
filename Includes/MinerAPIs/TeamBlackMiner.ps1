@@ -17,16 +17,16 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           lolMiner.ps1
-Version:        4.3.5.1
-Version date:   08 July 2023
+File:           \Includes\MinerAPIs\lolMiner.ps1
+Version:        4.3.6.0
+Version date:   31 July 2023
 #>
 
-class TeamBlackMiner : Miner { 
+Class TeamBlackMiner : Miner { 
     [Object]GetMinerData () { 
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
-        $Request = "http://127.0.0.1:$($this.Port)/pools"
+        $Request = "http://127.0.0.1:$($this.Port)/summary"
 
         Try { 
             $Data = Invoke-RestMethod -Uri $Request -TimeoutSec $Timeout
@@ -48,25 +48,31 @@ class TeamBlackMiner : Miner {
 
         ForEach ($Algorithm in $this.Algorithms) { 
             $HashRate_Name = [String]$Algorithm
-            $Data.Pool.PSObject.Properties.Name | ForEach-Object { 
-                If ((Get-Algorithm $Data.Pool.$_.Algo) -eq $Algorithm) { 
-                    $HashRate_Value = [Double]($Data.Pool.$_.total_hashrate)
+            $Data.pool.PSObject.Properties.Name | ForEach-Object { 
+                If ((Get-Algorithm $Data.pool.$_.Algo) -eq $Algorithm) { 
+                    $HashRate_Value = [Double]($Data.pool.$_.total_hashrate)
                     $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
-                    $Shares_Accepted = [Int64]($Data.Pool.$_.total_accepted)
-                    $Shares_Rejected = [Int64]($Data.Pool.$_.total_rejected)
-                    $Shares_Invalid =  [Int64]($Data.Pool.$_.total_stale)
+                    $Shares_Accepted = [Int64]($Data.pool.$_.total_accepted)
+                    $Shares_Rejected = [Int64]($Data.pool.$_.total_rejected)
+                    $Shares_Invalid =  [Int64]($Data.pool.$_.total_stale)
                     $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
                 }
             }
         }
 
+
         $PowerUsage = [Double]0
-        If ($this.ReadPowerUsage) { 
-            $PowerUsage = $this.GetPowerUsage()
-        }
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 
+            If ($this.ReadPowerUsage) { 
+                $Data.Devices | ForEach-Object { [Double]$PowerUsage += $_.PSObject.Properties.Value.watt }
+                $PowerUsage = [Double]($Data.result | Measure-Object gpu_power_usage -Sum).Sum
+                If (-not $PowerUsage) { 
+                    $PowerUsage = $this.GetPowerUsage()
+                }
+            }
+
             Return [PSCustomObject]@{ 
                 Date       = (Get-Date).ToUniversalTime()
                 HashRate   = $HashRate

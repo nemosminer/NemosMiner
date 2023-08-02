@@ -93,6 +93,7 @@
             }
 
             $table.bootstrapTable({
+              async: 'true',
               onPostBody: function () {
                 if (config.UseColorForMinerStatus == true) {
                   $('#workers td:nth-child(2)').each(function () {

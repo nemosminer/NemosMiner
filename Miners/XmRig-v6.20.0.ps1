@@ -1,4 +1,27 @@
-$Devices = $Variables.EnabledDevices
+<#
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
+
+NemosMiner is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+NemosMiner is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+#>
+
+<#
+Product:        NemosMiner
+Version:        4.3.6.0
+Version date:   31 July 2023
+#>
+
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -in @("AMD", "CPU") -or $_.OpenCL.ComputeCapability -gt "5.0" })) { Return }
 
 $Uri = Switch ($Variables.DriverVersion.CUDA) { 
     { $_ -ge "11.8" } { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.20.0-xmrig/xmrig-6.20.0-msvc-cuda11_8-win64.7z"; Break }
@@ -24,7 +47,7 @@ $DeviceEnumerator = "PlatformId_Index"
 
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Cryptonight";          Type = "AMD"; MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/0" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "AMD"; MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/ccx" } # SRBMinerMulti-v2.3.0 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "AMD"; MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/ccx" } # SRBMinerMulti-v2.3.1 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";    Type = "AMD"; MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/double" }
     [PSCustomObject]@{ Algorithm = "CryptonightFast";      Type = "AMD"; MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn/fast" }
     [PSCustomObject]@{ Algorithm = "CryptonightLite";      Type = "AMD"; MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(45, 0); Arguments = " --algo cn-lite/0" }
@@ -80,7 +103,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo rx/arq" } # FPGA
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo rx/keva" }
     [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo rx/loki" }
-    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo rx/sfx" } # SRBMinerMulti-v2.3.0 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo rx/sfx" } # SRBMinerMulti-v2.3.1 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --algo rx/wow" }
     [PSCustomObject]@{ Algorithm = "Uplexa";               Type = "CPU"; Minerset = 0; WarmupTimes = @(45, 0);  Arguments = " --algo rx/upx2" }
 
@@ -120,7 +143,7 @@ $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).PoolPor
 If ($Algorithms) { 
 
     $Algorithms | Where-Object MinMemGiB | ForEach-Object { 
-        $_.MinMemGiB += $MinerPools[0].($_.Algorithm).DAGSizeGiB
+        $_.MinMemGiB += $AllMinerPools.($_.Algorithm).DAGSizeGiB
     }
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
@@ -135,7 +158,7 @@ If ($Algorithms) {
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or $_.MemoryGiB -gt $MinMemGiB }) { 
 
                 $Arguments = $_.Arguments
-                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)" -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
 
                 If ($_.Type -eq "CPU") { $Arguments += " --threads=$($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1)" }
                 Else { $Arguments += " --no-cpu --opencl --opencl-platform $($AvailableMiner_Devices.PlatformId) --opencl-devices=$(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" }
@@ -149,7 +172,7 @@ If ($Algorithms) {
                 [PSCustomObject]@{ 
                     Algorithms  = @($_.Algorithm)
                     API         = "XmRig"
-                    Arguments   = ("$($Arguments) $(If ($MinerPools[0].($_.Algorithm).BaseName -eq "NiceHash") { " --nicehash" } )$(If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { " --tls" } ) --url=$($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Where-Object  { $_ -ne $null } | Select-Object -Last 1) --user=$($MinerPools[0].($_.Algorithm).User)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { ".$($MinerPools[0].($_.Algorithm).WorkerName)" }) --pass=$($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).WorkerName) { " --rig-id $($MinerPools[0].($_.Algorithm).WorkerName)" }) --keepalive --http-enabled --http-host=127.0.0.1 --http-port=$($MinerAPIPort) --api-worker-id=$($Config.WorkerName) --api-id=$($Miner_Name) --retries=90 --retry-pause=1" -replace "\s+", " ").trim()
+                    Arguments   = ("$($Arguments) $(If ($AllMinerPools.($_.Algorithm).BaseName -eq "NiceHash") { " --nicehash" } )$(If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { " --tls" } ) --url=$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts | Where-Object  { $_ -ne $null } | Select-Object -Last 1) --user=$($AllMinerPools.($_.Algorithm).User)$(If ($AllMinerPools.($_.Algorithm).WorkerName) { ".$($AllMinerPools.($_.Algorithm).WorkerName)" }) --pass=$($AllMinerPools.($_.Algorithm).Pass)$(If ($AllMinerPools.($_.Algorithm).WorkerName) { " --rig-id $($AllMinerPools.($_.Algorithm).WorkerName)" }) --keepalive --http-enabled --http-host=127.0.0.1 --http-port=$($MinerAPIPort) --api-worker-id=$($Config.WorkerName) --api-id=$($Miner_Name) --retries=90 --retry-pause=1" -replace "\s+", " ").trim()
                     DeviceNames = $AvailableMiner_Devices.Name
                     Fee         = 0.01
                     Path        = $Path

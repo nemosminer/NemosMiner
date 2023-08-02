@@ -12,7 +12,7 @@
       "PoolCurrenciesUri": "",
       "PoolStatusUri": "https://www.hashcryptos.com/api/status",
       "SampleHalfPower": 0,
-      "SampleSizeMinutes": 45,
+      "SampleSizeMinutes": 5,
       "UseTransferFile": false
     },
     "ExcludeAlgorithm": [],
@@ -101,7 +101,7 @@
       "PoolCurrenciesUri": "",
       "PoolStatusUri": "https://www.mining-dutch.nl/api/status",
       "SampleHalfPower": 0,
-      "SampleSizeMinutes": 45,
+      "SampleSizeMinutes": 5,
       "UseTransferFile": false
     },
     "ExcludeAlgorithm": [],
@@ -143,16 +143,6 @@
     ],
     "AutoExchange": true,
     "BalancesKeepAlive": 90, // No expiration communicated by pool
-    "BrainConfig": {
-      "PoolAPIAllowedFailureCount": 3,
-      "PoolAPIRetryInterval": 10,
-      "PoolAPITimeout": 3,
-      "PoolCurrenciesUri": "",
-      "PoolStatusUri": "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics",
-      "SampleHalfPower": 0,
-      "SampleSizeMinutes": 45,
-      "UseTransferFile": false
-    },
     "EarningsAdjustmentFactor": 0.1, // Lower projected earnings until pool resolves its payout issues (https://bitcointalk.org/index.php?topic=472510.msg61523969#msg61523969)
     "ExcludeAlgorithm": [],
     "Fee": 0.009,
@@ -242,7 +232,7 @@
       "PoolCurrenciesUri": "https://prohashing.com/api/v1/currencies",
       "PoolStatusUri": "https://prohashing.com/api/v1/status",
       "SampleHalfPower": 0,
-      "SampleSizeMinutes": 45,
+      "SampleSizeMinutes": 5,
       "UseTransferFile": false
     },
     "ExcludeAlgorithm": [],
@@ -287,7 +277,7 @@
       "PoolCurrenciesUri": "https://zergpool.com/api/currencies",
       "PoolStatusUri": "https://zergpool.com/api/status",
       "SampleHalfPower": 0,
-      "SampleSizeMinutes": 45,
+      "SampleSizeMinutes": 5,
       "UseTransferFile": false
     },
     "DefaultFee": 0.5,
@@ -356,7 +346,7 @@
       "PoolCurrenciesUri": "https://www.zpool.ca/api/currencies",
       "PoolStatusUri": "https://www.zpool.ca/api/status",
       "SampleHalfPower": 0,
-      "SampleSizeMinutes": 45,
+      "SampleSizeMinutes": 5,
       "UseTransferFile": false
     },
     "ExcludeAlgorithm": [],

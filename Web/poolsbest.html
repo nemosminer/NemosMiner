@@ -74,6 +74,7 @@
             var $table = $('#pools');
 
             $table.bootstrapTable({
+              async: 'true',
               onAll: function() {
                 try {
                   document.getElementById('btn-reset-data').disabled = !Boolean($table.bootstrapTable('getSelections').length);

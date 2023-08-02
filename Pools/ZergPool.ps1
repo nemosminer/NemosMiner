@@ -18,12 +18,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           ZergPool.ps1
-Version:        4.3.5.1
-Version date:   08 July 2023
+File:           \Pools\ZergPool.ps1
+Version:        4.3.6.0
+Version date:   31 July 2023
 #>
-
-using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
@@ -34,37 +32,40 @@ param(
 $ProgressPreference = "SilentlyContinue"
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
+$HostSuffix = "mine.zergpool.com"
+
 $PoolConfig = $Variables.PoolsConfig.$Name
 $PriceField = $PoolConfig.Variant.$PoolVariant.PriceField
 $DivisorMultiplier = $PoolConfig.Variant.$PoolVariant.DivisorMultiplier
-$HostSuffix = "mine.zergpool.com"
-$PayoutCurrency = $PoolConfig.Wallets.Keys | Select-Object -First 1
+$PayoutCurrency = $PoolConfig.Wallets.psBase.Keys | Select-Object -First 1
 $Regions = If ($Config.UseAnycast -and $PoolConfig.Region -contains "n/a (Anycast)") { "n/a (Anycast)" } Else { $PoolConfig.Region | Where-Object { $_ -ne "n/a (Anycast)" }  }
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
-$TransferFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Data\BrainData_" + (Get-Item $MyInvocation.MyCommand.Path).BaseName + ".json"
+
+$BrainDataFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Data\BrainData_" + (Get-Item $MyInvocation.MyCommand.Path).BaseName + ".json"
 
 If ($DivisorMultiplier -and $Regions -and $Wallet) {
 
-    $StartTime = (Get-Date)
     Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
+    $StartTime = (Get-Date)
 
     $PayoutThreshold = $PoolConfig.PayoutThreshold.$PayoutCurrency
     If (-not $PayoutThreshold -and $PoolConfig.PayoutThreshold.mBTC) { $PayoutThreshold = $PoolConfig.PayoutThreshold.mBTC / 1000 }
     $PayoutThresholdParameter = ",pl=$([Double]$PayoutThreshold)"
 
     Try { 
-        If ($Variables.Brains.$Name) { 
+        If ($Variables.BrainData.$Name.PSObject.Properties) { 
             $Request = $Variables.BrainData.$Name
         }
         Else { 
-            $Request = Get-Content $TransferFile -ErrorAction Stop | ConvertFrom-Json
+            $Request = Get-Content $BrainDataFile -ErrorAction Stop | ConvertFrom-Json
+            $Request.PSObject.Properties.Name | ForEach-Object { $Request.$_.Updated = (Get-Date).ToUniversalTime() }
         }
     }
     Catch { Return }
 
     If (-not $Request.PSObject.Properties.Name) { Return }
 
-    $Request.PSObject.Properties.Name | ForEach-Object { 
+    $Request.PSObject.Properties.Name | Where-Object { $Request.$_.Updated -ge $Variables.Brains.$Name."Updated" } | ForEach-Object { 
         $Algorithm = $Request.$_.algo
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $Currency = "$($Request.$_.currency)".Trim() -replace "-.+$"
@@ -77,7 +78,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
         If ($Request.$_.noautotrade -eq 1 -and $Request.$_.Currency -ne $PayoutCurrency) { $Reasons.Add("Conversion disabled at pool") }
         If ($Request.$_.hashrate_shared -eq 0) { $Reasons.Add("No hashrate at pool") }
 
-        ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
+        ForEach ($Region_Norm in $Variables.Regions[$Config.Region]) { 
             If ($Region = $Regions | Where-Object { $_ -eq "n/a (Anycast)" -or (Get-Region $_) -eq $Region_Norm }) { 
 
                 If ($Region -eq "n/a (Anycast)") { 
@@ -98,7 +99,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
                     Fee                      = [Decimal]$Fee
                     Host                     = [String]$PoolHost
                     Name                     = [String]$PoolVariant
-                    Pass                     = "c=$PayoutCurrency$(If ($Currency -and -not $PoolConfig.ProfitSwitching) { ",mc=$Currency" }),ID=$($PoolConfig.WorkerName)$PayoutThresholdParameter" # Pool profit swiching breaks Option 2 (static coin), instead it will still send DAG data for any coin
+                    Pass                     = "c=$PayoutCurrency$(If ($Currency -and -not $PoolConfig.ProfitSwitching) { ",mc=$Currency" }),ID=$($PoolConfig.WorkerName -replace "^ID=")$PayoutThresholdParameter" # Pool profit swiching breaks Option 2 (static coin), instead it will still send DAG data for any coin
                     Port                     = If ($PoolConfig.SSL -eq "Always") { 0 } Else { [UInt16]$Request.$_.port }
                     PortSSL                  = If ($PoolConfig.SSL -eq "Never") { 0 } Else { [UInt16]$Request.$_.tls_port }
                     Price                    = [Double]$Stat.Live
@@ -118,6 +119,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
         }
     }
 
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
     Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 

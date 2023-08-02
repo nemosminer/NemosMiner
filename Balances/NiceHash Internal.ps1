@@ -17,12 +17,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           NiceHash Internal.ps1
-Version:        4.3.5.1
-Version date:   08 July 2023
+File:           \Balances\NiceHash Internal.ps1
+Version:        4.3.6.0
+Version date:   31 July 2023
 #>
-
-using module ..\Includes\Include.psm1
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PayoutCurrency = $Config.PoolsConfig.NiceHash.Variant.$Name.PayoutCurrency
@@ -76,9 +74,9 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.NiceHashAPIKey -and
         $APIResponse = Get-NiceHashRequest -EndPoint $EndPoint -Method $Method -Key $Key -OrganizationID $OrganizationID -Secret $Secret
 
         If ($Config.LogBalanceAPIResponse) { 
-            "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-            $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+            "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
+            $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
+            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
         }
 
         If ($APIResponse.active) { 
@@ -87,11 +85,11 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.NiceHashAPIKey -and
                 Pool       = $Name
                 Currency   = $PayoutCurrency
                 Wallet     = $Wallet
-                Pending    = [Double]($APIResponse.pending)
-                Balance    = [Double]($APIResponse.available)
-                Unpaid     = [Double]($APIResponse.totalBalance)
-                Withdrawal = [Double]($APIResponse.pendingDetails.withdrawal)
-                #Total      = [Double]($APIResponse.pendingDetails.totalBalance)
+                Pending    = [Double]$APIResponse.pending
+                Balance    = [Double]$APIResponse.available
+                Unpaid     = [Double]$APIResponse.totalBalance
+                Withdrawal = [Double]$APIResponse.pendingDetails.withdrawal
+                #Total      = [Double]$APIResponse.pendingDetails.totalBalance
                 Url        = "https://www.nicehash.com/my/mining/rigs/$($Config.PoolsConfig.NiceHash.WorkerName)"
             }
         }

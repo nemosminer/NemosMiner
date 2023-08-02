@@ -1,3 +1,26 @@
+<#
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
+
+NemosMiner is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+NemosMiner is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+#>
+
+<#
+Product:        NemosMiner
+Version:        4.3.6.0
+Version date:   31 July 2023
+#>
+
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $_.Architecture -eq "Other" })) { Return }
 
 $Uri = "https://github.com/doktor83/SRBMiner-Multi/releases/download/0.9.4/SRBMiner-Multi-0-9-4-win64.zip"
@@ -26,7 +49,6 @@ $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "DynamoCoin";        Fee = @(0.01); ; MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(30, 30); Arguments = " --disable-cpu -algorithm dynamo" } # Algorithm 'dynamo' supports only 'pool' mode (yiimp stratum compatibility removed)
     [PSCustomObject]@{ Algorithm = "EtcHash";           Fee = @(0.0065); MinMemGiB = 1.24; Minerset = 0; WarmupTimes = @(90, 75); Arguments = " --disable-cpu -algorithm etchash --gpu-boost 50" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "Ethash";            Fee = @(0.0065); MinMemGiB = 1.24; Minerset = 0; WarmupTimes = @(90, 75); Arguments = " --disable-cpu -algorithm ethash --gpu-boost 50" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-#   [PSCustomObject]@{ Algorithm = "EthashLowMem";      Fee = @(0.0065); MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(90, 75); Arguments = " --disable-cpu -algorithm ethash --gpu-boost 50" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithm = "FiroPow";           Fee = @(0.0085); MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(60, 75); Arguments = " --disable-cpu -algorithm firopow --gpu-boost 50" }
     [PSCustomObject]@{ Algorithm = "HeavyHash";         Fee = @(0.01); ; MinMemGiB = 1;    Minerset = 1; WarmupTimes = @(45, 30); Arguments = " --disable-cpu -algorithm heavyhash" } # FPGA
 #   [PSCustomObject]@{ Algorithm = "K12";               Fee = @(0.0085); MinMemGiB = 1;    Minerset = 3; WarmupTimes = @(30, 30); Arguments = " --disable-cpu -algorithm k12" } # ASIC
@@ -50,7 +72,7 @@ $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).PoolPor
 If ($Algorithms) { 
 
     $Algorithms | ForEach-Object { 
-        $_.MinMemGiB += $MinerPools[0].($_.Algorithm).DAGSizeGiB
+        $_.MinMemGiB += $AllMinerPools.($_.Algorithm).DAGSizeGiB
     }
 
     $Devices | Select-Object Model -Unique | ForEach-Object { 
@@ -64,12 +86,12 @@ If ($Algorithms) {
             If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -gt $_.MinMemGiB) { 
 
                 $Arguments = $_.Arguments
-                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)" -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algorithm") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $Arguments += Switch ($MinerPools[0].($_.Algorithm).Protocol) { 
+                $Arguments += Switch ($AllMinerPools.($_.Algorithm).Protocol) { 
                     "ethproxy"     { " --esm 0"; Break }
                     "ethstratum1"  { " --esm 1"; Break }
                     "ethstratum2"  { " --esm 2"; Break }
@@ -77,12 +99,10 @@ If ($Algorithms) {
                     "minerproxy"   { " --esm 1"; Break }
                     Default        { "" }
                 }
-                $Arguments += " --pool $($MinerPools[0].($_.Algorithm).Host):$($MinerPools[0].($_.Algorithm).PoolPorts | Select-Object -Last 1) --wallet $($MinerPools[0].($_.Algorithm).User)"
-                If ($MinerPools[0].($_.Algorithm).WorkerName) { " --worker $($MinerPools[0].($_.Algorithm).WorkerName)" }
-                $Arguments += " --password $($MinerPools[0].($_.Algorithm).Pass)$(If ($MinerPools[0].($_.Algorithm).BaseName -eq "ProHashing" -and $_.Algorithm -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].($_.Algorithm).DAGSizeGiB))" })"
-                If ($MinerPools[0].($_.Algorithm).PoolPorts[1]) { $Arguments += " --tls true" }
-
-                $Arguments += " --gpu-auto-tune 2 --gpu-id $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
+                $Arguments += " --pool $($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts | Select-Object -Last 1) --wallet $($AllMinerPools.($_.Algorithm).User)"
+                If ($AllMinerPools.($_.Algorithm).WorkerName) { " --worker $($AllMinerPools.($_.Algorithm).WorkerName)" }
+                $Arguments += " --password $($AllMinerPools.($_.Algorithm).Pass)"
+                If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { $Arguments += " --tls true" }
 
                 If ($_.Algorithm -eq "VertHash" -and (Get-Item -Path $Variables.VerthashDatPath -ErrorAction Ignore).length -ne 1283457024) { 
                     $PrerequisitePath = $Variables.VerthashDatPath
@@ -96,7 +116,7 @@ If ($Algorithms) {
                 [PSCustomObject]@{ 
                     Algorithms       = @($_.Algorithm)
                     API              = "SRBMiner"
-                    Arguments        = ("$($Arguments) --disable-workers-ramp-up --api-rig-name $($Config.WorkerName) --api-enable --api-port $MinerAPIPort" -replace "\s+", " ").trim()
+                    Arguments        = ("$($Arguments) --disable-workers-ramp-up --api-rig-name $($Config.WorkerName) --api-enable --api-port $MinerAPIPort --gpu-auto-tune 2 --gpu-id $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     DeviceNames      = $AvailableMiner_Devices.Name
                     Fee              = $_.Fee # Dev fee
                     MinerSet         = $_.MinerSet

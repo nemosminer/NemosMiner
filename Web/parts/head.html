@@ -14,7 +14,7 @@
 
     <link rel="stylesheet" href="/css/nemosminer.css">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.21.0/bootstrap-table.min.css" integrity="sha512-MkfcmT4F14hakMqtLd5lCuNaXdgeznbYwseYG7zi9pmhkJI8WzRCHpD+JxsPxzMg6kLyeBlIo+/maPjMaTR9cQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.20.2/bootstrap-table.min.css" integrity="sha512-HIPiLbxNKmx+x+VFnDHICgl1nbRzW3tzBPvoeX0mq9dWP9H1ZGMRPXfYsHhcJS1na58bzUpbbfpQ/n4SIL7Tlw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.21.4/extensions/filter-control/bootstrap-table-filter-control.min.css" integrity="sha512-3wnb7LWbjgtAbFFhszzC2PrPQ5fo1OnqRJHd9QYn+8UCMWMqQQrl5BZBJQx+cluqVIaszGF0MyEefoMC0Izxqg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
@@ -59,14 +59,7 @@
 <!-- Start of page scripts 'head.html' -->
   <script type='text/javascript'>
 
-    //get stored variables
-    var btc = 0;
-    var config = {};
-    var summary = ""
-
-    const enumminerstatus = ['Running', 'DryRun', 'Idle', 'Failed', 'Disabled', 'Unavailable'];
-
-    function updateData(){ 
+function updateData(){ 
       // Get current config
       $.ajax({
         async: false,
@@ -85,6 +78,68 @@
         url: '/btc',
         success: function(result) {
           btc = result;
+        }
+      });
+    }
+
+    function updateSummary(){
+      // get page header info
+      $.ajax({
+        async: false,
+        dataType: 'json',
+        timeout: 10,
+        url: '/summary',
+        success: function(result) {
+          $('#summary').empty().append(result);
+        }
+      });
+    }
+
+    function updateVersion(){
+      $.ajax({
+        async: false,
+        dataType: 'json',
+        timeout: 10,
+        url: '/version',
+        success: function(result) {
+          version = result
+        }
+      });
+    };
+
+    function updateButtonStatus(){
+      $.ajax({
+        async: false,
+        dataType: 'json',
+        timeout: 10,
+        url: '/functions/mining/getstatus',
+        success: function(result) {
+          switch (result) {
+            case 'Running': 
+              document.getElementById('btn-miningstart').disabled = true;
+              document.getElementById('btn-miningstart').title = "Mining processes are already running.";
+              document.getElementById('btn-miningpause').disabled = false;
+              document.getElementById('btn-miningpause').title = "Pause mining processes. Background processes remain running.";
+              document.getElementById('btn-miningstop').disabled = false;
+              document.getElementById('btn-miningstop').title = "Stop mining processes. Background processes will also stop.";
+              break;
+            case 'Paused':
+              document.getElementById('btn-miningstart').disabled = false;
+              document.getElementById('btn-miningstart').title ="Start the mining process.";
+              document.getElementById('btn-miningpause').disabled = true;
+              document.getElementById('btn-miningpause').title = "Mining processes are stopped. Background processes remain running.";
+              document.getElementById('btn-miningstop').disabled = false;
+              document.getElementById('btn-miningstop').title = "Stop mining processes. Background processes will also stop.";
+              break;
+            case 'Idle':
+              document.getElementById('btn-miningstart').disabled = false;
+              document.getElementById('btn-miningstart').title ="Start the mining process.";
+              document.getElementById('btn-miningpause').disabled = false;
+              document.getElementById('btn-miningpause').title = "Mining will not start. Background processes will start.";
+              document.getElementById('btn-miningstop').disabled = true;
+              document.getElementById('btn-miningstop').title = "All mining processes are already stopped.";
+              break;
+          }
         }
       });
     }

@@ -221,6 +221,7 @@
             function formatDevices(data) {
               // This function can alter the returned data before building the table, formatting it in a way
               // that is easier to display and manipulate in a table
+
               $.each(data, function(index, item) {
                 // Format the device(s)
                 if (item.OpenCL) item.tMemory = formatBytes(item.OpenCL.GlobalMemSize);
@@ -245,13 +246,13 @@
                 item.tStatusMessage = item.Status;
 
                 // Format device state
-                const enumstatus = ['Enabled', 'Disabled', 'Unsupported'];
-                item.tState = enumstatus[item.State];
+                item.tState = enumdevicestatus[item.State];
               });
               return data;
             };
 
             $(".table").bootstrapTable({
+              async: 'true',
               onPostBody: function () {
                 if (config.UseColorForMinerStatus == true ) {
                   $(".statuscolorizer").each(function () {

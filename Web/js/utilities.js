@@ -1,4 +1,5 @@
-const enumstatus = ['Running', 'DryRun', 'Idle', 'Failed', 'Disabled', 'Unavailable'];
+const enumdevicestatus = ['Enabled', 'Disabled', 'Unsupported'];
+const enumminerstatus = ['Running', 'DryRun', 'Idle', 'Failed', 'Disabled', 'Unavailable'];
 
 function formatMiners(data) {
   // This function can alter the returned data before building the table, formatting it in a way
@@ -88,7 +89,7 @@ function formatMiners(data) {
       else item.tMiningDuration = formatTimeSince(item.BeginTime).replace(' ago' ,'').replace('-', 'just started');
 
       // Format status
-      item.tStatus = enumstatus[item.Status];
+      item.tStatus = enumminerstatus[item.Status];
 
       // Format status message
       if (item.StatusMessage) item.tStatusMessage = item.StatusMessage.replace(/ \{.+/g, '');

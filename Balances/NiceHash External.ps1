@@ -17,12 +17,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           NiceHash Internal.ps1
-Version:        4.3.5.1
-Version date:   08 July 2023
+File:           \Balances\NiceHash Internal.ps1
+Version:        4.3.6.0
+Version date:   31 July 2023
 #>
-
-using module ..\Includes\Include.psm1
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $PayoutCurrency = $Config.PoolsConfig.NiceHash.Variant.$Name.PayoutCurrency
@@ -38,21 +36,21 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Wallet) {
         $APIResponse = Invoke-RestMethod $Request -TimeoutSec $Config.PoolAPITimeout -ErrorAction Ignore
 
         If ($Config.LogBalanceAPIResponse) { 
-            "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-            $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+            "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
+            $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
+            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
         }
 
-        $Sum = [Double]($APIResponse.unpaidAmount) + [Double]($APIResponse.externalBalance)
+        $Sum = [Double]$APIResponse.unpaidAmount + [Double]$APIResponse.externalBalance
 
         If ($Sum -gt 0) { 
             Return [PSCustomObject]@{ 
                 DateTime   = (Get-Date).ToUniversalTime()
                 Pool       = $Name
                 Currency   = $PayoutCurrency
-                Wallet     = $($Wallet)
-                Pending    = [Double]($APIResponse.unpaidAmount)
-                Balance    = [Double]($APIResponse.externalBalance)
+                Wallet     = $Wallet
+                Pending    = [Double]$APIResponse.unpaidAmount
+                Balance    = [Double]$APIResponse.externalBalance
                 Unpaid     = $Sum
                 #Total      = $Sum
                 Url        = "https://www.nicehash.com/my/miner/$Wallet"

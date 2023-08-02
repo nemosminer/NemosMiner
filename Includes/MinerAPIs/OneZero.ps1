@@ -22,11 +22,11 @@ Version:        4.3.6.0
 Version date:   31 July 2023
 #>
 
-Class Trex : Miner { 
+Class OneZero : Miner { 
     [Object]GetMinerData () { 
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
-        $Request = "http://127.0.0.1:$($this.Port)/summary"
+        $Request = "http://127.0.0.1:$($this.Port)"
 
         Try { 
             $Data = Invoke-RestMethod -Uri $Request -TimeoutSec $Timeout
@@ -39,32 +39,20 @@ Class Trex : Miner {
 
         $HashRate = [PSCustomObject]@{ }
         $HashRate_Name = [String]$this.Algorithms[0]
-        $HashRate_Value = [Double]$Data.hashrate_minute
-        If (-not $Data.hashrate_minute) { $HashRate_Value = [Double]$Data.hashrate }
+        $HashRate_Value = [Double]$Data.algos[0].total_hashrate
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
         $Shares = [PSCustomObject]@{ }
-        $Shares_Accepted = [Int64]$Data.accepted_count
-        $Shares_Rejected = [Int64]$Data.rejected_count
+        $Shares_Accepted = [Int64]$Data.algos[0].total_accepted_shares
+        $Shares_Rejected = [Int64]$Data.algos[0].total_rejected_shares
         $Shares_Invalid = [Int64]0
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
-
-        If ($HashRate_Name = [String]($this.Algorithms -ne $HashRate_Name)) { # Dual algo mining
-            $HashRate_Value = [Double]$Data.dual_stat.hashrate_minute
-            If (-not $HashRate_Value) { $HashRate_Value = [Double]$Data.dual_stat.hashrate }
-            $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
-
-            $Shares_Accepted = [Int64]$Data.dual_stat.accepted_count
-            $Shares_Rejected = [Int64]$Data.dual_stat.rejected_count
-            $Shares_Invalid = [Int64]0
-            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
-        }
 
         $PowerUsage = [Double]0
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 
             If ($this.ReadPowerUsage) { 
-                $PowerUsage = [Double]($Data.gpus | Measure-Object power -Sum).Sum
+                $PowerUsage = [Double]($Data.Devices | Measure-Object power -Sum).Sum
                 If (-not $PowerUsage) { 
                     $PowerUsage = $this.GetPowerUsage()
                 }

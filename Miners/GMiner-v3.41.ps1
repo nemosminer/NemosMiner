@@ -1,4 +1,27 @@
-If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.Type -eq "NVIDIA" })) { Return }
+<#
+Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
+
+NemosMiner is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+NemosMiner is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+#>
+
+<#
+Product:        NemosMiner
+Version:        4.3.6.0
+Version date:   31 July 2023
+#>
+
+If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
 
 $Uri = "https://github.com/develsoftware/GMinerRelease/releases/download/3.41/gminer_3_41_windows64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
@@ -8,43 +31,38 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithms = @("Autolykos2");   Type = "AMD"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = ""; Minerset = 2; WarmupTimes = @(30, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 1 --algo autolykos2 --cuda 0 --opencl 1" } # Algorithm not yet supported
 #   [PSCustomObject]@{ Algorithms = @("Cuckatoo32");   Type = "AMD"; Fee = @(0.05);  MinMemGiB = 8.0;  Tuning = ""; Minerset = 3; WarmupTimes = @(30, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 1 --algo cuckatoo32 --cuda 0 --opencl 1" } # ASIC
-    [PSCustomObject]@{ Algorithms = @("Equihash1254"); Type = "AMD"; Fee = @(0.02);  MinMemGiB = 1.8;  Tuning = ""; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 1 --algo equihash125_4 --cuda 0 --opencl 1" } # lolMiner-v1.76 is fastest
+    [PSCustomObject]@{ Algorithms = @("Equihash1254"); Type = "AMD"; Fee = @(0.02);  MinMemGiB = 1.8;  Tuning = ""; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 1 --algo equihash125_4 --cuda 0 --opencl 1" } # lolMiner-v1.76a is fastest
     [PSCustomObject]@{ Algorithms = @("Equihash1445"); Type = "AMD"; Fee = @(0.02);  MinMemGiB = 1.8;  Tuning = ""; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludePools = @(@("ProHashing"), @()); Arguments = " --nvml 1 --algo equihash144_5 $(Get-EquihashCoinPers -Command "--pers " -Currency $MinerPools[0].Equihash1445.Currency -DefaultCommand "--pers auto") --cuda 0 --opencl 1" } # FPGA
     [PSCustomObject]@{ Algorithms = @("Equihash2109"); Type = "AMD"; Fee = @(0.02);  MinMemGiB = 2.8;  Tuning = ""; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 1 --algo equihash210_9 --cuda 0 --opencl 1" }
     [PSCustomObject]@{ Algorithms = @("Ethash");       Type = "AMD"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = ""; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 1 --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem"); Type = "AMD"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = ""; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 1 --algo ethash --cuda 0 --opencl 1" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithms = @("KawPow");       Type = "AMD"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = ""; Minerset = 2; WarmupTimes = @(45, 30); ExcludePools = @(@(), @());             Arguments = " --nvml 1 --algo kawpow --cuda 0 --opencl 1" }
 
-    [PSCustomObject]@{ Algorithms = @("Autolykos2");                 Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.57; Tuning = " --mt 2"; Minerset = 2; WarmupTimes = @(30, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo autolykos2 --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("Autolykos2", "IronFish");     Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.57; Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo autolykos2 --dalgo ironfish --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("Autolykos2", "SHA512256d");   Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.57; Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo autolykos2 --dalgo radiant --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("BeamV3");                     Type = "NVIDIA"; Fee = @(0.02);  MinMemGiB = 6.0;  Tuning = " --mt 2"; Minerset = 2; WarmupTimes = @(30, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo beamhash --cuda 1 --opencl 0" }
-#   [PSCustomObject]@{ Algorithms = @("Cuckatoo32");                 Type = "NVIDIA"; Fee = @(0.05);  MinMemGiB = 8.0;  Tuning = " --mt 2"; Minerset = 3; WarmupTimes = @(30, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo cuckatoo32 --cuda 1 --opencl 0" } # ASIC
-    [PSCustomObject]@{ Algorithms = @("Cuckaroo30CTX");              Type = "NVIDIA"; Fee = @(0.05);  MinMemGiB = 8.0;  Tuning = " --mt 2"; Minerset = 2; WarmupTimes = @(30, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo cortex --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("Cuckoo29");                   Type = "NVIDIA"; Fee = @(0.02);  MinMemGiB = 6.0;  Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(30, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo aeternity --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("Equihash1254");               Type = "NVIDIA"; Fee = @(0.02);  MinMemGiB = 3.0;  Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo equihash125_4 --cuda 1 --opencl 0" } # MiniZ-v2.0c5 is fastest
-    [PSCustomObject]@{ Algorithms = @("Equihash1445");               Type = "NVIDIA"; Fee = @(0.02);  MinMemGiB = 2.1;  Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@("ProHashing"), @()); Arguments = " --nvml 0 --algo equihash144_5 $(Get-EquihashCoinPers -Command "--pers " -Currency $MinerPools[0].Equihash1445.Currency -DefaultCommand "--pers auto") --cuda 1 --opencl 0" } # FPGA
-    [PSCustomObject]@{ Algorithms = @("Equihash2109");               Type = "NVIDIA"; Fee = @(0.02);  MinMemGiB = 1.0;  Tuning = " --mt 2"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo equihash210_9 --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("EtcHash");                    Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo etchash --cuda 1 --opencl 0" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithms = @("EtcHash", "IronFish");        Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.57; Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo etchash --dalgo ironfish --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");      Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 15); ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo etchash --dalgo kheavyhash --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("EtcHash", "SHA512256d");      Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.57; Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo etchash --dalgo radiant --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("Ethash");                     Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; Minerset = 2; WarmupTimes = @(45, 15); ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo ethash --dalgo kheavyhash --cuda 1 --opencl 0" }
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem");               Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo ethash --cuda 1 --opencl 0" } # TTMiner-v5.0.3 is fastest
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "kHeavyHash"); Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; Minerset = 2; WarmupTimes = @(45, 20)  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo ethash --dalgo kheavyhash --cuda 1 --opencl 0" }
-#   [PSCustomObject]@{ Algorithms = @("EthashLowMem", "SHA512256d"); Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; Minerset = 2; WarmupTimes = @(45, 20)  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo ethash --dalgo radiant --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 2.0;  Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo kaspa --cuda 1 --opencl 0" } # XmRig-v6.20.0 is almost as fast but has no fee
-    [PSCustomObject]@{ Algorithms = @("FiroPow");                    Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 1.24; Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo firo --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("IronFish");                   Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 2.0;  Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo ironfish --cuda 1 --opencl 0" } # XmRig-v6.20.0 is almost as fast but has no fee
-    [PSCustomObject]@{ Algorithms = @("KawPow");                     Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo kawpow --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 2.0;  Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo kaspa --cuda 1 --opencl 0" } # XmRig-v6.20.0 is almost as fast but has no fee
-    [PSCustomObject]@{ Algorithms = @("Octopus");                    Type = "NVIDIA"; Fee = @(0.03);  MinMemGiB = 0.77; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo octopus --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("Octopus", "IronFish");        Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; Minerset = 0; WarmupTimes = @(45, 20); ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo octopus --dalgo ironfish --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("Octopus", "kHeavyHash");      Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; Minerset = 0; WarmupTimes = @(45, 20); ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo octopus --dalgo kheavyhash --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("Octopus", "SHA512256d");      Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; Minerset = 0; WarmupTimes = @(45, 20); ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo octopus --dalgo radiant --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("ProgPowSero");                Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo sero --cuda 1 --opencl 0" }
-    [PSCustomObject]@{ Algorithms = @("SHA512256d");                 Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 1.0;  Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo radiant --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("Autolykos2");                 Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.57; Tuning = " --mt 2"; Minerset = 2; WarmupTimes = @(30, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo autolykos2 --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("Autolykos2", "IronFish");     Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.57; Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo autolykos2 --dalgo ironfish --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("Autolykos2", "SHA512256d");   Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.57; Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo autolykos2 --dalgo radiant --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("BeamV3");                     Type = "NVIDIA"; Fee = @(0.02);  MinMemGiB = 6.0;  Tuning = " --mt 2"; Minerset = 2; WarmupTimes = @(30, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo beamhash --cuda 1 --opencl 0" }
+#   [PSCustomObject]@{ Algorithms = @("Cuckatoo32");                 Type = "NVIDIA"; Fee = @(0.05);  MinMemGiB = 8.0;  Tuning = " --mt 2"; Minerset = 3; WarmupTimes = @(30, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo cuckatoo32 --cuda 1 --opencl 0" } # ASIC
+    [PSCustomObject]@{ Algorithms = @("Cuckaroo30CTX");              Type = "NVIDIA"; Fee = @(0.05);  MinMemGiB = 8.0;  Tuning = " --mt 2"; Minerset = 2; WarmupTimes = @(30, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo cortex --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("Cuckoo29");                   Type = "NVIDIA"; Fee = @(0.02);  MinMemGiB = 6.0;  Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(30, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo aeternity --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("Equihash1254");               Type = "NVIDIA"; Fee = @(0.02);  MinMemGiB = 3.0;  Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo equihash125_4 --cuda 1 --opencl 0" } # MiniZ-v2.1c is fastest
+    [PSCustomObject]@{ Algorithms = @("Equihash1445");               Type = "NVIDIA"; Fee = @(0.02);  MinMemGiB = 2.1;  Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@("ProHashing"), @()); Arguments = " --nvml 0 --algo equihash144_5 $(Get-EquihashCoinPers -Command "--pers " -Currency $MinerPools[0].Equihash1445.Currency -DefaultCommand "--pers auto") --cuda 1 --opencl 0" } # FPGA
+    [PSCustomObject]@{ Algorithms = @("Equihash2109");               Type = "NVIDIA"; Fee = @(0.02);  MinMemGiB = 1.0;  Tuning = " --mt 2"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo equihash210_9 --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("EtcHash");                    Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo etchash --cuda 1 --opencl 0" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "IronFish");        Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.57; Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo etchash --dalgo ironfish --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");      Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo etchash --dalgo kheavyhash --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "SHA512256d");      Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.57; Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo etchash --dalgo radiant --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("Ethash");                     Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo ethash --cuda 1 --opencl 0" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; Minerset = 2; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo ethash --dalgo kheavyhash --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("FiroPow");                    Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 1.24; Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo firo --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("IronFish");                   Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 2.0;  Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo ironfish --cuda 1 --opencl 0" } # XmRig-v6.20.0 is almost as fast but has no fee
+    [PSCustomObject]@{ Algorithms = @("KawPow");                     Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.93; Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo kawpow --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 2.0;  Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo kaspa --cuda 1 --opencl 0" } # XmRig-v6.20.0 is almost as fast but has no fee
+    [PSCustomObject]@{ Algorithms = @("Octopus");                    Type = "NVIDIA"; Fee = @(0.03);  MinMemGiB = 0.77; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo octopus --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("Octopus", "IronFish");        Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; Minerset = 0; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo octopus --dalgo ironfish --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("Octopus", "kHeavyHash");      Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; Minerset = 0; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo octopus --dalgo kheavyhash --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("Octopus", "SHA512256d");      Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; Minerset = 0; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo octopus --dalgo radiant --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("ProgPowSero");                Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 0.77; Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo sero --cuda 1 --opencl 0" }
+    [PSCustomObject]@{ Algorithms = @("SHA512256d");                 Type = "NVIDIA"; Fee = @(0.01);  MinMemGiB = 1.0;  Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             Arguments = " --nvml 0 --algo radiant --cuda 1 --opencl 0" }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
@@ -54,7 +72,7 @@ $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).Bas
 If ($Algorithms) { 
 
     $Algorithms | ForEach-Object { 
-        $_.MinMemGiB += $MinerPools[0].($_.Algorithms[0]).DAGSizeGiB
+        $_.MinMemGiB += $AllMinerPools.($_.Algorithms[0]).DAGSizeGiB
     }
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
@@ -64,34 +82,32 @@ If ($Algorithms) {
 
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB) { 
+            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
 
-                $Algorithm0 = $_.Algorithms[0]
-                $Algorithm1 = $_.Algorithms[1]
                 $Arguments = $_.Arguments
-                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model)$(If ($Algorithm1) { "-$($Algorithm0)&$($Algorithm1)" })" -replace ' '
+                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })" -replace ' '
 
                 # Get arguments for available miner devices
                 # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo", "cuda", "opencl", "pers", "proto") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
-                $Arguments += " --server $($MinerPools[0].$Algorithm0.Host):$($MinerPools[0].$Algorithm0.PoolPorts | Select-Object -Last 1)"
-                $Arguments += Switch ($MinerPools[0].$Algorithm0.Protocol) { 
+                $Arguments += " --server $($AllMinerPools.($_.Algorithms[0]).Host):$($AllMinerPools.($_.Algorithms[0]).PoolPorts | Select-Object -Last 1)"
+                $Arguments += Switch ($AllMinerPools.($_.Algorithms[0]).Protocol) { 
                     "ethstratum1"  { " --proto stratum"; Break }
                     "ethstratum2"  { " --proto stratum"; Break }
                     "ethstratumnh" { " --proto stratum"; Break }
                     Default        { "" }
                 }
-                If ($MinerPools[0].$Algorithm0.PoolPorts[1]) { $Arguments += " --ssl 1" }
-                $Arguments += " --user $($MinerPools[0].$Algorithm0.User)"
-                $Arguments += " --pass $($MinerPools[0].$Algorithm0.Pass)$(If ($MinerPools[0].$Algorithm0.BaseName -eq "ProHashing" -and $Algorithm0 -eq "EthashLowMem") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum) / 1GB - ($_.MinMemGiB - $MinerPools[0].$Algorithm0.DAGSizeGiB))" })"
-                If ($MinerPools[0].$Algorithm0.WorkerName) { $Arguments += " --worker $($MinerPools[0].$Algorithm0.WorkerName)" }
+                If ($AllMinerPools.($_.Algorithms[0]).PoolPorts[1]) { $Arguments += " --ssl 1" }
+                $Arguments += " --user $($AllMinerPools.($_.Algorithms[0]).User)"
+                $Arguments += " --pass $($AllMinerPools.($_.Algorithms[0]).Pass)"
+                If ($AllMinerPools.($_.Algorithms[0]).WorkerName) { $Arguments += " --worker $($AllMinerPools.($_.Algorithms[0]).WorkerName)" }
 
-                If ($Algorithm1) { 
-                    $Arguments += " --dserver $($MinerPools[1].$Algorithm1.Host):$($MinerPools[1].$Algorithm1.PoolPorts | Select-Object -Last 1)"
-                    If ($MinerPools[1].$Algorithm1.PoolPorts[1]) { $Arguments += " --dssl 1" }
-                    $Arguments += " --duser $($MinerPools[1].$Algorithm1.User)"
-                    $Arguments += " --dpass $($MinerPools[1].$Algorithm1.Pass)"
-                    If ($MinerPools[1].$Algorithm1.WorkerName) { $Arguments += " --dworker $($MinerPools[1].$Algorithm1.WorkerName)" }
+                If (($_.Algorithms[1])) { 
+                    $Arguments += " --dserver $($AllMinerPools.($_.Algorithms[1]).Host):$($AllMinerPools.($_.Algorithms[1]).PoolPorts | Select-Object -Last 1)"
+                    If ($AllMinerPools.($_.Algorithms[1]).PoolPorts[1]) { $Arguments += " --dssl 1" }
+                    $Arguments += " --duser $($AllMinerPools.($_.Algorithms[1]).User)"
+                    $Arguments += " --dpass $($AllMinerPools.($_.Algorithms[1]).Pass)"
+                    If ($AllMinerPools.($_.Algorithms[1]).WorkerName) { $Arguments += " --dworker $($AllMinerPools.($_.Algorithms[1]).WorkerName)" }
                 }
 
                 # Apply tuning parameters

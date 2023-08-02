@@ -17,16 +17,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           Hiveon.ps1
-Version:        4.3.5.1
-Version date:   08 July 2023
+File:           \Balances\Hiveon.ps1
+Version:        4.3.6.0
+Version date:   31 July 2023
 #>
-
-using module ..\Includes\Include.psm1
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 
-$Config.PoolsConfig.$Name.Wallets.Keys | Where-Object { $Config.PoolsConfig.$Name.Wallets.$_ } | ForEach-Object { 
+$Config.PoolsConfig.$Name.Wallets.psBase.Keys | Where-Object { $_ -in @("BTC", "ETC", "RVN") } | ForEach-Object { 
 
     $APIResponse = $null
     $Currency = $_.ToUpper()
@@ -42,9 +40,9 @@ $Config.PoolsConfig.$Name.Wallets.Keys | Where-Object { $Config.PoolsConfig.$Nam
             $APIResponse = Invoke-RestMethod $Request -TimeoutSec $Config.PoolAPITimeout -ErrorAction Ignore
 
             If ($Config.LogBalanceAPIResponse) { 
-                "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-                $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
-                $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+                "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
+                $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
+                $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
             }
 
             If ($APIResponse.earningStats) { 
@@ -52,10 +50,10 @@ $Config.PoolsConfig.$Name.Wallets.Keys | Where-Object { $Config.PoolsConfig.$Nam
                     DateTime = (Get-Date).ToUniversalTime()
                     Pool     = $Name
                     Currency = $_
-                    Wallet   = $($Config.PoolsConfig.$Name.Wallets.$_)
+                    Wallet   = $Config.PoolsConfig.$Name.Wallets.$_
                     Pending  = [Double]0
-                    Balance  = [Double]($APIResponse.totalUnpaid)
-                    Unpaid   = [Double]($APIResponse.totalUnpaid)
+                    Balance  = [Double]$APIResponse.totalUnpaid
+                    Unpaid   = [Double]$APIResponse.totalUnpaid
                     # Paid     = [Double]$APIResponse.stats.totalPaid
                     # Total    = [Double]$APIResponse.stats.balance + [Decimal]$APIResponse.stats.penddingBalance
                     Url      = "https://Hiveon.net/$($Currency.ToLower())?miner=$Wallet"

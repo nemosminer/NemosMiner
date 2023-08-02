@@ -8,10 +8,48 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 
 Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
-- Increasing memory consumption over time (PWSH will eat up memory despite aggressive variable cleaning & garbage collection)
+
+ChangeLog NemosMiner 4.3.6.0 31.07.2023
+=======================================
+
+Changes:
+- API: Change '/balancedata' to '/balancesdata'
+- Core & Miners: Remove all references to EthashLowMem
+- Miner APIs: Read power usage from miner API where available (not all miners and GPUs allow this)
+
+Fixes:
+- API: '/miners' returning corrupt compressed JSON
+- Core: Migitigate memory leak
+- Include.psm1 / Update-DAGData: DAG size for FiroPowSCC was 0
+- Legacy GUI / Earnings graph: Sums were based on rounded values
+- Miners: Invalid miner name when '$MinerInstancePerDeviceModel -eq false' (Regression from v4.3.3.0)
+- NosuchCpu-v3.8.8.1 miner: Remove SSL (not supported)
+- Web GUI: 'Re-Measure Power Usage' buttons removing hashrate stat instead of powerusage
+
+Improvements:
+- Core: Minor code optimizations 
+- Core: Minor speed optimizations (use hashtables where applicable)
+- Core: Always update DAG data on script start
+- Include.psm1: Speed up function 'Get-CurrencyFromAlgorithm'
+- Include.psm1: Speed up function 'Get-EquihashCoinPers'
+- Include.psm1: Speed up function 'Get-Median'
+- Include.psm1: Speed up function 'Get-Stat'
+- Miners: Better detection of CUDA devices
+- Pools (using Brains): Better detection of active pools
+
+Miner changes:
+- BzMiner-v15.4.3
+- lolMiner-v1.76a
+- Miniz-v2.1c
+- OneZeroMiner-v1.2.2
+- Rigel-v1.6.4
+- SRBMinerMulti-v2.3.1
+- TeamBlackMiner-v1.95 (Keep TeamBlackMiner-v1.94 for KawPow with Nvidia)
+- TTMiner-v2023.3.0
+
 
 ChangeLog NemosMiner 4.3.5.1 08.07.2023
-========================================
+=======================================
 
 Fixes:
 - Core: Miner benchmark not ending when miner crashed in warmup phase after first data sample

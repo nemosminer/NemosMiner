@@ -17,15 +17,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           FireIce.ps1
-Version:        4.3.5.1
-Version date:   08 July 2023
+File:           \Includes\MinerAPIs\FireIce.ps1
+Version:        4.3.6.0
+Version date:   31 July 2023
 #>
 
-class Fireice : Miner { 
+Class Fireice : Miner { 
     [Void]CreateConfigFiles() { 
         Try { 
-            $Parameters = $this.Arguments | ConvertFrom-Json -ErrorAction SilentlyContinue
+            $Parameters = $this.Arguments | ConvertFrom-Json  -ErrorAction Ignore
             $ConfigFile = "$(Split-Path $this.Path)\$($Parameters.ConfigFile.FileName)"
             $PoolFile = "$(Split-Path $this.Path)\$($Parameters.PoolFile.FileName)"
             $PlatformThreadsConfigFile = "$(Split-Path $this.Path)\$($Parameters.PlatformThreadsConfigFileName)"
@@ -33,16 +33,16 @@ class Fireice : Miner {
             $ThreadsConfig = ""
 
             #Write pool config file, overwrite every time
-            ($Parameters.PoolFile.Content | ConvertTo-Json -Depth 10) -replace '^{' -replace '}$', ',' | Out-File -FilePath $PoolFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+            ($Parameters.PoolFile.Content | ConvertTo-Json -Depth 10) -replace '^{' -replace '}$', ',' | Out-File -FilePath $PoolFile -Force -Encoding utf8NoBOM  -ErrorAction Ignore
             #Write config file, keep existing file to preserve user custom config
-            If (-not (Test-Path -Path $ConfigFile -PathType Leaf)) { ($Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10) -replace '^{' -replace '}$' | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue}
+            If (-not (Test-Path -Path $ConfigFile -PathType Leaf)) { ($Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10) -replace '^{' -replace '}$' | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM  -ErrorAction Ignore}
 
             #Check if we have a valid hw file for all installed hardware. If hardware / device order has changed we need to re-create the config files. 
             If (-not (Test-Path -Path $PlatformThreadsConfigFile -PathType Leaf)) { 
                 If (Test-Path -Path "$(Split-Path $this.Path)\$MinerThreadsConfigFile" -PathType Leaf) { 
                     #Remove old config files, thread info is no longer valid
                     Write-Message -Level Warn "Hardware change detected. Deleting existing configuration files for miner $($this.Info)'."
-                    Remove-Item -Path "$(Split-Path $this.Path)\$MinerThreadsConfigFile" -Force -ErrorAction SilentlyContinue
+                    Remove-Item -Path "$(Split-Path $this.Path)\$MinerThreadsConfigFile" -Force  -ErrorAction Ignore
                 }
 
                 #Temporarily start miner with empty thread conf file. The miner will then create a hw config file with default threads info for all platform hardware
@@ -61,7 +61,7 @@ class Fireice : Miner {
                             #Keep one instance per gpu config
                             $ThreadsConfigJson | Add-Member gpu_threads_conf ($ThreadsConfigJson.gpu_threads_conf | Sort-Object -Property Index -Unique) -Force
                             #Write json file
-                            $ThreadsConfigJson | ConvertTo-Json -Depth 10 | Out-File -FilePath $PlatformThreadsConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+                            $ThreadsConfigJson | ConvertTo-Json -Depth 10 | Out-File -FilePath $PlatformThreadsConfigFile -Force -Encoding utf8NoBOM  -ErrorAction Ignore
                             Break
                         }
                         Start-Sleep -Milliseconds 500
@@ -76,13 +76,13 @@ class Fireice : Miner {
             }
             If (-not (Test-Path $MinerThreadsConfigFile -PathType Leaf)) { 
                 #Retrieve hw config from platform config file
-                $ThreadsConfigJson = Get-Content -Path $PlatformThreadsConfigFile | ConvertFrom-Json -ErrorAction SilentlyContinue
+                $ThreadsConfigJson = Get-Content -Path $PlatformThreadsConfigFile | ConvertFrom-Json  -ErrorAction Ignore
                 #Filter index for current cards and apply threads
                 $ThreadsConfigJson | Add-Member gpu_threads_conf ([Array]($ThreadsConfigJson.gpu_threads_conf | Where-Object { $Parameters.Devices -contains $_.Index }) * $Parameters.Threads) -Force
                 #Create correct numer of CPU threads
                 $ThreadsConfigJson | Add-Member cpu_threads_conf ([Array]$ThreadsConfigJson.cpu_threads_conf * $Parameters.Threads) -Force
                 #Write config file
-                ($ThreadsConfigJson | ConvertTo-Json -Depth 10) -replace '^{' -replace '}$' | Out-File -FilePath $MinerThreadsConfigFile -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+                ($ThreadsConfigJson | ConvertTo-Json -Depth 10) -replace '^{' -replace '}$' | Out-File -FilePath $MinerThreadsConfigFile -Force -Encoding utf8NoBOM  -ErrorAction Ignore
             }
         }
         catch { 
@@ -119,11 +119,12 @@ class Fireice : Miner {
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
 
         $PowerUsage = [Double]0
-        If ($this.ReadPowerUsage) { 
-            $PowerUsage = $this.GetPowerUsage()
-        }
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 
+            If ($this.ReadPowerUsage) { 
+                $PowerUsage = $this.GetPowerUsage()
+            }
+
             Return [PSCustomObject]@{ 
                 Date       = (Get-Date).ToUniversalTime()
                 HashRate   = $HashRate

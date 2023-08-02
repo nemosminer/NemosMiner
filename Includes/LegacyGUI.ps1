@@ -17,9 +17,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           LegacyGUI.psm1
-Version:        4.3.5.1
-Version date:   08 July 2023
+File:           \Includes\LegacyGUI.psm1
+Version:        4.3.6.0
+Version date:   31 July 2023
 #>
 
 # [Void] [System.Windows.Forms.Application]::EnableVisualStyles()
@@ -172,8 +172,8 @@ Function Update-TabControl {
                         @{ Name = "Algorithm(s)"; Expression = { $_.Algorithms -join ' & ' } }, 
                         @{ Name = "Pool(s)"; Expression = { $_.WorkersRunning.Pool.Name -join ' & ' } }
                         @{ Name = "Hashrate(s)"; Expression = { If (-not $_.Benchmark) { ($_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } } }
-                        @{ Name = "Running Time`n(hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [math]::floor(((Get-Date).ToUniversalTime() - $_.BeginTime).TotalDays * 24), ((Get-Date).ToUniversalTime() - $_.BeginTime) } }
-                        @{ Name = "Total active`n(hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [math]::floor($_.TotalMiningDuration.TotalDays * 24), $_.TotalMiningDuration } }
+                        @{ Name = "Running Time`n(hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [Math]::floor(((Get-Date).ToUniversalTime() - $_.BeginTime).TotalDays * 24), ((Get-Date).ToUniversalTime() - $_.BeginTime) } }
+                        @{ Name = "Total active`n(hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [Math]::floor($_.TotalMiningDuration.TotalDays * 24), $_.TotalMiningDuration } }
                         If ($RadioButtonPoolsUnavailable.checked) { @{ Name = "Reason"; Expression = { $_.Reasons -join ', ' } } }
                     ) | Sort-Object "Device(s)" | Out-DataTable
                     If ($LaunchedMinersDGV.Columns) { 
@@ -228,7 +228,7 @@ Function Update-TabControl {
 
                 # Apply change Factor
                 0..($Color.Count - 1) | ForEach-Object { 
-                    $Color[$_] = [math]::Abs(($Color[$_] + $Factors[$_]) % 192)
+                    $Color[$_] = [Math]::Abs(($Color[$_] + $Factors[$_]) % 192)
                 }
                 $Color
             }
@@ -313,7 +313,7 @@ Function Update-TabControl {
             }
             If ($Config.BalancesTrackerPollInterval -gt 0) { 
                 If ($Variables.Balances) { 
-                    $BalancesLabel.Text = "Balances data - Updated $(($Variables.Balances.Values.LastUpdated | Sort-Object | Select-Object -Last 1).ToLocalTime().ToString())"
+                    $BalancesLabel.Text = "Balances data - Updated $(($Variables.Balances.Values.LastUpdated | Sort-Object -Bottom 1).ToLocalTime().ToString())"
 
                     $BalancesDGV.BeginInit()
                     $BalancesDGV.ClearSelection()
@@ -1598,14 +1598,14 @@ $LegacyGUIForm.Add_FormClosing(
                 Write-Message -Level Info "Shutting down $($Variables.Branding.ProductLabel)..."
                 $Variables.NewMiningStatus = "Idle"
 
-                Stop-Mining
+                Stop-Core
                 Stop-IdleDetection
                 Stop-Brain
                 Stop-BalancesTracker
 
                 If ($LegacyGUIForm.DesktopBounds.Width -ge 0) { 
                     # Save window settings
-                    $LegacyGUIForm.DesktopBounds | ConvertTo-Json | Out-File -FilePath ".\Config\WindowSettings.json" -Force -Encoding utf8NoBOM -ErrorAction SilentlyContinue
+                    $LegacyGUIForm.DesktopBounds | ConvertTo-Json | Out-File -FilePath ".\Config\WindowSettings.json" -Force -Encoding utf8NoBOM  -ErrorAction Ignore
                 }
 
                 Write-Message -Level Info "$($Variables.Branding.ProductLabel) has shut down."

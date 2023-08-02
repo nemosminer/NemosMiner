@@ -18,12 +18,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           MiningPoolHub.ps1
-Version:        4.3.5.1
-Version date:   08 July 2023
+File:           \Pools\MiningPoolHub.ps1
+Version:        4.3.6.0
+Version date:   31 July 2023
 #>
-
-using module ..\Includes\Include.psm1
 
 param(
     [PSCustomObject]$Config,
@@ -34,6 +32,7 @@ param(
 $ProgressPreference = "SilentlyContinue"
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
+
 $PoolConfig = $Variables.PoolsConfig.$Name
 
 $Headers = @{ "Cache-Control" = "no-cache" }
@@ -41,8 +40,8 @@ $Useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 
 If ($PoolConfig.UserName) { 
 
-    $StartTime = (Get-Date)
     Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
+    $StartTime = (Get-Date)
 
     $APICallFails = 0
 
@@ -60,7 +59,7 @@ If ($PoolConfig.UserName) {
 
     $Divisor = 1000000000
 
-    $Request.return | Select-Object | ForEach-Object { 
+    $Request.return | ForEach-Object { 
         $Current = $_
 
         $Algorithm_Norm = Get-Algorithm $_.algo
@@ -70,7 +69,7 @@ If ($PoolConfig.UserName) {
 
         # Add coin name
         If ($Current.coin_name -and $Currency) { 
-            Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Current.coin_name
+            [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Current.coin_name)
         }
 
         # Temp fix
@@ -85,7 +84,7 @@ If ($PoolConfig.UserName) {
 
         If ($Current.host -eq "hub.miningpoolhub.com") { $Current.host_list = "hub.miningpoolhub.com" }
 
-        ForEach ($Region_Norm in $Variables.Regions.($Config.Region)) { 
+        ForEach ($Region_Norm in $Variables.Regions[$Config.Region]) { 
             If ($Region = $Regions | Where-Object { $_ -eq "n/a" -or (Get-Region $_) -eq $Region_Norm }) { 
 
                 If ($Region -eq "n/a") { $Region_Norm = $Region }
@@ -118,6 +117,7 @@ If ($PoolConfig.UserName) {
         }
     }
 
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
     Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 

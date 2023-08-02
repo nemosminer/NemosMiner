@@ -61,6 +61,7 @@
             var $table = $('#switchinglog');
 
             function formatData(data) {
+              async: 'true',
               $.each(data, function(index, item) {
                 // Format the action, must use 2nd attribute to allow hiding
                 item.tAction = item.Action;
