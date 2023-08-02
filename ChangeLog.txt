@@ -19,7 +19,7 @@ Changes:
 
 Fixes:
 - API: '/miners' returning corrupt compressed JSON
-- Core: Migitigate memory leak
+- Core: Mitigate memory leak
 - Include.psm1 / Update-DAGData: DAG size for FiroPowSCC was 0
 - Legacy GUI / Earnings graph: Sums were based on rounded values
 - Miners: Invalid miner name when '$MinerInstancePerDeviceModel -eq false' (Regression from v4.3.3.0)
