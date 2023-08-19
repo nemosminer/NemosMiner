@@ -1264,15 +1264,13 @@ Do {
                             }
                         }
                         Else { 
-                            If ($Miner.Data.Count -gt 0 -and $Miner.DataSampleTimestamp -gt [DateTime]0) { 
-                                If ((Get-Date).ToUniversalTime() -gt $Miner.DataSampleTimestamp.AddSeconds((($Miner.DataCollectInterval * 5), 10 | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) * $Miner.Algorithms.Count)) { 
-                                    # Miner stuck - no sample received in last few data collect intervals
-                                    $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' has not updated data for more than $((($Miner.DataCollectInterval * 5), 10 | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) * $Miner.Algorithms.Count) seconds."
-                                    $Miner.SetStatus([MinerStatus]::Failed)
-                                    $Variables.FailedMiners += $Miner
-                                }
+                            If ($Miner.ValidDataSampleTimestamp -gt [DateTime]0 -and (Get-Date).ToUniversalTime() -gt $Miner.DataSampleTimestamp.AddSeconds((($Miner.DataCollectInterval * 5), 10 | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) * $Miner.Algorithms.Count)) { 
+                                # Miner stuck - no sample received in last few data collect intervals
+                                $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' has not updated data for more than $((($Miner.DataCollectInterval * 5), 10 | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) * $Miner.Algorithms.Count) seconds."
+                                $Miner.SetStatus([MinerStatus]::Failed)
+                                $Variables.FailedMiners += $Miner
                             }
-                            ElseIf ((Get-Date).ToUniversalTime() -gt $Miner.BeginTime.AddSeconds($Miner.WarmupTimes[0])) { 
+                            ElseIf ((Get-Date).ToUniversalTime() -gt $Miner.BeginTime.AddSeconds($Miner.WarmupTimes[0]) -and $Miner.DataSampleTimestamp -eq [DateTime]0) { 
                                 # Stop miner, it has not provided hash rate on time
                                 $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' has not provided first data sample in $($Miner.WarmupTimes[0]) seconds."
                                 $Miner.SetStatus([MinerStatus]::Failed)
@@ -1280,6 +1278,7 @@ Do {
                             }
                         }
                     }
+                    Remove-Variable Sample, Samples -ErrorAction Ignore
                 }
                 Catch { 
                     "$(Get-Date -Format "yyyy-MM-dd_HH:mm:ss")" >> "Logs\Error.txt"

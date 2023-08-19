@@ -29,7 +29,7 @@ $Path = ".\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "MemeHash"; MinMemGiB = 1; MinerSet = 1; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @("Other"); Arguments = " --algo memehash" }
+    [PSCustomObject]@{ Algorithm = "MemeHash"; MinMemGiB = 1; MinerSet = 1; WarmupTimes = @(60, 0); ExcludeGPUArchitecture = @("Other"); Arguments = " --algo memehash" }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
