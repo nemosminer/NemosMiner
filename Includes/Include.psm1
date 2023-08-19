@@ -192,7 +192,6 @@ Class Miner {
     [Double]$Earning_Accuracy # derived from pool and stats
     [DateTime]$EndTime
     [String[]]$EnvVars = @()
-    [DateTime]$ValidDataSampleTimestamp = 0
     [Double[]]$Hashrates_Live = @()
     [String]$Info
     [Boolean]$KeepRunning = $false # do not stop miner even if not best (MinInterval)
@@ -226,11 +225,12 @@ Class Miner {
     [String]$Type
     [DateTime]$Updated # derived from stats
     [String]$URI
-    [Worker[]]$Workers = @()
-    [Worker[]]$WorkersRunning = @()
+    [DateTime]$ValidDataSampleTimestamp = 0
     [String]$Version
     [Int[]]$WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
     [String]$WindowStyle = "minimized"
+    [Worker[]]$Workers = @()
+    [Worker[]]$WorkersRunning = @()
 
     hidden [PSCustomObject[]]$Data = $null
     hidden [System.Management.Automation.Job]$DataReaderJob = $null
@@ -348,7 +348,7 @@ Class Miner {
             $this.ProcessJob = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -WindowStyle $this.WindowStyle -EnvBlock $this.EnvVars -JobName $this.Name -LogFile $this.LogFile
 
             # Sometimes the process cannot be found instantly
-            $Loops = 10
+            $Loops = 50
             Do { 
                 $Loops --
                 If ($this.ProcessId = ($this.ProcessJob | Receive-Job | Select-Object -ExpandProperty ProcessId)) { 
@@ -388,6 +388,7 @@ Class Miner {
 
         If ($this.Process) { 
             $this.Process.CloseMainWindow()
+            Stop-Process -Id $this.ProcessId -Force -ErrorAction Ignore
             $this.Process = $null
         }
 
