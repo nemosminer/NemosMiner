@@ -158,7 +158,7 @@ Do {
                         $Variables.PoolName = $Variables.DonationRandomPoolsConfig.psBase.Keys
                         $Variables.PoolsConfig = $Variables.DonationRandomPoolsConfig
                         $Variables.NiceHashWalletIsInternal = $false
-                        Write-Message -Level Info "Donation run: Mining for '$($Variables.DonationRandom.Name)' for the next $(If (($Config.Donation - ((Get-Date) - $Variables.DonationStart).Minutes) -gt 1) { "$($Config.Donation - ((Get-Date) - $Variables.DonationStart).Minutes) minutes" } Else { "minute" }). $($Variables.Branding.ProductLabel) will use these pools while donating: '$($Variables.PoolName -join ', ')'."
+                        Write-Message -Level Info "Donation run: Mining for '$($Variables.DonationRandom.Name)' for the next $(If (($Config.Donation - ((Get-Date) - $Variables.DonationStart).Minutes) -gt 1) { "$($Config.Donation - ((Get-Date) - $Variables.DonationStart).Minutes) minutes" } Else { "minute" }). While donating $($Variables.Branding.ProductLabel) will use these pools: '$($Variables.PoolName -join ', ')'."
                     }
                 }
 
@@ -1131,12 +1131,12 @@ Do {
                 $Miner.Hashrates_Live = @($Miner.Workers | ForEach-Object { [Double]::NaN })
                 $Miner.PowerUsage = [Double]::NaN
                 $Miner.PowerUsage_Live = [Double]::NaN
+                $Miner.ValidDataSampleTimestamp = [DateTime]0
 
                 If ($Miner.Benchmark -or $Miner.MeasurePowerUsage) { 
                     $Miner.Data = @() # When benchmarking clear data on each miner start
                     $Miner.Earning = [Double]::NaN
                     $Miner.Earning_Bias = [Double]::NaN
-                    $Miner.ValidDataSampleTimestamp = [DateTime]0
                     If ($Miner.MeasurePowerUsage) {
                         $Miner.Profit = [Double]::NaN
                         $Miner.Profit_Bias = [Double]::NaN
