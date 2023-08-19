@@ -30,6 +30,9 @@ If ($Config.Transcript) { Start-Transcript -Path ".\Debug\$((Get-Item $MyInvocat
 
 Do { 
     Try { 
+    # Set master timer
+    $Variables.Timer = (Get-Date).ToUniversalTime()
+
         Get-ChildItem -Path ".\Includes\MinerAPIs" -File | ForEach-Object { . $_.FullName }
 
         # Internet connection check (only when no new pools or miner has failed)
