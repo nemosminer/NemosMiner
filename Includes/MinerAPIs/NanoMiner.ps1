@@ -18,19 +18,19 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\NanoMiner.ps1
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 Class NanoMiner : Miner { 
     [Void]CreateConfigFiles() { 
-        $Parameters = $this.Arguments | ConvertFrom-Json  -ErrorAction Ignore
+        $Parameters = $this.Arguments | ConvertFrom-Json -ErrorAction Ignore
 
         Try { 
             $ConfigFile = "$(Split-Path $this.Path)\$($Parameters.ConfigFile.FileName)"
             #Write config files. Do not overwrite existing files to preserve optional manual customization
             If (-not (Test-Path -Path $ConfigFile -PathType Leaf)) { 
-                $Parameters.ConfigFile.Content | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM  -ErrorAction Ignore
+                $Parameters.ConfigFile.Content | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM -ErrorAction Ignore
             }
         }
         Catch { 
@@ -65,11 +65,11 @@ Class NanoMiner : Miner {
 
         ForEach ($Algorithm in $Algorithms) { 
             $HashRate_Name = Get-Algorithm $this.Algorithms[$Algorithms.IndexOf($Algorithm)]
-            $HashRate_Value = [Double]($Data.Algorithms.$Algorithm.Total.Hashrate | Measure-Object -Sum).Sum
+            $HashRate_Value = [Double]($Data.Algorithms.$Algorithm.Total.Hashrate | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
             $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
-            $Shares_Accepted = [Int64]($Data.Algorithms.$Algorithm.Total.Accepted | Measure-Object -Sum).Sum
-            $Shares_Rejected = [Int64]($Data.Algorithms.$Algorithm.Total.Denied | Measure-Object -Sum).Sum
+            $Shares_Accepted = [Int64]($Data.Algorithms.$Algorithm.Total.Accepted | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
+            $Shares_Rejected = [Int64]($Data.Algorithms.$Algorithm.Total.Denied | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
             $Shares_Invalid = [Int64]0
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
         }

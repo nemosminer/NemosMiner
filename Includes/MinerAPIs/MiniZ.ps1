@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\MiniZ.ps1
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 Class MiniZ : Miner { 
@@ -41,13 +41,13 @@ Class MiniZ : Miner {
 
         $HashRate = [PSCustomObject]@{ }
         $HashRate_Name = [String]$this.Algorithms[0]
-        $HashRate_Value = [Double]($Data.result.speed_sps | Measure-Object -Sum).Sum
-        If (-not $HashRate_Value) { $HashRate_Value = [Double]($Data.result.sol_ps | Measure-Object -Sum).Sum } #fix
+        $HashRate_Value = [Double]($Data.result.speed_sps | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
+        If (-not $HashRate_Value) { $HashRate_Value = [Double]($Data.result.sol_ps | Measure-Object -Sum | Select-Object -ExpandProperty Sum) } #fix
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
         $Shares = [PSCustomObject]@{ }
-        $Shares_Accepted = [Int64]($Data.result.accepted_shares | Measure-Object -Sum).Sum
-        $Shares_Rejected = [Int64]($Data.result.rejected_shares | Measure-Object -Sum).Sum
+        $Shares_Accepted = [Int64]($Data.result.accepted_shares | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
+        $Shares_Rejected = [Int64]($Data.result.rejected_shares | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
         $Shares_Invalid = [Int64]0
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
 
@@ -55,7 +55,7 @@ Class MiniZ : Miner {
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 
             If ($this.ReadPowerUsage) { 
-                $PowerUsage = [Double]($Data.result | Measure-Object gpu_power_usage -Sum).Sum
+                $PowerUsage = [Double]($Data.result | Measure-Object gpu_power_usage -Sum | Select-Object -ExpandProperty Sum)
                 If (-not $PowerUsage) { 
                     $PowerUsage = $this.GetPowerUsage()
                 }

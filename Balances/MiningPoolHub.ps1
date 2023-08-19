@@ -18,13 +18,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Balances\MiningPoolHub.ps1
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$RetryCount = 3
-$RetryDelay = 6
+
+$RetryInterval = $Config.PoolsConfig.$Name.PoolAPIRetryInterval
+$PoolAPITimeout = $Config.PoolsConfig.$Name.PoolAPITimeout
+$RetryCount = $Config.PoolsConfig.$Name.PoolAPIRetryInterval
 
 $Headers = @{ "Cache-Control" = "no-cache" }
 $Useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"
@@ -32,7 +34,7 @@ $Useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 While (-not $UserAllBalances -and $RetryCount -gt 0 -and $Config.MiningPoolHubAPIKey) { 
     Try { 
         $Url = "https://miningpoolhub.com/"
-        $WebResponse = Invoke-WebRequest -Uri $Url -TimeoutSec $Config.PoolAPITimeout -ErrorAction Ignore
+        $WebResponse = Invoke-WebRequest -Uri $Url -TimeoutSec $PoolAPITimeout -ErrorAction Ignore
 
         # PWSH 6+ no longer supports basic parsing -> parse text
         $CoinList = [System.Collections.Generic.List[PSCustomObject]]@()
@@ -53,11 +55,11 @@ While (-not $UserAllBalances -and $RetryCount -gt 0 -and $Config.MiningPoolHubAP
         }
         $CoinList = $CoinList | Sort-Object
 
-        $UserAllBalances = ((Invoke-RestMethod "http://miningpoolhub.com/index.php?page=api&action=getuserallbalances&api_key=$($Config.MiningPoolHubAPIKey)" -TimeoutSec $Config.PoolAPITimeout -ErrorAction Ignore).getuserallbalances).data | Where-Object { $_.confirmed -gt 0 -or $_.unconfirmed -gt 0 }
+        $UserAllBalances = ((Invoke-RestMethod "http://miningpoolhub.com/index.php?page=api&action=getuserallbalances&api_key=$($Config.MiningPoolHubAPIKey)" -Headers $Headers -TimeoutSec $PoolAPITimeout -ErrorAction Ignore).getuserallbalances).data | Where-Object { $_.confirmed -gt 0 -or $_.unconfirmed -gt 0 }
 
         If ($Config.LogBalanceAPIResponse) { 
-            "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
-            $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
+            "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction Ignore
+            $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction Ignore
             $UserAllBalances | ConvertTo-Json -Depth 10 >> ".\Logs\BalanceAPIResponse_$($Name).json"
         }
 
@@ -65,37 +67,37 @@ While (-not $UserAllBalances -and $RetryCount -gt 0 -and $Config.MiningPoolHubAP
             $CoinList | ForEach-Object { 
 
                 $CoinBalance = $null
-                $RetryCount2 = 3
+                $RetryCount2 = $Config.PoolsConfig.$Name.PoolAPIRetryInterval
 
                 While (-not ($CoinBalance) -and $RetryCount2 -gt 0) { 
                     $RetryCount2--
                     Try { 
-                        $CoinBalance = ((Invoke-RestMethod "http://$($_).miningpoolhub.com/index.php?page=api&action=getuserbalance&api_key=$($Config.MiningPoolHubAPIKey)" -Headers $Headers -UserAgent $UserAgent -TimeoutSec $Config.PoolAPITimeout -ErrorAction Ignore).getuserbalance).data
+                        $CoinBalance = ((Invoke-RestMethod "http://$($_).miningpoolhub.com/index.php?page=api&action=getuserbalance&api_key=$($Config.MiningPoolHubAPIKey)" -Headers $Headers -UserAgent $UserAgent -TimeoutSec $PoolAPITimeout -ErrorAction Ignore).getuserbalance).data
                         If ($Config.LogBalanceAPIResponse) { 
-                            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\CoinBalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
+                            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\CoinBalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction Ignore
                         }
                     }
                     Catch { 
-                        Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
+                        Start-Sleep -Seconds $RetryInterval # Pool might not like immediate requests
                     }
                 }
 
                 If ($Balance = $UserAllBalances | Where-Object { $_.confirmed -eq $CoinBalance.confirmed -and $_.unconfirmed -eq $CoinBalance.unconfirmed }) { 
                     $Currency = ""
-                    $RetryCount2 = 3
+                    $RetryCount2 = $Config.PoolsConfig.$Name.PoolAPIRetryInterval
                     $PoolInfo = $null
 
                     While (-not ($PoolInfo) -and $RetryCount2 -gt 0) { 
                         $RetryCount2--
                         Try { 
-                            $PoolInfo = ((Invoke-RestMethod "http://$($_).miningpoolhub.com/index.php?page=api&action=getpoolinfo&api_key=$($Config.MiningPoolHubAPIKey)" -Headers $Headers -UserAgent $UserAgent -TimeoutSec $Config.PoolAPITimeout -ErrorAction Ignore).getpoolinfo).data
+                            $PoolInfo = ((Invoke-RestMethod "http://$($_).miningpoolhub.com/index.php?page=api&action=getpoolinfo&api_key=$($Config.MiningPoolHubAPIKey)" -Headers $Headers -UserAgent $UserAgent -TimeoutSec $PoolAPITimeout -ErrorAction Ignore).getpoolinfo).data
                             If ($Config.LogBalanceAPIResponse) { 
-                                $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
+                                $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction Ignore
                             }
                             $Currency = $PoolInfo.currency
                         }
                         Catch { 
-                            Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
+                            Start-Sleep -Seconds $RetryInterval # Pool might not like immediate requests
                         }
                     }
 
@@ -127,7 +129,7 @@ While (-not $UserAllBalances -and $RetryCount -gt 0 -and $Config.MiningPoolHubAP
         }
     }
     Catch { 
-        Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
+        Start-Sleep -Seconds $RetryInterval # Pool might not like immediate requests
     }
 
     $RetryCount--

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\CCminer.ps1
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 Class CcMiner : Miner { 
@@ -46,8 +46,8 @@ Class CcMiner : Miner {
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
         $Shares = [PSCustomObject]@{ }
-        $Shares_Accepted = [Int64]($Data.ACC | Measure-Object -Sum).Sum
-        $Shares_Rejected = [Int64]($Data.REJ | Measure-Object -Sum).Sum
+        $Shares_Accepted = [Int64]($Data.ACC | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
+        $Shares_Rejected = [Int64]($Data.REJ | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
         $Shares_Invalid = [Int64]0
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
 

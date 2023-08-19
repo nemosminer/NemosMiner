@@ -18,31 +18,32 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Balances\Hiveon.ps1
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 
-$Config.PoolsConfig.$Name.Wallets.psBase.Keys | Where-Object { $_ -in @("BTC", "ETC", "RVN") } | ForEach-Object { 
+$PoolConfig = $Config.PoolsConfig.$Name
+$PoolConfig.Wallets.psBase.Keys | Where-Object { $_ -in @("BTC", "ETC", "RVN") } | ForEach-Object { 
 
     $APIResponse = $null
     $Currency = $_.ToUpper()
-    $Wallet = ($Config.PoolsConfig.$Name.Wallets.$_ -replace "^0x").ToLower()
-    $RetryCount = 3
-    $RetryDelay = 3
+    $Wallet = ($PoolConfig.Wallets.$_ -replace "^0x").ToLower()
+    $RetryCount = $PoolConfig.PoolAPIAllowedFailureCount
+    $RetryInterval = $PoolConfig.PoolAPIRetryInterval
 
     $Request = "https://Hiveon.net/api/v1/stats/miner/$Wallet/$Currency/billing-acc"
 
     While (-not $APIResponse -and $RetryCount -gt 0 -and $Wallet) { 
 
         Try { 
-            $APIResponse = Invoke-RestMethod $Request -TimeoutSec $Config.PoolAPITimeout -ErrorAction Ignore
+            $APIResponse = Invoke-RestMethod $Request -TimeoutSec $PoolConfig.PoolAPITimeout -ErrorAction Ignore
 
             If ($Config.LogBalanceAPIResponse) { 
-                "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
-                $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
-                $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
+                "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction Ignore
+                $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction Ignore
+                $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction Ignore
             }
 
             If ($APIResponse.earningStats) { 
@@ -50,7 +51,7 @@ $Config.PoolsConfig.$Name.Wallets.psBase.Keys | Where-Object { $_ -in @("BTC", "
                     DateTime = (Get-Date).ToUniversalTime()
                     Pool     = $Name
                     Currency = $_
-                    Wallet   = $Config.PoolsConfig.$Name.Wallets.$_
+                    Wallet   = $Wallet
                     Pending  = [Double]0
                     Balance  = [Double]$APIResponse.totalUnpaid
                     Unpaid   = [Double]$APIResponse.totalUnpaid
@@ -61,7 +62,7 @@ $Config.PoolsConfig.$Name.Wallets.psBase.Keys | Where-Object { $_ -in @("BTC", "
             }
         }
         Catch { 
-            Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
+            Start-Sleep -Seconds $RetryInterval # Pool might not like immediate requests
         }
 
         $RetryCount--

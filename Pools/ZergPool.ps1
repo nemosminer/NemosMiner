@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\ZergPool.ps1
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 param(
@@ -45,8 +45,9 @@ $BrainDataFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Dir
 
 If ($DivisorMultiplier -and $Regions -and $Wallet) {
 
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
     $StartTime = (Get-Date)
+
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
 
     $PayoutThreshold = $PoolConfig.PayoutThreshold.$PayoutCurrency
     If (-not $PayoutThreshold -and $PoolConfig.PayoutThreshold.mBTC) { $PayoutThreshold = $PoolConfig.PayoutThreshold.mBTC / 1000 }
@@ -100,8 +101,8 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
                     Host                     = [String]$PoolHost
                     Name                     = [String]$PoolVariant
                     Pass                     = "c=$PayoutCurrency$(If ($Currency -and -not $PoolConfig.ProfitSwitching) { ",mc=$Currency" }),ID=$($PoolConfig.WorkerName -replace "^ID=")$PayoutThresholdParameter" # Pool profit swiching breaks Option 2 (static coin), instead it will still send DAG data for any coin
-                    Port                     = If ($PoolConfig.SSL -eq "Always") { 0 } Else { [UInt16]$Request.$_.port }
-                    PortSSL                  = If ($PoolConfig.SSL -eq "Never") { 0 } Else { [UInt16]$Request.$_.tls_port }
+                    Port                     = [UInt16]$Request.$_.port
+                    PortSSL                  = [UInt16]$Request.$_.tls_port
                     Price                    = [Double]$Stat.Live
                     Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratum2" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                     Reasons                  = $Reasons
@@ -119,7 +120,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
         }
     }
 
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
+    # Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
     Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 

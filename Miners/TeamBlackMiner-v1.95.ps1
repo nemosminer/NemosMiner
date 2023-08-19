@@ -17,13 +17,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.CUDAVersion -ge "11.6") })) { Return }
 
-$Uri = "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.95/TeamBlackMiner_1_95_cuda_12.7z"
+$URI = "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.95/TeamBlackMiner_1_95_cuda_12.7z"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\TBMiner.exe"
 
@@ -81,9 +81,6 @@ If ($Algorithms) {
                 $Arguments = $_.Arguments
                 $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })" -replace ' '
 
-                # Get arguments for available miner devices
-                # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo", "cl-devices", "cuda-devices", "tweak") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
-
                 $Arguments += " --hostname $($AllMinerPools.($_.Algorithms[0]).Host)"
                 $Arguments += " --wallet $($AllMinerPools.($_.Algorithms[0]).User)"
                 $Arguments += If ($AllMinerPools.($_.Algorithms[0]).PoolPorts[1]) { " --ssl-port $($AllMinerPools.($_.Algorithms[0]).PoolPorts[1])" } Else { " --port $($AllMinerPools.($_.Algorithms[0]).PoolPorts[0])"}
@@ -115,7 +112,7 @@ If ($Algorithms) {
                 [PSCustomObject]@{ 
                     Algorithms       = @($_.Algorithms | Select-Object)
                     API              = "TeamBlackMiner"
-                    Arguments        = ("$($Arguments) --api --api-version 1.4 --api-port $MinerAPIPort$($DeviceSelector.($AvailableMiner_Devices.Type | Select-Object -Unique)) [$(($AvailableMiner_Devices.($DeviceEnumerator.($AvailableMiner_Devices.Type | Select-Object -Unique)) | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')]" -replace "\s+", " ").trim()
+                    Arguments        = ("$Arguments --api --api-version 1.4 --api-port $MinerAPIPort$($DeviceSelector.($AvailableMiner_Devices.Type | Select-Object -Unique)) [$(($AvailableMiner_Devices.($DeviceEnumerator.($AvailableMiner_Devices.Type | Select-Object -Unique)) | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')]" -replace "\s+", " ").trim()
                     DeviceNames      = $AvailableMiner_Devices.Name
                     Fee              = $_.Fee
                     MinerSet         = $_.MinerSet

@@ -22,7 +22,7 @@
             </div>
             <div id="balanceboxes" class="card-deck"></div>
             <script id="poolbalance_template" type="text/x-handlebars-template">
-              <div class="card m-3 rounded {{#if total}}text-white bg-primary{{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}300px{{/if}}">
+              <div class="card m-2 rounded {{#if total}}text-white bg-primary{{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}300px{{/if}}">
               <div class="card-header text-center">
                 <br>
                 {{#if total}}
@@ -125,15 +125,15 @@
                   <p>
                   <p class="card-text currencies">
                   <div class="payout text-center">
-                    {{#if payoutthreshold}}
+                    {{#if percentage includeZero=true}}
                       <div title="{{percentage}}% of {{convertRate payoutthreshold rates payoutthresholdcurrency maincurrency}} {{maincurrency}}">
                         Payout threshold<br/>
                         <b>{{percentage}}%</b> of <b>{{payoutthreshold}} {{payoutthresholdcurrency}}</b>
                       </div>
                     {{else}}
-                      <div title="Threshold can not be determined">
+                      <div title="Exchangerate not available&#10;Threshold percentage can not be determined">
                         Payout threshold<br/>
-                        <b>Unknown {{payoutthresholdcurrency}}</b>
+                        <b> ???</b> of <b>{{payoutthreshold}} {{payoutthresholdcurrency}}</b>
                       </div>
                     {{/if}}
                     <br/>
@@ -398,98 +398,108 @@
                         });
 
                         $.each(result, function(index, item) {
-                          if (config.UsemBTC && item.Currency == 'BTC') {
-                            var currency = 'mBTC';
-                          } else {
-                            var currency = item.Currency;
-                          }
-
-                          if (config.UsemBTC && item.PayoutThresholdCurrency == 'BTC') {
-                            item.PayoutThresholdCurrency = 'mBTC';
-                            var factor = 0.001;
-                          } else {
-                            var factor = 1;
-                          }
-
-                          if (config.BalancesShowInAllCurrencies || footer.test(item.Pool)) {
-                            item.Currencies = [currency].concat(currencies);
-                          } else if (config.BalancesShowInMainCurrency || footer.test(item.Pool)) {
-                            item.Currencies = [currency].concat(config.Currency);
-                          } else {
-                            item.Currencies = [currency];
-                          }
-
-                          if (!(footer.test(item.Pool))) {
-
-                            if (rates[item.Currency]) currencyrate = rates[item.Currency][config.Currency];
-
-                            // Payout threshold currency is different from asset currency
-                            if (rates[item.Currency] && [item.PayoutThresholdCurrency]) {
-                              var percentage = (item.Balance / item.PayoutThreshold * rates[item.Currency][item.PayoutThresholdCurrency] * 100);
-                            } else { 
-                              var percentage = (item.Balance / item.PayoutThreshold * 100);
+                          try {
+                            if (config.UsemBTC && item.Currency == 'BTC') {
+                              var currency = 'mBTC';
+                            } else {
+                              var currency = item.Currency;
                             }
 
-                            var data = {
-                              name: item.Pool + ' (' + item.Currency + ')',
-                              uri: item.Uri,
-                              updated: formatDate(item.LastUpdated),
-                              balances: {},
-                              growth1: item.Growth1,
-                              growth6: item.Growth6,
-                              growth24: item.Growth24,
-                              growth168: item.Growth168,
-                              growth720: item.Growth720,
-                              avghourlygrowth: item.AvgHourlyGrowth,
-                              avgdailygrowth: item.AvgDailyGrowth,
-                              avgweeklygrowth: item.AvgWeeklyGrowth,
-                              payoutthreshold: parseFloat(item.PayoutThreshold).toFixed(config.DecimalsMax) / factor,
-                              payoutthresholdcurrency: item.PayoutThresholdCurrency,
-                              rate: currencyrate,
-                              rates: rates,
-                              currency: currency,
-                              maincurrency: config.Currency,
-                              percentage: (percentage * factor).toFixed(2),
-                              paydate: formatDate(item.ProjectedPayDate),
-                              showaverages: config.BalancesShowAverages,
-                              showsums: config.BalancesShowSums,
-                              title: "Data last collected from pool"
-                            };
-
-                            // Add warning symbol if data was not updated in last poll, add one minute to ensure completion of balance poll
-                            if ((new Date() - new Date(item.LastUpdated)) / 1000 > parseInt(config.BalancesTrackerPollInterval + 1) * 60) {
-                              outdatedicon = ' &#9888;&#65039;';
-                              data.title = "Outdated balance data"
-                              data.updated += outdatedicon;
+                            if (config.UsemBTC && item.PayoutThresholdCurrency == 'BTC') {
+                              item.PayoutThresholdCurrency = 'mBTC';
+                              var factor = 0.001;
+                            } else {
+                              var factor = 1;
                             }
 
-                            // Convert balance to other currencies
-                            if (rates[item.Currency]) {
-                              $.each(item.Currencies, function(cindex, currency) {
-                                if (rates[currency]) data['balances'][currency] = item.Balance * rates[item.Currency][currency];
+                            if (config.BalancesShowInAllCurrencies || footer.test(item.Pool)) {
+                              item.Currencies = [currency].concat(currencies);
+                            } else if (config.BalancesShowInMainCurrency || footer.test(item.Pool)) {
+                              item.Currencies = [currency].concat(config.Currency);
+                            } else {
+                              item.Currencies = [currency];
+                            }
+
+                            if (!(footer.test(item.Pool))) {
+
+                              if (rates[item.Currency]) currencyrate = rates[item.Currency][config.Currency];
+
+                              if (item.Currency != item.PayoutThresholdCurrency) {
+                                // Payout threshold currency is different from asset currency
+                                if (item.PayoutThresholdCurrency && rates[item.Currency] && rates[item.PayoutThresholdCurrency]) {
+                                  var percentage = ((item.Balance / item.PayoutThreshold * rates[item.Currency][item.PayoutThresholdCurrency] * 100) * factor).toFixed(2);
+                                } else {
+                                  // No exchangerate, cannot calculate percentage 
+                                  var percentage = null;
+                                }
+                              } else { 
+                                var percentage = ((item.Balance / item.PayoutThreshold * 100) * factor).toFixed(2);
+                              }
+
+                              var data = {
+                                name: item.Pool + ' (' + item.Currency + ')',
+                                uri: item.Uri,
+                                updated: formatDate(item.LastUpdated),
+                                balances: {},
+                                growth1: item.Growth1,
+                                growth6: item.Growth6,
+                                growth24: item.Growth24,
+                                growth168: item.Growth168,
+                                growth720: item.Growth720,
+                                avghourlygrowth: item.AvgHourlyGrowth,
+                                avgdailygrowth: item.AvgDailyGrowth,
+                                avgweeklygrowth: item.AvgWeeklyGrowth,
+                                // payoutthreshold: item.PayoutThreshold,
+                                payoutthreshold: parseFloat(item.PayoutThreshold / factor).toFixed(config.DecimalsMax),
+                                payoutthresholdcurrency: item.PayoutThresholdCurrency,
+                                rate: currencyrate,
+                                rates: rates,
+                                currency: currency,
+                                maincurrency: config.Currency,
+                                percentage: percentage,
+                                paydate: formatDate(item.ProjectedPayDate),
+                                showaverages: config.BalancesShowAverages,
+                                showsums: config.BalancesShowSums,
+                                title: "Data last collected from pool"
+                              };
+
+                              // Add warning symbol if data was not updated in last poll, add one minute to ensure completion of balance poll
+                              if ((new Date() - new Date(item.LastUpdated)) / 1000 > parseInt(config.BalancesTrackerPollInterval + 1) * 60) {
+                                outdatedicon = ' &#9888;&#65039;';
+                                data.title = "Outdated balance data"
+                                data.updated += outdatedicon;
+                              }
+
+                              // Convert balance to other currencies
+                              if (rates[item.Currency]) {
+                                $.each(item.Currencies, function(cindex, currency) {
+                                  if (rates[currency]) data['balances'][currency] = item.Balance * rates[item.Currency][currency];
+                                });
+                                data.balanceinmaincurrency = item.Balance * rates[item.Currency][config.Currency];
+                              } else { 
+                                if (config.BalancesShowInAllCurrencies) {
+                                  data['balances']['Exchange rates unknown'] = "";
+                                }
+                                data['balances'][item.Currency] = item.Balance;
+                              }
+
+                              // build totals
+                              $.each(currencies, function(cindex, currency) {
+                                if (rates[item.Currency] && rates[currency]) {
+                                    data_sum['growth1'][currency]  += item.Growth1 * rates[item.Currency][currency];
+                                    data_sum['growth6'][currency]  += item.Growth6 * rates[item.Currency][currency];
+                                    data_sum['growth24'][currency] += item.Growth24 * rates[item.Currency][currency];
+                                    data_sum['growth168'][currency] += item.Growth168 * rates[item.Currency][currency];
+                                    data_sum['growth720'][currency] += item.Growth720 * rates[item.Currency][currency];
+                                    data_sum['balances'][currency] += item.Balance * rates[item.Currency][currency];
+                                }
                               });
-                              data.balanceinmaincurrency = item.Balance * rates[item.Currency][config.Currency];
-                            } else { 
-                              if (config.BalancesShowInAllCurrencies) {
-                                data['balances']['Exchange rates unknown'] = "";
-                              }
-                              data['balances'][item.Currency] = item.Balance;
+
+                              $('#balanceboxes').append(template(data));
                             }
-
-                            // build totals
-                            $.each(currencies, function(cindex, currency) {
-                              if (rates[item.Currency] && rates[currency]) {
-                                  data_sum['growth1'][currency]  += item.Growth1 * rates[item.Currency][currency];
-                                  data_sum['growth6'][currency]  += item.Growth6 * rates[item.Currency][currency];
-                                  data_sum['growth24'][currency] += item.Growth24 * rates[item.Currency][currency];
-                                  data_sum['growth168'][currency] += item.Growth168 * rates[item.Currency][currency];
-                                  data_sum['growth720'][currency] += item.Growth720 * rates[item.Currency][currency];
-                                  data_sum['balances'][currency] += item.Balance * rates[item.Currency][currency];
-                              }
-                            });
-
-                            $('#balanceboxes').append(template(data));
-                          }
+                          } catch {
+                            console.log(data);
+                          };
                         });
 
                         if (outdatedicon) {

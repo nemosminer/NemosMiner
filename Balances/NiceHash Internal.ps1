@@ -18,16 +18,20 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Balances\NiceHash Internal.ps1
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$PayoutCurrency = $Config.PoolsConfig.NiceHash.Variant.$Name.PayoutCurrency
-$Wallet = $Config.PoolsConfig.NiceHash.Variant.$Name.Wallets.$PayoutCurrency
+$PoolConfig = $Config.PoolsConfig.NiceHash
+$PayoutCurrency = $PoolConfig.Variant.$Name.PayoutCurrency
+$Wallet = $PoolConfig.Variant.$Name.Wallets.$PayoutCurrency
 $Key = $Config.NiceHashAPIKey
 $OrganizationID = $Config.NiceHashOrganizationID
 $Secret = $Config.NiceHashAPISecret
+
+$RetryCount = $PoolConfig.PoolAPIAllowedFailureCount
+$RetryInterval = $PoolConfig.PoolAPIRetryInterval
 
 Function Get-NiceHashRequest { 
     Param(
@@ -60,9 +64,6 @@ Function Get-NiceHashRequest {
     Return Invoke-RestMethod "https://api2.nicehash.com$($EndPoint)?extendedResponse=true" -TimeoutSec $Config.PoolAPITimeout -ErrorAction Stop -Method $Method -Headers $Headers
 }
 
-$RetryCount = 3
-$RetryDelay = 3
-
 $Method = "GET"
 $EndPoint = "/main/api/v2/accounting/account2/BTC/"
 
@@ -74,9 +75,9 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.NiceHashAPIKey -and
         $APIResponse = Get-NiceHashRequest -EndPoint $EndPoint -Method $Method -Key $Key -OrganizationID $OrganizationID -Secret $Secret
 
         If ($Config.LogBalanceAPIResponse) { 
-            "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
-            $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
-            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM  -ErrorAction Ignore
+            "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction Ignore
+            $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction Ignore
+            $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction Ignore
         }
 
         If ($APIResponse.active) { 
@@ -90,7 +91,7 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.NiceHashAPIKey -and
                 Unpaid     = [Double]$APIResponse.totalBalance
                 Withdrawal = [Double]$APIResponse.pendingDetails.withdrawal
                 #Total      = [Double]$APIResponse.pendingDetails.totalBalance
-                Url        = "https://www.nicehash.com/my/mining/rigs/$($Config.PoolsConfig.NiceHash.WorkerName)"
+                Url        = "https://www.nicehash.com/my/mining/rigs/$($PoolConfig.WorkerName)"
             }
         }
         Else { 
@@ -98,7 +99,7 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.NiceHashAPIKey -and
         }
     }
     Catch { 
-        Start-Sleep -Seconds $RetryDelay # Pool might not like immediate requests
+        Start-Sleep -Seconds $RetryInterval # Pool might not like immediate requests
     }
 
     $RetryCount--

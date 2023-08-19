@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\GMiner.ps1
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 Class GMiner : Miner { 
@@ -39,7 +39,7 @@ Class GMiner : Miner {
 
         $HashRate = [PSCustomObject]@{ }
         $HashRate_Name = [String]$this.Algorithms[0]
-        $HashRate_Value = [Double]($Data.devices.speed | Measure-Object -Sum).Sum
+        $HashRate_Value = [Double]($Data.devices.speed | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
         $Shares = [PSCustomObject]@{ }
@@ -49,7 +49,7 @@ Class GMiner : Miner {
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
 
         If ($HashRate_Name = [String]($this.Algorithms -ne $HashRate_Name)) {
-            $HashRate_Value = [Double]($Data.devices.speed2 | Measure-Object -Sum).Sum
+            $HashRate_Value = [Double]($Data.devices.speed2 | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
             $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
             $Shares_Accepted = [Int64]$Data.total_accepted_shares2
@@ -62,7 +62,7 @@ Class GMiner : Miner {
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 
             If ($this.ReadPowerUsage) { 
-                $PowerUsage = [Double]($Data.devices | Measure-Object power_usage -Sum).Sum
+                $PowerUsage = [Double]($Data.devices | Measure-Object power_usage -Sum | Select-Object -ExpandProperty Sum)
                 If (-not $PowerUsage) { 
                     $PowerUsage = $this.GetPowerUsage()
                 }

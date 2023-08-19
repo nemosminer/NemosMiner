@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\NiceHash.ps1
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 param(
@@ -34,6 +34,7 @@ $PoolHost = "auto.nicehash.com"
 
 $PoolConfig = $Variables.PoolsConfig.$Name
 $PoolVariant = If ($Variables.NiceHashWalletIsInternal) { "NiceHash Internal" } Else { "NiceHash External" }
+
 $Fee = $PoolConfig.Variant.$PoolVariant.Fee
 $PayoutCurrency = $PoolConfig.Variant.$PoolVariant.PayoutCurrency
 $Wallet = $PoolConfig.Variant.$PoolVariant.Wallets.$PayoutCurrency
@@ -42,6 +43,7 @@ $User = "$Wallet.$($PoolConfig.WorkerName -replace "^ID=")"
 If ($Wallet) { 
 
     $StartTime = (Get-Date)
+
     Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
 
     $APICallFails = 0
@@ -49,18 +51,18 @@ If ($Wallet) {
     Do {
         Try { 
             If (-not $Request) { 
-                $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec 3
+                $Request = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/public/simplemultialgo/info/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $PoolConfig.PoolAPITimeout
             }
             If (-not $RequestAlgodetails) { 
-                $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec 3
+                $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $PoolConfig.PoolAPITimeout
             }
             $Request.miningAlgorithms | ForEach-Object { $Algorithm = $_.Algorithm; $_ | Add-Member -Force @{ algodetails = $RequestAlgodetails.miningAlgorithms | Where-Object { $_.Algorithm -eq $Algorithm } } }
         }
         Catch { 
             $APICallFails ++
-            Start-Sleep -Seconds ($APICallFails * 3)
+            Start-Sleep -Seconds ($APICallFails * $PoolConfig.PoolAPIRetryInterval)
         }
-    } While (-not ($Request -and $RequestAlgodetails -and $APICallFails -lt 3))
+    } While (-not ($Request -and $RequestAlgodetails) -and $APICallFails -lt 3)
 
     If ($Request.miningAlgorithms) { 
 
@@ -89,8 +91,8 @@ If ($Wallet) {
                 Host                     = "$Algorithm.$PoolHost".ToLower()
                 Name                     = [String]$Name
                 Pass                     = "x"
-                Port                     = If ($PoolConfig.SSL -eq "Always") { 0 } Else { 9200 }
-                PortSSL                  = If ($PoolConfig.SSL -eq "Never") { 0 } Else { 443 }
+                Port                     = 9200
+                PortSSL                  = 443
                 Price                    = [Double]$Stat.Live
                 Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratumnh" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                 Region                   = [String]$PoolConfig.Region
@@ -105,7 +107,7 @@ If ($Wallet) {
         }
     }
 
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
+    # Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
     Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 

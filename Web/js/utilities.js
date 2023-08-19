@@ -86,7 +86,7 @@ function formatMiners(data) {
 
       // Format Mining Duration (DateTime)
       if (item.BeginTime == "0001-01-01T00:00:00") item.tMiningDuration = "n/a";
-      else item.tMiningDuration = formatTimeSince(item.BeginTime).replace(' ago' ,'').replace('-', 'just started');
+      else item.tMiningDuration = formatTimeSince(item.BeginTime).replace(' ago' ,'').replace('just now', 'just started');
 
       // Format status
       item.tStatus = enumminerstatus[item.Status];

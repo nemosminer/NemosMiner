@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\BzMiner.ps1
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 Class BzMiner : Miner {
@@ -48,21 +48,21 @@ Class BzMiner : Miner {
 
         If ($Devices.Hashrate.Count -eq $this.Algorithms.Count) { 
 
-            $HashRate_Value = [Double]($Devices | ForEach-Object { $_.hashrate[0] } | Measure-Object -Sum).Sum
+            $HashRate_Value = [Double]($Devices | ForEach-Object { $_.hashrate[0] } | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
             $HashRate | Add-Member @{$HashRate_Name = [Double]$HashRate_Value}
 
-            $Shares_Accepted = [Int64]($Devices | ForEach-Object { $_.valid_solutions[0] } | Measure-Object -Sum).Sum
-            $Shares_Rejected = [Int64]($Devices | ForEach-Object { $_.rejected_solutions[0] } | Measure-Object -Sum).Sum
-            $Shares_Invalid = [Int64]($Devices | ForEach-Object { $_.stale_solutions[0] } | Measure-Object -Sum).Sum
+            $Shares_Accepted = [Int64]($Devices | ForEach-Object { $_.valid_solutions[0] } | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
+            $Shares_Rejected = [Int64]($Devices | ForEach-Object { $_.rejected_solutions[0] } | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
+            $Shares_Invalid = [Int64]($Devices | ForEach-Object { $_.stale_solutions[0] } | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
 
             If ($HashRate_Name = [String]($this.Algorithms -ne $HashRate_Name)) {
-                $HashRate_Value = [Double]($Devices | ForEach-Object { $_.hashrate[1] } | Measure-Object -Sum).Sum
+                $HashRate_Value = [Double]($Devices | ForEach-Object { $_.hashrate[1] } | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
                 $HashRate | Add-Member @{$HashRate_Name = [Double]$HashRate_Value}
 
-                $Shares_Accepted = [Int64]($Devices | ForEach-Object { $_.valid_solutions[1] } | Measure-Object -Sum).Sum
-                $Shares_Rejected = [Int64]($Devices | ForEach-Object { $_.rejected_solutions[1] } | Measure-Object -Sum).Sum
-                $Shares_Invalid = [Int64]($Devices | ForEach-Object { $_.stale_solutions[1] } | Measure-Object -Sum).Sum
+                $Shares_Accepted = [Int64]($Devices | ForEach-Object { $_.valid_solutions[1] } | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
+                $Shares_Rejected = [Int64]($Devices | ForEach-Object { $_.rejected_solutions[1] } | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
+                $Shares_Invalid = [Int64]($Devices | ForEach-Object { $_.stale_solutions[1] } | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
                 $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
             }
         }
@@ -71,7 +71,7 @@ Class BzMiner : Miner {
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 
             If ($this.ReadPowerUsage) { 
-                $PowerUsage = [Double]($Data.Devices | Measure-Object power -Sum).Sum
+                $PowerUsage = [Double]($Data.Devices | Measure-Object power -Sum | Select-Object -ExpandProperty Sum)
                 If (-not $PowerUsage) { 
                     $PowerUsage = $this.GetPowerUsage()
                 }

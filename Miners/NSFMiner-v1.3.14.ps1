@@ -24,22 +24,21 @@ Version date:   2023/08/19
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.CUDAVersion -ge "9.1") } )) { Return }
 
 $URI = Switch ($Variables.DriverVersion.CUDA) { 
-    { $_ -ge "11.6" } { "https://github.com/Minerx117/miners/releases/download/EthMiner/ethminer-0.19.0-18-cuda11.6-windows-vs2019-amd64.zip"; Break }
-    { $_ -ge "10.0" } { "https://github.com/Minerx117/miners/releases/download/EthMiner/ethminer-0.19.0-18-cuda10.0-windows-amd64.zip"; Break }
-    Default           { "https://github.com/Minerx117/miners/releases/download/EthMiner/ethminer-0.19.0-18-cuda9.1-windows-amd64.zip" }
+    { $_ -ge "11.3" } { "https://github.com/Minerx117/miners/releases/download/NSFMiner/nsfminer_1.3.14-windows_10-cuda_11.3-opencl.zip"; Break }
+    { $_ -ge "11.2" } { "hhttps://github.com/Minerx117/miners/releases/download/NSFMiner/nsfminer_1.3.13-windows_10-cuda_11.2-opencl.zip"; Break }
+    Default           { Return }
 }
-$URI = "https://github.com/RainbowMiner/miner-binaries/releases/download/v1.3.14-nsfminer/nsfminer_1.3.14-windows_10-cuda_11.3-opencl.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\ethminer.exe"
+$Path = ".\Bin\$($Name)\nsfminer.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 # AMD miners may need https://github.com/ethereum-mining/ethminer/issues/2001
 # NVIDIA Enable Hardware-Accelerated GPU Scheduling
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD"; MinMemGiB = 0.87; ExcludePools = @(); MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --opencl --opencl-devices" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD"; MinMemGiB = 0.87; ExcludePools = @(); MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --opencl --devices" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
 
-    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA"; MinMemGiB = 0.87; ExcludePools = @(); MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --cuda --cuda-devices" } # PhoenixMiner-v6.2c is fastest but has dev fee
+    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA"; MinMemGiB = 0.87; ExcludePools = @(); MinerSet = 0; WarmupTimes = @(45, 0); Arguments = " --cuda --devices" } # PhoenixMiner-v6.2c is fastest but has dev fee
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
@@ -74,14 +73,14 @@ If ($Algorithms) {
                     "ethstratumnh" { "stratum2"; Break }
                     Default        { "stratum" }
                 }
-                $Protocol += If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { "+tls" } Else { "+tcp" }
+                $Protocol += If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { "+ssl" } Else { "+tcp" }
 
                 [PSCustomObject]@{ 
                     Algorithms  = @($_.Algorithm)
                     API         = "EthMiner"
-                    Arguments   = (" --pool $($Protocol)://$([System.Web.HttpUtility]::UrlEncode("$($AllMinerPools.($_.Algorithm).User)$(If ($AllMinerPools.($_.Algorithm).WorkerName) { ".$($AllMinerPools.($_.Algorithm).WorkerName)" })")):$([System.Web.HttpUtility]::UrlEncode($Pass))@$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts | Select-Object -Last 1) --exit --api-port -$MinerAPIPort $($_.Arguments) $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ' ')" -replace "\s+", " ").trim()
+                    Arguments   = ("--pool $($Protocol)://$([System.Web.HttpUtility]::UrlEncode("$($AllMinerPools.($_.Algorithm).User)$(If ($AllMinerPools.($_.Algorithm).WorkerName) { ".$($AllMinerPools.($_.Algorithm).WorkerName)" })")):$([System.Web.HttpUtility]::UrlEncode($Pass))@$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts | Select-Object -Last 1) --exit --api-port -$MinerAPIPort $($_.Arguments) $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ' ')" -replace "\s+", " ").trim()
                     DeviceNames = $AvailableMiner_Devices.Name
-                    EnvVars     = @("SSL_NOVERIFY=TRUE")
+                    EnvVars     = If ($Miner_Devices.Type -eq "AMD") { @("GPU_FORCE_64BIT_PTR=0") } Else { @() }
                     MinerSet    = $_.MinerSet
                     MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
                     Name        = $Miner_Name

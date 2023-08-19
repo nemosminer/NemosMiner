@@ -1,6 +1,3 @@
-using module .\Includes\Include.psm1
-using module .\Includes\API.psm1
-
 <#
 Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
 
@@ -21,9 +18,12 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
+
+using module .\Includes\Include.psm1
+using module .\Includes\APIServer.psm1
 
 param(
     [Parameter(Mandatory = $false)]
@@ -45,7 +45,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Boolean]$BalancesKeepAlive = $true, # If true will force mining at a pool to protect your earnings (some pools auto-purge the wallet after longer periods of inactivity, see '\Data\PoolData.Json' BalancesKeepAlive properties)
     [Parameter(Mandatory = $false)]
-    [Boolean]$BalancesShowSums = $true, #Show 1hr / 6hrs / 24hr / 7 day & 30day pool earning sums in web dashboard
+    [Boolean]$BalancesShowSums = $true, #Show 1hr / 6hrs / 24hr / 7day & 30day pool earning sums in web dashboard
     [Parameter(Mandatory = $false)]
     [Boolean]$BalancesShowAverages = $true, # Show 1hr / 24hr & 7day pool earning averages in web dashboard
     [Parameter(Mandatory = $false)]
@@ -53,7 +53,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Boolean]$BalancesShowInMainCurrency = $true, # If true pool balances will be shown in main currency in web dashboard
     [Parameter(Mandatory = $false)]
-    [String[]]$BalancesTrackerExcludePool = @(), # Balances tracker will not track these pools
+    [String[]]$BalancesTrackerExcludePools = @(), # Balances tracker will not track these pools
     [Parameter(Mandatory = $false)]
     [Switch]$BalancesTrackerLog = $false, # If true will store all balance tracker data in .\Logs\EarningTrackerLog.csv
     [Parameter(Mandatory = $false)]
@@ -203,6 +203,8 @@ param(
     [Parameter(Mandatory = $false)]
     [Switch]$ShowCoinName = $true, # Show CoinName column in main text window miner overview
     [Parameter(Mandatory = $false)]
+    [Switch]$ShowConsole = $true, # If true will console window will be shown
+    [Parameter(Mandatory = $false)]
     [Switch]$ShowCurrency = $true, # Show Currency column in main text window miner overview
     [Parameter(Mandatory = $false)]
     [Switch]$ShowEarning = $true, # Show miner earning column in main text window miner overview
@@ -287,7 +289,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"4.3.6.0"
+    Version      = [System.Version]"4.3.6.1"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -335,7 +337,7 @@ If (-not $Config.ConfigFileVersion -or [System.Version]::Parse($Config.ConfigFil
 }
 
 # Start transcript log
-If ($Config.Transcript) { Start-Transcript ".\Logs\$((Get-Item $MyInvocation.MyCommand.Path).BaseName)-Transcript_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
+If ($Config.Transcript) { Start-Transcript -Path ".\Debug\$((Get-Item $MyInvocation.MyCommand.Path).BaseName)-Transcript_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
 
 # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
 Start-LogReader
@@ -361,6 +363,7 @@ If ($PrerequisitesMissing = @($Prerequisites | Where-Object { -not (Test-Path -P
     $WscriptShell.Popup("Prerequisites missing.`nPlease install the required runtime modules.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
     Exit
 }
+Remove-Variable Prerequisites
 
 If ([System.Environment]::OSVersion.Version -lt [Version]"10.0.0.0" -and -not (Get-Command Get-PnpDevice)) { 
     Write-Message -Level Error "Windows Management Framework 5.1 is missing."
@@ -393,8 +396,8 @@ Catch {
     Add-Type -Path ".\Cache\~CPUID_$($PSVersionTable.PSVersion.ToString()).dll"
 }
 
-Import-Module NetSecurity  -ErrorAction Ignore
-Import-Module Defender  -ErrorAction Ignore -SkipEditionCheck
+Import-Module NetSecurity -ErrorAction Ignore
+Import-Module Defender -ErrorAction Ignore -SkipEditionCheck
 
 $Variables.VerthashDatPath = ".\Cache\VertHash.dat"
 If (Test-Path -Path $Variables.VerthashDatPath -PathType Leaf) { 
@@ -439,32 +442,6 @@ $Variables.RegexAlgoIsEthash = "^Autolykos2|^Etc?hash|^UbqHash"
 $Variables.RegexAlgoIsProgPow = "^EvrProgPow|^KawPow|^ProgPow|^FiroPow"
 $Variables.RegexAlgoHasDAG = "^Autolykos2|^Etc?hash|^EvrProgPow|^FiroPow|^KawPow|^Octopus|^ProgPow|^UbqHash"
 
-[Void](Get-Rate)
-
-# Set operational values for text window
-$Variables.ShowAccuracy = $Config.ShowAccuracy
-$Variables.ShowAllMiners = $Config.ShowAllMiners
-$Variables.ShowEarning = $Config.ShowEarning
-$Variables.ShowEarningBias = $Config.ShowEarningBias
-$Variables.ShowMinerFee = $Config.ShowMinerFee
-$Variables.ShowPool = $Config.ShowPool
-$Variables.ShowPoolBalances = $Config.ShowPoolBalances
-$Variables.ShowPoolFee = $Config.ShowPoolFee
-$Variables.ShowPowerCost = $Config.ShowPowerCost
-$Variables.ShowPowerUsage = $Config.ShowPowerUsage
-$Variables.ShowProfit = $Config.ShowProfit
-$Variables.ShowProfitBias = $Config.ShowProfitBias
-$Variables.ShowCoinName = $Config.ShowCoinName
-$Variables.ShowCurrency = $Config.ShowCurrency
-$Variables.ShowUser = $Config.ShowUser
-$Variables.UIStyle = $Config.UIStyle
-
-# Start Web GUI
-If ($Config.WebGUI) { 
-    Start-APIServer
-    Start-LogReader # To bring SnakeTail back in focus
-}
-
 $Variables.Summary = "Loading miner device information...<br>This may take a while."
 Write-Message -Level Verbose ($Variables.Summary -replace "<br>", " ")
 
@@ -478,7 +455,7 @@ $Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -notin $Var
 $Variables.Devices | Where-Object Name -in $Config.ExcludeDeviceName | Where-Object { $_.State -ne [DeviceState]::Unsupported } | ForEach-Object { $_.State = [DeviceState]::Disabled; $_.Status = "Disabled (ExcludeDeviceName: '$($_.Name)')" }
 
 # Load CUDA version table
-$Variables.CUDAVersionTable = Get-Content -Path ".\Data\CUDAVersion.json" | ConvertFrom-Json -AsHashtable
+$Variables.CUDAVersionTable = Get-Content -Path ".\Data\CUDAVersion.json" | ConvertFrom-Json -AsHashtable | Get-SortedObject
 If (-not $Variables.CUDAVersionTable) { 
     Write-Message -Level Error "Terminating Error - Cannot continue! File '.\Data\CUDAVersion.json' is not a valid JSON file. Please restore it from your original download."
     $WscriptShell.Popup("File '.\Data\CUDAVersion.json' is not a valid JSON file.`nPlease restore it from your original download.", 0, "Terminating error - Cannot continue!", 4112) | Out-Null
@@ -504,6 +481,9 @@ If ((Get-Content -Path ".\Cache\DriverVersion.json" | ConvertFrom-Json | Convert
     If (Test-Path -Path ".\Cache\DriverVersion.json" -PathType Leaf) { Write-Message -Level Warn "Graphis card driver version data changed. It is recommended to re-benchmark all miners." }
     $Variables.DriverVersion | ConvertTo-Json | Out-File -FilePath ".\Cache\DriverVersion.json" -Encoding utf8NoBOM -Force
 }
+
+# Start API server
+If ($Config.WebGUI) { Start-APIServer }
 
 # Rename existing switching log
 If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { Get-ChildItem -Path ".\Logs\SwitchingLog.csv" -File | Rename-Item -NewName { "SwitchingLog$($_.LastWriteTime.toString('_yyyy-MM-dd_HH-mm-ss')).csv" } }
@@ -579,8 +559,8 @@ Function MainLoop {
                     }
                     Stop-Core
                     Stop-IdleDetection
-                    Stop-Brain @($Variables.Brains.psBase.Keys | Where-Object { $_ -notin (Get-PoolBaseName $Config.PoolName) })
-                    Start-Brain @(Get-PoolBaseName $Config.PoolName)
+                    Stop-Brain @($Variables.Brains.psBase.Keys | Where-Object { $_ -notin (Get-PoolBaseName $Variables.PoolName) })
+                    Start-Brain @(Get-PoolBaseName $Variables.PoolName)
                     Start-BalancesTracker
                     Write-MonitoringData | Out-Null
 
@@ -633,169 +613,173 @@ Function MainLoop {
         }
     }
 
-    If ($host.UI.RawUI.KeyAvailable) { 
-        $KeyPressed = [System.Console]::ReadKey($true)
-        Start-Sleep -Milliseconds 300
-        $host.UI.RawUI.FlushInputBuffer()
+    If ($Config.ShowConsole) { 
+        If ($host.UI.RawUI.KeyAvailable) { 
+            $KeyPressed = [System.Console]::ReadKey($true)
+            Start-Sleep -Milliseconds 300
+            $host.UI.RawUI.FlushInputBuffer()
 
-        Switch ($KeyPressed.KeyChar) { 
-            "a" { 
-                $Variables.ShowAccuracy = -not $Variables.ShowAccuracy
-                Write-Host "'" -NoNewline; Write-Host "A" -ForegroundColor Cyan -NoNewline; Write-Host "ccuracy' column visibility set to " -NoNewline; If ($Variables.ShowAccuracy) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                Start-Sleep -Seconds 2
-                $Variables.RefreshNeeded = $true
-                Break
-            }
-            "b" { 
-                $Variables.ShowPoolBalances = -not $Variables.ShowPoolBalances
-                Write-Host "'Listing Pool " -NoNewline; Write-Host "B" -ForegroundColor Cyan -NoNewline; Write-Host "alances' set to " -NoNewline; If ($Variables.ShowPoolBalances) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                Start-Sleep -Seconds 2
-                $Variables.RefreshNeeded = $true
-                Break
-            }
-            "c" { 
-                If ($Variables.CalculatePowerCost) { 
-                    $Variables.ShowPowerCost = -not $Variables.ShowPowerCost
-                    Write-Host "'Power " -NoNewline; Write-Host "C" -ForegroundColor Cyan -NoNewline; Write-Host "ost' column visibility set to " -NoNewline; If ($Variables.ShowPowerCost) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                    Start-Sleep -Seconds 2
-                    $Variables.RefreshNeeded = $true
+            If ($KeyPressed.Key -eq 80 -and $KeyPressed.Modifiers -eq 5) { 
+                $Variables.SuspendCycle = -not $Variables.SuspendCycle
+                If ($Variables.SuspendCycle) { 
+                    Write-Message -Level Debug "'<Ctrl><Alt>P' pressed. Core cycle is suspended until you press '<Ctrl><Alt>P' again."
                 }
-                Break
-            }
-            "e" { 
-                $Variables.ShowEarning = -not $Variables.ShowEarning
-                Write-Host "'" -NoNewline; Write-Host "E" -ForegroundColor Cyan -NoNewline; Write-Host "arnings' column visibility set to " -NoNewline; If ($Variables.ShowEarning) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                Start-Sleep -Seconds 2
-                $Variables.RefreshNeeded = $true
-                Break
-            }
-            "f" { 
-                $Variables.ShowPoolFee = -not $Variables.ShowPoolFee
-                Write-Host "'Pool "-NoNewline; Write-Host "f" -ForegroundColor Cyan -NoNewline; Write-Host "ees' column visibility set to " -NoNewline; If ($Variables.ShowPoolFee) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                Start-Sleep -Seconds 2
-                $Variables.RefreshNeeded = $true
-                Break
-            }
-            "h" { 
-                Write-Host "`nHot key legend:"
-                Write-Host "a: Toggle " -NoNewline; Write-Host "A" -ForegroundColor Cyan -NoNewline; Write-Host "ccuracy column visibility (currently " -NoNewline; If ($Variables.ShowAccuracy) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
-                Write-Host "b: Toggle Listing Pool " -NoNewline; Write-Host "B" -ForegroundColor Cyan -NoNewline; Write-Host "alances (currently " -NoNewline; If ($Variables.ShowPoolBalances) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
-                If ($Variables.CalculatePowerCost) { 
-                    Write-Host "c: Toggle Power " -NoNewline; Write-Host "C" -ForegroundColor Cyan -NoNewline; Write-Host "ost column visibility (currently " -NoNewline; If ($Variables.ShowPowerCost) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
+                Else { 
+                    Write-Message -Level Debug "'<Ctrl><Alt>P' pressed. Core cycle is running again."
+                    If ((Get-Date).ToUniversalTime() -gt $Variables.EndCycleTime) { $Variables.EndCycleTime = (Get-Date).ToUniversalTime() }
                 }
-                Write-Host "e: Toggle " -NoNewline; Write-Host "E" -ForegroundColor Cyan -NoNewline; Write-Host "arnings column visibility (currently " -NoNewline; If ($Variables.ShowEarning) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
-                Write-Host "f: Toggle Pool " -NoNewline; Write-Host "f" -ForegroundColor Cyan -NoNewline; Write-Host "ees column visibility (currently " -NoNewline; If ($Variables.ShowPoolFee) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
-                Write-Host "i: Toggle Earning B" -NoNewline; Write-Host "i" -ForegroundColor Cyan -NoNewline; Write-Host "as column visibility (currently " -NoNewline; If ($Variables.ShowEarningBias) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
-                Write-Host "m: Toggle " -NoNewline; Write-Host "M" -ForegroundColor Cyan -NoNewline; Write-Host "iner Fees column visibility (currently " -NoNewline; If ($Variables.ShowMinerFee) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
-                Write-Host "n: Toggle Coin" -NoNewline; Write-Host "N" -ForegroundColor Cyan -NoNewline; Write-Host "ame column visibility (currently " -NoNewline; If ($Variables.ShowCoinName) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
-                Write-Host "p: Toggle " -NoNewline; Write-Host "P" -ForegroundColor Cyan -NoNewline; Write-Host "ool column visibility (currently " -NoNewline; If ($Variables.ShowPool) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
-                If ($Variables.CalculatePowerCost) { 
-                    Write-Host "r: Toggle P" -NoNewline; Write-Host "r" -ForegroundColor Cyan -NoNewline; Write-Host "ofit Bias column visibility (currently " -NoNewline; If ($Variables.ShowProfitBias) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
-                }
-                Write-Host "s: Toggle UI " -NoNewline; Write-Host "S" -ForegroundColor Cyan -NoNewline; Write-Host "tyle [full or light] (currently " -NoNewline; Write-Host "$($Variables.UIStyle)" -ForegroundColor Blue -NoNewline; Write-Host ")"
-                If ($Variables.CalculatePowerCost) { 
-                    Write-Host "t: Toggle Profi" -NoNewline; Write-Host "t" -ForegroundColor Cyan -NoNewline; Write-Host " column visibility (currently " -NoNewline; If ($Variables.ShowProfit) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
-                }
-                Write-Host "u: Toggle " -NoNewline; Write-Host "U" -ForegroundColor Cyan -NoNewline; Write-Host "ser column visibility (currently " -NoNewline; If ($Variables.ShowUser) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
-                Write-Host "v: Toggle Listing all a" -NoNewline; Write-Host "v" -ForegroundColor Cyan -NoNewline; Write-Host "ailable miners (currently " -NoNewline; If ($Variables.ShowAllMiners) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
-                If ($Variables.CalculatePowerCost) { 
-                    Write-Host "w: Toggle Po" -NoNewline; Write-Host "w" -ForegroundColor Cyan -NoNewline; Write-Host "er usage column visibility (currently " -NoNewline; If ($Config.CalculatePowerCost -and $Variables.ShowPowerUsage) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
-                }
-                Write-Host "y: Toggle Currenc" -NoNewline; Write-Host "y" -ForegroundColor Cyan -NoNewline; Write-Host " column visibility (currently " -NoNewline; If ($Variables.ShowCurrency) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
-                Break
-            }
-            "i" { 
-                $Variables.ShowEarningBias = -not $Variables.ShowEarningBias
-                Write-Host "'Earning B" -NoNewline; Write-Host "i" -ForegroundColor Cyan -NoNewline; Write-Host "as' column visibility set to " -NoNewline; If ($Variables.ShowEarningBias) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                Start-Sleep -Seconds 2
-                $Variables.RefreshNeeded = $true
-                Break
-            }
-            "m" { 
-                $Variables.ShowMinerFee = -not $Variables.ShowMinerFee
-                Write-Host "'" -NoNewline; Write-Host "M" -ForegroundColor Cyan -NoNewline; Write-Host "iner Fees' column visibility set to " -NoNewline; If ($Variables.ShowMinerFee) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                Start-Sleep -Seconds 2
-                $Variables.RefreshNeeded = $true
-                Break
-            }
-            "n" { 
-                $Variables.ShowCoinName = -not $Variables.ShowCoinName
-                Write-Host "'Coin" -NoNewline; Write-Host "N" -ForegroundColor Cyan -NoNewline; Write-Host "ame' column visibility set to " -NoNewline; If ($Variables.ShowCoinName) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                Start-Sleep -Seconds 2
-                $Variables.RefreshNeeded = $true
-                Break
-            }
-            "p" { 
-                $Variables.ShowPool = -not $Variables.ShowPool
-                Write-Host "'" -NoNewline; Write-Host "P" -ForegroundColor Cyan -NoNewline; Write-Host "ool name' column visibility set to " -NoNewline; If ($Variables.ShowPool) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                Start-Sleep -Seconds 2
-                $Variables.RefreshNeeded = $true
-                Break
-            }
-            "r" { 
-                If ($Variables.CalculatePowerCost) { 
-                    $Variables.ShowProfitBias = -not $Variables.ShowProfitBias
-                    Write-Host "'P" -NoNewline; Write-Host "r" -ForegroundColor Cyan -NoNewline; Write-Host "ofit Bias' column visibility set to " -NoNewline; If ($Variables.ShowProfitBias) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                    Start-Sleep -Seconds 2
-                    $Variables.RefreshNeeded = $true
-                }
-                Break
-            }
-            "s" { 
-                $Variables.UIStyle = If ($Variables.UIStyle -eq "light") { "full" } Else { "light" }
-                Write-Host "UI " -NoNewline; Write-Host "S" -ForegroundColor Cyan -NoNewline; Write-Host "tyle set to " -NoNewline; Write-Host "$($Variables.UIStyle)" -ForegroundColor Blue -NoNewline; Write-Host " (Information about miners run in the past, failed miners & watchdog timers will " -NoNewline; If ($Variables.UIStyle -eq "light") { Write-Host "not " -ForegroundColor Red -NoNewline }; Write-Host "be shown)."
-                Start-Sleep -Seconds 2
-                $Variables.RefreshNeeded = $true
-                Break
-            }
-            "t" { 
-                If ($Variables.CalculatePowerCost) { 
-                    $Variables.ShowProfit = -not $Variables.ShowProfit
-                    Write-Host "'" -NoNewline; Write-Host "P" -ForegroundColor Cyan -NoNewline; Write-Host "rofit' column visibility set to " -NoNewline; If ($Variables.ShowProfit) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                    Start-Sleep -Seconds 2
-                    $Variables.RefreshNeeded = $true
-                }
-                Break
-            }
-            "u" { 
-                $Variables.ShowUser = -not $Variables.ShowUser
-                Write-Host "'" -NoNewline; Write-Host "U" -ForegroundColor Cyan -NoNewline; Write-Host "ser' column visibility set to " -NoNewline; If ($Variables.ShowUser) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                Start-Sleep -Seconds 2
-                $Variables.RefreshNeeded = $true
-                Break
-            }
-            "v" { 
-                $Variables.ShowAllMiners = -not $Variables.ShowAllMiners
-                Write-Host "'Listing All a" -NoNewline; Write-Host "v" -ForegroundColor Cyan -NoNewline; Write-Host "ailable miners' set to " -NoNewline; If ($Variables.ShowAllMiners) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                Start-Sleep -Seconds 2
-                $Variables.RefreshNeeded = $true
-                Break
-            }
-            "w" { 
-                If ($Variables.CalculatePowerCost) { 
-                    $Variables.ShowPowerUsage = -not $Variables.ShowPowerUsage
-                    Write-Host "'Po" -NoNewline; Write-Host "w" -ForegroundColor Cyan -NoNewline; Write-Host "er usage' column visibility set to " -NoNewline; If ($Variables.ShowPowerUsage) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                    Start-Sleep -Seconds 2
-                    $Variables.RefreshNeeded = $true
-                }
-                Break
-            }
-            "y" { 
-                $Variables.ShowCurrency = -not $Variables.ShowCurrency
-                Write-Host "'Currenc" -NoNewline; Write-Host "y" -ForegroundColor Cyan -NoNewline; Write-Host "' column visibility set to " -NoNewline; If ($Variables.ShowCurrency) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
-                Start-Sleep -Seconds 2
-                $Variables.RefreshNeeded = $true
-                Break
-            }
-        }
-        If ($KeyPressed.Key -eq 80 -and $KeyPressed.Modifiers -eq 5) { 
-            $Variables.SuspendCycle = -not $Variables.SuspendCycle
-            If ($Variables.SuspendCycle) { 
-                Write-Message -Level Debug "'<Ctrl><Alt>P' pressed. Main cycle is suspended until you press '<Ctrl><Alt>P' again."
             }
             Else { 
-                Write-Message -Level Debug "'<Ctrl><Alt>P' pressed. Main cycle is running again."
-                If ((Get-Date).ToUniversalTime() -gt $Variables.EndCycleTime) { $Variables.EndCycleTime = (Get-Date).ToUniversalTime() }
+                Switch ($KeyPressed.KeyChar) { 
+                    "a" { 
+                        $Variables.ShowAccuracy = -not $Variables.ShowAccuracy
+                        Write-Host "'" -NoNewline; Write-Host "A" -ForegroundColor Cyan -NoNewline; Write-Host "ccuracy' column visibility set to " -NoNewline; If ($Variables.ShowAccuracy) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                        Start-Sleep -Seconds 2
+                        $Variables.RefreshNeeded = $true
+                        Break
+                    }
+                    "b" { 
+                        $Variables.ShowPoolBalances = -not $Variables.ShowPoolBalances
+                        Write-Host "'Listing Pool " -NoNewline; Write-Host "B" -ForegroundColor Cyan -NoNewline; Write-Host "alances' set to " -NoNewline; If ($Variables.ShowPoolBalances) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                        Start-Sleep -Seconds 2
+                        $Variables.RefreshNeeded = $true
+                        Break
+                    }
+                    "c" { 
+                        If ($Variables.CalculatePowerCost) { 
+                            $Variables.ShowPowerCost = -not $Variables.ShowPowerCost
+                            Write-Host "'Power " -NoNewline; Write-Host "C" -ForegroundColor Cyan -NoNewline; Write-Host "ost' column visibility set to " -NoNewline; If ($Variables.ShowPowerCost) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                            Start-Sleep -Seconds 2
+                            $Variables.RefreshNeeded = $true
+                        }
+                        Break
+                    }
+                    "e" { 
+                        $Variables.ShowEarning = -not $Variables.ShowEarning
+                        Write-Host "'" -NoNewline; Write-Host "E" -ForegroundColor Cyan -NoNewline; Write-Host "arnings' column visibility set to " -NoNewline; If ($Variables.ShowEarning) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                        Start-Sleep -Seconds 2
+                        $Variables.RefreshNeeded = $true
+                        Break
+                    }
+                    "f" { 
+                        $Variables.ShowPoolFee = -not $Variables.ShowPoolFee
+                        Write-Host "'Pool "-NoNewline; Write-Host "f" -ForegroundColor Cyan -NoNewline; Write-Host "ees' column visibility set to " -NoNewline; If ($Variables.ShowPoolFee) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                        Start-Sleep -Seconds 2
+                        $Variables.RefreshNeeded = $true
+                        Break
+                    }
+                    "h" { 
+                        Write-Host "`nHot key legend:"
+                        Write-Host "a: Toggle " -NoNewline; Write-Host "A" -ForegroundColor Cyan -NoNewline; Write-Host "ccuracy column visibility (currently " -NoNewline; If ($Variables.ShowAccuracy) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
+                        Write-Host "b: Toggle Listing Pool " -NoNewline; Write-Host "B" -ForegroundColor Cyan -NoNewline; Write-Host "alances (currently " -NoNewline; If ($Variables.ShowPoolBalances) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
+                        If ($Variables.CalculatePowerCost) { 
+                            Write-Host "c: Toggle Power " -NoNewline; Write-Host "C" -ForegroundColor Cyan -NoNewline; Write-Host "ost column visibility (currently " -NoNewline; If ($Variables.ShowPowerCost) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
+                        }
+                        Write-Host "e: Toggle " -NoNewline; Write-Host "E" -ForegroundColor Cyan -NoNewline; Write-Host "arnings column visibility (currently " -NoNewline; If ($Variables.ShowEarning) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
+                        Write-Host "f: Toggle Pool " -NoNewline; Write-Host "f" -ForegroundColor Cyan -NoNewline; Write-Host "ees column visibility (currently " -NoNewline; If ($Variables.ShowPoolFee) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
+                        Write-Host "i: Toggle Earning B" -NoNewline; Write-Host "i" -ForegroundColor Cyan -NoNewline; Write-Host "as column visibility (currently " -NoNewline; If ($Variables.ShowEarningBias) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
+                        Write-Host "m: Toggle " -NoNewline; Write-Host "M" -ForegroundColor Cyan -NoNewline; Write-Host "iner Fees column visibility (currently " -NoNewline; If ($Variables.ShowMinerFee) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
+                        Write-Host "n: Toggle Coin" -NoNewline; Write-Host "N" -ForegroundColor Cyan -NoNewline; Write-Host "ame column visibility (currently " -NoNewline; If ($Variables.ShowCoinName) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
+                        Write-Host "p: Toggle " -NoNewline; Write-Host "P" -ForegroundColor Cyan -NoNewline; Write-Host "ool column visibility (currently " -NoNewline; If ($Variables.ShowPool) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
+                        If ($Variables.CalculatePowerCost) { 
+                            Write-Host "r: Toggle P" -NoNewline; Write-Host "r" -ForegroundColor Cyan -NoNewline; Write-Host "ofit Bias column visibility (currently " -NoNewline; If ($Variables.ShowProfitBias) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
+                        }
+                        Write-Host "s: Toggle UI " -NoNewline; Write-Host "S" -ForegroundColor Cyan -NoNewline; Write-Host "tyle [full or light] (currently " -NoNewline; Write-Host "$($Variables.UIStyle)" -ForegroundColor Blue -NoNewline; Write-Host ")"
+                        If ($Variables.CalculatePowerCost) { 
+                            Write-Host "t: Toggle Profi" -NoNewline; Write-Host "t" -ForegroundColor Cyan -NoNewline; Write-Host " column visibility (currently " -NoNewline; If ($Variables.ShowProfit) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
+                        }
+                        Write-Host "u: Toggle " -NoNewline; Write-Host "U" -ForegroundColor Cyan -NoNewline; Write-Host "ser column visibility (currently " -NoNewline; If ($Variables.ShowUser) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
+                        Write-Host "v: Toggle Listing all a" -NoNewline; Write-Host "v" -ForegroundColor Cyan -NoNewline; Write-Host "ailable miners (currently " -NoNewline; If ($Variables.ShowAllMiners) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
+                        If ($Variables.CalculatePowerCost) { 
+                            Write-Host "w: Toggle Po" -NoNewline; Write-Host "w" -ForegroundColor Cyan -NoNewline; Write-Host "er usage column visibility (currently " -NoNewline; If ($Config.CalculatePowerCost -and $Variables.ShowPowerUsage) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
+                        }
+                        Write-Host "y: Toggle Currenc" -NoNewline; Write-Host "y" -ForegroundColor Cyan -NoNewline; Write-Host " column visibility (currently " -NoNewline; If ($Variables.ShowCurrency) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host ")"
+                        Break
+                    }
+                    "i" { 
+                        $Variables.ShowEarningBias = -not $Variables.ShowEarningBias
+                        Write-Host "'Earning B" -NoNewline; Write-Host "i" -ForegroundColor Cyan -NoNewline; Write-Host "as' column visibility set to " -NoNewline; If ($Variables.ShowEarningBias) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                        Start-Sleep -Seconds 2
+                        $Variables.RefreshNeeded = $true
+                        Break
+                    }
+                    "m" { 
+                        $Variables.ShowMinerFee = -not $Variables.ShowMinerFee
+                        Write-Host "'" -NoNewline; Write-Host "M" -ForegroundColor Cyan -NoNewline; Write-Host "iner Fees' column visibility set to " -NoNewline; If ($Variables.ShowMinerFee) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                        Start-Sleep -Seconds 2
+                        $Variables.RefreshNeeded = $true
+                        Break
+                    }
+                    "n" { 
+                        $Variables.ShowCoinName = -not $Variables.ShowCoinName
+                        Write-Host "'Coin" -NoNewline; Write-Host "N" -ForegroundColor Cyan -NoNewline; Write-Host "ame' column visibility set to " -NoNewline; If ($Variables.ShowCoinName) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                        Start-Sleep -Seconds 2
+                        $Variables.RefreshNeeded = $true
+                        Break
+                    }
+                    "p" { 
+                        $Variables.ShowPool = -not $Variables.ShowPool
+                        Write-Host "'" -NoNewline; Write-Host "P" -ForegroundColor Cyan -NoNewline; Write-Host "ool name' column visibility set to " -NoNewline; If ($Variables.ShowPool) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                        Start-Sleep -Seconds 2
+                        $Variables.RefreshNeeded = $true
+                        Break
+                    }
+                    "r" { 
+                        If ($Variables.CalculatePowerCost) { 
+                            $Variables.ShowProfitBias = -not $Variables.ShowProfitBias
+                            Write-Host "'P" -NoNewline; Write-Host "r" -ForegroundColor Cyan -NoNewline; Write-Host "ofit Bias' column visibility set to " -NoNewline; If ($Variables.ShowProfitBias) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                            Start-Sleep -Seconds 2
+                            $Variables.RefreshNeeded = $true
+                        }
+                        Break
+                    }
+                    "s" { 
+                        $Variables.UIStyle = If ($Variables.UIStyle -eq "light") { "full" } Else { "light" }
+                        Write-Host "UI " -NoNewline; Write-Host "S" -ForegroundColor Cyan -NoNewline; Write-Host "tyle set to " -NoNewline; Write-Host "$($Variables.UIStyle)" -ForegroundColor Blue -NoNewline; Write-Host " (Information about miners run in the past, failed miners & watchdog timers will " -NoNewline; If ($Variables.UIStyle -eq "light") { Write-Host "not " -ForegroundColor Red -NoNewline }; Write-Host "be shown)."
+                        Start-Sleep -Seconds 2
+                        $Variables.RefreshNeeded = $true
+                        Break
+                    }
+                    "t" { 
+                        If ($Variables.CalculatePowerCost) { 
+                            $Variables.ShowProfit = -not $Variables.ShowProfit
+                            Write-Host "'" -NoNewline; Write-Host "P" -ForegroundColor Cyan -NoNewline; Write-Host "rofit' column visibility set to " -NoNewline; If ($Variables.ShowProfit) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                            Start-Sleep -Seconds 2
+                            $Variables.RefreshNeeded = $true
+                        }
+                        Break
+                    }
+                    "u" { 
+                        $Variables.ShowUser = -not $Variables.ShowUser
+                        Write-Host "'" -NoNewline; Write-Host "U" -ForegroundColor Cyan -NoNewline; Write-Host "ser' column visibility set to " -NoNewline; If ($Variables.ShowUser) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                        Start-Sleep -Seconds 2
+                        $Variables.RefreshNeeded = $true
+                        Break
+                    }
+                    "v" { 
+                        $Variables.ShowAllMiners = -not $Variables.ShowAllMiners
+                        Write-Host "'Listing All a" -NoNewline; Write-Host "v" -ForegroundColor Cyan -NoNewline; Write-Host "ailable miners' set to " -NoNewline; If ($Variables.ShowAllMiners) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                        Start-Sleep -Seconds 2
+                        $Variables.RefreshNeeded = $true
+                        Break
+                    }
+                    "w" { 
+                        If ($Variables.CalculatePowerCost) { 
+                            $Variables.ShowPowerUsage = -not $Variables.ShowPowerUsage
+                            Write-Host "'Po" -NoNewline; Write-Host "w" -ForegroundColor Cyan -NoNewline; Write-Host "er usage' column visibility set to " -NoNewline; If ($Variables.ShowPowerUsage) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                            Start-Sleep -Seconds 2
+                            $Variables.RefreshNeeded = $true
+                        }
+                        Break
+                    }
+                    "y" { 
+                        $Variables.ShowCurrency = -not $Variables.ShowCurrency
+                        Write-Host "'Currenc" -NoNewline; Write-Host "y" -ForegroundColor Cyan -NoNewline; Write-Host "' column visibility set to " -NoNewline; If ($Variables.ShowCurrency) { Write-Host "on" -ForegroundColor Green -NoNewline } Else { Write-Host "off" -ForegroundColor Red -NoNewline }; Write-Host "."
+                        Start-Sleep -Seconds 2
+                        $Variables.RefreshNeeded = $true
+                        Break
+                    }
+                }
             }
         }
     }
@@ -815,168 +799,170 @@ Function MainLoop {
             Else { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Black }
         }
 
-        If ($Variables.Timer) { Clear-Host }
+        If ($Config.ShowConsole) { 
+            If ($Variables.Timer) { Clear-Host }
 
-        # Get and display earnings stats
-        If ($Variables.Balances -and $Variables.ShowPoolBalances) { 
-            $Variables.Balances.Values | ForEach-Object { 
-                If ($_.Currency -eq "BTC" -and $Config.UsemBTC) { $Currency = "mBTC"; $mBTCfactor = 1000 } Else { $Currency = $_.Currency; $mBTCfactor = 1 }
-                Write-Host "$($_.Pool -replace ' Internal$', ' (Internal Wallet)' -replace ' External$', ' (External Wallet)') [$($_.Wallet)]" -ForegroundColor Green
-                If ($Config.BalancesShowSums) { 
-                    Write-Host ("Earnings last 1 hour:   {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth1 * $mBTCfactor), $Currency, ($_.Growth1 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
-                    Write-Host ("Earnings last 6 hours:  {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth6 * $mBTCfactor), $Currency, ($_.Growth6 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
-                    Write-Host ("Earnings last 24 hours: {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth24 * $mBTCfactor), $Currency, ($_.Growth24 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
-                    Write-Host ("Earnings last 7 days:   {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth168 * $mBTCfactor), $Currency, ($_.Growth168 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
-                    Write-Host ("Earnings last 30 days:  {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth720 * $mBTCfactor), $Currency, ($_.Growth720 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
-                }
-                If ($Config.BalancesShowAverages) { 
-                    Write-Host ("≈ average / hour:       {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.AvgHourlyGrowth * $mBTCfactor), $Currency, ($_.AvgHourlyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
-                    Write-Host ("≈ average / day:        {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.AvgDailyGrowth * $mBTCfactor), $Currency, ($_.AvgDailyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
-                    Write-Host ("≈ average / week:       {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.AvgWeeklyGrowth * $mBTCfactor), $Currency, ($_.AvgWeeklyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
-                }
-                Write-Host "Balance:                " -NoNewline; Write-Host ("{0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Balance * $mBTCfactor), $Currency, ($_.Balance * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency) -ForegroundColor Yellow
-                Write-Host "                        $(($_.Balance / $_.PayoutThreshold).ToString('P2')) of $(($_.PayoutThreshold * $mBTCfactor).ToString()) $($Currency) payment threshold"
-                Write-Host "Projected payment date: $(If ($_.ProjectedPayDate -is [DateTime]) { $_.ProjectedPayDate.ToString("G") } Else { $_.ProjectedPayDate })`n"
-            }
-        }
-        If ($Variables.MinersMissingBinary) { 
-            Write-Host "`n"
-            Write-Host "Some miners binaries are missing, downloader is installing miner binaries..." -ForegroundColor Yellow
-        }
-
-        If ($Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
-            If ($Config.UIStyle -ne "full") { 
-                $Variables.UIStyle = "full"
-                Write-Host "$(If ($Variables.MinersNeedingBenchmark) { "Benchmarking" })$(If ($Variables.MinersNeedingBenchmark -and $Variables.MinersNeedingPowerUsageMeasurement) { " / " })$(If ($Variables.MinersNeedingPowerUsageMeasurement) { "Measuring power usage" }): Temporarily switched UI style to 'Full' (Information about miners run in the past, failed miners & watchdog timers will be shown)" -ForegroundColor Yellow
-            }
-        }
-
-        If ($Variables.MiningStatus -eq "Running" -and ($Variables.Miners | Where-Object Available)) { 
-            # Display available miners list
-            [System.Collections.ArrayList]$Miner_Table = @(
-                @{ Label = "Miner"; Expression = { $_.Name } }
-                @{ Label = "Algorithm"; Expression = { $_.Workers.Pool.Algorithm -join " & " } }
-                If ($Variables.ShowMinerFee -and ($Variables.Miners.Workers.Fee)) { @{ Label = "Fee"; Expression = { $_.Workers.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } }; Align = "right" } }
-                @{ Label = "Hashrate"; Expression = { If (-not $_.Benchmark) { $_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" } } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } }; Align = "right" }
-                If (-not $Config.IgnorePowerCost -and $Variables.ShowProfitBias -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost -and -not $Config.IgnorePowerCost) { @{ Label = "ProfitBias"; Expression = { If ([Double]::IsNaN($_.Profit_Bias)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit_Bias * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
-                If (-not $Config.IgnorePowerCost -and $Variables.ShowProfit -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost -and -not $Config.IgnorePowerCost) { @{ Label = "Profit"; Expression = { If ([Double]::IsNaN($_.Profit)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
-                If ($Variables.ShowEarningBias) { @{ Label = "EarningBias"; Expression = { If ([Double]::IsNaN($_.Earning_Bias)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Earning_Bias * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
-                If ($Variables.ShowEarning) { @{ Label = "Earning"; Expression = { If ([Double]::IsNaN($_.Earning)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
-                If ($Config.IgnorePowerCost -and $Variables.ShowProfitBias -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "ProfitBias"; Expression = { If ([Double]::IsNaN($_.Profit_Bias)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit_Bias * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
-                If ($Config.IgnorePowerCost -and $Variables.ShowProfit -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "Profit"; Expression = { If ([Double]::IsNaN($_.Profit)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
-                If ($Variables.ShowPowerUsage -and $Config.CalculatePowerCost) { @{ Label = "PowerUsage"; Expression = { If (-not $_.MeasurePowerUsage) { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W"} } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } }; Align = "right" } }
-                If ($Variables.ShowPowerCost -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "PowerCost"; Expression = { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "-{0:n$($Config.DecimalsMax)}" -f ($_.PowerCost * $Variables.Rates.($Config.PayoutCurrency).($Config.Currency)) } }; Align = "right" } }
-                If ($Variables.ShowAccuracy) { @{ Label = "Accuracy"; Expression = { $_.Workers.Pool.Accuracy | ForEach-Object { "{0:P0}" -f [Double]$_ } }; Align = "right" } }
-                If ($Variables.ShowPool) { @{ Label = "Pool"; Expression = { $_.Workers.Pool.Name -join " & " } } }
-                If ($Variables.ShowUser) { @{ Label = "User"; Expression = { $_.Workers.Pool.User -join " & " } } }
-                If ($Variables.ShowPoolFee -and ($Variables.Miners.Workers.Pool.Fee)) { @{ Label = "Fee"; Expression = { $_.Workers.Pool.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } }; Align = "right" } }
-                If ($Variables.ShowCurrency) { @{ Label = "Currency"; Expression = { If ($_.Workers.Pool.Currency) { $_.Workers.Pool.Currency } } } }
-                If ($Variables.ShowCoinName) { @{ Label = "CoinName"; Expression = { If ($_.Workers.Pool.CoinName) { $_.Workers.Pool.CoinName } } } }
-            )
-            $Bias = If ($Variables.CalculatePowerCost) { "Profit_Bias" } Else { "Earning_Bias" }
-            $Variables.Miners | Where-Object Available | Group-Object -Property { [String]$_.DeviceNames } | Sort-Object Name | ForEach-Object { 
-                $MinersDeviceGroup = $_.Group
-                $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object Benchmark)
-                $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object Enabled | Where-Object MeasurePowerUsage)
-                $MinersDeviceGroup | Where-Object { 
-                    $Config.ShowAllMiners -or <#List all miners#>
-                    $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <# List all miners when benchmarking #>
-                    $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 -or <# List all miners when measuring power usage #>
-                    $_.$Bias -ge ($MinersDeviceGroup.$Bias | Sort-Object -Bottom 5 | Select-Object -Index 0) <# Always list at least the top 5 miners per device group #>
-                } | Sort-Object -Property DeviceName, @{ Expression = { $_.Benchmark }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage }; Descending = $true }, @{ Expression = { $_.KeepRunning }; Descending = $true }, @{ Expression = { $_.Prioritize }; Descending = $true }, @{ Expression = { $_.$Bias }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithms[0] }; Descending = $false }, @{ Expression = { $_.Algorithms[1] }; Descending = $false } | 
-                Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (($_.Group.Devices.Name | Sort-Object -Unique).Count -gt 1) { " group" })"; Expression = { "$($_.DeviceNames -join ',') [$(($Variables.Devices | Where-Object Name -In $_.DeviceNames).Model -join ', ')]" } } -AutoSize | Out-Host
-
-                # Display benchmarking progress
-                If ($MinersDeviceGroupNeedingBenchmark) { 
-                    "Benchmarking for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.Devices.Name | Sort-Object -Unique) -Join ',')' in progress: $($MinersDeviceGroupNeedingBenchmark.Count) miner$(If ($MinersDeviceGroupNeedingBenchmark.Count -gt 1) { 's' }) left to complete benchmark." | Out-Host
-                }
-                # Display power usage measurement progress
-                If ($MinersDeviceGroupNeedingPowerUsageMeasurement) { 
-                    "Power usage measurement for device$(If (($MinersDeviceGroup.Devices.Name | Sort-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring." | Out-Host
+            # Get and display earnings stats
+            If ($Variables.Balances -and $Variables.ShowPoolBalances) { 
+                $Variables.Balances.Values | ForEach-Object { 
+                    If ($_.Currency -eq "BTC" -and $Config.UsemBTC) { $Currency = "mBTC"; $mBTCfactor = 1000 } Else { $Currency = $_.Currency; $mBTCfactor = 1 }
+                    Write-Host "$($_.Pool -replace ' Internal$', ' (Internal Wallet)' -replace ' External$', ' (External Wallet)') [$($_.Wallet)]" -ForegroundColor Green
+                    If ($Config.BalancesShowSums) { 
+                        Write-Host ("Earnings last 1 hour:   {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth1 * $mBTCfactor), $Currency, ($_.Growth1 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
+                        Write-Host ("Earnings last 6 hours:  {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth6 * $mBTCfactor), $Currency, ($_.Growth6 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
+                        Write-Host ("Earnings last 24 hours: {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth24 * $mBTCfactor), $Currency, ($_.Growth24 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
+                        Write-Host ("Earnings last 7 days:   {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth168 * $mBTCfactor), $Currency, ($_.Growth168 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
+                        Write-Host ("Earnings last 30 days:  {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Growth720 * $mBTCfactor), $Currency, ($_.Growth720 * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
+                    }
+                    If ($Config.BalancesShowAverages) { 
+                        Write-Host ("≈ average / hour:       {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.AvgHourlyGrowth * $mBTCfactor), $Currency, ($_.AvgHourlyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
+                        Write-Host ("≈ average / day:        {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.AvgDailyGrowth * $mBTCfactor), $Currency, ($_.AvgDailyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
+                        Write-Host ("≈ average / week:       {0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.AvgWeeklyGrowth * $mBTCfactor), $Currency, ($_.AvgWeeklyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency)
+                    }
+                    Write-Host "Balance:                " -NoNewline; Write-Host ("{0:n$($Config.DecimalsMax)} {1} / {2:n$($Config.DecimalsMax)} {3}" -f ($_.Balance * $mBTCfactor), $Currency, ($_.Balance * $Variables.Rates.($_.Currency).($Config.Currency)), $Config.Currency) -ForegroundColor Yellow
+                    Write-Host "                        $(($_.Balance / $_.PayoutThreshold).ToString('P2')) of $(($_.PayoutThreshold * $mBTCfactor).ToString()) $($Currency) payment threshold"
+                    Write-Host "Projected payment date: $(If ($_.ProjectedPayDate -is [DateTime]) { $_.ProjectedPayDate.ToString("G") } Else { $_.ProjectedPayDate })`n"
                 }
             }
-        }
-        ElseIf ($Variables.Miners) { 
-            Write-Host "No miners running. Waiting for next cycle."
-        }
+            If ($Variables.MinersMissingBinary) { 
+                Write-Host "`n"
+                Write-Host "Some miners binaries are missing, downloader is installing miner binaries..." -ForegroundColor Yellow
+            }
 
-        If ($Variables.MinersBest_Combo) { 
-            Write-Host "Running $(If ($Variables.MinersBest_Combo.Count -eq 1) { "miner:" } Else { "miners: $($Variables.MinersBest_Combo.Count)" })"
-            [System.Collections.ArrayList]$Miner_Table = @(
-                @{ Label = "Hashrate(s)"; Expression = { (($_.Hashrates_Live | ForEach-Object { If ([Double]::IsNaN($_)) { "n/a" } Else { "$($_ | ConvertTo-Hash)/s" } }) -join ' & ') -replace '\s+', ' ' }; Align = "right" }
-                If ($Config.CalculatePowerCost -and $Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ([Double]::IsNaN($_.PowerUsage_Live)) { "n/a" } Else { "$($_.PowerUsage_Live.ToString("N2")) W" } }; Align = "right" } }
-                @{ Label = "Active (this run)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f ((Get-Date).ToUniversalTime() - $_.BeginTime) } }
-                @{ Label = "Active (total)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f ($_.TotalMiningDuration) } }
-                @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
-                @{ Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }
-                @{ Label = "Name"; Expression = { $_.Name } }
-                @{ Label = "Command"; Expression = { $_.CommandLine } }
-            )
-            $Variables.MinersBest_Combo | Sort-Object DeviceName | Format-Table $Miner_Table -Wrap | Out-Host
-        }
+            If ($Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
+                If ($Config.UIStyle -ne "full") { 
+                    $Variables.UIStyle = "full"
+                    Write-Host "$(If ($Variables.MinersNeedingBenchmark) { "Benchmarking" })$(If ($Variables.MinersNeedingBenchmark -and $Variables.MinersNeedingPowerUsageMeasurement) { " / " })$(If ($Variables.MinersNeedingPowerUsageMeasurement) { "Measuring power usage" }): Temporarily switched UI style to 'Full' (Information about miners run in the past, failed miners & watchdog timers will be shown)" -ForegroundColor Yellow
+                }
+            }
 
-        If ($Variables.UIStyle -eq "full" -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
-            If ($ProcessesIdle = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Idle" -and $_.GetActiveLast().ToLocalTime().AddHours(24) -gt (Get-Date) })) { 
-                Write-Host " $($ProcessesIdle.Count) previously executed miner$(If ($ProcessesIdle.Count -ne 1) { "s" }) in the past 24 hrs:"
+            If ($Variables.MiningStatus -eq "Running" -and ($Variables.Miners | Where-Object Available)) { 
+                # Display available miners list
                 [System.Collections.ArrayList]$Miner_Table = @(
-                    @{ Label = "Hashrate(s)"; Expression = { (($_.Workers.Hashrate | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ') -replace '\s+', ' ' }; Align = "right" }
-                    If ($Config.CalculatePowerCost -and $Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W" } }; Align = "right" } }
-                    @{ Label = "Time since last run"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }
-                    @{ Label = "Active (total)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $_.TotalMiningDuration } }
+                    @{ Label = "Miner"; Expression = { $_.Name } }
+                    @{ Label = "Algorithm"; Expression = { $_.Workers.Pool.Algorithm -join " & " } }
+                    If ($Variables.ShowMinerFee -and ($Variables.Miners.Workers.Fee)) { @{ Label = "Fee"; Expression = { $_.Workers.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } }; Align = "right" } }
+                    @{ Label = "Hashrate"; Expression = { If (-not $_.Benchmark) { $_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" } } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } }; Align = "right" }
+                    If (-not $Config.IgnorePowerCost -and $Variables.ShowProfitBias -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost -and -not $Config.IgnorePowerCost) { @{ Label = "ProfitBias"; Expression = { If ([Double]::IsNaN($_.Profit_Bias)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit_Bias * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
+                    If (-not $Config.IgnorePowerCost -and $Variables.ShowProfit -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost -and -not $Config.IgnorePowerCost) { @{ Label = "Profit"; Expression = { If ([Double]::IsNaN($_.Profit)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
+                    If ($Variables.ShowEarningBias) { @{ Label = "EarningBias"; Expression = { If ([Double]::IsNaN($_.Earning_Bias)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Earning_Bias * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
+                    If ($Variables.ShowEarning) { @{ Label = "Earning"; Expression = { If ([Double]::IsNaN($_.Earning)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
+                    If ($Config.IgnorePowerCost -and $Variables.ShowProfitBias -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "ProfitBias"; Expression = { If ([Double]::IsNaN($_.Profit_Bias)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit_Bias * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
+                    If ($Config.IgnorePowerCost -and $Variables.ShowProfit -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "Profit"; Expression = { If ([Double]::IsNaN($_.Profit)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } }; Align = "right" } }
+                    If ($Variables.ShowPowerUsage -and $Config.CalculatePowerCost) { @{ Label = "PowerUsage"; Expression = { If (-not $_.MeasurePowerUsage) { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W"} } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } }; Align = "right" } }
+                    If ($Variables.ShowPowerCost -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "PowerCost"; Expression = { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "-{0:n$($Config.DecimalsMax)}" -f ($_.PowerCost * $Variables.Rates.($Config.PayoutCurrency).($Config.Currency)) } }; Align = "right" } }
+                    If ($Variables.ShowAccuracy) { @{ Label = "Accuracy"; Expression = { $_.Workers.Pool.Accuracy | ForEach-Object { "{0:P0}" -f [Double]$_ } }; Align = "right" } }
+                    If ($Variables.ShowPool) { @{ Label = "Pool"; Expression = { $_.Workers.Pool.Name -join " & " } } }
+                    If ($Variables.ShowUser) { @{ Label = "User"; Expression = { $_.Workers.Pool.User -join " & " } } }
+                    If ($Variables.ShowPoolFee -and ($Variables.Miners.Workers.Pool.Fee)) { @{ Label = "Fee"; Expression = { $_.Workers.Pool.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } }; Align = "right" } }
+                    If ($Variables.ShowCurrency) { @{ Label = "Currency"; Expression = { If ($_.Workers.Pool.Currency) { $_.Workers.Pool.Currency } } } }
+                    If ($Variables.ShowCoinName) { @{ Label = "CoinName"; Expression = { If ($_.Workers.Pool.CoinName) { $_.Workers.Pool.CoinName } } } }
+                )
+                $Bias = If ($Variables.CalculatePowerCost) { "Profit_Bias" } Else { "Earning_Bias" }
+                $Variables.Miners | Where-Object Available | Group-Object -Property { [String]$_.DeviceNames } | Sort-Object -Property Name | ForEach-Object { 
+                    $MinersDeviceGroup = $_.Group
+                    $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object Benchmark)
+                    $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object Enabled | Where-Object MeasurePowerUsage)
+                    $MinersDeviceGroup | Where-Object { 
+                        $Config.ShowAllMiners -or <#List all miners#>
+                        $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <# List all miners when benchmarking #>
+                        $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 -or <# List all miners when measuring power usage #>
+                        $_.$Bias -ge ($MinersDeviceGroup.$Bias | Sort-Object -Bottom 5 | Select-Object -Index 0) <# Always list at least the top 5 miners per device group #>
+                    } | Sort-Object -Property DeviceNames, @{ Expression = { $_.Benchmark }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage }; Descending = $true }, @{ Expression = { $_.KeepRunning }; Descending = $true }, @{ Expression = { $_.Prioritize }; Descending = $true }, @{ Expression = { $_.$Bias }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithms[0] }; Descending = $false }, @{ Expression = { $_.Algorithms[1] }; Descending = $false } | 
+                    Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (($_.Group.Devices.Name | Sort-Object -Unique).Count -gt 1) { " group" })"; Expression = { "$($_.DeviceNames -join ',') [$(($Variables.Devices | Where-Object Name -In $_.DeviceNames).Model -join ', ')]" } } -AutoSize | Out-Host
+
+                    # Display benchmarking progress
+                    If ($MinersDeviceGroupNeedingBenchmark) { 
+                        "Benchmarking for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.Devices.Name | Sort-Object -Unique) -Join ',')' in progress: $($MinersDeviceGroupNeedingBenchmark.Count) miner$(If ($MinersDeviceGroupNeedingBenchmark.Count -gt 1) { 's' }) left to complete benchmark." | Out-Host
+                    }
+                    # Display power usage measurement progress
+                    If ($MinersDeviceGroupNeedingPowerUsageMeasurement) { 
+                        "Power usage measurement for device$(If (($MinersDeviceGroup.Devices.Name | Sort-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring." | Out-Host
+                    }
+                }
+            }
+            ElseIf ($Variables.Miners) { 
+                Write-Host "No miners running. Waiting for next cycle."
+            }
+
+            If ($Variables.MinersBest_Combo) { 
+                Write-Host "Running $(If ($Variables.MinersBest_Combo.Count -eq 1) { "miner:" } Else { "miners: $($Variables.MinersBest_Combo.Count)" })"
+                [System.Collections.ArrayList]$Miner_Table = @(
+                    @{ Label = "Hashrate(s)"; Expression = { (($_.Hashrates_Live | ForEach-Object { If ([Double]::IsNaN($_)) { "n/a" } Else { "$($_ | ConvertTo-Hash)/s" } }) -join ' & ') -replace '\s+', ' ' }; Align = "right" }
+                    If ($Config.CalculatePowerCost -and $Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ([Double]::IsNaN($_.PowerUsage_Live)) { "n/a" } Else { "$($_.PowerUsage_Live.ToString("N2")) W" } }; Align = "right" } }
+                    @{ Label = "Active (this run)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f ((Get-Date).ToUniversalTime() - $_.BeginTime) } }
+                    @{ Label = "Active (total)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f ($_.TotalMiningDuration) } }
                     @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
                     @{ Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }
                     @{ Label = "Name"; Expression = { $_.Name } }
                     @{ Label = "Command"; Expression = { $_.CommandLine } }
                 )
-                $ProcessesIdle | Sort-Object { $_.GetActiveLast } -Descending | Select-Object -First ($MinersDeviceGroup.Count * 3) | Format-Table $Miner_Table -AutoSize | Out-Host
+                $Variables.MinersBest_Combo | Sort-Object -Property DeviceNames | Format-Table $Miner_Table -Wrap | Out-Host
             }
 
-            If ($ProcessesFailed = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Failed" -and $_.GetActiveLast().ToLocalTime().AddHours(24) -gt (Get-Date)})) { 
-                Write-Host -ForegroundColor Red "$($ProcessesFailed.Count) failed $(If ($ProcessesFailed.Count -eq 1) { "miner" } Else { "miners" }) in the past 24 hrs:"
-                [System.Collections.ArrayList]$Miner_Table = @(
-                    @{ Label = "Hashrate(s)"; Expression = { (($_.Workers.Hashrate | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ') -replace '\s+', ' ' }; Align = "right" }
-                    If ($Config.CalculatePowerCost -and $Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W" } }; Align = "right" } }
-                    @{ Label = "Time since last fail"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }
-                    @{ Label = "Active (total)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $_.TotalMiningDuration } }
-                    @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
-                    @{ Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }
-                    @{ Label = "Name"; Expression = { $_.Name } }
-                    @{ Label = "Command"; Expression = { $_.CommandLine } }
-                )
-                $ProcessesFailed | Sort-Object { If ($_.Process) { $_.Process.StartTime } Else { [DateTime]0 } } | Format-Table $Miner_Table -Wrap | Out-Host
-            }
-
-            If ($Config.Watchdog) { 
-                # Display watchdog timers
-                $Variables.WatchdogTimers | Where-Object Kicked -GT $Variables.Timer.AddSeconds(-$Variables.WatchdogReset) | Sort-Object MinerName, Kicked | Format-Table -Wrap (
-                    @{Label = "Miner Watchdog Timer"; Expression = { $_.MinerName } }, 
-                    @{Label = "Pool"; Expression = { $_.PoolName } }, 
-                    @{Label = "Algorithm"; Expression = { $_.Algorithm } }, 
-                    @{Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }, 
-                    @{Label = "Last Updated"; Expression = { "{0:mm} min {0:ss} sec ago" -f ((Get-Date).ToUniversalTime() - $_.Kicked) }; Align = "right" }
-                ) | Out-Host
-            }
-        }
-
-        If ($Variables.Timer) { $Variables.Summary -split '<br>' | ForEach-Object { Write-Host ($_ -replace "&ensp;", " " -replace "'/ ", "/") } }
-
-        If (-not $Variables.Paused) { 
-            If ($Variables.Miners | Where-Object Available | Where-Object { -not ($_.Benchmark -or $_.MeasurePowerUsage) }) { 
-                If ($Variables.MiningProfit -lt 0) { 
-                    # Mining causes a loss
-                    Write-Host -ForegroundColor Red ("Mining is currently NOT profitable and causes a loss of {0} {1:n$($Config.DecimalsMax)} / day (including Base Power Cost)." -f $Config.Currency, (-$Variables.MiningProfit * $Variables.Rates.BTC.($Config.Currency)))
+            If ($Variables.UIStyle -eq "full" -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
+                If ($ProcessesIdle = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Idle" -and $_.GetActiveLast().ToLocalTime().AddHours(24) -gt (Get-Date) })) { 
+                    Write-Host " $($ProcessesIdle.Count) previously executed miner$(If ($ProcessesIdle.Count -ne 1) { "s" }) in the past 24 hrs:"
+                    [System.Collections.ArrayList]$Miner_Table = @(
+                        @{ Label = "Hashrate(s)"; Expression = { (($_.Workers.Hashrate | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ') -replace '\s+', ' ' }; Align = "right" }
+                        If ($Config.CalculatePowerCost -and $Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W" } }; Align = "right" } }
+                        @{ Label = "Time since last run"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }
+                        @{ Label = "Active (total)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $_.TotalMiningDuration } }
+                        @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
+                        @{ Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }
+                        @{ Label = "Name"; Expression = { $_.Name } }
+                        @{ Label = "Command"; Expression = { $_.CommandLine } }
+                    )
+                    $ProcessesIdle | Sort-Object { $_.GetActiveLast } -Descending | Select-Object -First ($MinersDeviceGroup.Count * 3) | Format-Table $Miner_Table -AutoSize | Out-Host
                 }
-                If ($Variables.MiningProfit -lt $Config.ProfitabilityThreshold) { 
-                    # Mining profit is below the configured threshold
-                    Write-Host -ForegroundColor Blue ("Mining profit ({0} {1:n$($Config.DecimalsMax)}) is below the configured threshold of {0} {2:n$($Config.DecimalsMax)} / day. Mining is suspended until threshold is reached." -f $Config.Currency, ($Variables.MiningProfit * $Variables.Rates.BTC.($Config.Currency)), $Config.ProfitabilityThreshold)
+
+                If ($ProcessesFailed = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Failed" -and $_.GetActiveLast().ToLocalTime().AddHours(24) -gt (Get-Date)})) { 
+                    Write-Host -ForegroundColor Red "$($ProcessesFailed.Count) failed $(If ($ProcessesFailed.Count -eq 1) { "miner" } Else { "miners" }) in the past 24 hrs:"
+                    [System.Collections.ArrayList]$Miner_Table = @(
+                        @{ Label = "Hashrate(s)"; Expression = { (($_.Workers.Hashrate | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ') -replace '\s+', ' ' }; Align = "right" }
+                        If ($Config.CalculatePowerCost -and $Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W" } }; Align = "right" } }
+                        @{ Label = "Time since last fail"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }
+                        @{ Label = "Active (total)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $_.TotalMiningDuration } }
+                        @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
+                        @{ Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }
+                        @{ Label = "Name"; Expression = { $_.Name } }
+                        @{ Label = "Command"; Expression = { $_.CommandLine } }
+                    )
+                    $ProcessesFailed | Sort-Object { If ($_.Process) { $_.Process.StartTime } Else { [DateTime]0 } } | Format-Table $Miner_Table -Wrap | Out-Host
+                }
+
+                If ($Config.Watchdog) { 
+                    # Display watchdog timers
+                    $Variables.WatchdogTimers | Where-Object Kicked -GT $Variables.Timer.AddSeconds(-$Variables.WatchdogReset) | Sort-Object -Property MinerName, Kicked | Format-Table -Wrap (
+                        @{Label = "Miner Watchdog Timer"; Expression = { $_.MinerName } }, 
+                        @{Label = "Pool"; Expression = { $_.PoolName } }, 
+                        @{Label = "Algorithm"; Expression = { $_.Algorithm } }, 
+                        @{Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }, 
+                        @{Label = "Last Updated"; Expression = { "{0:mm} min {0:ss} sec ago" -f ((Get-Date).ToUniversalTime() - $_.Kicked) }; Align = "right" }
+                    ) | Out-Host
                 }
             }
-        }
 
-        If ($Variables.Timer) { 
-            $StatusMessage = "Last refresh: $($Variables.BeginCycleTime.ToLocalTime().ToString('G'))   |   Next refresh: $($Variables.EndCycleTime.ToLocalTime().ToString('G'))   |   Hot Keys: $(If ($Variables.CalculatePowerCost) { "[abcefimnprstuvwy]" } Else { "[abefimnpsvwy]" })   |   Press 'h' for help"
-            Write-Host ("-" * $StatusMessage.Length)
-            Write-Host -ForegroundColor Yellow $StatusMessage
+            If ($Variables.Timer) { $Variables.Summary -split '<br>' | ForEach-Object { Write-Host ($_ -replace "&ensp;", " " -replace "'/ ", "/") } }
+
+            If (-not $Variables.Paused) { 
+                If ($Variables.Miners | Where-Object Available | Where-Object { -not ($_.Benchmark -or $_.MeasurePowerUsage) }) { 
+                    If ($Variables.MiningProfit -lt 0) { 
+                        # Mining causes a loss
+                        Write-Host -ForegroundColor Red ("Mining is currently NOT profitable and causes a loss of {0} {1:n$($Config.DecimalsMax)} / day (including Base Power Cost)." -f $Config.Currency, (-$Variables.MiningProfit * $Variables.Rates.BTC.($Config.Currency)))
+                    }
+                    If ($Variables.MiningProfit -lt $Config.ProfitabilityThreshold) { 
+                        # Mining profit is below the configured threshold
+                        Write-Host -ForegroundColor Blue ("Mining profit ({0} {1:n$($Config.DecimalsMax)}) is below the configured threshold of {0} {2:n$($Config.DecimalsMax)} / day. Mining is suspended until threshold is reached." -f $Config.Currency, ($Variables.MiningProfit * $Variables.Rates.BTC.($Config.Currency)), $Config.ProfitabilityThreshold)
+                    }
+                }
+            }
+
+            If ($Variables.Timer) { 
+                $StatusMessage = "Last refresh: $($Variables.BeginCycleTime.ToLocalTime().ToString('G'))   |   Next refresh: $($Variables.EndCycleTime.ToLocalTime().ToString('G'))   |   Hot Keys: $(If ($Variables.CalculatePowerCost) { "[abcefimnprstuvwy]" } Else { "[abefimnpsvwy]" })   |   Press 'h' for help"
+                Write-Host ("-" * $StatusMessage.Length)
+                Write-Host -ForegroundColor Yellow $StatusMessage
+            }
         }
     }
 }

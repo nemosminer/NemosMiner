@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\ZPool.ps1
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 param(
@@ -87,8 +87,8 @@ If ($PriceField -and $Wallet) {
                     Host                     = "$($Algorithm).$($Region).$($HostSuffix)"
                     Name                     = [String]$PoolVariant
                     Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
-                    Port                     = If ($PoolConfig.SSL -eq "Always") { 0 } Else { [UInt16]$Request.$_.port }
-                    PortSSL                  = If ($PoolConfig.SSL -eq "Never") { 0 } Else { [UInt16]("5$([String]$Request.$_.port)") }
+                    Port                     = [UInt16]$Request.$_.port
+                    PortSSL                  = [UInt16]("5$([String]$Request.$_.port)")
                     Price                    = [Double]$Stat.Live
                     Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethproxy" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                     Reasons                  = $Reasons
@@ -106,7 +106,7 @@ If ($PriceField -and $Wallet) {
         }
     }
 
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
+    # Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
     Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 

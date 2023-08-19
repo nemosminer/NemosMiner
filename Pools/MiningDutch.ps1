@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\MiningDutch.ps1
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 param(
@@ -44,8 +44,9 @@ $BrainDataFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Dir
 
 If ($DivisorMultiplier -and $PriceField -and $Wallet) { 
 
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
     $StartTime = (Get-Date)
+
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
 
     Try { 
         If ($Variables.Brains.$Name) { 
@@ -94,7 +95,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
                     Name                     = [String]$PoolVariant
                     Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
                     Port                     = [UInt16]$Request.$_.port
-                    PortSSL                  = $null
+                    PortSSL                  = 0
                     Price                    = [Double]$Stat.Live
                     Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratum1" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                     Reasons                  = $Reasons
@@ -112,7 +113,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
         }
     }
 
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
+    # Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
     Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 

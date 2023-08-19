@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\lolMiner.ps1
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 Class TeamBlackMiner : Miner { 
@@ -67,7 +67,7 @@ Class TeamBlackMiner : Miner {
         If ($HashRate.PSObject.Properties.Value -gt 0) { 
             If ($this.ReadPowerUsage) { 
                 $Data.Devices | ForEach-Object { [Double]$PowerUsage += $_.PSObject.Properties.Value.watt }
-                $PowerUsage = [Double]($Data.result | Measure-Object gpu_power_usage -Sum).Sum
+                $PowerUsage = [Double]($Data.result | Measure-Object gpu_power_usage -Sum | Select-Object -ExpandProperty Sum)
                 If (-not $PowerUsage) { 
                     $PowerUsage = $this.GetPowerUsage()
                 }

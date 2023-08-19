@@ -17,13 +17,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or $_.OpenCL.ComputeCapability -ge "5.0" } )) { Return }
 
-$Uri = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v2.1c_win-x64.zip"
+$URI = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v2.1c_win-x64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\miniZ.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -88,9 +88,6 @@ If ($Algorithms) {
                 $Arguments = $_.Arguments
                 $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
 
-                # Get arguments for available miner devices
-                # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("amd", "dag-fix", "nvidia", "ocX", "par", "pers", "smart-pers") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
-
                 $Arguments += " --url=$(If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { "ssl://" } )$($AllMinerPools.($_.Algorithm).User)$(If ($AllMinerPools.($_.Algorithm).WorkerName) { ".$($AllMinerPools.($_.Algorithm).WorkerName)" })@$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts | Select-Object -Last 1)"
                 $Arguments += " --pass=$($AllMinerPools.($_.Algorithm).Pass)"
                 If ($AllMinerPools.($_.Algorithm).WorkerName) { $Arguments += " --worker=$($AllMinerPools.($_.Algorithm).WorkerName)" }
@@ -101,7 +98,7 @@ If ($Algorithms) {
                 [PSCustomObject]@{ 
                     Algorithms   = @($_.Algorithm)
                     API          = "MiniZ"
-                    Arguments    = ("$($Arguments) --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int=10 --nohttpheaders --latency --all-shares --extra --tempunits=C --show-pers --fee-time=60 --telemetry $MinerAPIPort -cd $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:d2}' -f $_ }) -join ' ')" -replace "\s+", " ").trim()
+                    Arguments    = ("$Arguments --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int=10 --nohttpheaders --latency --all-shares --extra --tempunits=C --show-pers --fee-time=60 --telemetry $MinerAPIPort -cd $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:d2}' -f $_ }) -join ' ')" -replace "\s+", " ").trim()
                     DeviceNames  = $AvailableMiner_Devices.Name
                     Fee          = $_.Fee # Dev fee
                     MinerSet     = $_.MinerSet

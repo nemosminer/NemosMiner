@@ -17,24 +17,25 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
 
-$Uri = "https://github.com/RavenCommunity/kawpowminer/releases/download/1.2.4/kawpowminer-windows-cuda11-1.2.4.zip"
+$URI = "https://github.com/RavenCommunity/kawpowminer/releases/download/1.2.4/kawpowminer-windows-cuda11-1.2.4.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\kawpowminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "KawPow"; MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.93; Minerset = 2; WarmupTimes = @(75, 10); ExcludePool = @("MiningDutch"); Arguments = "" }
+    [PSCustomObject]@{ Algorithm = "KawPow"; MinMemGiB = $MinerPools[0].KawPow.DAGSizeGiB + 0.93; Minerset = 2; WarmupTimes = @(75, 10); ExcludePools = @("MiningDutch", "ZergPool"); Arguments = "" }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm) }
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePools }
 
 If ($Algorithms) { 
 
@@ -49,9 +50,6 @@ If ($Algorithms) {
 
                 $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
 
-                # Get arguments for available miner devices
-                # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo", "pers", "proto") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
-
                 $Protocol = Switch ($AllMinerPools.($_.Algorithm).Protocol) { 
                     "ethproxy"     { "stratum1"; Break }
                     "ethstratum1"  { "stratum2"; Break }
@@ -62,7 +60,7 @@ If ($Algorithms) {
                 [PSCustomObject]@{ 
                     Algorithms  = @($_.Algorithm)
                     API         = "EthMiner"
-                    Arguments   = ("--pool $($Protocol)://$([System.Web.HttpUtility]::UrlEncode("$($AllMinerPools.($_.Algorithm).User)$(If ($AllMinerPools.($_.Algorithm).WorkerName) { ".$($AllMinerPools.($_.Algorithm).WorkerName)" })")):$([System.Web.HttpUtility]::UrlEncode($($AllMinerPools.($_.Algorithm).Pass)))@$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts | Select-Object -Last 1) --farm-recheck 10000 --farm-retries 40 --work-timeout 100000 --response-timeout 720 --api-port -$($MinerAPIPort) --cuda --cuda-devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
+                    Arguments   = ("$($_.Arguments) --pool $($Protocol)://$([System.Web.HttpUtility]::UrlEncode("$($AllMinerPools.($_.Algorithm).User)$(If ($AllMinerPools.($_.Algorithm).WorkerName) { ".$($AllMinerPools.($_.Algorithm).WorkerName)" })")):$([System.Web.HttpUtility]::UrlEncode($($AllMinerPools.($_.Algorithm).Pass)))@$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts | Select-Object -Last 1) --farm-recheck 10000 --farm-retries 40 --work-timeout 100000 --response-timeout 720 --api-port -$($MinerAPIPort) --cuda --cuda-devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     DeviceNames = $AvailableMiner_Devices.Name
                     EnvVars     = @("SSL_NOVERIFY=TRUE")
                     MinerSet     = $_.MinerSet

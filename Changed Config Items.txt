@@ -212,8 +212,11 @@ New Configuration Items
 # Always show all miners in miner overview (if $false, only the best miners will be shown except when in benchmark / powerusage measurement)
   "ShowAllMiner": false,
 
-# If enabled NemosMiner will show the changelog when an update is available
+# If true NemosMiner will show the changelog when an update is available
   $ShowChangeLog = $true,
+
+# If true the console window will be shown
+  "ShowConsole": true,
 
 # Show Currency column in miner overview
   "ShowCurrency": true,

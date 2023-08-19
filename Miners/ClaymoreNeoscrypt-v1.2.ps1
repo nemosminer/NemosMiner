@@ -17,13 +17,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $Variables.DriverVersion.CIM.AMD -lt "26.20.15011.10003" })) { Return }
 
-$Uri = "https://github.com/Minerx117/miners/releases/download/ClaymoreNeoscrypt/claymore_neoscrypt_1.2.zip"
+$URI = "https://github.com/Minerx117/miners/releases/download/ClaymoreNeoscrypt/claymore_neoscrypt_1.2.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\NeoScryptMiner.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -47,11 +47,7 @@ If ($Algorithms) {
 
                 If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
 
-                    $Arguments = $_.Arguments
                     $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
-
-                    # Get arguments for available miner devices
-                    # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("algo") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
 
                     $Fee = If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { @(2.5) } Else { @(2) }
 
@@ -64,7 +60,7 @@ If ($Algorithms) {
                     [PSCustomObject]@{ 
                         Algorithms  = @($_.Algorithm)
                         API         = "EthMiner"
-                        Arguments   = ("$($Arguments) -pool $(If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts | Select-Object -Last 1) -wal $($AllMinerPools.($_.Algorithm).User)$(If ($AllMinerPools.($_.Algorithm).Pass) { " -psw $($AllMinerPools.($_.Algorithm).Pass)" }) -mport -$MinerAPIPort -di $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
+                        Arguments   = ("$($_.Arguments) -pool $(If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts | Select-Object -Last 1) -wal $($AllMinerPools.($_.Algorithm).User)$(If ($AllMinerPools.($_.Algorithm).Pass) { " -psw $($AllMinerPools.($_.Algorithm).Pass)" }) -mport -$MinerAPIPort -di $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                         DeviceNames = $AvailableMiner_Devices.Name
                         Fee         = $Fee
                         MinerSet    = $_.MinerSet

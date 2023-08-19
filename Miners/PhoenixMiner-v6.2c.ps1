@@ -17,13 +17,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
 
-$Uri = "https://phoenixminer.info/downloads/PhoenixMiner_6.2c_Windows.zip"
+$URI = "https://phoenixminer.info/downloads/PhoenixMiner_6.2c_Windows.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\PhoenixMiner.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -46,6 +46,8 @@ $Algorithms = [PSCustomObject[]]@(
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).PoolPorts -and (-not $_.Algorithms[1] -or $MinerPools[1].($_.Algorithms[1]).PoolPorts) }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithms[0]).Epoch -le 602 }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0]."EtcHash".Epoch -lt 302 }
 
 If ($Algorithms) { 
 
@@ -94,9 +96,6 @@ If ($Algorithms) {
                     $WarmupTimes[1] += 45
                 }
 
-                # Get arguments for available miner devices
-                # $Arguments = Get-ArgumentsPerDevice -Arguments $Arguments -ExcludeArguments @("amd", "eres", "nvidia") -DeviceIDs $AvailableMiner_Devices.$DeviceEnumerator
-
                 $Arguments += " -pool $(If ($AllMinerPools.$Algorithm0.PoolPorts[1]) { "ssl://" })$($AllMinerPools.$Algorithm0.Host):$($AllMinerPools.$Algorithm0.PoolPorts | Select-Object -Last 1) -wal $($AllMinerPools.$Algorithm0.User)"
                 $Arguments += Switch ($AllMinerPools.$Algorithm0.Protocol) {
                     "ethproxy"     { " -proto 2"; Break }
@@ -117,7 +116,7 @@ If ($Algorithms) {
                 }
 
                 # kernel 3 does not support dual mining
-                If (($AvailableMiner_Devices.Memory | Measure-Object -Minimum).Minimum / 1GB -ge 2 * $MinMemGiB -and -not $Algorithm1) { # Faster kernels require twice as much VRAM
+                If (($AvailableMiner_Devices.Memory | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum) / 1GB -ge 2 * $MinMemGiB -and -not $Algorithm1) { # Faster kernels require twice as much VRAM
                     If ($AvailableMiner_Devices.Vendor -eq "AMD") { $Arguments += " -clkernel 3" }
                     ElseIf ($AvailableMiner_Devices.Vendor -eq "NVIDIA") { $Arguments += " -nvkernel 3" }
                 }
@@ -135,7 +134,7 @@ If ($Algorithms) {
                 [PSCustomObject]@{ 
                     Algorithms  = @($_.Algorithms | Select-Object)
                     API         = "EthMiner"
-                    Arguments   = ("$($Arguments) -vmdag 0 -log 0 -wdog 0 -cdmport $MinerAPIPort -gpus $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:d}' -f ($_ + 1) }) -join ',')" -replace "\s+", " ").trim()
+                    Arguments   = ("$Arguments -vmdag 0 -log 0 -wdog 0 -cdmport $MinerAPIPort -gpus $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:d}' -f ($_ + 1) }) -join ',')" -replace "\s+", " ").trim()
                     DeviceNames = $AvailableMiner_Devices.Name
                     Fee         = $_.Fee # Dev fee
                     MinerSet    = $_.MinerSet

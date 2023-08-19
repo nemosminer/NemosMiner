@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\Hiveon.ps1
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 param(
@@ -37,18 +37,19 @@ $PoolConfig = $Variables.PoolsConfig.$Name
 
 If ($PoolConfig.Wallets) { 
 
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
     $StartTime = (Get-Date)
+
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
 
     $APICallFails = 0
 
     Do {
         Try { 
-            $Request = Invoke-RestMethod -Uri "https://Hiveon.net/api/v1/stats/pool" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec 3
+            $Request = Invoke-RestMethod -Uri "https://Hiveon.net/api/v1/stats/pool" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $PoolConfig.PoolAPITimeout
         }
         Catch { 
             $APICallFails ++
-            Start-Sleep -Seconds ($APICallFails * 3)
+            Start-Sleep -Seconds ($APICallFails * $PoolConfig.PoolAPIRetryInterval)
         }
     } While (-not $Request -and $APICallFails -lt 3)
 
@@ -80,8 +81,8 @@ If ($PoolConfig.Wallets) {
                 Host                     = [String]$_.servers[0].host
                 Name                     = [String]$PoolVariant
                 Pass                     = "x"
-                Port                     = If ($PoolConfig.SSL -eq "Always") { 0 } Else { [UInt16]$_.servers[0].ports[0] }
-                PortSSL                  = If ($PoolConfig.SSL -eq "Never") { 0 } Else { [UInt16]$_.servers[0].ssl_ports[0] }
+                Port                     = [UInt16]$_.servers[0].ports[0]
+                PortSSL                  = [UInt16]$_.servers[0].ssl_ports[0]
                 Price                    = [Double]$Stat.Live
                 Protocol                 = "ethproxy"
                 Reasons                  = $Reasons
@@ -97,7 +98,7 @@ If ($PoolConfig.Wallets) {
         }
     }
 
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
+    # Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
     Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 

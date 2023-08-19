@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\MiningPoolHub.ps1
-Version:        4.3.6.0
-Version date:   31 July 2023
+Version:        4.3.6.1
+Version date:   2023/08/19
 #>
 
 param(
@@ -40,18 +40,19 @@ $Useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 
 If ($PoolConfig.UserName) { 
 
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
     $StartTime = (Get-Date)
+
+    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
 
     $APICallFails = 0
 
     Do {
         Try { 
-            $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics" -Headers $Headers -SkipCertificateCheck -TimeoutSec 5 # -UserAgent $UserAgent 
+            $Request = Invoke-RestMethod -Uri "https://miningpoolhub.com/index.php?page=api&action=getminingandprofitsstatistics" -Headers $Headers -SkipCertificateCheck -TimeoutSec $PoolConfig.PoolAPITimeout # -UserAgent $UserAgent 
         }
         Catch { 
             $APICallFails ++
-            Start-Sleep -Seconds ($APICallFails * 3)
+            Start-Sleep -Seconds ($APICallFails * $PoolConfig.PoolAPIRetryInterval)
         }
     } While (-not $Request -and $APICallFails -lt 3)
 
@@ -100,7 +101,7 @@ If ($PoolConfig.UserName) {
                     Name                     = [String]$PoolVariant
                     Pass                     = "x"
                     Port                     = [UInt16]$Port
-                    PortSSL                  = $null
+                    PortSSL                  = 0
                     Price                    = [Double]$Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * [Math]::Min($Stat.Day_Fluctuation, 1)
                     Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratumnh" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                     Reasons                  = $Reasons
@@ -109,6 +110,7 @@ If ($PoolConfig.UserName) {
                     SSLSelfSignedCertificate = $true
                     StablePrice              = [Double]$Stat.Week
                     User                     = "$($PoolConfig.UserName).$($PoolConfig.WorkerName)"
+                    Updated                  = [DateTime]$Stat.Updated
                     WorkerName               = ""
                     Workers                  = [Int]$_.workers
                 }
@@ -117,7 +119,7 @@ If ($PoolConfig.UserName) {
         }
     }
 
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
+    # Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
     Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 
