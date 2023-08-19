@@ -30,8 +30,8 @@ If ($Config.Transcript) { Start-Transcript -Path ".\Debug\$((Get-Item $MyInvocat
 
 Do { 
     Try { 
-    # Set master timer
-    $Variables.Timer = (Get-Date).ToUniversalTime()
+        # Set master timer
+        $Variables.Timer = (Get-Date).ToUniversalTime()
 
         Get-ChildItem -Path ".\Includes\MinerAPIs" -File | ForEach-Object { . $_.FullName }
 
@@ -106,7 +106,6 @@ Do {
                 # Remove model information from devices -> will create only one miner instance
                 If (-not $Config.MinerInstancePerDeviceModel) { $_.Model = $_.Vendor }
             }
-
 
             # If previous cycle was shorter than half of what it should skip some stuff
             If ($Variables.BenchmarkingOrMeasuringMiners -or -not $Variables.Miners -or (Compare-Object @($Config.PoolName | Select-Object) @($Variables.PoolName | Select-Object)) -or -not $Variables.BeginCycleTime -or $Variables.BeginCycleTime.AddSeconds([Int]($Config.Interval / 2)) -lt (Get-Date).ToUniversalTime() -or (Compare-Object @($Config.ExtraCurrencies | Select-Object) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "<=")) { 
