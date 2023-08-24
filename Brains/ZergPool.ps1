@@ -47,8 +47,6 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
 
         Write-Message -Level Debug "Brain '$($BrainName)': Start loop$(If ($Duration) { " (Previous loop duration: $($Duration) sec. / Avg. loop duration: $(($Durations | Measure-Object -Average | Select-Object -ExpandProperty Average)) sec.)" })"
 
-        $PayoutCurrency = $Variables.PoolsConfig.$BrainName.Wallets.psBase.Keys | Select-Object -First 1
-
         Do {
             Try { 
                 $CurrenciesData = Invoke-RestMethod -Uri $PoolConfig.PoolCurrenciesUri -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $PoolConfig.PoolAPITimeout
@@ -95,14 +93,14 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
             }
             If ($Currency) { 
                 # Add coin name
-                If ($AlgoData.$Algo.CoinName -and -not $Variables.CoinNames[$Currency]) { 
+                If ($AlgoData.$Algo.CoinName) { 
                     Try { 
                         [Void](Add-CoinName -Algorithm $Algo -Currency $Currency -CoinName $AlgoData.$Algo.CoinName)
                     }
                     Catch { }
                 }
                 # Keep DAG data up to date
-                If ($Algo -in $Variables.DagData.Algorithm.psBase.Keys -and $AlgoData.$Algo.height -gt $Variables.DAGData.Currency.$Currency.BlockHeight) { 
+                If ($Algo -match $Variables.RegexAlgoHasDAG -and $AlgoData.$Algo.height -gt $Variables.DAGData.Currency.$Currency.BlockHeight) { 
                     $Variables.DAGData.Currency[$Currency] = (Get-DAGData -Blockheight $AlgoData.$Algo.height -Currency $Currency -EpochReserve 2)
                     $Variables.DAGData.Updated["$BrainName Brain"] = (Get-Date).ToUniversalTime()
                 }
