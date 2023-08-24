@@ -23,7 +23,7 @@ Version date:   2023/08/19
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -in @("AMD", "INTEL") -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge "460.27.03" ) })) { Return }
 
-$URI = "https://github.com/bzminer/bzminer/releases/download/v16.0.0/bzminer_v16.0.0_windows.zip"
+$URI = "https://github.com/bzminer/bzminer/releases/download/v16.0.1/bzminer_v16.0.1_windows.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\bzminer.exe"
 $DeviceEnumerator = "Bus"
