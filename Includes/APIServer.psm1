@@ -24,7 +24,7 @@ Version date:   2023/08/19
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.5.2.4"
+    $APIVersion = "0.5.3.0"
 
     If ($Variables.APIRunspace.AsyncObject.IsCompleted -or $Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
         Stop-APIServer
@@ -731,7 +731,7 @@ Function Start-APIServer {
                             "/config" {
                                 $Data = ConvertTo-Json -Depth 10 (Get-Content -Path $Variables.ConfigFile | ConvertFrom-Json -Depth 10 | Get-SortedObject)
                                 If (-not ($Data | ConvertFrom-Json).ConfigFileVersion) { 
-                                    $Data = ConvertTo-Json -Depth 10 ($Config | Select-Object -Property * -ExcludeProperty PoolsConfig)
+                                    $Data = ConvertTo-Json -Depth 10 ($Config | Select-Object -ExcludeProperty PoolsConfig)
                                 }
                                 Break
                             }
@@ -804,51 +804,51 @@ Function Start-APIServer {
                                 Break
                             }
                             "/miners" { 
-                                $Data = ConvertTo-Json -Depth 4 -Compress @($Variables.Miners | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | ConvertTo-Json -Depth 4 | ConvertFrom-Json | ForEach-Object { If ($_.WorkersRunning) { $_.Workers = $_.WorkersRunning }; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning | Sort-Object @{ Expression = { $_.Best }; Descending = $true }, DeviceNames, Name)
+                                $Data = ConvertTo-Json -Depth 4 -Compress @($Variables.Miners | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | ForEach-Object { If ($_.WorkersRunning) { $_.Workers = $_.WorkersRunning }; $_ } | Select-Object -ExcludeProperty WorkersRunning | Sort-Object @{ Expression = { $_.Best }; Descending = $true }, DeviceNames, Name)
                                 Break
                             }
                             "/miners/available" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object -Property Name)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object -Property Name)
                                 Break
                             }
                             "/miners/best" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | ConvertTo-Json -Depth 4 | ConvertFrom-Json | ForEach-Object { If ($_.WorkersRunning) { $_.Workers = $_.WorkersRunning }; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning | Sort-Object -Property DeviceName)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | ForEach-Object { If ($_.WorkersRunning) { $_.Workers = $_.WorkersRunning }; $_ } | Select-Object -ExcludeProperty WorkersRunning | Sort-Object -Property DeviceName)
                                 Break
                             }
                             "/miners/best_combo" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest_Combo | Sort-Object DeviceNames | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest_Combo | Sort-Object DeviceNames | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator)
                                 Break
                             }
                             "/miners/best_combos" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest_Combos | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest_Combos | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator)
                                 Break
                             }
                             "/miners/disabled" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object { $_.Status -EQ [MinerStatus]::Disabled } | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object -Property DeviceNames, EndTime)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object { $_.Status -EQ [MinerStatus]::Disabled } | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object -Property DeviceNames, EndTime)
                                 Break
                             }
                             "/miners/failed" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object { $_.Status -EQ [MinerStatus]::Failed } | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object -Property DeviceNames, EndTime)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object { $_.Status -EQ [MinerStatus]::Failed } | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object -Property DeviceNames, EndTime)
                                 Break
                             }
                             "/miners/launched" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest_Combo | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | ConvertTo-Json -Depth 4 | ConvertFrom-Json | ForEach-Object { $_.Workers = $_.WorkersRunning; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest_Combo | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | ForEach-Object { $_.Workers = $_.WorkersRunning; $_ } | Select-Object -ExcludeProperty WorkersRunning)
                                 Break
                             }
                             "/miners/mostprofitable" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersMostProfitable | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object @{ Expression = { $_.Best }; Descending = $true }, DeviceNames, @{Expression = "Earning_Bias"; Descending = $True })
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersMostProfitable | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object @{ Expression = { $_.Best }; Descending = $true }, DeviceNames, @{Expression = "Earning_Bias"; Descending = $True })
                                 Break
                             }
                             "/miners/running" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object { $_.Status -EQ [MinerStatus]::Running } | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | ConvertTo-Json -Depth 4 | ConvertFrom-Json | ForEach-Object { $_.Workers = $_.WorkersRunning; $_ } | Select-Object -Property * -ExcludeProperty WorkersRunning)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object { $_.Status -EQ [MinerStatus]::Running } | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | ForEach-Object { $_.Workers = $_.WorkersRunning; $_ } | Select-Object -ExcludeProperty WorkersRunning)
                                 Break
                             }
                             "/miners/unavailable" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object -Property DeviceNames, Name, Algorithm)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator | Sort-Object -Property DeviceNames, Name, Algorithm)
                                 Break
                             }
                             "/miners/device_combos" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners_Device_Combos | Select-Object -Property * -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners_Device_Combos | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, Process, SideIndicator)
                                 Break
                             }
                             "/miningpowercost" { 
