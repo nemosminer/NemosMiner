@@ -22,7 +22,7 @@ Fixes:
 - 'ZergPool' brain not updating algorithm & coin name database
 
 Miner changes:
-- BzMiner-v16.0.1
+- BzMiner-v16.0.2
 - Rigel-v1.7.1
 - SRBMinerMulti-v2.3.5
 - TeamBlackMiner-v1.96

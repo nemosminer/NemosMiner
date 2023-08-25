@@ -891,7 +891,7 @@ Do {
             $Variables.MinersBest_Combo | ForEach-Object { $_.Best = $true }
             If ($Variables.Rates."BTC") { 
                 If ($Variables.MinersNeedingBenchmark.Count) { 
-                    $Variables.Summary = "Earning / day: n/a (Benchmarking: $(($Variables.MinersNeedingBenchmark | Select-Object -Property Name -Unique).Count) $(If (($Variables.MinersNeedingBenchmark | Select-Object -Property Name -Unique).Count -eq 1) { "miner" } Else { "miners" }) left$(If (($Variables.EnabledDevices | Sort-Object -Property { $_.DeviceNames -join ', ' }).Count -gt 1) { " [$((($Variables.MinersNeedingBenchmark | Sort-Object -Property Name -Unique) | Group-Object -Property { $_.DeviceNames -join ',' } | Sort-Object -Property Name | ForEach-Object { "$($_.Name): $($_.Count)" }) -join ', ')]"}))"
+                    $Variables.Summary = "Earning / day: n/a (Benchmarking: $(($Variables.MinersNeedingBenchmark | Select-Object -Property Algorithms, Name -Unique).Count) $(If (($Variables.MinersNeedingBenchmark | Select-Object -Property Algorithms, Name -Unique).Count -eq 1) { "miner" } Else { "miners" }) left$(If (($Variables.EnabledDevices | Sort-Object -Property { $_.DeviceNames -join ', ' }).Count -gt 1) { " [$((($Variables.MinersNeedingBenchmark | Sort-Object -Property Algorithms, Name -Unique) | Group-Object -Property { $_.DeviceNames -join ',' } | Sort-Object -Property Name | ForEach-Object { "$($_.Name): $($_.Count)" }) -join ', ')]"}))"
                 }
                 ElseIf ($Variables.MiningEarning -gt 0) { 
                     $Variables.Summary = "Earning / day: {0:n} {1}" -f ($Variables.MiningEarning * $Variables.Rates."BTC".($Config.Currency)), $Config.Currency
@@ -904,7 +904,7 @@ Do {
                     If ($Variables.Summary -ne "") { $Variables.Summary += "&ensp;&ensp;&ensp;" }
 
                     If ($Variables.MinersNeedingPowerUsageMeasurement.Count -or [Double]::IsNaN($Variables.MiningPowerCost)) { 
-                        $Variables.Summary += "Profit / day: n/a (Measuring power usage: $(($Variables.MinersNeedingPowerUsageMeasurement | Select-Object -Property Name -Unique).Count) $(If (($Variables.MinersNeedingPowerUsageMeasurement | Select-Object -Property Name -Unique).Count -eq 1) { "miner" } Else { "miners" }) left$(If (($Variables.EnabledDevices | Sort-Object -Property { $_.DeviceNames -join ',' }).Count -gt 1) { " [$((($Variables.MinersNeedingPowerUsageMeasurement | Sort-Object -Property Name -Unique) | Group-Object -Property { $_.DeviceNames -join ',' } | Sort-Object -Property Name | ForEach-Object { "$($_.Name): $($_.Count)" }) -join ', ')]"}))"
+                        $Variables.Summary += "Profit / day: n/a (Measuring power usage: $(($Variables.MinersNeedingPowerUsageMeasurement | Select-Object -Property Algorithms, Name -Unique).Count) $(If (($Variables.MinersNeedingPowerUsageMeasurement | Select-Object -Property Algorithms, Name -Unique).Count -eq 1) { "miner" } Else { "miners" }) left$(If (($Variables.EnabledDevices | Sort-Object -Property { $_.DeviceNames -join ',' }).Count -gt 1) { " [$((($Variables.MinersNeedingPowerUsageMeasurement | Sort-Object -Property Algorithms, Name -Unique) | Group-Object -Property { $_.DeviceNames -join ',' } | Sort-Object -Property Name | ForEach-Object { "$($_.Name): $($_.Count)" }) -join ', ')]"}))"
                     }
                     ElseIf ($Variables.MinersNeedingBenchmark.Count) { 
                         $Variables.Summary += "Profit / day: n/a"
@@ -992,7 +992,7 @@ Do {
                 }
             }
         }
-        Remove-Variable Miner -ErrorAction Ignore
+        Remove-Variable Miner, MinerFileName -ErrorAction Ignore
 
         # Kill stuck miners on subsequent cycles when not in dry run mode
         If ($Variables.CycleStarts.Count -eq 1 -or -not $Config.DryRun) { 
@@ -1188,11 +1188,11 @@ Do {
 
             # Display benchmarking progress
             If ($MinersDeviceGroupNeedingBenchmark) { 
-                Write-Message -Level Verbose "Benchmarking for '$(($MinersDeviceGroupNeedingBenchmark.DeviceNames | Sort-Object -Unique) -join ', ')' in progress: $($MinersDeviceGroupNeedingBenchmark.Count) miner$(If ($MinersDeviceGroupNeedingBenchmark.Count -gt 1) { 's' }) left to complete benchmark."
+                Write-Message -Level Verbose "Benchmarking for '$(($MinersDeviceGroupNeedingBenchmark.DeviceNames | Sort-Object -Unique) -join ', ')' in progress: $(($MinersDeviceGroupNeedingBenchmark | Select-Object -Property Algorithms, Name -Unique).Count) miner$(If (($MinersDeviceGroupNeedingBenchmark | Select-Object -Property Algorithms, Name -Unique).Count -gt 1) { 's' }) left to complete benchmark."
             }
             # Display power usage measurement progress
             If ($MinersDeviceGroupNeedingPowerUsageMeasurement) { 
-                Write-Message -Level Verbose "Power usage measurement for '$(($MinersDeviceGroupNeedingPowerUsageMeasurement.DeviceNames | Sort-Object -Unique) -join ', ')' in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring."
+                Write-Message -Level Verbose "Power usage measurement for '$(($MinersDeviceGroupNeedingPowerUsageMeasurement.DeviceNames | Sort-Object -Unique) -join ', ')' in progress: $(($MinersDeviceGroupNeedingPowerUsageMeasurement | Select-Object -Property Algorithms, Name -Unique).Count) miner$(If (($MinersDeviceGroupNeedingPowerUsageMeasurement | Select-Object -Property Algorithms, Name -Unique).Count -gt 1) { 's' }) left to complete measuring."
             }
         }
 
