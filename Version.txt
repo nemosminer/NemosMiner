@@ -1,6 +1,6 @@
 {
   "Product": "NemosMiner",
-  "Version": "4.3.6.1",
+  "Version": "4.3.6.2",
   "AutoUpdate": true,
   "RequireRestart": true,
   "Uri": "https://github.com/Minerx117/NemosMiner/archive/refs/heads/master.zip",

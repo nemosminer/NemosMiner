@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.1
-Version date:   2023/08/19
+Version:        4.3.6.2
+Version date:   2023/08/25
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.1" })) { Return }
@@ -29,12 +29,12 @@ $Path = ".\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = "Lyra2RE3";    MinMemGiB = 3; Minerset = 2; WarmupTimes = @(30, 0); ExcludePools = @(); Arguments = " --algo lyra2v3 --intensity 24" } # ASIC
-#   [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGiB = 3; Minerset = 2; WarmupTimes = @(30, 0); ExcludePools = @(); Arguments = " --algo lyra2z330 --intensity 13.2" } # Algorithm is dead
-#   [PSCustomObject]@{ Algorithm = "Yescrypt";    MinMemGiB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludePools = @(); Arguments = " --algo yescrypt" } # bad shares, CcminerLyra2z330-v8.21r9 is fastest
-    [PSCustomObject]@{ Algorithm = "YescryptR16"; MinMemGiB = 3; MinerSet = 0; WarmupTimes = @(60, 0); ExcludePools = @(); Arguments = " --algo yescryptr16 --intensity 13.2" }
-    [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGiB = 3; Minerset = 2; WarmupTimes = @(30, 0); ExcludePools = @(); Arguments = " --algo yescryptr32 -i 12" } # Default intensity causes out of memory error, set custom intensity; use -i to keep it for low mem GPUs
-    [PSCustomObject]@{ Algorithm = "YescryptR8";  MinMemGiB = 2; Minerset = 2; WarmupTimes = @(30, 0); ExcludePools = @(); Arguments = " --algo yescryptr8 --intensity 13.2" }
+#   [PSCustomObject]@{ Algorithm = "Lyra2RE3";    MinMemGiB = 3; Minerset = 2; WarmupTimes = @(30, 0) ; ExcludePools = @(); Arguments = " --algo lyra2v3 --intensity 24" } # ASIC
+#   [PSCustomObject]@{ Algorithm = "Lyra2z330";   MinMemGiB = 3; Minerset = 2; WarmupTimes = @(30, 0) ; ExcludePools = @(); Arguments = " --algo lyra2z330 --intensity 13.2" } # Algorithm is dead
+#   [PSCustomObject]@{ Algorithm = "Yescrypt";    MinMemGiB = 2; Minerset = 2; WarmupTimes = @(30, 0) ; ExcludePools = @(); Arguments = " --algo yescrypt" } # bad shares, CcminerLyra2z330-v8.21r9 is fastest
+    [PSCustomObject]@{ Algorithm = "YescryptR16"; MinMemGiB = 3; MinerSet = 0; WarmupTimes = @(60, 0) ; ExcludePools = @(); Arguments = " --algo yescryptr16 --intensity 13.2" }
+    [PSCustomObject]@{ Algorithm = "YescryptR32"; MinMemGiB = 3; Minerset = 2; WarmupTimes = @(60, 10); ExcludePools = @(); Arguments = " --algo yescryptr32 -i 12" } # Default intensity causes out of memory error, set custom intensity; use -i to keep it for low mem GPUs
+    [PSCustomObject]@{ Algorithm = "YescryptR8";  MinMemGiB = 2; Minerset = 2; WarmupTimes = @(30, 0) ; ExcludePools = @(); Arguments = " --algo yescryptr8 --intensity 13.2" }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
@@ -58,7 +58,7 @@ If ($Algorithms) {
                 $Arguments = $_.Arguments
                 $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
 
-                If ($AvailableMiner_Devices | Where-Object MemoryGiB -le 2) { $Arguments = $Arguments -replace " --intensity [0-9\.]+" }
+                If ($AvailableMiner_Devices | Where-Object MemoryGiB -LE 2) { $Arguments = $Arguments -replace " --intensity [0-9\.]+" }
 
                 [PSCustomObject]@{ 
                     Algorithms  = @($_.Algorithm)

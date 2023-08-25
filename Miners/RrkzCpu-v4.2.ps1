@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.1
-Version date:   2023/08/19
+Version:        4.3.6.2
+Version date:   2023/08/25
 #>
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
@@ -28,7 +28,7 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$()$Name)\cpuminer.exe"
 
 $Algorithms = [PSCustomObject[]]@(
-#   [PSCustomObject]@{ Algorithm = "CpuPower"; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo cpupower" } # ASIC SRBMinerMulti-v2.3.4 is fastest, but has 0.85% miner fee
+#   [PSCustomObject]@{ Algorithm = "CpuPower"; MinerSet = 0; WarmupTimes = @(30, 15); Arguments = " --algo cpupower" } # ASIC SRBMinerMulti-v2.3.5 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "Power2b";  Minerset = 2; WarmupTimes = @(30, 0);  Arguments = " --algo power2b" }
 )
 

@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.1
-Version date:   2023/08/19
+Version:        4.3.6.2
+Version date:   2023/08/25
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "6.0" })) { Return }
@@ -65,7 +65,7 @@ If ($Algorithms) {
                 $Arguments = $_.Arguments
                 $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
 
-                If ($AvailableMiner_Devices | Where-Object MemoryGiB -le 2) { $Arguments = $Arguments -replace " --intensity [0-9\.]+" }
+                If ($AvailableMiner_Devices | Where-Object MemoryGiB -LE 2) { $Arguments = $Arguments -replace " --intensity [0-9\.]+" }
 
                 [PSCustomObject]@{ 
                     Algorithms  = @($_.Algorithm)

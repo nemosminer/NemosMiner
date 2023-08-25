@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.1
-Version date:   2023/08/19
+Version:        4.3.6.2
+Version date:   2023/08/25
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
@@ -75,7 +75,7 @@ If ($Algorithms) {
                 $Arguments = $_.Arguments
                 $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)$(If ($Algorithm1) { "-$($Algorithm0)&$($Algorithm1)" })" -replace ' '
 
-                If ($AvailableMiner_Devices | Where-Object MemoryGiB -le 2) { $Arguments = $Arguments -replace " --intensity [0-9\.]+" }
+                If ($AvailableMiner_Devices | Where-Object MemoryGiB -LE 2) { $Arguments = $Arguments -replace " --intensity [0-9\.]+" }
 
                 $Arguments += Switch ($AllMinerPools.$Algorithm0.Protocol) { 
                     "ethstratum1"  { " --url stratum2"; Break }
@@ -117,7 +117,7 @@ If ($Algorithms) {
                     API         = "Trex"
                     Arguments   = ("$Arguments --no-strict-ssl --no-watchdog --gpu-report-interval 5 --quiet --retry-pause 1 --timeout 50000 --api-bind-http 127.0.0.1:$($MinerAPIPort) --api-read-only --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     DeviceNames = $AvailableMiner_Devices.Name
-                    Fee         = $_.Fee # Dev fee
+                    Fee         = @($_.Fee) # Dev fee
                     MinerSet    = $_.MinerSet
                     MinerUri    = "http://127.0.0.1:$($MinerAPIPort)/trex"
                     Name        = $Miner_Name

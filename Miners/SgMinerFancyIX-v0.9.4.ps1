@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.1
-Version date:   2023/08/19
+Version:        4.3.6.2
+Version date:   2023/08/25
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -eq "AMD")) { Return }

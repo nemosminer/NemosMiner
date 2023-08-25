@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.1
-Version date:   2023/08/19
+Version:        4.3.6.2
+Version date:   2023/08/25
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -gt "5.0" })) { Return }
@@ -50,7 +50,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Timetravel"; MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo timetravel --statsavg 5" }
 #   [PSCustomObject]@{ Algorithm = "Tribus";     MinMemGiB = 3;    MinerSet = 0; WarmupTimes = @(90, 15); ExcludeGPUArchitecture = @(); Arguments = " --algo tribus --statsavg 1" } # ASIC
 #   [PSCustomObject]@{ Algorithm = "X16r";       MinMemGiB = 3;    Minerset = 3; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @(); Arguments = " --algo x16r --statsavg 1" } # ASIC
-    [PSCustomObject]@{ Algorithm = "X16rv2";     MinMemGiB = 3;    MinerSet = 0; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo x16rv2 --statsavg 5" }
+    [PSCustomObject]@{ Algorithm = "X16rv2";     MinMemGiB = 3;    MinerSet = 0; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo x16rv2 --statsavg 5" }
     [PSCustomObject]@{ Algorithm = "X16s";       MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo x16s --statsavg 5" } # FPGA
     [PSCustomObject]@{ Algorithm = "X17";        MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(120, 0); ExcludeGPUArchitecture = @(); Arguments = " --algo x17 --statsavg 1" }
 #   [PSCustomObject]@{ Algorithm = "Xevan";      MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(90, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo xevan --intensity 26 --diff-factor 1 --statsavg 1" } # No hashrate in time
@@ -78,7 +78,7 @@ If ($Algorithms) {
                 $Arguments = $_.Arguments
                 $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
 
-                If ($AvailableMiner_Devices | Where-Object MemoryGiB -le 2) { $Arguments = $Arguments -replace " --intensity [0-9\.]+" }
+                If ($AvailableMiner_Devices | Where-Object MemoryGiB -LE 2) { $Arguments = $Arguments -replace " --intensity [0-9\.]+" }
 
                 [PSCustomObject]@{ 
                     Algorithms  = @($_.Algorithm)

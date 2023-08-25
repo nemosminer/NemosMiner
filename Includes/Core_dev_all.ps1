@@ -28,8 +28,20 @@ using module .\APIServer.psm1
 
 If ($Config.Transcript) { Start-Transcript -Path ".\Debug\$((Get-Item $MyInvocation.MyCommand.Path).BaseName)-Transcript_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
 
+# $Counter = 0
+"" > MemUsage_Dev.log
+
 Do { 
+    If ($LegacyGUIForm) { $LegacyGUIForm.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) - Runtime: {0:dd} days {0:hh} hrs {0:mm} mins - Path: $($Variables.Mainpath)" -f [TimeSpan]((Get-Date).ToUniversalTime() - $Variables.ScriptStartTime) }
+
     Try { 
+        # $Counter ++ 
+        # # If (-not ($Counter % 100)) { 
+            $MemUsageLastCycle = $MemUsage
+            $MemUsage = [System.GC]::GetTotalMemory("forcefullcollection")
+            "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): Core 'Loop': {0:n2} MBytes / $(If (($MemUsage - $MemUsageLastCycle) -gt 0) { "+" } ){1:n0} kBytes [Cycle $Counter / Uptime: $(((Get-Date).ToUniversalTime() - $Variables.ScriptStartTime).ToString('hh\:mm\:ss'))]" -f ($MemUsage / 1MB), (($MemUsage - $MemUsageLastCycle) / 1kB) >> MemUsage_Dev.log
+        # # }
+
         # Set master timer
         $Variables.Timer = (Get-Date).ToUniversalTime()
 
@@ -127,6 +139,9 @@ Do {
                 # Check for new version
                 If ($Config.AutoUpdateCheckInterval -and $Variables.CheckedForUpdate -lt (Get-Date).AddDays(-$Config.AutoUpdateCheckInterval)) { Get-NMVersion }
 
+                # Read all stats, will remove stats that have been deleted from disk
+                Get-Stat | Out-null
+
                 If ($Config.Donation -gt 0) { 
                     If (-not $Variables.DonationStart) { 
                         # Re-Randomize donation start once per day, do not donate if remaing time for today is less than donation duration
@@ -179,20 +194,22 @@ Do {
                     If ($Variables.Brains.psBase.Keys | Where-Object { $Variables.Brains[$_].StartTime -gt $Variables.Timer.AddSeconds(- $Config.Interval) }) {
                         # Newly started brains, allow extra time for brains to get ready
                         $Variables.PoolTimeout = 60
-                        $Variables.Summary = "Requesting initial pool data from '$((Get-PoolBaseName $Variables.PoolName) -join ', ')'...<br>This may take up to $($Variables.PoolTimeout) seconds."
+                        $Variables.Summary = "Loading initial pool data from '$((Get-PoolBaseName $Variables.PoolName) -join ', ')'...<br>This may take up to $($Variables.PoolTimeout) seconds."
+                        Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
+                        $Variables.RefreshNeeded = $true
+                    }
+                    ElseIf (-not $Variables.PoolsCount) { 
+                        $Variables.Summary = "Loading initial pool data from '$((Get-PoolBaseName $Variables.PoolName) -join ', ')'...<br>This may take while."
                         Write-Message -Level Info ($Variables.Summary -replace "<br>", " ")
                         $Variables.RefreshNeeded = $true
                     }
                     Else { 
-                        Write-Message -Level Info "Requesting pool data from '$((Get-PoolBaseName $Variables.PoolName) -join ', ')'..."
+                        Write-Message -Level Info "Loading pool data from '$((Get-PoolBaseName $Variables.PoolName) -join ', ')'..."
                     }
                 }
 
                 # Core suspended with <Ctrl><Alt>P in MainLoop
                 While ($Variables.SuspendCycle) { Start-Sleep -Seconds 1 }
-
-                # Read all stats, will remove stats that have been deleted from disk
-                [Void](Get-Stat)
 
                 # Load currency exchange rates from min-api.cryptocompare.com
                 [Void](Get-Rate)
@@ -304,25 +321,18 @@ Do {
                             $PoolBaseName = Get-PoolBaseName $_
                             & ".\Pools\$($PoolBaseName).ps1" -Config $Config -PoolVariant $_ -Variables $Variables
                         }
-                        Catch { 
-                            Write-Message -Level Error "Error in pool file '$($PoolBaseName).ps1'."
-                        }
+                        Catch { }
                     } | Where-Object { 
                         $_.Updated -gt $PoolTimeStamp 
                     } | ForEach-Object { 
-                        Try { 
-                            $Pool = [Pool]$_
-                            $Pool.CoinName = $Variables.CoinNames[$_.Currency]
-                            $Pool.Fee = If ($Config.IgnorePoolFee -or $Pool.Fee -lt 0 -or $Pool.Fee -gt 1) { 0 } Else { $Pool.Fee }
-                            $Factor = $_.EarningsAdjustmentFactor * (1 - $Pool.Fee)
-                            $Pool.Price *= $Factor
-                            $Pool.Price_Bias = $Pool.Price * $Pool.Accuracy
-                            $Pool.StablePrice *= $Factor
-                            $PoolsNew += $Pool
-                        }
-                        Catch { 
-                            Write-Message -Level Error "Failed to add pool '$($Pool.Name) [$($Pool.Algorithm)]' ($($Pool | ConvertTo-Json -Compress))"
-                        }
+                        $Pool = [Pool]$_
+                        $Pool.CoinName = $Variables.CoinNames[$_.Currency]
+                        $Pool.Fee = If ($Config.IgnorePoolFee -or $Pool.Fee -lt 0 -or $Pool.Fee -gt 1) { 0 } Else { $Pool.Fee }
+                        $Factor = $_.EarningsAdjustmentFactor * (1 - $Pool.Fee)
+                        $Pool.Price *= $Factor
+                        $Pool.Price_Bias = $Pool.Price * $Pool.Accuracy
+                        $Pool.StablePrice *= $Factor
+                        $PoolsNew += $Pool
                     } | Out-Null
 
                     $Variables.PoolDataCollectedTimeStamp = (Get-Date).ToUniversalTime()
@@ -498,7 +508,9 @@ Do {
                             }
                         }
 
-                        # Get best pools
+                        # Mark best pools for all DAG algorithms
+                        # $Pools | Where-Object Available | Where-Object Algorithm -match $Variables.RegexAlgoHasDAG | Group-Object Algorithm, Currency | ForEach-Object { $_.Group | Sort-Object { $_.BaseName -in $Variables.PoolNameToKeepBalancesAlive }, { $_.Price_Bias } -Bottom 1 | ForEach-Object { $_.Best = $true } }
+                        # Mark best pools for all NON-DAG algorithms
                         $Pools | Where-Object Available | Group-Object Algorithm | ForEach-Object { $_.Group | Sort-Object { $_.BaseName -in $Variables.PoolNameToKeepBalancesAlive }, { $_.Price_Bias } -Bottom 1 | ForEach-Object { $_.Best = $true } }
                     }
 
@@ -668,16 +680,33 @@ Do {
             # Get new miners
             $Miners = $Variables.Miners.Clone() # Much faster
             If ($Variables.PoolsBest) { 
-                $AllMinerPools = @{ }
-                $MinerPools = @(@{ }, @{ })
-                $Variables.PoolsBest | ForEach-Object { 
-                    $AllMinerPools[$_.Algorithm] = $_
-                    If ($_.Reasons -notcontains "Unprofitable primary algorithm") { $MinerPools[0][$_.Algorithm] = $_ } # Allow unprofitable algos for primary algorithm
-                    If ($_.Reasons -notcontains "Unprofitable secondary algorithm") { $MinerPools[1][$_.Algorithm] = $_ } # Allow unprofitable algos for secondary algorithm
-                }
+                # $AllMinerPools = @{ }
+                # $MinerPools = @(@{ }, @{ })
+                # $Variables.PoolsBest | ForEach-Object { 
+                #     $AllMinerPools[$_.Algorithm] = $_
+                #     If ($_.Reasons -notcontains "Unprofitable primary algorithm") { $MinerPools[0][$_.Algorithm] = $_ } # Allow unprofitable algos for primary algorithm
+                #     If ($_.Reasons -notcontains "Unprofitable secondary algorithm") { $MinerPools[1][$_.Algorithm] = $_ } # Allow unprofitable algos for secondary algorithm
+                # }
+
+                # $AllMinerPools = @{ }
+                # $MinerPools = @(@{ }, @{ })
+                # $Variables.PoolsBest | ForEach-Object { 
+                #     If ($_.Currency -and $_.Algorithm -match $Variables.RegexAlgoHasDAG) { 
+                #         $AllMinerPools["$($_.Algorithm)_$($_.Currency)"] = $_
+                #     }
+                #     Else { 
+                #         $AllMinerPools[$_.Algorithm] = $_
+                #     }
+                #     If ($_.Reasons -notcontains "Unprofitable primary algorithm") { $MinerPools[0][$_.Algorithm] = $_ } # Allow unprofitable algos for primary algorithm
+                #     If ($_.Reasons -notcontains "Unprofitable secondary algorithm") { $MinerPools[1][$_.Algorithm] = $_ } # Allow unprofitable algos for secondary algorithm
+                # }
+
+                $MinerPools = [Ordered]@{ }
+                $Variables.Pools | Where-Object Available | Group-Object Algorithm | ForEach-Object { $MinerPools[($_.Group.Algorithm | Sort-Object -Unique)] = @($_.Group) }
+                $MinerPools."" = ""
                 $Variables.MinerPools = $MinerPools
 
-                If ($MinerPools[0].psBase.Keys) { 
+                # If ($MinerPools[0].psBase.Keys) { 
                     If (-not ($Variables.Pools -and $Variables.Miners)) { $Variables.Summary = "Loading miners.<br>This will take a while..." }
                     Remove-Variable NewMiners -ErrorAction Ignore
                     Write-Message -Level Info "Loading miners..."
@@ -693,10 +722,15 @@ Do {
                     } | ForEach-Object { 
                         Try { 
                             $Miner = $_
+                            $Miner | Add-Member Algorithms @($Miner.Workers.Pool.Algorithm)
                             $Miner | Add-Member MinDataSample ($Config.MinDataSample * (@(1) + @($_.Algorithms | ForEach-Object { $Config.MinDataSampleAlgoMultiplier[($_ -replace '_.+$', '')] }) | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum))
                             $Miner | Add-Member ProcessPriority $(If ($_.Type -eq "CPU") { $Config.CPUMinerProcessPriority } Else { $Config.GPUMinerProcessPriority })
-                            $Miner | Add-Member Workers @(ForEach ($Algorithm in $_.Algorithms) { @{ Pool = $AllMinerPools.$Algorithm; Fee = If ($Config.IgnoreMinerFee) { 0 } Else { $_.Fee | Select-Object -Index $_.Algorithms.IndexOf($Algorithm) } } })
+                            # $Miner | Add-Member Workers @(ForEach ($Algorithm in $_.Algorithms) { @{ Pool = $MinerPools[$Algorithm]; Fee = If ($Config.IgnoreMinerFee) { 0 } Else { $_.Fee | Select-Object -Index $_.Algorithms.IndexOf($Algorithm) } } })
                             $Miner | Add-Member Devices @($Variables.EnabledDevices | Where-Object Name -in $Miner.DeviceNames | Select-Object -Property Bus, ConfiguredPowerUsage, Name, ReadPowerUsage, Status)
+                            ForEach ($Algorithm in $Miner.Algorithms) { 
+                                $Miner.Workers[$Miner.Algorithms.IndexOf($Algorithm)].Fee = $(If ($Config.IgnoreMinerFee) { 0 } Else { $Miner.Fee | Select-Object -Index $Miner.Algorithms.IndexOf($Algorithm) })
+                            }
+                            $Miner | Add-Member PoolNames @($Miner.Workers.Pool.BaseName | Select-Object)
                             $Miner.PSObject.Properties.Remove("Fee")
                             $MinersNew += $Miner -as $_.API
                         }
@@ -704,7 +738,7 @@ Do {
                             Write-Message -Level Error "Failed to add Miner '$($Miner.Name)' as '$($Miner.API)' ($($Miner | ConvertTo-Json -Compress))"
                         }
                     } | Out-Null
-                    Remove-Variable Miner, MinerFileName -ErrorAction Ignore
+                    Remove-Variable Algorithm, Miner, MinerFile -ErrorAction Ignore
 
                     If ($MinersNew) { # Sometimes there are no miners loaded, keep existing
                         $CompareMiners = Compare-Object @($Miners | Select-Object) @($MinersNew | Select-Object) -Property Name, Algorithms -IncludeEqual -PassThru 
@@ -717,7 +751,7 @@ Do {
                         Remove-Variable Miner -ErrorAction Ignore
                         $Miners = [Miner[]]@($CompareMiners | Where-Object SideIndicator -NE "<=")
                     }
-                }
+                # }
             }
 
             If ($Miners -and $Variables.PoolsBest) { 
@@ -726,7 +760,7 @@ Do {
                         $_.Restart = $false
                     }
                     Else { 
-                        If ($Miner = Compare-Object @($MinersNew | Select-Object) @($_ | Select-Object) -Property Name, Algorithms -ExcludeDifferent -PassThru | Select-Object) { 
+                        If ($Miner = Compare-Object @($MinersNew | Select-Object) @($_ | Select-Object) -Property Name, Algorithms, PoolNames -ExcludeDifferent -PassThru | Select-Object) { 
                             # Update existing miners
                             If ($_.Restart = $_.Arguments -ne $Miner.Arguments) { 
                                 $_.Arguments = $Miner.Arguments
@@ -739,6 +773,11 @@ Do {
                             $_.WarmupTimes = $Miner.WarmupTimes
                         }
                     }
+                    # $_.Workers.Pool | ForEach-Object { 
+                    #     If ($AllMinerPools.($_.Algorithm).DAGSizeGiB) { 
+                    #         $_.Algorithm = "$($AllMinerPools.($_.Algorithm).Algorithm)$([Math]::Ceiling($AllMinerPools.($_.Algorithm).DAGSizeGiB))GiB"
+                    #     }
+                    # }
                     $_.Refresh($Variables.PowerCostBTCperW, $Variables.CalculatePowerCost)
                     $_.WindowStyle = If ($Config.MinerWindowStyleNormalWhenBenchmarking -and $_.Benchmark) { "normal" } Else { $Config.MinerWindowStyle }
                 }
@@ -1188,11 +1227,11 @@ Do {
 
             # Display benchmarking progress
             If ($MinersDeviceGroupNeedingBenchmark) { 
-                Write-Message -Level Verbose "Benchmarking for '$(($MinersDeviceGroupNeedingBenchmark.DeviceNames | Sort-Object -Unique) -join ', ')' in progress: $($MinersDeviceGroupNeedingBenchmark.Count) miner$(If ($MinersDeviceGroupNeedingBenchmark.Count -gt 1) { 's' }) left to complete benchmark."
+                Write-Message -Level Verbose "Benchmarking for '$(($MinersDeviceGroupNeedingBenchmark.DeviceNames | Sort-Object -Unique) -join ', ')' in progress: $(($MinersDeviceGroupNeedingBenchmark | Select-Object -Property Name -Unique).Count) miner$(If (($MinersDeviceGroupNeedingBenchmark | Select-Object -Property Name -Unique).Count -gt 1) { 's' }) left to complete benchmark."
             }
             # Display power usage measurement progress
             If ($MinersDeviceGroupNeedingPowerUsageMeasurement) { 
-                Write-Message -Level Verbose "Power usage measurement for '$(($MinersDeviceGroupNeedingPowerUsageMeasurement.DeviceNames | Sort-Object -Unique) -join ', ')' in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring."
+                Write-Message -Level Verbose "Power usage measurement for '$(($MinersDeviceGroupNeedingPowerUsageMeasurement.DeviceNames | Sort-Object -Unique) -join ', ')' in progress: $(($MinersDeviceGroupNeedingPowerUsageMeasurement | Select-Object -Property Name -Unique).Count) miner$(If (($MinersDeviceGroupNeedingPowerUsageMeasurement | Select-Object -Property Name -Unique).Count -gt 1) { 's' }) left to complete measuring."
             }
         }
 
@@ -1224,6 +1263,9 @@ Do {
             Start-Sleep -Milliseconds 100
             ForEach ($Miner in ($Variables.RunningMiners | Where-Object { $_.Status -ne [MinerStatus]::DryRun })) { 
                 Try { 
+                    If ($DebugMinerGetData) { 
+                        $Miner.GetMinerData()
+                    }
                     If ($Miner.GetStatus() -ne [MinerStatus]::Running ) { 
                         # Miner crashed
                         $Miner.StatusMessage = "Miner '$($Miner.Name) $($Miner.Info)' exited unexpectedly."

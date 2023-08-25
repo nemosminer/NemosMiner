@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.1
-Version date:   2023/08/19
+Version:        4.3.6.2
+Version date:   2023/08/25
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0" })) { Return }
@@ -34,7 +34,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Autolykos2", "IronFish");     Fee = @(0.025); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=autolykos2" } # Pools with support at this time are Herominers, Flexpool and Kryptex
     [PSCustomObject]@{ Algorithms = @("Chukwa");                     Fee = @(0.025); MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=trtl_chukwa" }
     [PSCustomObject]@{ Algorithms = @("Chukwa2");                    Fee = @(0.025); MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=trtl_chukwa2" }
-    [PSCustomObject]@{ Algorithms = @("CryptonightCcx");             Fee = @(0.025); MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" } # SRBMinerMulti-v2.3.4 is fastest
+    [PSCustomObject]@{ Algorithms = @("CryptonightCcx");             Fee = @(0.025); MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" } # SRBMinerMulti-v2.3.5 is fastest
     [PSCustomObject]@{ Algorithms = @("CryptonightHeavy");           Fee = @(0.025); MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_heavy --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
     [PSCustomObject]@{ Algorithms = @("CryptonightHaven");           Fee = @(0.025); MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_haven --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
     [PSCustomObject]@{ Algorithms = @("CryptonightHeavyTube");       Fee = @(0.025); MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_saber --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
@@ -124,7 +124,7 @@ If ($Algorithms) {
                     API              = "Xgminer"
                     Arguments        = ("$Arguments --watchdog_script --no_gpu_monitor --init_style=3 --hardware=gpu --platform=$($AvailableMiner_Devices.PlatformId | Sort-Object -Unique) --api_listen=127.0.0.1:$MinerAPIPort --devices=$(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:d}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     DeviceNames      = $AvailableMiner_Devices.Name
-                    Fee              = $_.Fee
+                    Fee              = @($_.Fee) # Dev fee
                     MinerSet         = $_.MinerSet
                     Name             = $Miner_Name
                     Path             = $Path

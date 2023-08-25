@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.1
-Version date:   2023/08/19
+Version:        4.3.6.2
+Version date:   2023/08/25
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "NVIDIA" -and $_.OpenCL.DriverVersion -ge "450.80.02" })) { Return }
@@ -29,11 +29,12 @@ $Path = ".\Bin\$($Name)\onezerominer.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = [PSCustomObject[]]@( 
-    [PSCustomObject]@{ Algorithm = "DynexSolve"; Fee = @(0.03); MinMemGiB = 2; Minerset = 2; WarmupTimes = @(180, 0); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @()); Arguments = @(" --algo dynex") }
+    [PSCustomObject]@{ Algorithm = "DynexSolve"; Fee = @(0.03); MinMemGiB = 2; Minerset = 2; WarmupTimes = @(180, 0); ExcludeGPUArchitecture = @(); ExcludePools = @("ZergPool"); Arguments = @(" --algo dynex") }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm) }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePools }
 
 If ($Algorithms) { 
 

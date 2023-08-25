@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.1
-Version date:   2023/08/19
+Version:        4.3.6.2
+Version date:   2023/08/25
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $_.Architecture -eq "Other" })) { Return }
@@ -115,7 +115,7 @@ If ($Algorithms) {
                     API              = "SRBMiner"
                     Arguments        = ("$Arguments --disable-workers-ramp-up --api-rig-name $($Config.WorkerName) --api-enable --api-port $MinerAPIPort --gpu-auto-tune 2 --gpu-id $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
                     DeviceNames      = $AvailableMiner_Devices.Name
-                    Fee              = $_.Fee # Dev fee
+                    Fee              = @($_.Fee) # Dev fee
                     MinerSet         = $_.MinerSet
                     MinerUri         = "http://127.0.0.1:$($MinerAPIPort)/stats"
                     Name             = $Miner_Name

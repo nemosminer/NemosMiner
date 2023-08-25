@@ -9,6 +9,25 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 
+ChangeLog NemosMiner 4.3.6.3 2023/08/25
+=======================================
+
+Enhancements:
+- API Server: Optimize miner queries
+- Core: Miner code optimizations
+- Core: Rework donation randomizations (older versions did start donation just after midnight)
+
+Fixes:
+- 'CcminerKlausT-v8.25' not creating miner objects
+- 'ZergPool' brain not updating algorithm & coin name database
+
+Miner changes:
+- BzMiner-v16.0.1
+- Rigel-v1.7.1
+- SRBMinerMulti-v2.3.5
+- TeamBlackMiner-v1.96
+
+
 ChangeLog NemosMiner 4.3.6.1 2023/08/18
 =======================================
 
@@ -31,7 +50,8 @@ Miner changes:
 - CcminerKlausT-v8.25: Remove broken 'Whirlpool' algorithm
 - CcminerKlausT-v8.26x2: Remove broken 'Whirlpool' algorithm
 - NanoMiner-v3.8.5
-- PhonixMiner-v6.2c: Only works up to DAG epoch 602 (302 for EtcHash)
+- PhoenixMiner-v6.2c: Only works up to DAG epoch 602 (302 for EtcHash)
+- Rigel-v1.7.0
 - SRBMinerMulti-v2.3.4
 
 Pool changes:

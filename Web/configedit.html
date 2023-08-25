@@ -1,5 +1,5 @@
 <!--#include file="/parts/head.html" -->
-          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h2 id="title" data-navbaractive="navconfigedit">Edit Configuration</h2>
           </div>
           <div id="configfilenames" class="alert alert-info" role="alert">&ensp;</div>
@@ -1208,6 +1208,14 @@
                     pattern: "<br>Algorithms must be prefixed with '+' or '-' and separated by commas"
                   }
                 },
+                invalidHandler: function(event, validator) {
+                  // 'this' refers to the form
+                  var errors = validator.numberOfInvalids();
+                  if (errors) {
+                    $("#div_messages").append('<div class="alert alert-danger" id="Error">Error saving data - fields with invalid data are marked in red.</div>');
+                    errors = null;
+                  }
+                },
                 submitHandler: function (form) {
                   document.body.style.cursor = 'wait';
 
@@ -1401,6 +1409,10 @@
                   }
                 }
               });
+
+              window.setTimeout(function(){
+                $("#div_messages").remove();
+              }, 5000);
             });
           </script>
 <!-- End of page scripts 'configedit.html' -->

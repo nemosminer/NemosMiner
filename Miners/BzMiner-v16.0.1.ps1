@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.1
-Version date:   2023/08/19
+Version:        4.3.6.2
+Version date:   2023/08/25
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -in @("AMD", "INTEL") -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge "460.27.03" ) })) { Return }
@@ -146,7 +146,7 @@ If ($Algorithms) {
                     Arguments        = ("$Arguments --nc 1 --no_watchdog --http_enabled 1 --http_port $MinerAPIPort $(If ($Devices | Where-Object { $_.State -ne [DeviceState]::Unsupported } | Where-Object { $_.Type -in @("AMD", "INTEL", "NVIDIA") } | Where-Object { $_ -notin $AvailableMiner_Devices }) { "--disable $((($Devices | Where-Object { $_.State -ne [DeviceState]::Unsupported } | Where-Object { $_.Type -in @("AMD", "INTEL", "NVIDIA") } | Where-Object { $_ -notin $AvailableMiner_Devices }).$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0}:0' -f $_ }) -join ' ')" }) " -replace "\s+", " ").trim()
                     # Arguments        = ("$Arguments --no_watchdog --http_enabled 1 --http_port $MinerAPIPort --enable $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0}:0' -f $_ }) -join ' ')" -replace "\s+", " ").trim()
                     DeviceNames      = $AvailableMiner_Devices.Name
-                    Fee              = $_.Fee
+                    Fee              = @($_.Fee) # Dev fee
                     MinerSet         = $_.MinerSet
                     MinerUri         = "http://127.0.0.1:$($MinerAPIPort)"
                     Name             = $Miner_Name

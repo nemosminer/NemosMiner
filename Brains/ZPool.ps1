@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Brains\ZPool.ps1
-Version:        4.3.6.1
+Version:        4.3.6.2
 Version date:   08 July 2023
 #>
 

@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.1
-Version date:   2023/08/19
+Version:        4.3.6.2
+Version date:   2023/08/25
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
@@ -105,7 +105,7 @@ If ($Algorithms) {
                     Algorithms  = @($_.Algorithms | Select-Object)
                     API         = "Rigel"
                     Arguments   = ("$Arguments --api-bind 127.0.0.1:$($MinerAPIPort) --no-watchdog --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
-                    Fee         = $_.Fee
+                    Fee         = @($_.Fee) # Dev fee
                     DeviceNames = $AvailableMiner_Devices.Name
                     MinerSet    = $_.MinerSet
                     MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
