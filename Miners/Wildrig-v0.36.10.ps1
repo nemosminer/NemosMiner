@@ -163,7 +163,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "X21s";             Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @();        ExcludePools = @();           Arguments = " --algo x21s --watchdog" } # Trex-v0.26.8 is fastest
 #   [PSCustomObject]@{ Algorithm = "X22i";             Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(60, 15); ExcludeGPUArchitecture = @();        ExcludePools = @();           Arguments = " --algo x22i" } # Incorrect intensities
     [PSCustomObject]@{ Algorithm = "X33";              Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @();        ExcludePools = @();           Arguments = " --algo x33 --watchdog" }
-) 
+)
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm) }
@@ -175,7 +175,7 @@ If ($Algorithms) {
     $Algorithms | ForEach-Object { 
         $_.MinMemGiB += $MinerPools[0].($_.Algorithm).DAGSizeGiB
     }
- 
+
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model
