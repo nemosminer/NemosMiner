@@ -341,7 +341,7 @@ Do {
                     $Pools = @($Variables.Pools | Where-Object Name -in $Variables.PoolName)
                     $Pools | ForEach-Object { $_.Reasons = @() }
 
-                    If ($ComparePools = @(Compare-Object @($PoolsNew | Select-Object) @($Pools | Select-Object) -Property Name, Algorithm -IncludeEqual -PassThru)) { 
+                    If ($ComparePools = @(Compare-Object @($PoolsNew | Select-Object) @($Pools | Select-Object) -Property Algorithm, Currency, Name -IncludeEqual -PassThru)) { 
                         # Find added & updated pools
                         $Variables.PoolsAdded = @($ComparePools | Where-Object SideIndicator -EQ "<=")
                         $Variables.PoolsUpdated = @($ComparePools | Where-Object SideIndicator -EQ "==")
@@ -354,7 +354,7 @@ Do {
                             $_.Available = $true
                             $_.Best = $false
 
-                            If ($Pool = $Variables.PoolsUpdated | Where-Object Name -EQ $_.Name | Where-Object Algorithm -EQ $_.Algorithm | Select-Object -First 1) { 
+                            If ($Pool = $Variables.PoolsUpdated | Where-Object Algorithm -EQ $_.Algorithm | Where-Object Currency -EQ $_.Currency | Where-Object Name -EQ $_.Name | Select-Object -First 1) { 
                                 $_.Accuracy                 = $Pool.Accuracy
                                 $_.CoinName                 = $Pool.CoinName
                                 $_.Currency                 = $Pool.Currency
@@ -1245,8 +1245,9 @@ Do {
                         If ($Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object)) { 
                             $Sample = $Samples | Select-Object -Last 1
                             $Miner.Hashrates_Live = $Sample.Hashrate.PSObject.Properties.Value
-                            # Hashrate from primary algorithm is relevant
+                            If ($Miner.ReadPowerUsage) { $Miner.PowerUsage_Live = $Sample.PowerUsage }
                             If ($Sample.Hashrate.($Miner.Algorithms[0])) { 
+                                # Hashrate from primary algorithm is relevant
                                 $Miner.DataSampleTimestamp = $Sample | Select-Object -ExpandProperty Date
                                 If ($Miner.ValidDataSampleTimestamp -eq [DateTime]0) { $Miner.ValidDataSampleTimestamp = $Sample.Date.AddSeconds($Miner.WarmupTimes[1]) }
                             }
