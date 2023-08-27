@@ -53,7 +53,7 @@ $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "CurveHash";     Minerset = 2; WarmupTimes = @(90, 15);  Arguments = " --algo curvehash" } # reported hashrates too high (https://github.com/rplant8/cpuminer-opt-rplant/issues/21)
 #   [PSCustomObject]@{ Algorithm = "Decred";        Minerset = 3; WarmupTimes = @(60, 60);  Arguments = " --algo Decred" } # ASIC, No hashrate in time
 #   [PSCustomObject]@{ Algorithm = "DMDGr";         Minerset = 3; WarmupTimes = @(60, 60);  Arguments = " --algo dmd-gr" } # ASIC
-    [PSCustomObject]@{ Algorithm = "Ghostrider";    MinerSet = 0; WarmupTimes = @(1200, 10); Arguments = " --algo gr" }
+    [PSCustomObject]@{ Algorithm = "Ghostrider";    MinerSet = 0; WarmupTimes = @(120, 10); Arguments = " --algo gr" }
 #   [PSCustomObject]@{ Algorithm = "Groestl";       Minerset = 3; WarmupTimes = @(90, 15);  Arguments = " --algo groestl" } # ASIC
     [PSCustomObject]@{ Algorithm = "HeavyHash";     MinerSet = 0; WarmupTimes = @(30, 15);  Arguments = " --algo heavyhash" } # FPGA
     [PSCustomObject]@{ Algorithm = "Hex";           Minerset = 3; WarmupTimes = @(30, 15);  Arguments = " --algo hex" } # GPU
