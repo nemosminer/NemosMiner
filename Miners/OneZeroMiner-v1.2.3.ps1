@@ -50,9 +50,9 @@ If ($Algorithms) {
                 $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
 
                 [PSCustomObject]@{ 
+                    Algorithms  = @($_.Algorithm)
                     API         = "OneZero"
                     Arguments   = ("$($_.Arguments) --pool $(If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { "ssl://"} )$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.$Algorithm.PoolPorts | Select-Object -Last 1)) --wallet $($AllMinerPools.($_.Algorithm).User)$(If ($AllMinerPools.($_.Algorithm).WorkerName) { ".$($AllMinerPools.($_.Algorithm).WorkerName)" }) --pass $($AllMinerPools.($_.Algorithm).Pass)$(If ($AllMinerPools.($_.Algorithm).PoolPorts[1] -and $Config.SSLAllowSelfSignedCertificate) { " --no-cert-validation" } ) --api-port $MinerAPIPort --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
-                    Algorithms  = @($_.Algorithm)
                     DeviceNames = $AvailableMiner_Devices.Name
                     MinerSet    = $_.MinerSet
                     Name        = $Miner_Name
