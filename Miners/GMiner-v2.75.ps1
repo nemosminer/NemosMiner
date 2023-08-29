@@ -23,7 +23,7 @@ Version date:   2023/08/25
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
 
-$URI = "https://github.com/develsoftware/GMinerRelease/releases/download/2.75/gminer_2_75_windows64.zip"
+$URI = "https://github.com/Minerx117/miners/releases/download/GMiner/GMiner2.75.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\miner.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
