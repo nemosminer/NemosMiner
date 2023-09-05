@@ -13,7 +13,7 @@ ChangeLog NemosMiner 5.0.0.0 2023/09/05
 =======================================
 
 Changes:
-- Core: Added configuration item 'Currency'
+- Core: Added configuration item 'Currency', moved existing configuration item to 'MainCurrency'
 - Core / Include.psm1: Remove properties 'PNP' and 'Reg' from devices (reduce memory footprint)
 - Web GUI: Dashboard / Launched miners: Combine 'Miner' & 'Info' columns to 'Status Message' column
 
