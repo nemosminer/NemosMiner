@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        5.0.0.0
+Version:        5.0.0.1
 Version date:   21 May 2023
 #>
 
@@ -687,9 +687,9 @@ Do {
             # Get new miners
             $Miners = $Variables.Miners.Clone() # Much faster
             $MinerPools = @([Ordered]@{ }, [Ordered]@{ } )
-            $AvailablelMinerPools = If ($Config.MinerUseBestPoolsOnly) { $Variables.PoolsBest | Where-Object Available } Else { $Variables.Pools | Where-Object Available }
-            $AvailablelMinerPools | Where-Object { $_.Reasons -notcontains "Unprofitable primary algorithm"} | Group-Object Algorithm | ForEach-Object { $MinerPools[0][($_.Group.Algorithm | Sort-Object -Unique)] = @($_.Group) }
-            $AvailablelMinerPools | Where-Object { $_.Reasons -notcontains "Unprofitable secondary algorithm"} | Group-Object Algorithm | ForEach-Object { $MinerPools[1][($_.Group.Algorithm | Sort-Object -Unique)] = @($_.Group) }
+            $AvailablelMinerPools = If ($Config.MinerUseBestPoolsOnly) { $Variables.PoolsBest } Else { $Variables.Pools | Where-Object Available }
+            $AvailablelMinerPools | Where-Object { $_.Reasons -notcontains "Unprofitable primary algorithm"} | Group-Object Algorithm | ForEach-Object { $MinerPools[0][($_.Group.Algorithm | Sort-Object -Unique)] = @($_.Group | Sort-Object Price_Bias) }
+            $AvailablelMinerPools | Where-Object { $_.Reasons -notcontains "Unprofitable secondary algorithm"} | Group-Object Algorithm | ForEach-Object { $MinerPools[1][($_.Group.Algorithm | Sort-Object -Unique)] = @($_.Group | Sort-Object Price_Bias) }
             $MinerPools[0]."" = $MinerPools[1]."" = ""
 
             If (-not ($Variables.Pools -and $Variables.Miners)) { $Variables.Summary = "Loading miners.<br>This will take a while..." }

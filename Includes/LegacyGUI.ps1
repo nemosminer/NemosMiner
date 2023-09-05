@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\LegacyGUI.psm1
-Version:        5.0.0.0
+Version:        5.0.0.1
 Version date:   2023/09/05
 #>
 
@@ -58,6 +58,19 @@ Function Set-TableColor {
     )
     If ($Config.UseColorForMinerStatus) { 
         ForEach ($Row in $DataGridView.Rows) { $Row.DefaultCellStyle.Backcolor = $Colors[$Row.DataBoundItem.Status] }
+    }
+}
+
+Function Set-WorkerColor { 
+    If ($Config.UseColorForMinerStatus) { 
+        ForEach ($Row in $WorkersDGV.Rows) { 
+            $Row.DefaultCellStyle.Backcolor = Switch ($Row.DataBoundItem.Status) { 
+                "Offline" { $Colors["disabled"]; Break }
+                "Paused"  { $Colors["idle"]; Break }
+                "Running" { $Colors["running"]; Break }
+                Default   { [System.Drawing.Color]::FromArgb(255, 255, 255, 255) }
+            }
+        }
     }
 }
 
@@ -494,7 +507,7 @@ Function Update-TabControl {
                         $WorkersDGV.Columns[10].FillWeight = 65; $WorkersDGV.Columns[10].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[10].HeaderCell.Style.Alignment = "MiddleRight"
                         $WorkersDGV.Columns[11].FillWeight = 65; $WorkersDGV.Columns[11].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[11].HeaderCell.Style.Alignment = "MiddleRight"
                     }
-                    Set-TableColor -DataGridView $WorkersDGV
+                    Set-WorkerColor
                     $WorkersDGV.EndInit()
                 }
                 Else { $WorkersLabel.Text = "Worker Status - no workers" }
@@ -1345,7 +1358,7 @@ $WorkersDGV.Location = [System.Drawing.Point]::new(6, ($WorkersLabel.Height + 8)
 $WorkersDGV.ReadOnly = $true
 $WorkersDGV.RowHeadersVisible = $false
 $WorkersDGV.Add_Sorted(
-    { Set-TableColor -DataGridView $WorkersDGV }
+    { Set-WorkerColor }
 )
 Set-DataGridViewDoubleBuffer -Grid $WorkersDGV -Enabled $true
 $RigMonitorPageControls += $WorkersDGV

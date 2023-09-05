@@ -17,7 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.0
+Version:        5.0.0.1
 Version date:   2023/09/05
 #>
 
@@ -49,7 +49,7 @@ If ($Algorithms) {
     $Algorithms | ForEach-Object { 
 
         $ExcludePools = $_.ExcludePools
-        ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object { $_.PoolPorts[0] } | Where-Object BaseName -notin $ExcludePools)) { 
+        ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object { $_.PoolPorts[0] } | Where-Object BaseName -notin $ExcludePools | Select-Object -Last 1)) { 
 
             [PSCustomObject]@{ 
                 API         = "CcMiner"

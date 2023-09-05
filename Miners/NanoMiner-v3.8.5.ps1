@@ -17,7 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.0
+Version:        5.0.0.1
 Version date:   2023/09/05
 #>
 
@@ -42,7 +42,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("UbqHash");                    Type = "AMD"; Fee = 0.01;  MinMemGiB = 1.08; Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@("ZergPool"), @());                                 ExcludeGPUArchitecture = @(); Arguments = @(" -algo Ubqhash") } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithms = @("VertHash");                   Type = "AMD"; Fee = 0.01;  MinMemGiB = 3;    Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@("ZergPool"), @());                                 ExcludeGPUArchitecture = @(); Arguments = @(" -algo Verthash") }
 
-    [PSCustomObject]@{ Algorithms = @("Randomx");   Type = "CPU"; Fee = 0.02; Minerset = 3; WarmupTimes = @(45, 0); ExcludePools = @(@(), @()); Arguments = @(" -algo Randomx") } # ASIC
+#   [PSCustomObject]@{ Algorithms = @("Randomx");   Type = "CPU"; Fee = 0.02; Minerset = 3; WarmupTimes = @(45, 0); ExcludePools = @(@(), @()); Arguments = @(" -algo Randomx") } # ASIC
     [PSCustomObject]@{ Algorithms = @("VerusHash"); Type = "CPU"; Fee = 0.02; Minerset = 2; WarmupTimes = @(45, 0); ExcludePools = @(@(), @()); Arguments = @(" -algo Verushash") } # https://github.com/nanopool/nanominer/issues/389
 
     [PSCustomObject]@{ Algorithms = @("EtcHash");                    Type = "INTEL"; Fee = 0.01;  MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 45); ExcludePools = @(@(), @());                                           ExcludeGPUArchitecture = @(); Arguments = @(" -algo Etchash") }
@@ -86,8 +86,8 @@ If ($Algorithms) {
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
             $ExcludePools = $_.ExcludePools
-            ForEach ($Pool0 in ($MinerPools[0][$_.Algorithms[0]] | Where-Object BaseName -notin $ExcludePools[0] | Where-Object { $Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -eq $false })) { 
-                ForEach ($Pool1 in ($MinerPools[1][$_.Algorithms[1]] | Where-Object BaseName -notin $ExcludePools[1] | Where-Object { $Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -eq $false })) { 
+            ForEach ($Pool0 in ($MinerPools[0][$_.Algorithms[0]] | Where-Object BaseName -notin $ExcludePools[0] | Where-Object { $Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -eq $false } | Select-Object -Last $(If ($_.Type -eq "CPU") { 1 } Else { $MinerPools[0][$_.Algorithms[0]].Count }))) { 
+                ForEach ($Pool1 in ($MinerPools[1][$_.Algorithms[1]] | Where-Object BaseName -notin $ExcludePools[1] | Where-Object { $Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -eq $false } | Select-Object -Last $(If ($_.Type -eq "CPU") { 1 } Else { $MinerPools[1][$_.Algorithms[1]].Count }))) { 
                     $Pools = @($Pool0, $Pool1)
 
                     $MinMemGiB = $_.MinMemGiB + $Pool0.DAGSizeGiB + $Pool1.DAGSizeGiB

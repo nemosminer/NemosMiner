@@ -72,7 +72,7 @@
 
             $table.bootstrapTable({
               onPostBody: function () {
-                if (config.UseColorForMinerStatus == true ) {
+                if (config.UseColorForMinerStatus == true) {
                   $(".statuscolor").each(function () {
                     if (this.innerText) $(this).parent('tr').addClass('color-' + this.innerText.toLowerCase());
                   });

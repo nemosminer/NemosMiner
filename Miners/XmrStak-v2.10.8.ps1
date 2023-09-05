@@ -17,7 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.0
+Version:        5.0.0.1
 Version date:   2023/09/05
 #>
 
@@ -44,20 +44,20 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightV2";       MinMemGiB = 2; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightXtl";      MinMemGiB = 2; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
 
-    [PSCustomObject]@{ Algorithm = "CryptonightBittube2"; Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightGpu";      Type = "CPU"; MinerSet = 0; WarmupTimes = @(45, 20); ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLite";     Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";   Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc"; Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";    Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # XmRig-v6.20.0 is fastest
-#   [PSCustomObject]@{ Algorithm = "CryptonightHeavyXhv"; Type = "CPU"; Minerset = 1; WarmupTimes = @(45, 20); ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # PARSE error: Invalid job length
-    [PSCustomObject]@{ Algorithm = "CryptonightMsr";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
-#   [PSCustomObject]@{ Algorithm = "CryptonightR";        Type = "CPU"; Minerset = 3; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # ASIC
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble";   Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightRwz";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightV1";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightV2";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightXtl";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
+#   [PSCustomObject]@{ Algorithm = "CryptonightBittube2"; Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightGpu";      Type = "CPU"; MinerSet = 0; WarmupTimes = @(45, 20); ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightLite";     Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";   Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc"; Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightHeavy";    Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightHeavyXhv"; Type = "CPU"; Minerset = 1; WarmupTimes = @(45, 20); ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightMsr";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightR";        Type = "CPU"; Minerset = 3; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightDouble";   Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightRwz";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightV1";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightV2";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightXtl";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # Not profitable with CPU
 
     [PSCustomObject]@{ Algorithm = "CryptonightBittube2"; MinMemGiB = 4; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
     [PSCustomObject]@{ Algorithm = "CryptonightGpu";      MinMemGiB = 3; Type = "NVIDIA"; Minerset = 1; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
@@ -108,7 +108,7 @@ If ($Algorithms) {
         $Algorithms | Where-Object Type -eq $_.Type | ForEach-Object { 
 
             $ExcludePools = $_.ExcludePools
-            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools)) { 
+            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools | Select-Object -Last $(If ($_.Type -eq "CPU") { 1 } Else { $MinerPools[0][$_.Algorithm].Count }))) { 
 
                 $MinMemGiB = $_.MinMemGiB
                 If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or $_.MemoryGiB -gt $MinMemGiB }) { 
