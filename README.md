@@ -65,7 +65,7 @@ Easy configuration, easy start:
       If '+' is used, then only the explicitly enabled algorithms are used
       If '-' is used, then all algorithms except the disabled ones are used
 
-      Do not combine + and - for the same algo
+      Do not combine + and - for the same algorithm
 
       Examples:
       Algorithm list = '-x16r'
@@ -90,24 +90,24 @@ Easy configuration, easy start:
       -[currency] to disable currency
 
       If '+' is used, then only the explicitly enabled currencies are used
-      If '-' is used, then all currencies algorithms except the disabled ones are used
+      If '-' is used, then all currencies except the disabled ones are used
 
-      Do not combine + and - for the same algo
+      Do not combine + and - for the same currency
 
       Examples:
       Currency list = '-EVR'
       Will mine anything but EVR
 
-      Algorithm list = '-EVR,-KIIRO'
+      Currency list = '-EVR,-KIIRO'
       Will mine anything but EVR and KIIRO
 
-      Algorithm list = '+EVR'
+      Currency list = '+EVR'
       Will mine only EVR
 
-      Algorithm list = '+EVR,+KIIRO'
+      Currency list = '+EVR,+KIIRO'
       Will mine only EVR and KIIRO
 
-      Algorithm list blank
+      Currency list blank
       Will mine anything
 
 
