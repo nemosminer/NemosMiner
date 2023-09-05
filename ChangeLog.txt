@@ -9,7 +9,7 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 
-ChangeLog NemosMiner 5.0.0.0 2023/08/05
+ChangeLog NemosMiner 5.0.0.0 2023/09/05
 =======================================
 
 Changes:
