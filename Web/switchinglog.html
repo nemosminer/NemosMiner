@@ -7,6 +7,7 @@
             <button id="btn-clear-log" class="btn btn-info">Clear Switching Log</button>
           </div>
           <table id="switchinglog" class="table"
+            data-ajax-options="ajaxOptions"
             data-auto-refresh-status="true"
             data-auto-refresh="false"
             data-cache="false"
@@ -34,7 +35,7 @@
             >
             <thead>
               <tr>
-                <th data-switchable="false" data-field="tAction" data-class="hidden"></th>
+                <th data-switchable="false" data-field="tAction" data-class="hidden statuscolor"></th>
                 <th data-field="DateTime" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatDate">Date & Time</th>
                 <th data-field="Action" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Action</th>
                 <th data-field="Name" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Name</th>
@@ -70,20 +71,10 @@
             }
 
             $table.bootstrapTable({
-              onPostBody: function() {
-                if (config.UseColorForMinerStatus == true) {
-                  $('#switchinglog td:nth-child(2)').each(function () {
-                    switch(this.innerText) {
-                      case this.innerText.match('Launched')?.input:
-                        $(this).parent('tr').addClass('miner-running');
-                        break;
-                      case this.innerText.match('Stopped')?.input:
-                        $(this).parent('tr').addClass('miner-idle');
-                        break;
-                      case this.innerText.match('Failed')?.input:
-                        $(this).parent('tr').addClass('miner-failed');
-                        break;
-                    };
+              onPostBody: function () {
+                if (config.UseColorForMinerStatus == true ) {
+                  $(".statuscolor").each(function () {
+                    if (this.innerText) $(this).parent('tr').addClass('color-' + this.innerText.toLowerCase());
                   });
                 };
               },

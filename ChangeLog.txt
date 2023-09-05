@@ -9,13 +9,49 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 
-ChangeLog NemosMiner 4.3.6.2 2023/08/25
+ChangeLog NemosMiner 5.0.0.0 2023/08/05
+=======================================
+
+Changes:
+- Core: Added configuration item 'Currency'
+- Core / Include.psm1: Remove properties 'PNP' and 'Reg' from devices (reduce memory footprint)
+- Web GUI: Dashboard / Launched miners: Combine 'Miner' & 'Info' columns to 'Status Message' column
+
+Enhancements:
+- API Server: Optimize miner queries
+- Core: Add miner version to added firewall rules
+- Core: Add coin name to miner info
+- Core: Miner code optimizations
+- Core: Pool data invalid for pools with multiple currencies (e.g. Ethash@MiningPoolHub)
+- Web GUI / Launched Miners: Show power usage live value
+- Web GUI: Fix 'web page is not responding' error if there are many records in a table
+- Web GUI: Launched Miners & Devices: Renamed column 'Satus Message' to 'Status Info'
+
+Fixes:
+- CcminerVerusGpu-v3.8.3: Intensity not reduced for low mem GPUs
+- BZMiner miner APIs: Invalid power usage reported when more one GPU is installed
+
+Miner updates:
+- BzMiner-v16.0.5
+- EthMiner-v0.19.0.18: Invalid download link
+- GMiner-v2.75: Update download link
+- JayddeeCpu-v3.23.0
+- PhoenixMiner-v6.2c: Fix intensities for dual algorithm mining
+- Rigel-v1.7.2
+- RplantCpu-v5.0.34
+- TeamBlackMiner-v1.99
+- TTMiner-v2023.3.0: Add support for SSL/TLS connections
+
+
+ChangeLog NemosMiner 5.0.0.0 2023/09/01
 =======================================
 
 Enhancements:
 - API Server: Optimize miner queries
+- Core: New configuration item 'MinerUseBestPoolsOnly'
 - Core: Miner code optimizations
 - Core: Rework donation randomizations (older versions did start donation just after midnight)
+- Core: Use separate stat files for DAG based algorithms (e.g. Ethash-2GiB, Ethash-3GiB)
 
 Fixes:
 - 'CcminerKlausT-v8.25' not creating miner objects

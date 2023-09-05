@@ -1,5 +1,5 @@
 const enumdevicestatus = ['Enabled', 'Disabled', 'Unsupported'];
-const enumminerstatus = ['Running', 'DryRun', 'Idle', 'Failed', 'Disabled', 'Unavailable'];
+const enumminerstatus = ['Disabled', 'DryRun', 'Failed', 'Idle', 'Running', 'Unavailable'];
 
 function formatMiners(data) {
   // This function can alter the returned data before building the table, formatting it in a way
@@ -19,7 +19,7 @@ function formatMiners(data) {
         item.tPrimaryMinerFee = item.Workers[0].Fee;
         item.tPrimaryHashrate = item.Workers[0].Hashrate;
         if (item.Workers[0].Pool) {
-          item.tPrimaryAlgorithm = item.Workers[0].Pool.Algorithm;
+          item.tPrimaryAlgorithm = item.Algorithms[0];
           item.tPrimaryCurrency = item.Workers[0].Pool.Currency;
           item.tPrimaryCoinName = item.Workers[0].Pool.CoinName;
           item.tPrimaryPool = item.Workers[0].Pool.BaseName;
@@ -31,7 +31,7 @@ function formatMiners(data) {
           item.tSecondaryHashrate = item.Workers[1].Hashrate;
           item.tSecondaryMinerFee = item.Workers[1].Fee;
           if (item.Workers[1].Pool) {
-            item.tSecondaryAlgorithm = item.Workers[1].Pool.Algorithm;
+            item.tSecondaryAlgorithm = item.Algorithms[1];
             item.tSecondaryCurrency = item.Workers[1].Pool.Currency;
             item.tSecondaryCoinName = item.Workers[1].Pool.CoinName;
             item.tSecondaryPool = item.Workers[1].Pool.BaseName;
@@ -46,7 +46,7 @@ function formatMiners(data) {
         item.tPrimaryMinerFee = item.WorkersRunning[0].Fee;
         item.tPrimaryHashrate = item.WorkersRunning[0].Hashrate;
         if (item.WorkersRunning[0].Pool) {
-          item.tPrimaryAlgorithm = item.WorkersRunning[0].Pool.Algorithm;
+          item.tPrimaryAlgorithm = item.Algorithms[0];
           item.tPrimaryCurrency = item.WorkersRunning[0].Pool.Currency;
           item.tPrimaryCoinName = item.WorkersRunning[0].Pool.CoinName;
           item.tPrimaryPool = item.WorkersRunning[0].Pool.BaseName;
@@ -59,7 +59,7 @@ function formatMiners(data) {
           item.tSecondaryHashrate = item.WorkersRunning[1].Hashrate;
           item.tSecondaryMinerFee = item.WorkersRunning[1].Fee;
           if (item.WorkersRunning[1].Pool) {
-            item.tSecondaryAlgorithm = item.WorkersRunning[1].Pool.Algorithm;
+            item.tSecondaryAlgorithm = item.Algorithms[1];
             item.tSecondaryCurrency = item.WorkersRunning[1].Pool.Currency;
             item.tSecondaryCoinName = item.WorkersRunning[1].Pool.CoinName;
             item.tSecondaryPool = item.WorkersRunning[1].Pool.BaseName;
@@ -90,10 +90,6 @@ function formatMiners(data) {
 
       // Format status
       item.tStatus = enumminerstatus[item.Status];
-
-      // Format status message
-      if (item.StatusMessage) item.tStatusMessage = item.StatusMessage.replace(/ \{.+/g, '');
-      else item.tStatusMessage = item.tStatus;
 
       //Format warmup times
       if (item.WarmupTimes.length > 1) {

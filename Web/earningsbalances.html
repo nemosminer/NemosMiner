@@ -20,7 +20,7 @@
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
               <h2>Balances</h2>
             </div>
-            <div id="balanceboxes" class="card-deck"></div>
+            <div id="balanceboxes" class="card-group"></div>
             <script id="poolbalance_template" type="text/x-handlebars-template">
               <div class="card m-2 rounded {{#if total}}text-white bg-primary{{else}}text-dark bg-light{{/if}}" style="min-width: {{#if total}}90%{{else}}300px{{/if}}">
               <div class="card-header text-center">
@@ -358,9 +358,9 @@
                   allbalances: {},
                   total: true,
                   outdated: false,
-                  maincurrency: config.Currency
+                  maincurrency: config.MainCurrency
               };
-              currencies = [config.Currency].concat(config.ExtraCurrencies)
+              currencies = [config.MainCurrency].concat(config.ExtraCurrencies)
 
               if (config.UsemBTC == true) currencies[currencies.indexOf('BTC')] = 'mBTC'
 
@@ -415,14 +415,14 @@
                             if (config.BalancesShowInAllCurrencies || footer.test(item.Pool)) {
                               item.Currencies = [currency].concat(currencies);
                             } else if (config.BalancesShowInMainCurrency || footer.test(item.Pool)) {
-                              item.Currencies = [currency].concat(config.Currency);
+                              item.Currencies = [currency].concat(config.MainCurrency);
                             } else {
                               item.Currencies = [currency];
                             }
 
                             if (!(footer.test(item.Pool))) {
 
-                              if (rates[item.Currency]) currencyrate = rates[item.Currency][config.Currency];
+                              if (rates[item.Currency]) currencyrate = rates[item.Currency][config.MainCurrency];
 
                               if (item.Currency != item.PayoutThresholdCurrency) {
                                 // Payout threshold currency is different from asset currency
@@ -455,7 +455,7 @@
                                 rate: currencyrate,
                                 rates: rates,
                                 currency: currency,
-                                maincurrency: config.Currency,
+                                maincurrency: config.MainCurrency,
                                 percentage: percentage,
                                 paydate: formatDate(item.ProjectedPayDate),
                                 showaverages: config.BalancesShowAverages,
@@ -475,7 +475,7 @@
                                 $.each(item.Currencies, function(cindex, currency) {
                                   if (rates[currency]) data['balances'][currency] = item.Balance * rates[item.Currency][currency];
                                 });
-                                data.balanceinmaincurrency = item.Balance * rates[item.Currency][config.Currency];
+                                data.balanceinmaincurrency = item.Balance * rates[item.Currency][config.MainCurrency];
                               } else { 
                                 if (config.BalancesShowInAllCurrencies) {
                                   data['balances']['Exchange rates unknown'] = "";
@@ -507,7 +507,7 @@
                           totals.outdated = true;
                         }
 
-                        if (!(config.BalancesShowInAllCurrencies)) currencies = [config.Currency];
+                        if (!(config.BalancesShowInAllCurrencies)) currencies = [config.MainCurrency];
 
                         $.each(currencies, function(cindex, currency) {
                           if (rates[currency]) {
@@ -546,14 +546,14 @@
                     };
                     datasets.push(earnings);
                   }
-                  renderChart(earningsdata.Labels, datasets, config.Currency);
+                  renderChart(earningsdata.Labels, datasets, config.MainCurrency);
                 }
               });
             }
 
             $(document).ready(function () {
               $(".addlocalcurrency").each(function () {
-                this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.Currency + ')';
+                this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.MainCurrency + ')';
               });
 
               updateEarningsChart();

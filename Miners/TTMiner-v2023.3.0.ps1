@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -gt "5.0" } )) { Return }
@@ -54,14 +54,11 @@ $Algorithms = [PSCustomObject[]]@(
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm) }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePools }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].PoolPorts[0] }
 
 If ($Algorithms) { 
-
-    $Algorithms | ForEach-Object { 
-        $_.MinMemGiB += $AllMinerPools.($_.Algorithm).DAGSizeGiB
-    }
 
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 
@@ -70,38 +67,44 @@ If ($Algorithms) {
 
         $Algorithms | ForEach-Object { 
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
+            $ExcludePools = $_.ExcludePools
+            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object { $_.PoolPorts[0] } | Where-Object BaseName -notin $ExcludePools)) { 
 
-                $Arguments = $_.Arguments
-                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
+                $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
+                If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
 
-                If ($AvailableMiner_Devices | Where-Object MemoryGiB -le 2) { $Arguments = $Arguments -replace " -intensity [0-9\.]+" }
+                    $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 
-                If ($AllMinerPools.($_.Algorithm).Currency -in @("AKA", "ALPH", "ALT", "ARL", "AVS", "BBC", "BCH", "BLACK", "BTC", "BTRM", "BUT", "CLO", "CLORE", "EGEM", "ELH", "EPIC", "ETC", "ETHF", "ETHO", "ETHW", "ETP", "EVOX", "EVR", "EXP", "FIRO", "FITA", "FRENS", "GRAMS", "GSPC", "HVQ", "JGC", "KAW", "LAB", "LTR", "MEWC", "NAPI", "NEOX", "NOVO", "OCTA", "PAPRY", "PRCO", "REDE", "RTM", "RVN", "RXD", "SATO", "SATOX", "SCC", "SERO", "THOON", "TTM", "UBQ", "VBK", "VEIL", "VKAX", "VTE", "XNA", "YERB", "ZANO", "ZELS", "ZIL")) { 
-                    $Arguments = " -c $($AllMinerPools.($_.Algorithm).Currency)"
-                }
-                $Arguments += " -P $(If ($Pool.Protocol -eq "ethproxy" -or $_.Algorithm -eq "ProgPowZano") { "stratum1" } Else { "stratum" })"
-                $Arguments += If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { "+ssl://" } Else { "+tcp://" }
-                $Arguments += "$($AllMinerPools.($_.Algorithm).User)"
-                If ($AllMinerPools.($_.Algorithm).WorkerName) { $Arguments += ".$($AllMinerPools.($_.Algorithm).WorkerName)" }
-                $Arguments += ":$($AllMinerPools.($_.Algorithm).Pass)"
-                $Arguments += "@$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts | Select-Object -Last 1)"
-                If (-not $AllMinerPools.($_.Algorithm).SendHashrate) { $Arguments += " -no-hashrate" }
+                    $Arguments = $_.Arguments
+                    If ($AvailableMiner_Devices | Where-Object MemoryGiB -LE 2) { $Arguments = $Arguments -replace ' -intensity [0-9\.]+' }
 
-                [PSCustomObject]@{ 
-                    Algorithms  = @($_.Algorithm)
-                    API         = "EthMiner"
-                    Arguments   = ("$Arguments -b 127.0.0.1:$($MinerAPIPort) -d $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
-                    DeviceNames = $AvailableMiner_Devices.Name
-                    Fee         = $_.Fee
-                    MinerSet    = $_.MinerSet
-                    MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
-                    Name        = $Miner_Name
-                    Path        = $Path
-                    Port        = $MinerAPIPort
-                    Type        = "NVIDIA"
-                    URI         = $Uri
-                    WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                    If ($Pool.Currency -in @("AKA", "ALPH", "ALT", "ARL", "AVS", "BBC", "BCH", "BLACK", "BTC", "BTRM", "BUT", "CLO", "CLORE", "EGEM", "ELH", "EPIC", "ETC", "ETHF", "ETHO", "ETHW", "ETP", "EVOX", "EVR", "EXP", "FIRO", "FITA", "FRENS", "GRAMS", "GSPC", "HVQ", "JGC", "KAW", "LAB", "LTR", "MEWC", "NAPI", "NEOX", "NOVO", "OCTA", "PAPRY", "PRCO", "REDE", "RTM", "RVN", "RXD", "SATO", "SATOX", "SCC", "SERO", "THOON", "TTM", "UBQ", "VBK", "VEIL", "VKAX", "VTE", "XNA", "YERB", "ZANO", "ZELS", "ZIL")) { 
+                        $Arguments = " -c $($Pool.Currency)"
+                    }
+                    $Arguments += " -P $(If ($Pool.Protocol -eq "ethproxy" -or $_.Algorithm -eq "ProgPowZano") { "stratum1" } Else { "stratum" })"
+                    $Arguments += If ($Pool.PoolPorts[1]) { "+ssl://" } Else { "+tcp://" }
+                    $Arguments += "$($Pool.User)"
+                    If ($Pool.WorkerName) { $Arguments += ".$($Pool.WorkerName)" }
+                    $Arguments += ":$($Pool.Pass)"
+                    $Arguments += "@$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1)"
+                    If (-not $Pool.SendHashrate) { $Arguments += " -no-hashrate" }
+
+                    [PSCustomObject]@{ 
+                        # Algorithms  = @($_.Algorithm)
+                        API         = "EthMiner"
+                        Arguments   = "$Arguments -b 127.0.0.1:$($MinerAPIPort) -d $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
+                        DeviceNames = $AvailableMiner_Devices.Name
+                        Fee         = @($_.Fee) # Dev fee
+                        MinerSet    = $_.MinerSet
+                        MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
+                        Name        = $Miner_Name
+                        Path        = $Path
+                        Port        = $MinerAPIPort
+                        Type        = "NVIDIA"
+                        URI         = $Uri
+                        WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                        Workers     = @(@{ Pool = $Pool })
+                    }
                 }
             }
         }

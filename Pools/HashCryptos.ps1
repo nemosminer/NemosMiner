@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\HashCryptos.ps1
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 param(
@@ -44,10 +44,6 @@ $BrainDataFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Dir
 
 If ($DivisorMultiplier -and $PriceField -and $Wallet) { 
 
-    $StartTime = (Get-Date)
-
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
-
     Try { 
         If ($Variables.Brains.$Name) { 
             $Request = $Variables.BrainData.$Name
@@ -63,7 +59,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
     $Request.PSObject.Properties.Name | Where-Object { $Request.$_.Updated -ge $Variables.Brains.$Name."Updated" } | ForEach-Object { 
         $Algorithm = $_
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $Currency = "$($Request.$_.currency)".Trim()
+        $Currency = "$($Request.$_.currency)" -replace ' \s+'
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
         $Fee = $Request.$_.Fees / 100
 
@@ -103,9 +99,6 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
             Workers                  = [Int]$Request.$_.workers
         }
     }
-
-    # Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 
 $Error.Clear()

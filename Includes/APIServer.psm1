@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\APIServer.psm1
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 Function Start-APIServer { 
@@ -47,7 +47,7 @@ Function Start-APIServer {
             [Void]$TCPclient.Dispose()
 
             # Start API server
-            If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force }
+            If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force -ErrorAction Ignore}
 
             # Setup runspace to launch the API server in a separate thread
             $Variables.APIRunspace = [RunspaceFactory]::CreateRunspace()
@@ -115,7 +115,6 @@ Function Start-APIServer {
                                 $Value = [URI]::UnescapeDataString($Value)
                                 If ($Key -and $Value) { 
                                     $Parameters.$Key = $Value
-                                    If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss") GET: '$($Key)': '$($Value)'" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore}
                                 }
                             }
                         }
@@ -134,7 +133,6 @@ Function Start-APIServer {
                                 $Value = [URI]::UnescapeDataString($Value)
                                 If ($Key -and $Value) { 
                                     $Parameters.$Key = $Value
-                                    If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss") POST: '$($Key)': '$($Value)'" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore}
                                 }
                             }
                         }
@@ -410,8 +408,8 @@ Function Start-APIServer {
                                     If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
                                         $Miners | Sort-Object -Property Name, Algorithms | ForEach-Object { 
                                             $Data += "$($_.Name) ($($_.Algorithms -join " & "))`n"
-                                            ForEach ($Worker in $_.Workers) { 
-                                                Disable-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
+                                            ForEach ($Algorithm in $_.Algorithms) { 
+                                                Disable-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
                                                 $Worker.Hashrate = [Double]::NaN
                                             }
                                             Remove-Variable Worker
@@ -458,8 +456,8 @@ Function Start-APIServer {
                                     If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
                                         $Miners | Sort-Object -Property Name, Algorithms | ForEach-Object { 
                                             $Data += "$($_.Name) ($($_.Algorithms -join " & "))`n"
-                                            ForEach ($Worker in $_.Workers) { 
-                                                Enable-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
+                                            ForEach ($Algorithm in $_.Algorithms) {  
+                                                Enable-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
                                                 $Worker.Hashrate = [Double]::NaN
                                             }
                                             Remove-Variable Worker
@@ -526,8 +524,8 @@ Function Start-APIServer {
                                             $_.Earning_Accuracy = [Double]::NaN
                                             $_.Disabled = $false
                                             $Data += "$($_.Name) ($($_.Algorithms -join " & "))`n"
-                                            ForEach ($Worker in $_.Workers) { 
-                                                Remove-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
+                                            ForEach ($Algorithm in $_.Algorithms) { 
+                                                Remove-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
                                                 $Worker.Hashrate = [Double]::NaN
                                             }
                                             Remove-Variable Worker
@@ -709,7 +707,7 @@ Function Start-APIServer {
                                 Break
                             }
                             "/btc" { 
-                                $Data = $Variables.Rates.BTC.($Config.Currency)
+                                $Data = $Variables.Rates.BTC.($Config.MainCurrency)
                                 Break
                             }
                             "/balancescurrencies" { 
@@ -1061,9 +1059,8 @@ Function Start-APIServer {
                         $Response.StatusCode = $StatusCode
                         $ResponseBuffer = [System.Text.Encoding]::UTF8.GetBytes($Data)
                         $Response.ContentLength64 = $ResponseBuffer.Length
-                        If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss") RESPONSE 1: '$($Key)' Size: '$($Data.length)': '$($Data.Substring($Data.length - 100, 100))'" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore}
+                        # If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss") Response: $Data" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore }
                         $Response.OutputStream.Write($ResponseBuffer, 0, $ResponseBuffer.Length)
-                        If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss") RESPONSE 2: '$($Key)' Size: '$($Data.length)': '$($Data.Substring($Data.length - 100, 100))'" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore}
                         $Response.Close()
                     }
                     # Only gets here if something is wrong and the server couldn't start or stops listening

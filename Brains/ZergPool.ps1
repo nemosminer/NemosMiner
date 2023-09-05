@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Brains\ZergPool.ps1
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 using module ..\Includes\Include.psm1
@@ -89,7 +89,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
             }
             Else { 
                 $Currencies = @($CurrenciesData.PSObject.Properties.Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo } | ForEach-Object { $CurrenciesData.$_ })
-                $Currency = If ($Currencies.Currency) { (($Currencies | Sort-Object Estimate)[-1].Currency).Trim() } Else { "" }
+                $Currency = If ($Currencies.Currency) { (($Currencies | Sort-Object Estimate)[-1].Currency) -replace ' \s+' } Else { "" }
             }
             If ($Currency) { 
                 # Add coin name
@@ -100,9 +100,14 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
                     Catch { }
                 }
                 # Keep DAG data up to date
-                If ($Algo -match $Variables.RegexAlgoHasDAG -and $AlgoData.$Algo.height -gt $Variables.DAGData.Currency.$Currency.BlockHeight) { 
-                    $Variables.DAGData.Currency[$Currency] = (Get-DAGData -Blockheight $AlgoData.$Algo.height -Currency $Currency -EpochReserve 2)
-                    $Variables.DAGData.Updated["$BrainName Brain"] = (Get-Date).ToUniversalTime()
+                If ($Algo -match $Variables.RegexAlgoHasDAG -and $AlgoData.$Algo.height -gt $Variables.DAGdata.Currency.$Currency.BlockHeight) { 
+                    If ($Variables.DAGdata.Currency) { 
+                        $DAGdata = (Get-DAGData -Blockheight $AlgoData.$Algo.height -Currency $Currency -EpochReserve 2)
+                        $DAGdata.Date = (Get-Date).ToUniversalTime()
+                        $DAGdata.Url = $PoolConfig.PoolCurrenciesUri
+                        $Variables.DAGdata.Currency[$Currency] = $DAGdata
+                        $Variables.DAGdata.Updated[$PoolConfig.PoolCurrenciesUri] = (Get-Date).ToUniversalTime()
+                    }
                 }
             }
 

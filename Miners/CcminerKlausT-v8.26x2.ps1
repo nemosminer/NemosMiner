@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "6.0" })) { Return }
@@ -34,22 +34,23 @@ $Path = ".\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "C11";           MinMemGiB = 2; Minerset = 1; WarmupTimes = @(60, 0);  Arguments = " --algo c11 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
-#   [PSCustomObject]@{ Algorithm = "Keccak";        MinMemGiB = 2; Minerset = 3; WarmupTimes = @(60, 0);  Arguments = " --algo keccak --diff-multiplier 2 --intensity 29" } # ASIC
-#   [PSCustomObject]@{ Algorithm = "Lyra2RE2";      MinMemGiB = 2; Minerset = 3; WarmupTimes = @(60, 0);  Arguments = " --algo lyra2v2" } # ASIC
-    [PSCustomObject]@{ Algorithm = "Neoscrypt";     MinMemGiB = 2; Minerset = 1; WarmupTimes = @(60, 10); Arguments = " --algo neoscrypt --intensity 15.5" } # FPGA
-    [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinMemGiB = 2; Minerset = 1; WarmupTimes = @(60, 0);  Arguments = " --algo neoscrypt-xaya --intensity 15.5" } # CryptoDredge-v0.27.0 is fastest
-#   [PSCustomObject]@{ Algorithm = "Skein";         MinMemGiB = 0; Minerset = 3; WarmupTimes = @(60, 0);  Arguments = " --algo skein" } # ASIC
-    [PSCustomObject]@{ Algorithm = "Veltor";        MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo veltor --intensity 23" }
-#   [PSCustomObject]@{ Algorithm = "Whirlpool";     MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo whirl" } # Cuda error in func 'whirlpool512_cpu_finalhash_64' at line 1795 : invalid argument.
-#   [PSCustomObject]@{ Algorithm = "Whirlpool";     MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo whirlpoolx" }
-    [PSCustomObject]@{ Algorithm = "X11evo";        MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 15); Arguments = " --algo x11evo --intensity 21" }
-    [PSCustomObject]@{ Algorithm = "X17";           MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 0);  Arguments = " --algo x17 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
+    [PSCustomObject]@{ Algorithm = "C11";           MinMemGiB = 2; Minerset = 1; WarmupTimes = @(60, 0);  ExcludePools = @(); Arguments = " --algo c11 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
+#   [PSCustomObject]@{ Algorithm = "Keccak";        MinMemGiB = 2; Minerset = 3; WarmupTimes = @(60, 0);  ExcludePools = @(); Arguments = " --algo keccak --diff-multiplier 2 --intensity 29" } # ASIC
+#   [PSCustomObject]@{ Algorithm = "Lyra2RE2";      MinMemGiB = 2; Minerset = 3; WarmupTimes = @(60, 0);  ExcludePools = @(); Arguments = " --algo lyra2v2" } # ASIC
+    [PSCustomObject]@{ Algorithm = "Neoscrypt";     MinMemGiB = 2; Minerset = 1; WarmupTimes = @(60, 10); ExcludePools = @(); Arguments = " --algo neoscrypt --intensity 15.5" } # FPGA
+    [PSCustomObject]@{ Algorithm = "NeoscryptXaya"; MinMemGiB = 2; Minerset = 1; WarmupTimes = @(60, 0);  ExcludePools = @(); Arguments = " --algo neoscrypt-xaya --intensity 15.5" } # CryptoDredge-v0.27.0 is fastest
+#   [PSCustomObject]@{ Algorithm = "Skein";         MinMemGiB = 0; Minerset = 3; WarmupTimes = @(60, 0);  ExcludePools = @(); Arguments = " --algo skein" } # ASIC
+    [PSCustomObject]@{ Algorithm = "Veltor";        MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 15); ExcludePools = @(); Arguments = " --algo veltor --intensity 23" }
+#   [PSCustomObject]@{ Algorithm = "Whirlpool";     MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 15); ExcludePools = @(); Arguments = " --algo whirl" } # Cuda error in func 'whirlpool512_cpu_finalhash_64' at line 1795 : invalid argument.
+#   [PSCustomObject]@{ Algorithm = "Whirlpool";     MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 15); ExcludePools = @(); Arguments = " --algo whirlpoolx" }
+    [PSCustomObject]@{ Algorithm = "X11evo";        MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 15); ExcludePools = @(); Arguments = " --algo x11evo --intensity 21" }
+    [PSCustomObject]@{ Algorithm = "X17";           MinMemGiB = 2; Minerset = 2; WarmupTimes = @(60, 0);  ExcludePools = @(); Arguments = " --algo x17 --intensity 22" } # CcminerAlexis78-v1.5.2 is faster
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm) }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts[0] }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].PoolPorts[0] }
 
 If ($Algorithms) { 
 
@@ -60,25 +61,29 @@ If ($Algorithms) {
 
         $Algorithms | ForEach-Object { 
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB) { 
+            $ExcludePools = $_.ExcludePools
+            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object { $_.PoolPorts[0] } | Where-Object BaseName -notin $ExcludePools)) { 
 
-                $Arguments = $_.Arguments
-                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
+                If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB) { 
 
-                If ($AvailableMiner_Devices | Where-Object MemoryGiB -LE 2) { $Arguments = $Arguments -replace " --intensity [0-9\.]+" }
+                    $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 
-                [PSCustomObject]@{ 
-                    Algorithms  = @($_.Algorithm)
-                    API         = "CcMiner"
-                    Arguments   = ("$Arguments --url stratum+tcp://$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts[0]) --user $($AllMinerPools.($_.Algorithm).User)$(If ($AllMinerPools.($_.Algorithm).WorkerName) { ".$($AllMinerPools.($_.Algorithm).WorkerName)" }) --pass $($AllMinerPools.($_.Algorithm).Pass) --timeout 50000 --retry-pause 1 --api-bind $MinerAPIPort --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
-                    DeviceNames = $AvailableMiner_Devices.Name
-                    MinerSet    = $_.MinerSet
-                    Name        = $Miner_Name
-                    Path        = $Path
-                    Port        = $MinerAPIPort
-                    Type        = "NVIDIA"
-                    URI         = $Uri
-                    WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                    $Arguments = $_.Arguments
+                    If ($AvailableMiner_Devices | Where-Object MemoryGiB -LE 2) { $Arguments = $Arguments -replace ' --intensity [0-9\.]+' }
+
+                    [PSCustomObject]@{ 
+                        API         = "CcMiner"
+                        Arguments   = "$Arguments --url stratum+tcp://$($Pool.Host):$($Pool.PoolPorts[0]) --user $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass) --timeout 50000 --retry-pause 1 --api-bind $MinerAPIPort --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
+                        DeviceNames = $AvailableMiner_Devices.Name
+                        MinerSet    = $_.MinerSet
+                        Name        = $Miner_Name
+                        Path        = $Path
+                        Port        = $MinerAPIPort
+                        Type        = "NVIDIA"
+                        URI         = $Uri
+                        WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                        Workers     = @(@{ Pool = $Pool })
+                    }
                 }
             }
         }

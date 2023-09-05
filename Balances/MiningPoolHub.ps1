@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Balances\MiningPoolHub.ps1
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
@@ -41,14 +41,14 @@ While (-not $UserAllBalances -and $RetryCount -gt 0 -and $Config.MiningPoolHubAP
         $InCoinList = $false
 
         If ($WebResponse.statuscode -eq 200) {
-            ($WebResponse.Content -split "\n").Trim() | ForEach-Object { 
+            ($WebResponse.Content -split "\n" -replace ' \s+' -replace ' $' | ForEach-Object { 
                 If ($_ -like '<table id="coinList"*>') { 
                     $InCoinList = $true
                 }
                 If ($InCoinList) { 
                     If ($_ -like '</table>') { Return }
                     If ($_ -like '<td align="left"><a href="*') { 
-                        $CoinList.Add($_ -replace '<td align="left"><a href="' -replace '" target="_blank">.+' -replace "^//" -replace ".miningpoolhub.com")
+                        $CoinList.Add($_ -replace '<td align="left"><a href="' -replace '" target="_blank">.+' -replace '^//' -replace '.miningpoolhub.com')
                     }
                 }
             }

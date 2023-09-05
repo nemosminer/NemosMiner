@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $Variables.DriverVersion.CIM.AMD -lt "26.20.15011.10003" })) { Return }
@@ -29,11 +29,13 @@ $Path = ".\Bin\$($Name)\NeoScryptMiner.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Neoscrypt"; MinMemGiB = 2; ExcludeGPUArchitecture = @("RDNA1", "RDNA2", "RDNA3"); Minerset = 2; WarmupTimes = @(45, 0); Arguments = "" } # FPGA
+    [PSCustomObject]@{ Algorithm = "Neoscrypt"; MinMemGiB = 2; Minerset = 2; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @("RDNA1", "RDNA2", "RDNA3"); ExcludePools = @(); Arguments = "" } # FPGA
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].PoolPorts[0] }
 
 If ($Algorithms) { 
 
@@ -45,31 +47,35 @@ If ($Algorithms) {
 
             $Algorithms | ForEach-Object { 
 
-                If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
+                $ExcludePools = $_.ExcludePools
+                ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object { $_.PoolPorts[0] } | Where-Object BaseName -notin $ExcludePools)) { 
 
-                    $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
+                    If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
 
-                    $Fee = If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { @(2.5) } Else { @(2) }
+                        $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 
-                    # Disable dev fee mining
-                    If ($Config.DisableMinerFee) { 
-                        $Arguments += " --nofee 1"
-                        $Fee = @(0)
-                    }
+                        $Fee = If ($Pool.PoolPorts[1]) { @(2.5) } Else { @(2) }
 
-                    [PSCustomObject]@{ 
-                        Algorithms  = @($_.Algorithm)
-                        API         = "EthMiner"
-                        Arguments   = ("$($_.Arguments) -pool $(If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts | Select-Object -Last 1) -wal $($AllMinerPools.($_.Algorithm).User)$(If ($AllMinerPools.($_.Algorithm).Pass) { " -psw $($AllMinerPools.($_.Algorithm).Pass)" }) -mport -$MinerAPIPort -di $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
-                        DeviceNames = $AvailableMiner_Devices.Name
-                        Fee         = $Fee
-                        MinerSet    = $_.MinerSet
-                        Name        = $Miner_Name
-                        Path        = $Path
-                        Port        = $MinerAPIPort
-                        Type        = "AMD"
-                        URI         = $Uri
-                        WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                        # Disable dev fee mining
+                        If ($Config.DisableMinerFee) { 
+                            $Arguments += " --nofee 1"
+                            $Fee = @(0)
+                        }
+
+                        [PSCustomObject]@{ 
+                            API         = "EthMiner"
+                            Arguments   = "$($_.Arguments) -pool $(If ($Pool.PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) -wal $($Pool.User)$(If ($Pool.Pass) { " -psw $($Pool.Pass)" }) -mport -$MinerAPIPort -di $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
+                            DeviceNames = $AvailableMiner_Devices.Name
+                            Fee         = $Fee # Dev fee
+                            MinerSet    = $_.MinerSet
+                            Name        = $Miner_Name
+                            Path        = $Path
+                            Port        = $MinerAPIPort
+                            Type        = "AMD"
+                            URI         = $Uri
+                            WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                            Workers     = @(@{ Pool = $Pool })
+                        }
                     }
                 }
             }

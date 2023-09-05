@@ -11,6 +11,7 @@
             <button id="btn-remove-watchdog" class="btn btn-info" disabled title="Remove the watchdog timers for the marked miners">Remove Watchdog</button>
           </div>
           <table id="miners" class="table"
+            data-ajax-options="ajaxOptions"
             data-auto-refresh="true"
             data-auto-refresh-status="false"
             data-cache="false"
@@ -40,7 +41,7 @@
             >
             <thead>
               <tr>
-                <th data-switchable="false" data-field="tStatusMessage" data-class="hidden statuscolorizer"></th>
+                <th data-switchable="false" data-field="SubStatus" data-class="hidden statuscolor"></th>
                 <th data-field="state" data-checkbox="true"></th>
                 <th data-field="tName" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
                 <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">Miner</th>
@@ -121,39 +122,14 @@
 
               onPostBody: function () {
                 if (config.UseColorForMinerStatus == true ) {
-                  $(".statuscolorizer").each(function () {
-                    switch(this.innerText) {
-                      case this.innerText.match(/^Benchmarking|^Measuring/)?.input:
-                        $(this).parent('tr').addClass('miner-measuring');
-                        break;
-                      case this.innerText.match(/^Disabled/)?.input:
-                        $(this).parent('tr').addClass('miner-disabled');
-                        break;
-                      case this.innerText.match(/^Failed/)?.input:
-                        $(this).parent('tr').addClass('miner-failed');
-                        break;
-                      case this.innerText.match(/^Idle/)?.input:
-                        $(this).parent('tr').addClass('miner-idle');
-                        break;
-                      case this.innerText.match(/^Mining/)?.input:
-                        $(this).parent('tr').addClass('miner-running');
-                        break;
-                      case this.innerText.match(/^Stopping/)?.input:
-                        $(this).parent('tr').addClass('miner-stopping');
-                        break;
-                      case this.innerText.match(/^Unavailable/)?.input:
-                        $(this).parent('tr').addClass('miner-unavailable');
-                        break;
-                      case this.innerText.match(/^Warming/)?.input:
-                        $(this).parent('tr').addClass('miner-warmingup');
-                        break;
-                    };
+                  $(".statuscolor").each(function () {
+                    if (this.innerText) $(this).parent('tr').addClass('color-' + this.innerText.toLowerCase());
                   });
                 };
               },
               onReorderColumn: function() {
                 $(".addlocalcurrency").each(function () {
-                  this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.Currency + ')';
+                  this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.MainCurrency + ')';
                 });
               },
 
@@ -262,7 +238,7 @@
               });
 
               $(".addlocalcurrency").each(function () {
-                this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.Currency + ')';
+                this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.MainCurrency + ')';
               });
             });
 

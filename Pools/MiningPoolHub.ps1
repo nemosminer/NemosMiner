@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\MiningPoolHub.ps1
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 param(
@@ -39,10 +39,6 @@ $Headers = @{ "Cache-Control" = "no-cache" }
 $Useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"
 
 If ($PoolConfig.UserName) { 
-
-    $StartTime = (Get-Date)
-
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
 
     $APICallFails = 0
 
@@ -64,7 +60,7 @@ If ($PoolConfig.UserName) {
         $Current = $_
 
         $Algorithm_Norm = Get-Algorithm $_.algo
-        $Currency = "$($Current.symbol)".Trim()
+        $Currency = "$($Current.symbol)" -replace ' \s+'
         $Fee = [Decimal]($_.Fee / 100)
         $Port = $Current.port
 
@@ -79,8 +75,6 @@ If ($PoolConfig.UserName) {
         $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ($_.profit / $Divisor) -FaultDetection $false
 
         $Reasons = [System.Collections.Generic.List[String]]@()
-        # Temp fix
-        # If ($Algorithm_Norm -match "Neoscrypt|Skein|Verthash" ) { $Reasons.Add("Connection issue at pool") }
         If ($_.pool_hash -eq "-" -or $_.pool_hash -eq "0") { $Reasons.Add("No hashrate at pool") }
 
         If ($Current.host -eq "hub.miningpoolhub.com") { $Current.host_list = "hub.miningpoolhub.com" }
@@ -118,9 +112,6 @@ If ($PoolConfig.UserName) {
             }
         }
     }
-
-    # Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 
 $Error.Clear()

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\Xgminer.ps1
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 Class XgMiner : Miner { 
@@ -31,7 +31,7 @@ Class XgMiner : Miner {
 
         Try { 
             $Response = Invoke-TcpRequest -Server 127.0.0.1 -Port $this.Port -Request $Request -Timeout $Timeout -ErrorAction Stop
-            $Data = $Response -replace ": ", ":" -replace " ", "_" | ConvertFrom-Json -ErrorAction Stop
+            $Data = $Response -replace ': ', ':' -replace ' ', '_' | ConvertFrom-Json -ErrorAction Stop
         }
         Catch { 
             Return $null

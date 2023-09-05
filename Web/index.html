@@ -1,6 +1,6 @@
 <!--#include file="/parts/head.html" -->
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 id="title" data-navbaractive="navsystemstatus" class="h2">Launched Miners</h2>
+            <h2 id="title" data-navbaractive="navsystemstatus" class="h2">Active Miners</h2>
           </div>
           <div id="toolbar">
             <button id="btn-re-benchmark" class="btn btn-primary" disabled title="The marked miners will re-benchmark&#10;Use this if the recorded hashrate is unreal or to re-enable disabled miners">Re-benchmark</button>
@@ -9,6 +9,7 @@
             <button id="btn-disable" class="btn btn-danger" disabled title="The marked miners will be marked as disabled&#10;To re-enable trigger re-benchmarking">Disable</button>
           </div>
           <table id="miners" class="table"
+            data-ajax-options="ajaxOptions"
             data-auto-refresh="true"
             data-auto-refresh-status="true"
             data-cache="false"
@@ -37,15 +38,15 @@
             >
             <thead>
               <tr>
-                <th data-switchable="false" data-field="tStatusMessage" data-class="hidden statuscolorizer"></th>
+                <th data-switchable="false" data-field="SubStatus" data-class="hidden statuscolor"></th>
                 <th data-field="state" data-checkbox="true"></th>
                 <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
-                <th data-field="tName" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
+                <th data-field="tName" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Name</th>
                 <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">Miner</th>
                 <th data-field="Version" data-sortable="true" data-filter-control="select" data-visible="false">Version</th>
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
                 <th data-field="tStatus" data-sortable="true" data-filter-control="select" data-visible="false">Status</th>
-                <th data-field="StatusMessage" data-sortable="true" data-filter-control="select">Status Message</th>
+                <th data-field="StatusInfo" data-sortable="true" data-filter-control="select">Status Info</th>
                 <th data-field="Earning" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)" data-visible="false">Earning</th>
                 <th data-field="Earning_Bias" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning Bias</th>
                 <th data-field="PowerCost" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Power Cost</th>
@@ -211,40 +212,15 @@
 
               onPostBody: function () {
                 if (config.UseColorForMinerStatus == true ) {
-                  $(".statuscolorizer").each(function () {
-                    switch(this.innerText) {
-                      case this.innerText.match(/^Benchmarking|^Measuring/)?.input:
-                        $(this).parent('tr').addClass('miner-measuring');
-                        break;
-                      case this.innerText.match(/^Disabled/)?.input:
-                        $(this).parent('tr').addClass('miner-disabled');
-                        break;
-                      case this.innerText.match(/^Failed/)?.input:
-                        $(this).parent('tr').addClass('miner-failed');
-                        break;
-                      case this.innerText.match(/^Idle/)?.input:
-                        $(this).parent('tr').addClass('miner-idle');
-                        break;
-                      case this.innerText.match(/^Mining/)?.input:
-                        $(this).parent('tr').addClass('miner-running');
-                        break;
-                      case this.innerText.match(/^Stopping/)?.input:
-                        $(this).parent('tr').addClass('miner-stopping');
-                        break;
-                      case this.innerText.match(/^Unavailable/)?.input:
-                        $(this).parent('tr').addClass('miner-unavailable');
-                        break;
-                      case this.innerText.match(/^Warming/)?.input:
-                        $(this).parent('tr').addClass('miner-warmingup');
-                        break;
-                    };
+                  $(".statuscolor").each(function () {
+                    if (this.innerText) $(this).parent('tr').addClass('color-' + this.innerText.toLowerCase());
                   });
                 };
               },
 
               onReorderColumn: function() {
                 $(".addlocalcurrency").each(function () {
-                  this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.Currency + ')';
+                  this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.MainCurrency + ')';
                 });
               },
 
@@ -260,7 +236,7 @@
               tailf();
               setInterval('tailf()', 500);
               $(".addlocalcurrency").each(function () {
-                this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.Currency + ')';
+                this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.MainCurrency + ')';
               });
             });
 

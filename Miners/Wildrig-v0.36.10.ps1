@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
@@ -166,15 +166,10 @@ $Algorithms = [PSCustomObject[]]@(
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm) }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).BaseName -notin $_.ExcludePools }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
 
 If ($Algorithms) { 
-
-    $Algorithms | ForEach-Object { 
-        $_.MinMemGiB += $MinerPools[0].($_.Algorithm).DAGSizeGiB
-    }
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
@@ -183,24 +178,29 @@ If ($Algorithms) {
 
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
+            $ExcludePools = $_.ExcludePools
+            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools)) { 
 
-                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
+                $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
+                If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
 
-                [PSCustomObject]@{ 
-                    Algorithms  = @($_.Algorithm)
-                    API         = "XmRig"
-                    Arguments   = ("$($_.Arguments) --api-port $MinerAPIPort --url $(If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { "stratum+tcps" } Else { "stratum+tcp" })://$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts | Select-Object -Last 1) --user $($AllMinerPools.($_.Algorithm).User)$(If ($AllMinerPools.($_.Algorithm).WorkerName) { ".$($AllMinerPools.($_.Algorithm).WorkerName)" }) --pass $($AllMinerPools.($_.Algorithm).Pass) --multiple-instance --opencl-platforms $($AvailableMiner_Devices.PlatformId | Sort-Object -Unique) --opencl-devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
-                    DeviceNames = $AvailableMiner_Devices.Name
-                    Fee         = @($_.Fee) # Dev fee
-                    MinerSet    = $_.MinerSet
-                    MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
-                    Name        = $Miner_Name
-                    Path        = $Path
-                    Port        = $MinerAPIPort
-                    Type        = $_.Type
-                    URI         = $Uri
-                    WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                    $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
+
+                    [PSCustomObject]@{ 
+                        API         = "XmRig"
+                        Arguments   = "$($_.Arguments) --api-port $MinerAPIPort --url $(If ($Pool.PoolPorts[1]) { "stratum+tcps" } Else { "stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass) --multiple-instance --opencl-platforms $($AvailableMiner_Devices.PlatformId | Sort-Object -Unique) --opencl-devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
+                        DeviceNames = $AvailableMiner_Devices.Name
+                        Fee         = @($_.Fee) # Dev fee
+                        MinerSet    = $_.MinerSet
+                        MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
+                        Name        = $Miner_Name
+                        Path        = $Path
+                        Port        = $MinerAPIPort
+                        Type        = $_.Type
+                        URI         = $Uri
+                        WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                        Workers     = @(@{ Pool = $Pool })
+                    }
                 }
             }
         }

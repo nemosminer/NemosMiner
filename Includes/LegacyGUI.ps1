@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\LegacyGUI.psm1
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 # [Void] [System.Windows.Forms.Application]::EnableVisualStyles()
@@ -37,6 +37,29 @@ public class ProcessDPI {
 '@
 $null = [ProcessDPI]::SetProcessDPIAware()
 [System.Windows.Forms.Application]::EnableVisualStyles()
+
+$Colors = @{ }
+$Colors["benchmarking"] = [System.Drawing.Color]::FromArgb(253, 235, 220)
+$Colors["disabled"]     = [System.Drawing.Color]::FromArgb(255, 243, 231)
+$Colors["failed"]       = [System.Drawing.Color]::FromArgb(255, 230, 230)
+$Colors["idle"]         = [System.Drawing.Color]::FromArgb(230, 248, 252)
+$Colors["launched"]     = [System.Drawing.Color]::FromArgb(229, 255, 229)
+$Colors["running"]      = [System.Drawing.Color]::FromArgb(212, 244, 212)
+$Colors["starting"]     = [System.Drawing.Color]::FromArgb(245, 255, 245)
+$Colors["stopping"]     = [System.Drawing.Color]::FromArgb(245, 255, 245)
+$Colors["unavailable"]  = [System.Drawing.Color]::FromArgb(254, 245, 220)
+$Colors["warmingup"]    = [System.Drawing.Color]::FromArgb(231, 255, 230)
+
+Function Set-TableColor { 
+
+    Param(
+        [Parameter(Mandatory = $true)]
+        $DataGridView
+    )
+    If ($Config.UseColorForMinerStatus) { 
+        ForEach ($Row in $DataGridView.Rows) { $Row.DefaultCellStyle.Backcolor = $Colors[$Row.DataBoundItem.Status] }
+    }
+}
 
 Function CheckBoxSwitching_Click { 
 
@@ -60,10 +83,11 @@ Function CheckBoxSwitching_Click {
             $SwitchingDGV.Columns[8].FillWeight = 30 + ($SwitchingDGV.MinersBest_Combo | ForEach-Object { $_.DeviceNames.Count } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) * 15; $SwitchingDGV.Columns[8].HeaderText = "Device(s)"
             $SwitchingDGV.Columns[9].FillWeight = 30
         }
-
-        Colorize_SwitchingLog
-
+        If ($Config.UseColorForMinerStatus) { 
+            ForEach ($Row in $SwitchingDGV.Rows) { $Row.DefaultCellStyle.Backcolor = $Colors[$Row.DataBoundItem.Action] }
+        }
         $SwitchingDGV.ClearSelection()
+        $SwitchingDGV.EndInit()
     }
     Else { $SwitchingLogLabel.Text = "Switching Log - no data" }
 
@@ -83,47 +107,10 @@ Function Set-DataGridViewDoubleBuffer {
     $PropInfo.SetValue($Grid, $Enabled, $null)
 }
 
-Function Colorize_Miners { 
+Function Table { 
     If ($Config.UseColorForMinerStatus) { 
         ForEach ($Row in $MinersDGV.Rows) { 
-            $Row.DefaultCellStyle.Backcolor = Switch -RegEx ($Row.DataBoundItem.Status) { 
-                "^Benchmarking|^Measuring" { [System.Drawing.Color]::FromArgb(255, 250, 230, 212); Break }
-                "^Disabled"                { [System.Drawing.Color]::FromArgb(255, 255, 243, 231); Break }
-                "^Failed"                  { [System.Drawing.Color]::FromArgb(255, 255, 230, 230); Break }
-                "^Idle"                    { [System.Drawing.Color]::FromArgb(255, 230, 248, 252); Break }
-                "^Mining"                  { [System.Drawing.Color]::FromArgb(255, 232, 250, 232); Break }
-                "^Stopping"                { [System.Drawing.Color]::FromArgb(255, 245, 255, 245); Break }
-                "^Unavailable"             { [System.Drawing.Color]::FromArgb(255, 254, 245, 220); Break }
-                "^Warming"                 { [System.Drawing.Color]::FromArgb(255, 253, 246, 241); Break }
-                Default                    { [System.Drawing.Color]::FromArgb(255, 255, 255, 255) }
-            }
-        }
-    }
-}
-
-Function Colorize_SwitchingLog { 
-    If ($Config.UseColorForMinerStatus) { 
-        ForEach ($Row in $SwitchingDGV.Rows) { 
-            $Row.DefaultCellStyle.Backcolor = Switch ($Row.DataBoundItem.Action) { 
-                "Failed"   { [System.Drawing.Color]::FromArgb(255, 255, 230, 230); Break }
-                "Stopped"  { [System.Drawing.Color]::FromArgb(255, 230, 248, 252); Break }
-                "Launched" { [System.Drawing.Color]::FromArgb(255, 232, 250, 232); Break }
-                Default    { [System.Drawing.Color]::FromArgb(255, 255, 255, 255) }
-            }
-        }
-        Remove-Variable Row
-    }
-}
-
-Function Colorize_Workers { 
-    If ($Config.UseColorForMinerStatus) { 
-        ForEach ($Row in $WorkersDGV.Rows) { 
-            $Row.DefaultCellStyle.Backcolor = Switch ($Row.DataBoundItem.Status) { 
-                "Offline" { [System.Drawing.Color]::FromArgb(255, 255, 230, 230); Break }
-                "Paused"  { [System.Drawing.Color]::FromArgb(255, 255, 241, 195); Break }
-                "Running" { [System.Drawing.Color]::FromArgb(255, 232, 250, 232); Break }
-                Default   { [System.Drawing.Color]::FromArgb(255, 255, 255, 255) }
-            }
+            $Row.DefaultCellStyle.Backcolor = $Colors[$Row.DataBoundItem.Status]
         }
     }
 }
@@ -164,14 +151,14 @@ Function Update-TabControl {
                     $LaunchedMinersDGV.DataSource = $Variables.MinersBest_Combo | Select-Object @(
                         @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join "; " } }
                         @{ Name = "Miner"; Expression = { $_.Name } }
-                        @{ Name = "Status"; Expression = { $_.StatusMessage -replace " \{.+", "" } }, 
-                        @{ Name = "Earning`r$($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) {"{0:n$($Config.DecimalsMax)}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }
-                        @{ Name = "Power Cost`r$($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.PowerCost)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Powercost * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }
-                        @{ Name = "Profit`r$($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }
+                        @{ Name = "Status"; Expression = { $_.SubStatus } }, 
+                        @{ Name = "Earning`r$($Config.MainCurrency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) {"{0:n$($Config.DecimalsMax)}" -f ($_.Earning * $Variables.Rates.BTC.($Config.MainCurrency)) } Else { "n/a" } } }
+                        @{ Name = "Power Cost`r$($Config.MainCurrency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.PowerCost)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Powercost * $Variables.Rates.BTC.($Config.MainCurrency)) } Else { "n/a" } } }
+                        @{ Name = "Profit`r$($Config.MainCurrency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.MainCurrency)) } Else { "n/a" } } }
                         @{ Name = "Power Usage"; Expression = { If (-not $_.MeasurePowerUsage) { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W"} } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } } }
                         @{ Name = "Algorithm(s)"; Expression = { $_.Algorithms -join ' & ' } }, 
                         @{ Name = "Pool(s)"; Expression = { $_.WorkersRunning.Pool.Name -join ' & ' } }
-                        @{ Name = "Hashrate(s)"; Expression = { If (-not $_.Benchmark) { ($_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } } }
+                        @{ Name = "Hashrate(s)"; Expression = { If (-not $_.Benchmark) { ($_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" -replace '\s+', ' ' }) -join ' & ' } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } } }
                         @{ Name = "Running Time`r(hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [Math]::floor(((Get-Date).ToUniversalTime() - $_.BeginTime).TotalDays * 24), ((Get-Date).ToUniversalTime() - $_.BeginTime) } }
                         @{ Name = "Total active`r(hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [Math]::floor($_.TotalMiningDuration.TotalDays * 24), $_.TotalMiningDuration } }
                         If ($RadioButtonPoolsUnavailable.checked) { @{ Name = "Reason"; Expression = { $_.Reasons -join ', ' } } }
@@ -190,22 +177,7 @@ Function Update-TabControl {
                         $LaunchedMinersDGV.Columns[10].FillWeight = 65; $LaunchedMinersDGV.Columns[10].DefaultCellStyle.Alignment = "MiddleRight";  $LaunchedMinersDGV.Columns[10].HeaderCell.Style.Alignment = "MiddleRight"
                         $LaunchedMinersDGV.Columns[11].FillWeight = 65; $LaunchedMinersDGV.Columns[11].DefaultCellStyle.Alignment = "MiddleRight";  $LaunchedMinersDGV.Columns[11].HeaderCell.Style.Alignment = "MiddleRight"
                     }
-                    If ($Config.UseColorForMinerStatus) { 
-                        ForEach ($Row in $LaunchedMinersDGV.Rows) { 
-                            $Row.DefaultCellStyle.Backcolor = Switch -RegEx ($Row.DataBoundItem.Status) { 
-                                "^Benchmarking|^Measuring" { [System.Drawing.Color]::FromArgb(255, 250, 230, 212); Break }
-                                "^Disabled"                { [System.Drawing.Color]::FromArgb(255, 255, 243, 231); Break }
-                                "^Failed"                  { [System.Drawing.Color]::FromArgb(255, 255, 230, 230); Break }
-                                "^Idle"                    { [System.Drawing.Color]::FromArgb(255, 230, 248, 252); Break }
-                                "^Mining"                  { [System.Drawing.Color]::FromArgb(255, 232, 250, 232); Break }
-                                "^Stopping"                { [System.Drawing.Color]::FromArgb(255, 245, 255, 245); Break }
-                                "^Unavailable"             { [System.Drawing.Color]::FromArgb(255, 254, 245, 220); Break }
-                                "^Warming"                 { [System.Drawing.Color]::FromArgb(255, 253, 246, 241); Break }
-                                Default                    { [System.Drawing.Color]::FromArgb(255, 255, 255, 255) }
-                            }
-                        }
-                        Remove-Variable Row
-                    }
+                    Set-TableColor -DataGridView $LaunchedMinersDGV
                     Form_Resize # To fully show lauched miners gridview
                     $LaunchedMinersDGV.EndInit()
                 }
@@ -258,7 +230,7 @@ Function Update-TabControl {
                     $ChartArea.AxisY.LabelAutoFitStyle = $ChartArea.AxisY.labelAutoFitStyle - 4
                     $ChartArea.AxisY.MajorGrid.Enabled = $true
                     $ChartArea.AxisY.MajorGrid.LineColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"#FFFFFF"
-                    $ChartArea.AxisY.Title = $Config.Currency
+                    $ChartArea.AxisY.Title = $Config.MainCurrency
                     $ChartArea.AxisY.ToolTip = "Total Earnings per day"
                     $ChartArea.BackColor = [System.Drawing.Color]::FromArgb(255, 255, 255, 255) #"#2B3232" 
                     $ChartArea.BackGradientStyle = 3
@@ -284,11 +256,11 @@ Function Update-TabControl {
 
                         $I = 0
                         $Datasource.Earnings.$Pool | ForEach-Object { 
-                            $_ *= $Variables.Rates.BTC.($Config.Currency)
+                            $_ *= $Variables.Rates.BTC.($Config.MainCurrency)
                             $EarningsChart.Series[$Pool].Points.addxy(0, $_) | Out-Null
                             $Daysum[$I] += $_
                             If ($_) { 
-                                $ToolTip[$I] = "$($ToolTip[$I])`r$($Pool): {0:N$($Config.DecimalsMax)} $($Config.Currency)" -f $_
+                                $ToolTip[$I] = "$($ToolTip[$I])`r$($Pool): {0:N$($Config.DecimalsMax)} $($Config.MainCurrency)" -f $_
                             }
                             $I ++
                         }
@@ -298,10 +270,10 @@ Function Update-TabControl {
                     $I = 0
                     $DataSource.Labels | ForEach-Object { 
                         $ChartArea.AxisX.CustomLabels.Add($I +0.5, $I + 1.5, " $_ ")
-                        $ChartArea.AxisX.CustomLabels[$I].ToolTip = "$($ToolTip[$I])`rTotal: {0:N$($Config.DecimalsMax)} $($Config.Currency)" -f $Daysum[$I]
+                        $ChartArea.AxisX.CustomLabels[$I].ToolTip = "$($ToolTip[$I])`rTotal: {0:N$($Config.DecimalsMax)} $($Config.MainCurrency)" -f $Daysum[$I]
                         ForEach ($Pool in ($DataSource.Earnings.PSObject.Properties.Name)) { 
                             If ($Datasource.Earnings.$Pool[$I]) { 
-                                $EarningsChart.Series[$Pool].Points[$I].ToolTip = "$($ToolTip[$I])`rTotal: {0:N$($Config.DecimalsMax)} $($Config.Currency)" -f $Daysum[$I]
+                                $EarningsChart.Series[$Pool].Points[$I].ToolTip = "$($ToolTip[$I])`rTotal: {0:N$($Config.DecimalsMax)} $($Config.MainCurrency)" -f $Daysum[$I]
                             }
                         }
                         $I ++
@@ -317,15 +289,15 @@ Function Update-TabControl {
 
                     $BalancesDGV.BeginInit()
                     $BalancesDGV.ClearSelection()
-                    $Currency = If ($Config.BalancesShowInMainCurrency) { $Config.Currency } Else { $_.Currency}
+                    $Currency = If ($Config.BalancesShowInMainCurrency) { $Config.MainCurrency } Else { $_.Currency}
                     $BalancesDGV.DataSource = $Variables.Balances.Values | Select-Object @(
                         @{ Name = "Currency"; Expression = { $_.Currency } }, 
                         @{ Name = "Pool [Currency]"; Expression = { "$($_.Pool) [$($_.Currency)]" } }, 
-                        @{ Name = "Balance ($($Config.Currency))"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ($_.Balance * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
-                        @{ Name = "Avg. $($Config.Currency)/day"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ($_.AvgDailyGrowth * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
-                        @{ Name = "$($Config.Currency) in 1h"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ($_.Growth1 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
-                        @{ Name = "$($Config.Currency) in 6h"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ($_.Growth6 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
-                        @{ Name = "$($Config.Currency) in 24h"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ($_.Growth24 * $Variables.Rates.($_.Currency).($Config.Currency)) } }, 
+                        @{ Name = "Balance ($($Config.MainCurrency))"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ($_.Balance * $Variables.Rates.($_.Currency).($Config.MainCurrency)) } }, 
+                        @{ Name = "Avg. $($Config.MainCurrency)/day"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ($_.AvgDailyGrowth * $Variables.Rates.($_.Currency).($Config.MainCurrency)) } }, 
+                        @{ Name = "$($Config.MainCurrency) in 1h"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ($_.Growth1 * $Variables.Rates.($_.Currency).($Config.MainCurrency)) } }, 
+                        @{ Name = "$($Config.MainCurrency) in 6h"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ($_.Growth6 * $Variables.Rates.($_.Currency).($Config.MainCurrency)) } }, 
+                        @{ Name = "$($Config.MainCurrency) in 24h"; Expression = { "{0:n$($Config.DecimalsMax)}" -f ($_.Growth24 * $Variables.Rates.($_.Currency).($Config.MainCurrency)) } }, 
                         @{ Name = "Projected Paydate"; Expression = { If ($_.ProjectedPayDate -is [DateTime]) { $_.ProjectedPayDate.ToShortDateString() } Else { $_.ProjectedPayDate } } }, 
                         @{ Name = "Payout Threshold"; Expression = { If ($_.PayoutThresholdCurrency -eq "BTC" -and $Config.UsemBTC) { $PayoutThresholdCurrency = "mBTC"; $mBTCfactor = 1000 } Else { $PayoutThresholdCurrency = $_.PayoutThresholdCurrency; $mBTCfactor = 1 }; "{0:P2} of {1} {2} " -f ($_.Balance / $_.PayoutThreshold * $Variables.Rates.($_.Currency).($_.PayoutThresholdCurrency)), ($_.PayoutThreshold * $mBTCfactor), $PayoutThresholdCurrency } }
                     ) | Sort-Object -Property Pool | Out-DataTable
@@ -341,11 +313,11 @@ Function Update-TabControl {
                         $BalancesDGV.Columns[8].FillWeight = 100
                     }
                     $BalancesDGV.Rows | ForEach-Object { 
-                        $_.Cells[2].ToolTipText = "$($_.Cells[0].Value) {0:n$($Config.DecimalsMax)}" -f ([Double]$_.Cells[2].Value * $Variables.Rates.($Config.Currency).($_.Cells[0].Value))
-                        $_.Cells[3].ToolTipText = "$($_.Cells[0].Value) {0:n$($Config.DecimalsMax)}" -f ([Double]$_.Cells[3].Value * $Variables.Rates.($Config.Currency).($_.Cells[0].Value))
-                        $_.Cells[4].ToolTipText = "$($_.Cells[0].Value) {0:n$($Config.DecimalsMax)}" -f ([Double]$_.Cells[4].Value * $Variables.Rates.($Config.Currency).($_.Cells[0].Value))
-                        $_.Cells[5].ToolTipText = "$($_.Cells[0].Value) {0:n$($Config.DecimalsMax)}" -f ([Double]$_.Cells[5].Value * $Variables.Rates.($Config.Currency).($_.Cells[0].Value))
-                        $_.Cells[6].ToolTipText = "$($_.Cells[0].Value) {0:n$($Config.DecimalsMax)}" -f ([Double]$_.Cells[6].Value * $Variables.Rates.($Config.Currency).($_.Cells[0].Value))
+                        $_.Cells[2].ToolTipText = "$($_.Cells[0].Value) {0:n$($Config.DecimalsMax)}" -f ([Double]$_.Cells[2].Value * $Variables.Rates.($Config.MainCurrency).($_.Cells[0].Value))
+                        $_.Cells[3].ToolTipText = "$($_.Cells[0].Value) {0:n$($Config.DecimalsMax)}" -f ([Double]$_.Cells[3].Value * $Variables.Rates.($Config.MainCurrency).($_.Cells[0].Value))
+                        $_.Cells[4].ToolTipText = "$($_.Cells[0].Value) {0:n$($Config.DecimalsMax)}" -f ([Double]$_.Cells[4].Value * $Variables.Rates.($Config.MainCurrency).($_.Cells[0].Value))
+                        $_.Cells[5].ToolTipText = "$($_.Cells[0].Value) {0:n$($Config.DecimalsMax)}" -f ([Double]$_.Cells[5].Value * $Variables.Rates.($Config.MainCurrency).($_.Cells[0].Value))
+                        $_.Cells[6].ToolTipText = "$($_.Cells[0].Value) {0:n$($Config.DecimalsMax)}" -f ([Double]$_.Cells[6].Value * $Variables.Rates.($Config.MainCurrency).($_.Cells[0].Value))
                     }
                     Form_Resize # To fully show lauched miners gridview
                     $BalancesDGV.EndInit()
@@ -386,14 +358,14 @@ Function Update-TabControl {
                         @{ Name = "Best"; Expression = { $_.Best } }, 
                         @{ Name = "Miner"; Expression = { $_.Name } }, 
                         @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join ', ' } }, 
-                        @{ Name = "Status"; Expression = { If ($_.StatusMessage) { $_.StatusMessage -replace " \{.+", "" } Else { $_.Status } } }, 
-                        @{ Name = "Earning`r$($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Earning * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }, 
-                        @{ Name = "Power Cost`r$($Config.Currency)/day"; Expression = { If (-not [Double]::IsNaN($_.PowerCost)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Powercost * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }, 
-                        @{ Name = "Profit`r$($Config.Currency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.Currency)) } Else { "n/a" } } }, 
+                        @{ Name = "Status"; Expression = { $_.SubStatus } }, 
+                        @{ Name = "Earning`r$($Config.MainCurrency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Earning * $Variables.Rates.BTC.($Config.MainCurrency)) } Else { "n/a" } } }, 
+                        @{ Name = "Power Cost`r$($Config.MainCurrency)/day"; Expression = { If (-not [Double]::IsNaN($_.PowerCost)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Powercost * $Variables.Rates.BTC.($Config.MainCurrency)) } Else { "n/a" } } }, 
+                        @{ Name = "Profit`r$($Config.MainCurrency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.MainCurrency)) } Else { "n/a" } } }, 
                         @{ Name = "Power Usage"; Expression = { If (-not $_.MeasurePowerUsage) { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W"} } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } } }
                         @{ Name = "Algorithm(s)"; Expression = { $_.Algorithms -join ' & ' } }, 
                         @{ Name = "Pool(s)"; Expression = { $_.Workers.Pool.Name -join ' & ' } }, 
-                        @{ Name = "Hashrate(s)"; Expression = { If (-not $_.Benchmark) { ($_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" -replace "\s+", " " }) -join " & " } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } } }
+                        @{ Name = "Hashrate(s)"; Expression = { If (-not $_.Benchmark) { ($_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" -replace '\s+', ' ' }) -join ' & ' } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } } }
                         If ($RadioButtonMinersUnavailable.checked -or $RadioButtonMiners.checked) { @{ Name = "Reason(s)"; Expression = { $_.Reasons -join ', '} } }
                     ) | Sort-Object @{ Expression = { $_.Best }; Descending = $true }, "Device(s)", Miner | Out-DataTable
                     If ($MinersDGV.Columns) { 
@@ -409,7 +381,7 @@ Function Update-TabControl {
                         $MinersDGV.Columns[9].FillWeight = 60  + ($DataSource | ForEach-Object { $_.Workers.Count } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) * 30
                         $MinersDGV.Columns[10].FillWeight = 50 + ($DataSource | ForEach-Object { $_.Workers.Count } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) * 25; $MinersDGV.Columns[10].DefaultCellStyle.Alignment = "MiddleRight"; $MinersDGV.Columns[10].HeaderCell.Style.Alignment = "MiddleRight"
                     }
-                    Colorize_Miners
+                    Set-TableColor -DataGridView $MinersDGV
                     $MinersDGV.EndInit()
                 }
             }
@@ -503,10 +475,10 @@ Function Update-TabControl {
                         @{ Name = "Estimated Earning/day"; Expression = { If ($null -ne $_.Data) { "{0:n$($Config.DecimalsMax)}" -f (($_.Data.Earning | Where-Object { -not [Double]::IsNaN($_) } | Measure-Object -Sum | Select-Object -ExpandProperty Sum) * $Variables.Rates.BTC.($_.data.Currency | Select-Object -Unique)) } } }, 
                         @{ Name = "Estimated Profit/day"; Expression = { If ($null -ne $_.Data) { " {0:n$($Config.DecimalsMax)}" -f (($_.Data.Profit | Where-Object { -not [Double]::IsNaN($_) } | Measure-Object -Sum | Select-Object -ExpandProperty Sum) * $Variables.Rates.BTC.($_.data.Currency | Select-Object -Unique)) } } }, 
                         @{ Name = "Miner(s)"; Expression = { $_.data.Name -join $nl } }, 
-                        @{ Name = "Pool(s)"; Expression = { ($_.data | ForEach-Object { $_.Pool -split "," -join " & " }) -join $nl } }, 
-                        @{ Name = "Algorithm(s)"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join $nl } }, 
-                        @{ Name = "Live Hashrate(s)"; Expression = { ($_.data | ForEach-Object { ($_.CurrentSpeed | ForEach-Object { If ([Double]::IsNaN($_)) { "n/a" } Else { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " } }) -join " & " }) -join $nl } }, 
-                        @{ Name = "Benchmark Hashrate(s)"; Expression = { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { If ([Double]::IsNaN($_)) { "n/a" } Else { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " } }) -join " & " }) -join $nl } }
+                        @{ Name = "Pool(s)"; Expression = { ($_.data | ForEach-Object { $_.Pool -split "," -join ' & ' }) -join $nl } }, 
+                        @{ Name = "Algorithm(s)"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join ' & ' }) -join $nl } }, 
+                        @{ Name = "Live Hashrate(s)"; Expression = { ($_.data | ForEach-Object { ($_.CurrentSpeed | ForEach-Object { If ([Double]::IsNaN($_)) { "n/a" } Else { "$($_ | ConvertTo-Hash)/s" -replace '\s+' } }) -join ' & ' }) -join $nl } }, 
+                        @{ Name = "Benchmark Hashrate(s)"; Expression = { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { If ([Double]::IsNaN($_)) { "n/a" } Else { "$($_ | ConvertTo-Hash)/s" -replace '\s+' } }) -join ' & ' }) -join $nl } }
                     ) | Sort-Object -Property "Worker" | Out-DataTable
                     If ($WorkersDGV.Columns) { 
                         $WorkersDGV.Columns[0].FillWeight = 70
@@ -522,7 +494,7 @@ Function Update-TabControl {
                         $WorkersDGV.Columns[10].FillWeight = 65; $WorkersDGV.Columns[10].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[10].HeaderCell.Style.Alignment = "MiddleRight"
                         $WorkersDGV.Columns[11].FillWeight = 65; $WorkersDGV.Columns[11].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[11].HeaderCell.Style.Alignment = "MiddleRight"
                     }
-                    Colorize_Workers
+                    Set-TableColor -DataGridView $WorkersDGV
                     $WorkersDGV.EndInit()
                 }
                 Else { $WorkersLabel.Text = "Worker Status - no workers" }
@@ -721,24 +693,6 @@ $LegacyGUIControls += $MiningSummaryLabel
 $Variables.TextBoxSystemLog
 $Tooltip.SetToolTip($MiningSummaryLabel, "Color legend:`rBlack: Mining is idle`rGreen: Mining is profitable`rRed: Mining NOT profitable")
 
-$ButtonStart = New-Object System.Windows.Forms.Button
-$ButtonStart.Enabled = (-not $Config.Autostart)
-$ButtonStart.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$ButtonStart.Height = 24
-$ButtonStart.Text = "Start mining"
-$ButtonStart.Visible = $true
-$ButtonStart.Width = 100
-$ButtonStart.Add_Click(
-    { 
-        If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace -eq "Idle") { 
-            $Variables.NewMiningStatus = "Running"
-            $Variables.RestartCycle = $true
-        }
-    }
-)
-$LegacyGUIControls += $ButtonStart
-$Tooltip.SetToolTip($ButtonStart, "Start the mining process.")
-
 $ButtonPause = New-Object System.Windows.Forms.Button
 $ButtonPause.Enabled = $Config.Autostart
 $ButtonPause.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
@@ -749,6 +703,8 @@ $ButtonPause.Width = 100
 $ButtonPause.Add_Click(
     { 
         If ($Variables.NewMiningStatus -ne "Paused") { 
+            $Variables.Summary = "'Pause mining' button pressed.<br>Pausing $($Variables.Branding.ProductLabel)..."
+            Write-Message -Level Info "'Pause mining' button pressed. Pausing $($Variables.Branding.ProductLabel)..."
             $Variables.NewMiningStatus = "Paused"
             $Variables.RestartCycle = $true
         }
@@ -756,6 +712,26 @@ $ButtonPause.Add_Click(
 )
 $LegacyGUIControls += $ButtonPause
 $Tooltip.SetToolTip($ButtonPause, "Pause mining processes.`rBackground processes remain running.")
+
+$ButtonStart = New-Object System.Windows.Forms.Button
+$ButtonStart.Enabled = (-not $Config.Autostart)
+$ButtonStart.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$ButtonStart.Height = 24
+$ButtonStart.Text = "Start mining"
+$ButtonStart.Visible = $true
+$ButtonStart.Width = 100
+$ButtonStart.Add_Click(
+    { 
+        If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace -eq "Idle") { 
+            $Variables.Summary = "Start mining' button clicked.<br>Starting $($Variables.Branding.ProductLabel)..."
+            Write-Message -Level Info "'Start mining' button clicked. Starting $($Variables.Branding.ProductLabel)..."
+            $Variables.NewMiningStatus = "Running"
+            $Variables.RestartCycle = $true
+        }
+    }
+)
+$LegacyGUIControls += $ButtonStart
+$Tooltip.SetToolTip($ButtonStart, "Start the mining process.")
 
 $ButtonStop = New-Object System.Windows.Forms.Button
 $ButtonStop.Enabled = $Config.Autostart
@@ -767,6 +743,8 @@ $ButtonStop.Width = 100
 $ButtonStop.Add_Click(
     { 
         If ($Variables.NewMiningStatus -ne "Idle") { 
+            $Variables.Summary = "'Stop mining' button clicked.<br>Stopping $($Variables.Branding.ProductLabel)..."
+            Write-Message -Level Info "'Stop mining' button clicked. Stopping $($Variables.Branding.ProductLabel)..."
             $Variables.NewMiningStatus = "Idle"
             $Variables.RestartCycle = $true
         }
@@ -820,7 +798,7 @@ $ContextMenuStrip.Add_ItemClicked(
     { 
         $Data = @()
 
-        If ($This.SourceControl.Name -match "LaunchedMinersDGV|MinersDGV") { 
+        If ($This.SourceControl.Name -match 'LaunchedMinersDGV|MinersDGV') { 
 
             Switch ($_.ClickedItem.Text) { 
                 "Re-Benchmark" { 
@@ -840,7 +818,7 @@ $ContextMenuStrip.Add_ItemClicked(
                             $_.Disabled = $false
                             $_.Benchmark = $true
                             $_.Restart = $true
-                            $Data += "$($_.Name) ($($_.Algorithms -join " & "))"
+                            $Data += "$($_.Name) ($($_.Algorithms -join ' & '))"
                             ForEach ($Worker in $_.Workers) { 
                                 Remove-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
                                 $Worker.Hashrate = [Double]::NaN
@@ -911,7 +889,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         }
                         $Variables.Miners | Where-Object Name -EQ $SelectedMinerName | Where-Object { [String]$_.Algorithms -eq [String]$SelectedMinerAlgorithms } | ForEach-Object { 
                             If ($Parameters.Value -le 0 -and $Parameters.Type -eq "Hashrate") { $_.Available = $false; $_.Disabled = $true }
-                            $Data += "$($_.Name) ($($_.Algorithms -join " & "))"
+                            $Data += "$($_.Name) ($($_.Algorithms -join ' & '))"
                             ForEach ($Algorithm in $_.Algorithms) { 
                                 $Stat_Name = "$($_.Name)_$($Algorithm)_$($Parameters.Type)"
                                 If ($Parameters.Value -eq 0) { # Miner failed
@@ -948,7 +926,7 @@ $ContextMenuStrip.Add_ItemClicked(
                             $SelectedMinerAlgorithms = @($_.Cells[8].Value -split " & ")
                         }
                         $Variables.Miners | Where-Object Name -eq $SelectedMinerName | Where-Object { [String]$_.Algorithms -eq [String]$SelectedMinerAlgorithms } | ForEach-Object { 
-                            $Data += "$($_.Name) ($($_.Algorithms -join " & "))"
+                            $Data += "$($_.Name) ($($_.Algorithms -join ' & '))"
                             ForEach ($Worker in $_.Workers) { 
                                 Disable-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
                                 $Worker.Hashrate = [Double]::NaN
@@ -1003,7 +981,7 @@ $ContextMenuStrip.Add_ItemClicked(
                 }
             }
         }
-        ElseIf ($This.SourceControl.Name -match "PoolsDGV") { 
+        ElseIf ($This.SourceControl.Name -match 'PoolsDGV') { 
             Switch ($_.ClickedItem.Text) { 
                 "Reset Pool Stat Data" { 
                     $This.SourceControl.SelectedRows | ForEach-Object { 
@@ -1113,7 +1091,7 @@ $LaunchedMinersDGV.Add_MouseUP(
     }
 )
 $LaunchedMinersDGV.Add_Sorted(
-    { Colorize_Miners }
+    { Set-TableColor -DataGridView $LaunchedMinersDGV }
 )
 Set-DataGridViewDoubleBuffer -Grid $LaunchedMinersDGV -Enabled $true
 $RunPageControls += $LaunchedMinersDGV
@@ -1251,7 +1229,7 @@ $MinersDGV.Add_MouseUP(
     }
 )
 $MinersDGV.Add_Sorted(
-    { Colorize_Miners }
+    { Set-TableColor -DataGridView $MinersDGV }
 )
 Set-DataGridViewDoubleBuffer -Grid $MinersDGV -Enabled $true
 $MinersPageControls += $MinersDGV
@@ -1367,7 +1345,7 @@ $WorkersDGV.Location = [System.Drawing.Point]::new(6, ($WorkersLabel.Height + 8)
 $WorkersDGV.ReadOnly = $true
 $WorkersDGV.RowHeadersVisible = $false
 $WorkersDGV.Add_Sorted(
-    { Colorize_Workers }
+    { Set-TableColor -DataGridView $WorkersDGV }
 )
 Set-DataGridViewDoubleBuffer -Grid $WorkersDGV -Enabled $true
 $RigMonitorPageControls += $WorkersDGV
@@ -1468,7 +1446,7 @@ $SwitchingDGV.Name = "SwitchingDGV"
 $SwitchingDGV.ReadOnly = $true
 $SwitchingDGV.RowHeadersVisible = $false
 $SwitchingDGV.Add_Sorted(
-    { Colorize_SwitchingLog }
+    { Set-TableColor -DataGridView $SwitchingDGV }
 )
 Set-DataGridViewDoubleBuffer -Grid $SwitchingDGV -Enabled $true
 $SwitchingPageControls += $SwitchingDGV

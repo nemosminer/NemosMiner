@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.ComputeCapability -lt "8.6" })) { Return }
@@ -29,55 +29,55 @@ $Path = ".\Bin\$($Name)\xmr-stak.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "CryptonightBittube2"; MinMemGiB = 4; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noCPU --noNVIDIA --amd" }
-    [PSCustomObject]@{ Algorithm = "CryptonightGpu";      MinMemGiB = 3; Type = "AMD"; Minerset = 1; WarmupTimes = @(90, 15); Arguments = " --noCPU --noNVIDIA --amd" } # SRBMinerMulti-v2.3.5 is fastest, but has 0.85% miner fee
-    [PSCustomObject]@{ Algorithm = "CryptonightLite";     MinMemGiB = 1; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noCPU --noNVIDIA --amd" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";   MinMemGiB = 1; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noCPU --noNVIDIA --amd" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc"; MinMemGiB = 1; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noCPU --noNVIDIA --amd" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";    MinMemGiB = 1; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noCPU --noNVIDIA --amd" } # XmRig-v6.20.0 is fastest
-#   [PSCustomObject]@{ Algorithm = "CryptonightHeavyXhv"; MinMemGiB = 4; Type = "AMD"; Minerset = 1; WarmupTimes = @(90, 15); Arguments = " --noCPU --noNVIDIA --amd" } # PARSE error: Invalid job length; SRBMinerMulti-v2.3.5 is fastest, but has 0.85% miner fee
-    [PSCustomObject]@{ Algorithm = "CryptonightMsr";      MinMemGiB = 2; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noCPU --noNVIDIA --amd" }
-#   [PSCustomObject]@{ Algorithm = "CryptonightR";        MinMemGiB = 2; Type = "AMD"; Minerset = 3; WarmupTimes = @(90, 15); Arguments = " --noCPU --noNVIDIA --amd" } # ASIC
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble";   MinMemGiB = 2; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noCPU --noNVIDIA --amd" } # XmRig-v6.20.0 is fastest
-    [PSCustomObject]@{ Algorithm = "CryptonightRwz";      MinMemGiB = 2; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noCPU --noNVIDIA --amd" }
-    [PSCustomObject]@{ Algorithm = "CryptonightV1";       MinMemGiB = 2; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noCPU --noNVIDIA --amd" }
-    [PSCustomObject]@{ Algorithm = "CryptonightV2";       MinMemGiB = 2; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noCPU --noNVIDIA --amd" }
-    [PSCustomObject]@{ Algorithm = "CryptonightXtl";      MinMemGiB = 2; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noCPU --noNVIDIA --amd" }
+    [PSCustomObject]@{ Algorithm = "CryptonightBittube2"; MinMemGiB = 4; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
+    [PSCustomObject]@{ Algorithm = "CryptonightGpu";      MinMemGiB = 3; Type = "AMD"; Minerset = 1; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" } # SRBMinerMulti-v2.3.5 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "CryptonightLite";     MinMemGiB = 1; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";   MinMemGiB = 1; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc"; MinMemGiB = 1; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";    MinMemGiB = 1; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" } # XmRig-v6.20.0 is fastest
+#   [PSCustomObject]@{ Algorithm = "CryptonightHeavyXhv"; MinMemGiB = 4; Type = "AMD"; Minerset = 1; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" } # PARSE error: Invalid job length; SRBMinerMulti-v2.3.5 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "CryptonightMsr";      MinMemGiB = 2; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
+#   [PSCustomObject]@{ Algorithm = "CryptonightR";        MinMemGiB = 2; Type = "AMD"; Minerset = 3; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" } # ASIC
+    [PSCustomObject]@{ Algorithm = "CryptonightDouble";   MinMemGiB = 2; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" } # XmRig-v6.20.0 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightRwz";      MinMemGiB = 2; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
+    [PSCustomObject]@{ Algorithm = "CryptonightV1";       MinMemGiB = 2; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
+    [PSCustomObject]@{ Algorithm = "CryptonightV2";       MinMemGiB = 2; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
+    [PSCustomObject]@{ Algorithm = "CryptonightXtl";      MinMemGiB = 2; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
 
-    [PSCustomObject]@{ Algorithm = "CryptonightBittube2"; Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightGpu";      Type = "CPU"; MinerSet = 0; WarmupTimes = @(45, 20); Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLite";     Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";   Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc"; Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";    Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --noAMD --noNVIDIA --cpu" } # XmRig-v6.20.0 is fastest
-#   [PSCustomObject]@{ Algorithm = "CryptonightHeavyXhv"; Type = "CPU"; Minerset = 1; WarmupTimes = @(45, 20); Arguments = " --noAMD --noNVIDIA --cpu" } # PARSE error: Invalid job length
-    [PSCustomObject]@{ Algorithm = "CryptonightMsr";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --noAMD --noNVIDIA --cpu" }
-#   [PSCustomObject]@{ Algorithm = "CryptonightR";        Type = "CPU"; Minerset = 3; WarmupTimes = @(45, 0);  Arguments = " --noAMD --noNVIDIA --cpu" } # ASIC
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble";   Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightRwz";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightV1";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightV2";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --noAMD --noNVIDIA --cpu" }
-    [PSCustomObject]@{ Algorithm = "CryptonightXtl";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightBittube2"; Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightGpu";      Type = "CPU"; MinerSet = 0; WarmupTimes = @(45, 20); ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLite";     Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";   Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc"; Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";    Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # XmRig-v6.20.0 is fastest
+#   [PSCustomObject]@{ Algorithm = "CryptonightHeavyXhv"; Type = "CPU"; Minerset = 1; WarmupTimes = @(45, 20); ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # PARSE error: Invalid job length
+    [PSCustomObject]@{ Algorithm = "CryptonightMsr";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
+#   [PSCustomObject]@{ Algorithm = "CryptonightR";        Type = "CPU"; Minerset = 3; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # ASIC
+    [PSCustomObject]@{ Algorithm = "CryptonightDouble";   Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightRwz";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightV1";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightV2";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
+    [PSCustomObject]@{ Algorithm = "CryptonightXtl";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" }
 
-    [PSCustomObject]@{ Algorithm = "CryptonightBittube2"; MinMemGiB = 4; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
-    [PSCustomObject]@{ Algorithm = "CryptonightGpu";      MinMemGiB = 3; Type = "NVIDIA"; Minerset = 1; WarmupTimes = @(90, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLite";     MinMemGiB = 1; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";   MinMemGiB = 1; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
-    [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc"; MinMemGiB = 1; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
-    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";    MinMemGiB = 1; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } # CryptoDredge-v0.27.0 is fastest
-#   [PSCustomObject]@{ Algorithm = "CryptonightHeavyXhv"; MinMemGiB = 4; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(90, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } # PARSE error: Invalid job length
-    [PSCustomObject]@{ Algorithm = "CryptonightMsr";      MinMemGiB = 2; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
-#   [PSCustomObject]@{ Algorithm = "CryptonightR";        MinMemGiB = 2; Type = "NVIDIA"; Minerset = 3; WarmupTimes = @(90, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } # ASIC
-    [PSCustomObject]@{ Algorithm = "CryptonightDouble";   MinMemGiB = 2; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } # XmRig-v6.20.0 is fastest
-    [PSCustomObject]@{ Algorithm = "CryptonightRwz";      MinMemGiB = 2; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
-    [PSCustomObject]@{ Algorithm = "CryptonightV1";       MinMemGiB = 2; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
-    [PSCustomObject]@{ Algorithm = "CryptonightV2";       MinMemGiB = 2; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
-    [PSCustomObject]@{ Algorithm = "CryptonightXtl";      MinMemGiB = 2; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
+    [PSCustomObject]@{ Algorithm = "CryptonightBittube2"; MinMemGiB = 4; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
+    [PSCustomObject]@{ Algorithm = "CryptonightGpu";      MinMemGiB = 3; Type = "NVIDIA"; Minerset = 1; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLite";     MinMemGiB = 1; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";   MinMemGiB = 1; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
+    [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc"; MinMemGiB = 1; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
+    [PSCustomObject]@{ Algorithm = "CryptonightHeavy";    MinMemGiB = 1; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } # CryptoDredge-v0.27.0 is fastest
+#   [PSCustomObject]@{ Algorithm = "CryptonightHeavyXhv"; MinMemGiB = 4; Type = "NVIDIA"; MinerSet = 0; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } # PARSE error: Invalid job length
+    [PSCustomObject]@{ Algorithm = "CryptonightMsr";      MinMemGiB = 2; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
+#   [PSCustomObject]@{ Algorithm = "CryptonightR";        MinMemGiB = 2; Type = "NVIDIA"; Minerset = 3; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } # ASIC
+    [PSCustomObject]@{ Algorithm = "CryptonightDouble";   MinMemGiB = 2; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" } # XmRig-v6.20.0 is fastest
+    [PSCustomObject]@{ Algorithm = "CryptonightRwz";      MinMemGiB = 2; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
+    [PSCustomObject]@{ Algorithm = "CryptonightV1";       MinMemGiB = 2; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
+    [PSCustomObject]@{ Algorithm = "CryptonightV2";       MinMemGiB = 2; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
+    [PSCustomObject]@{ Algorithm = "CryptonightXtl";      MinMemGiB = 2; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm) }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
 
 If ($Algorithms) { 
 
@@ -107,83 +107,86 @@ If ($Algorithms) {
 
         $Algorithms | Where-Object Type -eq $_.Type | ForEach-Object { 
 
-            $MinMemGiB = $_.MinMemGiB
+            $ExcludePools = $_.ExcludePools
+            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools)) { 
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or $_.MemoryGiB -gt $MinMemGiB }) { 
+                $MinMemGiB = $_.MinMemGiB
+                If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or $_.MemoryGiB -gt $MinMemGiB }) { 
 
-                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
+                    $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 
-                # Note: For fine tuning directly edit the config files in the miner binary directory
-                $ConfigFileName = [System.Web.HttpUtility]::UrlEncode("$((@("Config") + @($_.Type) + @(($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($AvailableMiner_Devices | Sort-Object Name | Where-Object Model -eq $Model).Name -join ';'))" } | Select-Object) -join '-') + @($MinerAPIPort) | Select-Object) -join '-').txt")
-                $MinerThreadsConfigFileName = [System.Web.HttpUtility]::UrlEncode("$((@("ThreadsConfig") + @($_.Type) + @($_.Algorithm) + @(($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($AvailableMiner_Devices | Sort-Object Name | Where-Object Model -eq $Model).Name -join ';'))" } | Select-Object) -join '-') | Select-Object) -join '-').txt")
-                $PlatformThreadsConfigFileName = [System.Web.HttpUtility]::UrlEncode("$((@("HwConfig") + @($_.Type) + @($_.Algorithm) + @(($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($AvailableMiner_Devices | Sort-Object Name | Where-Object Model -eq $Model).Name -join ';'))" } | Select-Object) -join '-') | Select-Object) -join '-').txt")
-                $PoolFileName = [System.Web.HttpUtility]::UrlEncode("$((@("PoolConf") + @($($_.Algorithm).BaseName) + @($_.Algorithm) + @($AllMinerPools.($_.Algorithm).User) + @($AllMinerPools.($_.Algorithm).Pass) | Select-Object) -join '-').txt")
+                    # Note: For fine tuning directly edit the config files in the miner binary directory
+                    $ConfigFileName = [System.Web.HttpUtility]::UrlEncode("$((@("Config") + @($_.Type) + @(($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($AvailableMiner_Devices | Sort-Object Name | Where-Object Model -eq $Model).Name -join ';'))" } | Select-Object) -join '-') + @($MinerAPIPort) | Select-Object) -join '-').txt")
+                    $MinerThreadsConfigFileName = [System.Web.HttpUtility]::UrlEncode("$((@("ThreadsConfig") + @($_.Type) + @($_.Algorithm) + @(($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($AvailableMiner_Devices | Sort-Object Name | Where-Object Model -eq $Model).Name -join ';'))" } | Select-Object) -join '-') | Select-Object) -join '-').txt")
+                    $PlatformThreadsConfigFileName = [System.Web.HttpUtility]::UrlEncode("$((@("HwConfig") + @($_.Type) + @($_.Algorithm) + @(($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($AvailableMiner_Devices | Sort-Object Name | Where-Object Model -eq $Model).Name -join ';'))" } | Select-Object) -join '-') | Select-Object) -join '-').txt")
+                    $PoolFileName = [System.Web.HttpUtility]::UrlEncode("$((@("PoolConf") + @($($_.Algorithm).BaseName) + @($_.Algorithm) + @($Pool.User) + @($Pool.Pass) | Select-Object) -join '-').txt")
 
-                $Arguments = [PSCustomObject]@{ 
-                    PoolFile = [PSCustomObject]@{ 
-                        FileName = $PoolFileName
-                        Content  = [PSCustomObject]@{ 
-                            pool_list = @(
-                                [PSCustomObject]@{ 
-                                    pool_address    = "$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts | Select-Object -Last 1)"
-                                    wallet_address  = $AllMinerPools.($_.Algorithm).User
-                                    pool_password   = $AllMinerPools.($_.Algorithm).Pass
-                                    use_nicehash    = $($AllMinerPools.($_.Algorithm).BaseName -eq "NiceHash")
-                                    use_tls         = [Boolean]$AllMinerPools.($_.Algorithm).PoolPorts[1]
-                                    tls_fingerprint = ""
-                                    pool_weight     = 1
-                                    rig_id          = "$($AllMinerPools.($_.Algorithm).WorkerName)"
-                                }
-                            )
-                            currency = $(If ($Coins -icontains $AllMinerPools.($_.Algorithm).CoinName) { $AllMinerPools.($_.Algorithm).CoinName } Else { $Currency.($_.Algorithm) })
+                    $Arguments = [PSCustomObject]@{ 
+                        PoolFile = [PSCustomObject]@{ 
+                            FileName = $PoolFileName
+                            Content  = [PSCustomObject]@{ 
+                                pool_list = @(
+                                    [PSCustomObject]@{ 
+                                        pool_address    = "$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1)"
+                                        wallet_address  = $Pool.User
+                                        pool_password   = $Pool.Pass
+                                        use_nicehash    = $($Pool.BaseName -eq "NiceHash")
+                                        use_tls         = [Boolean]$Pool.PoolPorts[1]
+                                        tls_fingerprint = ""
+                                        pool_weight     = 1
+                                        rig_id          = "$($Pool.WorkerName)"
+                                    }
+                                )
+                                currency = $(If ($Coins -icontains $Pool.CoinName) { $Pool.CoinName } Else { $Currency.($_.Algorithm) })
+                            }
                         }
-                    }
-                    ConfigFile = [PSCustomObject]@{ 
-                        FileName = $ConfigFileName
-                        Content  = [PSCustomObject]@{ 
-                            call_timeout    = 10
-                            retry_time      = 10
-                            giveup_limit    = 0
-                            verbose_level   = 99
-                            print_motd      = $true
-                            h_print_time    = 60
-                            aes_override    = $null
-                            use_slow_memory = "warn"
-                            tls_secure_algo = $true
-                            daemon_mode     = $false
-                            flush_stdout    = $false
-                            output_file     = ""
-                            httpd_port      = [UInt16]$MinerAPIPort
-                            http_login      = ""
-                            http_pass       = ""
-                            prefer_ipv4     = $true
+                        ConfigFile = [PSCustomObject]@{ 
+                            FileName = $ConfigFileName
+                            Content  = [PSCustomObject]@{ 
+                                call_timeout    = 10
+                                retry_time      = 10
+                                giveup_limit    = 0
+                                verbose_level   = 99
+                                print_motd      = $true
+                                h_print_time    = 60
+                                aes_override    = $null
+                                use_slow_memory = "warn"
+                                tls_secure_algo = $true
+                                daemon_mode     = $false
+                                flush_stdout    = $false
+                                output_file     = ""
+                                httpd_port      = [UInt16]$MinerAPIPort
+                                http_login      = ""
+                                http_pass       = ""
+                                prefer_ipv4     = $true
+                            }
                         }
+                        Arguments = "--poolconf $PoolFileName --config $ConfigFileName$($_.Arguments) $MinerThreadsConfigFileName --noUAC --httpd $($MinerAPIPort)" -replace ' \s+'
+                        Devices  = @($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique)
+                        HwDetectArguments = "--poolconf $PoolFileName --config $ConfigFileName$($_.Arguments) $PlatformThreadsConfigFileName --httpd $($MinerAPIPort)" -replace ' \s+'
+                        MinerThreadsConfigFileName = $MinerThreadsConfigFileName
+                        Platform = $Platform
+                        PlatformThreadsConfigFileName = $PlatformThreadsConfigFileName
+                        Threads = 1
                     }
-                    Arguments = "--poolconf $PoolFileName --config $ConfigFileName$($_.Arguments) $MinerThreadsConfigFileName --noUAC --httpd $($MinerAPIPort)".trim()
-                    Devices  = @($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique)
-                    HwDetectArguments = "--poolconf $PoolFileName --config $ConfigFileName$($_.Arguments) $PlatformThreadsConfigFileName --httpd $($MinerAPIPort)".trim()
-                    MinerThreadsConfigFileName = $MinerThreadsConfigFileName
-                    Platform = $Platform
-                    PlatformThreadsConfigFileName = $PlatformThreadsConfigFileName
-                    Threads = 1
-                }
 
-                If ($AvailableMiner_Devices.PlatformId) { $Arguments.ConfigFile.Content | Add-Member "platform_index" (($AvailableMiner_Devices | Select-Object PlatformId -Unique).PlatformId) }
+                    If ($AvailableMiner_Devices.PlatformId) { $Arguments.ConfigFile.Content | Add-Member "platform_index" (($AvailableMiner_Devices | Select-Object PlatformId -Unique).PlatformId) }
 
-                [PSCustomObject]@{ 
-                    Algorithms  = @($_.Algorithm)
-                    API         = "Fireice"
-                    Arguments   = $Arguments | ConvertTo-Json -Depth 10 -Compress
-                    DeviceNames = $AvailableMiner_Devices.Name
-                    Fee         = @(0.02)
-                    MinerSet    = $_.MinerSet
-                    MinerUri    = "http://127.0.0.1:$($MinerAPIPort)/h"
-                    Name        = $Miner_Name
-                    Path        = $Path
-                    Port        = $MinerAPIPort
-                    Type        = $_.Type
-                    URI         = $Uri
-                    WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                    [PSCustomObject]@{ 
+                        API         = "Fireice"
+                        Arguments   = $Arguments | ConvertTo-Json -Depth 10 -Compress
+                        DeviceNames = $AvailableMiner_Devices.Name
+                        Fee         = @(0.02)
+                        MinerSet    = $_.MinerSet
+                        MinerUri    = "http://127.0.0.1:$($MinerAPIPort)/h"
+                        Name        = $Miner_Name
+                        Path        = $Path
+                        Port        = $MinerAPIPort
+                        Type        = $_.Type
+                        URI         = $Uri
+                        WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                        Workers     = @(@{ Pool = $Pool })
+                    }
                 }
             }
         }

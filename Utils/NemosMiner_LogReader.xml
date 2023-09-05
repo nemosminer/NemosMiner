@@ -15,7 +15,7 @@
       <BookmarkTextColor>Yellow</BookmarkTextColor>
       <BookmarkBackColor>DarkGreen</BookmarkBackColor>
       <Modeless>false</Modeless>
-      <Title>NemosMiner_2023-02-19.log</Title>
+      <Title>NemosMiner_????-??-??.log</Title>
       <WindowState>Maximized</WindowState>
       <WindowSize>
         <Width>1886</Width>
@@ -62,7 +62,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>Some miners binaries are missing</Keyword>
+          <Keyword>Some miners binaries are missing, starting downloader...</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>false</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
@@ -92,7 +92,7 @@
           <BackColor>#FFFF80</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Starting NemosMiner|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Stopping NemosMiner|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Pausing NemosMiner|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Using configuration file|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Web GUI and API.+ running</Keyword>
+          <Keyword>Starting NemosMiner|Using configuration file|Web GUI and API.+ running</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
@@ -102,7 +102,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>Started idle detection|Mining is suspended until system is idle again|Stopped idle detection</Keyword>
+          <Keyword>Started idle detection|Started idle detection|Mining is suspended until system is idle again|System was idle for</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
@@ -122,7 +122,7 @@
           <BackColor>#400040</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Started new cycle|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Collecting miner data while|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+:.Ending cycle</Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Started new cycle|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Collecting miner data while|enough samples for this cycle|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+:.+Ending cycle|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+:.+Exiting cycle</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>
@@ -142,7 +142,7 @@
           <BackColor>Black</BackColor>
         </Keyword>
         <Keyword>
-          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: (Starting miner|Dry run for miner) .*</Keyword>
+          <Keyword>^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Starting miner .+|^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \w+: Dry run .+</Keyword>
           <MatchCaseSensitive>false</MatchCaseSensitive>
           <MatchRegularExpression>true</MatchRegularExpression>
           <LogHitCounter>false</LogHitCounter>

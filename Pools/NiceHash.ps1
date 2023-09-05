@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\NiceHash.ps1
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 param(
@@ -38,13 +38,9 @@ $PoolVariant = If ($Variables.NiceHashWalletIsInternal) { "NiceHash Internal" } 
 $Fee = $PoolConfig.Variant.$PoolVariant.Fee
 $PayoutCurrency = $PoolConfig.Variant.$PoolVariant.PayoutCurrency
 $Wallet = $PoolConfig.Variant.$PoolVariant.Wallets.$PayoutCurrency
-$User = "$Wallet.$($PoolConfig.WorkerName -replace "^ID=")"
+$User = "$Wallet.$($PoolConfig.WorkerName -replace '^ID=')"
 
 If ($Wallet) { 
-
-    $StartTime = (Get-Date)
-
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
 
     $APICallFails = 0
 
@@ -106,9 +102,6 @@ If ($Wallet) {
             }
         }
     }
-
-    # Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 
 $Error.Clear()

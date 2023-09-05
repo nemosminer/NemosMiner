@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
@@ -32,35 +32,31 @@ $Path = ".\Bin\$($Name)\z-enemy.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Aergo";      MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo aergo --intensity 23 --statsavg 5" }
-#   [PSCustomObject]@{ Algorithm = "BCD";        MinMemGiB = 3;    Minerset = 3; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo bcd --statsavg 5" } # ASIC
-    [PSCustomObject]@{ Algorithm = "Bitcore";    MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(90, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo bitcore --intensity 22 --statsavg 5" }
-    [PSCustomObject]@{ Algorithm = "C11";        MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo c11 --intensity 24 --statsavg 5" }
-    [PSCustomObject]@{ Algorithm = "Hex";        MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo hex --intensity 24 --statsavg 5" }
-#   [PSCustomObject]@{ Algorithm = "KawPow";     MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo kawpow --statsavg 1 --diff-factor 5" } # No hashrate in time
-#   [PSCustomObject]@{ Algorithm = "Phi";        MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo phi --statsavg 5" } # ASIC
-    [PSCustomObject]@{ Algorithm = "Phi2";       MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo phi2 --statsavg 5" }
-    [PSCustomObject]@{ Algorithm = "Polytimos";  MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo poly --statsavg 5" }
-    [PSCustomObject]@{ Algorithm = "SkunkHash";  MinMemGiB = 3;    Minerset = 3; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo skunk --statsavg 1" } # No hashrate in time for old cards
-#   [PSCustomObject]@{ Algorithm = "Sonoa";      MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(90, 15); ExcludeGPUArchitecture = @(); Arguments = " --algo sonoa --statsavg 1" } # No hashrate in time
-    [PSCustomObject]@{ Algorithm = "Timetravel"; MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo timetravel --statsavg 5" }
-#   [PSCustomObject]@{ Algorithm = "Tribus";     MinMemGiB = 3;    MinerSet = 0; WarmupTimes = @(90, 15); ExcludeGPUArchitecture = @(); Arguments = " --algo tribus --statsavg 1" } # ASIC
-#   [PSCustomObject]@{ Algorithm = "X16r";       MinMemGiB = 3;    Minerset = 3; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @(); Arguments = " --algo x16r --statsavg 1" } # ASIC
-    [PSCustomObject]@{ Algorithm = "X16rv2";     MinMemGiB = 3;    MinerSet = 0; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo x16rv2 --statsavg 5" }
-    [PSCustomObject]@{ Algorithm = "X16s";       MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo x16s --statsavg 5" } # FPGA
-    [PSCustomObject]@{ Algorithm = "X17";        MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(120, 0); ExcludeGPUArchitecture = @(); Arguments = " --algo x17 --statsavg 1" }
-#   [PSCustomObject]@{ Algorithm = "Xevan";      MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(90, 0);  ExcludeGPUArchitecture = @(); Arguments = " --algo xevan --intensity 26 --diff-factor 1 --statsavg 1" } # No hashrate in time
+    [PSCustomObject]@{ Algorithm = "Aergo";      MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo aergo --intensity 23 --statsavg 5" }
+#   [PSCustomObject]@{ Algorithm = "BCD";        MinMemGiB = 3;    Minerset = 3; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo bcd --statsavg 5" } # ASIC
+    [PSCustomObject]@{ Algorithm = "Bitcore";    MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(90, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo bitcore --intensity 22 --statsavg 5" }
+    [PSCustomObject]@{ Algorithm = "C11";        MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo c11 --intensity 24 --statsavg 5" }
+    [PSCustomObject]@{ Algorithm = "Hex";        MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo hex --intensity 24 --statsavg 5" }
+#   [PSCustomObject]@{ Algorithm = "KawPow";     MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo kawpow --statsavg 1 --diff-factor 5" } # No hashrate in time
+#   [PSCustomObject]@{ Algorithm = "Phi";        MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo phi --statsavg 5" } # ASIC
+    [PSCustomObject]@{ Algorithm = "Phi2";       MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo phi2 --statsavg 5" }
+    [PSCustomObject]@{ Algorithm = "Polytimos";  MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo poly --statsavg 5" }
+    [PSCustomObject]@{ Algorithm = "SkunkHash";  MinMemGiB = 3;    Minerset = 3; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo skunk --statsavg 1" } # No hashrate in time for old cards
+#   [PSCustomObject]@{ Algorithm = "Sonoa";      MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(90, 15); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo sonoa --statsavg 1" } # No hashrate in time
+    [PSCustomObject]@{ Algorithm = "Timetravel"; MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo timetravel --statsavg 5" }
+#   [PSCustomObject]@{ Algorithm = "Tribus";     MinMemGiB = 3;    MinerSet = 0; WarmupTimes = @(90, 15); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo tribus --statsavg 1" } # ASIC
+#   [PSCustomObject]@{ Algorithm = "X16r";       MinMemGiB = 3;    Minerset = 3; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo x16r --statsavg 1" } # ASIC
+    [PSCustomObject]@{ Algorithm = "X16rv2";     MinMemGiB = 3;    MinerSet = 0; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo x16rv2 --statsavg 5" }
+    [PSCustomObject]@{ Algorithm = "X16s";       MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo x16s --statsavg 5" } # FPGA
+    [PSCustomObject]@{ Algorithm = "X17";        MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(120, 0); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo x17 --statsavg 1" }
+#   [PSCustomObject]@{ Algorithm = "Xevan";      MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(90, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo xevan --intensity 26 --diff-factor 1 --statsavg 1" } # No hashrate in time
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm) }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
 
 If ($Algorithms) { 
-
-    $Algorithms | Where-Object MinMemGiB | ForEach-Object { 
-        $_.MinMemGiB += $AllMinerPools.($_.Algorithm).DAGSizeGiB
-    }
 
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 
@@ -69,27 +65,32 @@ If ($Algorithms) {
 
         $Algorithms | ForEach-Object { 
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
+            $ExcludePools = $_.ExcludePools
+            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools)) { 
 
-                $Arguments = $_.Arguments
-                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
+                $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
+                If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
 
-                If ($AvailableMiner_Devices | Where-Object MemoryGiB -LE 2) { $Arguments = $Arguments -replace " --intensity [0-9\.]+" }
+                    $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 
-                [PSCustomObject]@{ 
-                    Algorithms  = @($_.Algorithm)
-                    API         = "Trex"
-                    Arguments   = ("$Arguments $(If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { "--no-cert-verify --url stratum+ssl" } Else { "--url stratum+tcp" })://$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts | Select-Object -Last 1) --user $($AllMinerPools.($_.Algorithm).User)$(If ($AllMinerPools.($_.Algorithm).WorkerName) { ".$($AllMinerPools.($_.Algorithm).WorkerName)" }) --pass $($AllMinerPools.($_.Algorithm).Pass) --api-bind 0 --api-bind-http $MinerAPIPort --retry-pause 1 --quiet --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
-                    DeviceNames = $AvailableMiner_Devices.Name
-                    Fee         = 0.01 # dev fee
-                    MinerSet    = $_.MinerSet
-                    MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
-                    Name        = $Miner_Name
-                    Path        = $Path
-                    Port        = $MinerAPIPort
-                    Type        = "NVIDIA"
-                    URI         = $Uri
-                    WarmupTimes = @($_.WarmupTimes) # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                    $Arguments = $_.Arguments
+                    If ($AvailableMiner_Devices | Where-Object MemoryGiB -LE 2) { $Arguments = $Arguments -replace ' --intensity [0-9\.]+' }
+
+                    [PSCustomObject]@{ 
+                        API         = "Trex"
+                        Arguments   = "$Arguments $(If ($Pool.PoolPorts[1]) { "--no-cert-verify --url stratum+ssl" } Else { "--url stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass) --api-bind 0 --api-bind-http $MinerAPIPort --retry-pause 1 --quiet --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
+                        DeviceNames = $AvailableMiner_Devices.Name
+                        Fee         = 0.01 # dev fee
+                        MinerSet    = $_.MinerSet
+                        MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
+                        Name        = $Miner_Name
+                        Path        = $Path
+                        Port        = $MinerAPIPort
+                        Type        = "NVIDIA"
+                        URI         = $Uri
+                        WarmupTimes = @($_.WarmupTimes) # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                        Workers     = @(@{ Pool = $Pool })
+                    }
                 }
             }
         }

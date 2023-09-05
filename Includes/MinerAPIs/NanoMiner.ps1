@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\NanoMiner.ps1
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 Class NanoMiner : Miner { 
@@ -64,7 +64,7 @@ Class NanoMiner : Miner {
         $Algorithms = @($Data.Algorithms | ForEach-Object { ($_ | Get-Member -MemberType NoteProperty).Name } | Select-Object -Unique)
 
         ForEach ($Algorithm in $Algorithms) { 
-            $HashRate_Name = Get-Algorithm $this.Algorithms[$Algorithms.IndexOf($Algorithm)]
+            $HashRate_Name = $this.Algorithms[$Algorithms.IndexOf($Algorithm)]
             $HashRate_Value = [Double]($Data.Algorithms.$Algorithm.Total.Hashrate | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
             $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 

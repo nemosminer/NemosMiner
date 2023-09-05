@@ -54,8 +54,8 @@
                       <label for="NiceHashWallet">NiceHash Bitcoin wallet address</label>
                       <input type="text" id="NiceHashWallet" name="NiceHashWallet" minlenght=26 maxlength=35 size=40>
                     </div>
-                    <div title="Select NiceHash wallet address type">
-                      <label title="Select NiceHash wallet type&#10;&#10;Note: Internal wallets have lower pool fees&#10;but you must register the with NiceHash" for="NiceHashWalletIsInternal">NiceHash Bitcoin wallet address is a NiceHash</label>
+                    <div title="Select NiceHash wallet type&#10;&#10;Note: Internal wallets have lower pool fees&#10;but you must register the with NiceHash">
+                      <label for="NiceHashWalletIsInternal">NiceHash Bitcoin wallet address is a NiceHash</label>
                       <select name="" id="NiceHashWalletIsInternal">
                         <option value=internal>internal</option>
                         <option value=external>external</option>
@@ -97,7 +97,7 @@
                     <!-- Currency Settings -->
                     <legend class=h6><b>Currency Settings</b></legend>
                     <div title="Main currency used for BTC conversion&#10;Power cost, profit and earnings are shown in this currency">Main currency
-                      <select id="Currency" name="Currency" style="margin-top: 0.2rem"></select>
+                      <select id="MainCurrency" name="MainCurrency" style="margin-top: 0.2rem"></select>
                     </div>
                     <div title="Default payout currency for all pools&#10;Important: Not all pools allow payouts in currencies other than BTC.&#10;Consult the pool API for more information&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">Default payout currency
                       <select id="PayoutCurrency" name="PayoutCurrency" style="margin-top: 0.2rem"></select>
@@ -172,9 +172,9 @@
                       </fieldset>
                       <br>
 
-                      <!-- Select Pools -->
+                      <!-- Pool Selection -->
                       <fieldset title="You cannot select multiple variants of the same pool">
-                        <legend class=h6><b>Select Pools</b></legend>
+                        <legend class=h6><b>Pool Selection</b></legend>
                         <div style="padding-top: 0.1rem" id="Pools"></div>
                       </fieldset>
                       <br>
@@ -208,10 +208,14 @@
                   </td>
 
                   <td>
-                    <!-- Miner and Algorithm Selection -->
-                    <legend class=h6><b>Miner and Algorithm Selection</b></legend>
+                    <!-- Miner Selection -->
+                    <legend class=h6><b>Miner Selection</b></legend>
                     <div style="padding-top: 0.3rem" title="NemosMiner will run separate miner instances per GPU device model.&#10;Recommended for rigs with mixed GPU device models of the same vendor installed, e.g. GTX 1060 & GTX 1070&#10;This will increase profitability&#10;&#10;Note: AMD, INTEL & NVIDIA GPU miners will always run as separate instances.">
                       <input type="checkbox" class="toggle-switch" id="MinerInstancePerDeviceModel" name="MinerInstancePerDeviceModel"> Run separate miner instance per GPU device model
+                    </div>
+                    <div style="padding-top: 0.6rem" title="Some miners / algorithms are incompatible with some pools.&#10;&#10;If a miner is not compatible with the only pool in the best pool list then the miner will not be available.&#10;This can impact profitability, but is less CPU heavy.&#10;&#10;This was the default algorithm for versions older than 5.x">
+                      <input type="checkbox" class="toggle-switch" id="MinerUseBestPoolsOnly" name="MinerUseBestPoolsOnly"> Miners will use only the best pools for mining
+                      
                     </div>
                     <div style="padding-top: 0.3rem" title="Select miner set to be used by NemosMiner">Use
                       <select name="" id="MinerSet" width="10">
@@ -224,11 +228,11 @@
                     <div style="padding-top: 0.3rem" title="List of miners to be excluded&#10;Values must be sparated by commas&#10;&#10;To exclude all version of a miner specify the short miner name, e.g. 'PhoenixMiner' (without '-v...')&#10;To exclude a specific miner version use the full miner name (incl. version information)&#10;"> Exclude miners
                       <input type="text" id="ExcludeMinerName" name="ExcludeMinerName" size=47>
                     </div>
-                    <div  style="padding-top: 0.2rem" title="'+[Algorithm]' to enable algorithm&#10;'-[Algorithm]' to disable algorithm&#10;Values must be sparated by commas&#10;Leave empty to use ALL available algorithms (not recommended as it may cause more switching)&#10;&#10;If '+' is used, then only the explicitly enabled algorithms are used&#10;If '-' is used, then all algorithms are used except the disabled ones&#10;You can either use '+' or '-'; you cannot combine both&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')"> Algorithms
+                    <div style="padding-top: 0.2rem" title="'+[Algorithm]' to enable algorithm&#10;'-[Algorithm]' to disable algorithm&#10;Values must be sparated by commas&#10;Leave empty to use ALL available algorithms (not recommended as it may cause more switching)&#10;&#10;If '+' is used, then only the explicitly enabled algorithms are used&#10;If '-' is used, then all algorithms are used except the disabled ones&#10;You can either use '+' or '-'; you cannot combine both&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')"> Incl. / excl. algorithms
                       <input type="text" id="Algorithm" name="Algorithm" size=30>
                       <button type="button" class="btn btn-light btn-sm" id="DefaultAlgorithm" name="DefaultAlgorithm" title="Load the default algorithm list&#10;for the selected pools">Load default algorithms</button>
                     </div>
-                    <div style="padding-top: 0.6rem" title="NemosMiner will disable all miners which sometimes mine to a miner developer wallet (a.k.a. comission or donation)">
+                    <div style="padding-top: 0.2rem" title="NemosMiner will disable all miners which sometimes mine to a miner developer wallet (a.k.a. comission or donation)">
                       <input type="checkbox" class="toggle-switch" id="DisableMinersWithFee" name="DisableMinersWithFee"> Disable miners with dev fees
                     </div>
                     <div style="padding-top: 0.6rem" title="NemosMiner will disable all dual algorithm miners&#10;(Note: This will enable single algorithm mining)">
@@ -236,6 +240,9 @@
                     </div>
                     <div style="padding-top: 0.6rem" title="NemosMiner will disable all single algorithm miners&#10;(Note: This will enable dual algorithm mining)">
                       <input type="checkbox" class="toggle-switch" id="DisableSingleAlgoMining" name="DisableSingleAlgoMining"> Disable single algorithm miners
+                    </div>
+                    <div style="padding-top: 0.2rem" title="'+[Currency]' to enable currency&#10;'-[Currency]' to disable currency&#10;Values must be sparated by commas&#10;Leave empty to use ALL available currencies&#10;&#10;If '+' is used, then only the explicitly enabled currencies are used&#10;If '-' is used, then all currencies are used except the disabled ones&#10;You can either use '+' or '-'; you cannot combine both&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')"> Incl. / excl. currencies
+                      <input type="text" id="Currency" name="Currency" size=30>
                     </div>
                     <br>
 
@@ -465,7 +472,7 @@
           <script type="text/javascript">
 
             const walletscontainer = document.getElementById('Wallets');
-            const fiatcurrencycontainer = document.getElementById('Currency');
+            const fiatcurrencycontainer = document.getElementById('MainCurrency');
             const payoutcurrencycontainer = document.getElementById('PayoutCurrency');
             const poolscontainer = document.getElementById('Pools');
             const regionscontainer = document.getElementById('Regions');
@@ -596,7 +603,7 @@
               $.each(fiatcurrencies, function(key, value) {
                 $('<option/>', { value: key, text: key + ' (' + value + ')' }).appendTo(fiatcurrencycontainer);
               });
-              document.getElementById('Currency').value = config.Currency.trim();
+              document.getElementById('MainCurrency').value = config.MainCurrency.trim();
               document.getElementById('ExtraCurrencies').value = config.ExtraCurrencies.toString().trim();
               document.getElementById('PayoutCurrency').value = config.PayoutCurrency.trim();
               if (config.UsemBTC) document.getElementById('UsemBTC').checked = config.UsemBTC;
@@ -664,7 +671,7 @@
                 }
               });
 
-              // Select Pools
+              // Pool Selection
               // Populate pool checkbox list
               $.ajax({
                 async: false,
@@ -768,8 +775,9 @@
                 document.getElementById(('region-europe').toLowerCase()).checked = true;
               }
 
-              // Miner and Algorithm Selection
+              // Miner Selection
               if (config.MinerInstancePerDeviceModel) document.getElementById('MinerInstancePerDeviceModel').checked = true;
+              if (config.MinerUseBestPoolsOnly) document.getElementById('MinerUseBestPoolsOnly').checked = true;
               if (parseInt(config.MinerSet) >= 0 && parseInt(config.MinerSet) <= 3) document.getElementById('MinerSet').value = config.MinerSet;
               else document.getElementById('MinerSet').value = 2;
               if (config.ExcludeMinerName) document.getElementById('ExcludeMinerName').value = (config.ExcludeMinerName).toString().trim();
@@ -788,6 +796,7 @@
               if (config.DisableMinersWithFee) document.getElementById('DisableMinersWithFee').checked = true;
               if (config.DisableDualAlgoMining) document.getElementById('DisableDualAlgoMining').checked = true;
               if (config.DisableSingleAlgoMining) document.getElementById('DisableSingleAlgoMining').checked = true;
+              if (config.Currency) document.getElementById('Currency').value = (config.Currency).toString().trim();
               // Dual AND single algorithm mining cannot be disabled at the same time
               $(document.getElementById('DisableDualAlgoMining')).click(function (event) {
                 if (document.getElementById('DisableDualAlgoMining').checked) document.getElementById('DisableSingleAlgoMining').checked = false;
@@ -1209,12 +1218,7 @@
                   }
                 },
                 invalidHandler: function(event, validator) {
-                  // 'this' refers to the form
-                  var errors = validator.numberOfInvalids();
-                  if (errors) {
-                    $("#div_messages").append('<div class="alert alert-danger" id="Error">Error saving data - fields with invalid data are marked in red.</div>');
-                    errors = null;
-                  }
+                  if (validator.numberOfInvalids()) $("#alerts").append('<div class="alert alert-danger alert-dismissible fade show" role="alert">Error saving data - fields with invalid data are marked in red.<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>')
                 },
                 submitHandler: function (form) {
                   document.body.style.cursor = 'wait';
@@ -1239,7 +1243,7 @@
                   config.ProHashingMiningMode = document.getElementById('ProHashingMiningMode').value;
 
                   // Currency settings
-                  config.Currency = document.getElementById('Currency').value.trim();
+                  config.MainCurrency = document.getElementById('MainCurrency').value.trim();
                   config.ExtraCurrencies = []; // Enforce array
                   if (document.getElementById('ExtraCurrencies').value) config.ExtraCurrencies = (document.getElementById('ExtraCurrencies').value).replace(" ", "").split(",");
                   config.PayoutCurrency = document.getElementById('PayoutCurrency').value;
@@ -1290,8 +1294,9 @@
                     if (document.getElementById('region-' + value.toLowerCase()).checked == true) config.Region = value;
                   });
 
-                  // Miner and Algorithm Selection
+                  // Miner Selection
                   config.MinerInstancePerDeviceModel = document.getElementById('MinerInstancePerDeviceModel').checked;
+                  config.MinerUseBestPoolsOnly = document.getElementById('MinerUseBestPoolsOnly').checked;
                   config.MinerSet = parseInt(document.getElementById('MinerSet').value);
                   config.ExcludeMinerName = []; // Enforce array
                   if (document.getElementById('ExcludeMinerName').value) config.ExcludeMinerName = document.getElementById('ExcludeMinerName').value.replace(' ', '').split(',');
@@ -1300,6 +1305,8 @@
                   config.DisableMinersWithFee = document.getElementById('DisableMinersWithFee').checked;
                   config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
                   config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
+                  config.Currency = []; // Enforce array
+                  if (document.getElementById('Currency').value) config.Currency = document.getElementById('Currency').value.replace(' ', '').split(',');
 
                   // Miner Runtime Settings
                   config.MinerWindowStyle = document.getElementById('MinerWindowStyle').value;
@@ -1409,10 +1416,6 @@
                   }
                 }
               });
-
-              window.setTimeout(function(){
-                $("#div_messages").remove();
-              }, 5000);
             });
           </script>
 <!-- End of page scripts 'configedit.html' -->

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\Hiveon.ps1
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 param(
@@ -37,10 +37,6 @@ $PoolConfig = $Variables.PoolsConfig.$Name
 
 If ($PoolConfig.Wallets) { 
 
-    $StartTime = (Get-Date)
-
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
-
     $APICallFails = 0
 
     Do {
@@ -56,7 +52,7 @@ If ($PoolConfig.Wallets) {
     If (-not $Request) { Return }
 
     $Request.cryptoCurrencies | Where-Object { $Variables.Rates.($_.name).BTC } | ForEach-Object { 
-        $Currency = "$($_.name)".Trim()
+        $Currency = "$($_.name)" -replace ' \s+'
         If ($Algorithm_Norm = Get-AlgorithmFromCurrency $Currency) { 
             $Divisor = [Double]$_.profitPerPower
 
@@ -97,9 +93,6 @@ If ($PoolConfig.Wallets) {
             }
         }
     }
-
-    # Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 
 $Error.Clear()

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Brains\ProHashing.ps1
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 using module ..\Includes\Include.psm1
@@ -78,7 +78,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
             $BasePrice = If ($AlgoData.$Algo.actual_last24h) { $AlgoData.$Algo.actual_last24h } Else { $AlgoData.$Algo.estimate_last24h }
             If ($AlgoData.$Algo.coins -eq 1) { 
                 $Currencies = @($CurrenciesData.PSObject.Properties.Name | Where-Object { $CurrenciesData.$_.algo -eq $Algo })
-                $Currency = If ($Currencies.Count -eq 1) { $($Currencies[0] -replace "-.+").Trim() } Else { "" }
+                $Currency = If ($Currencies.Count -eq 1) { $($Currencies[0] -replace '-.+' -replace ' \s+' -replace ' $') } Else { "" }
             }
             Else { 
                 $Currency = ""

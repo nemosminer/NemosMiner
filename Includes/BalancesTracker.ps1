@@ -19,8 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\BalancesTracker.ps1
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 using module .\Include.psm1
@@ -84,7 +84,7 @@ Do {
             $BalanceObjects = @(@($BalanceObjects + $BalancesData) | Where-Object Pool -notin @($Config.BalancesTrackerExcludePool) | Where-Object { $_.Unpaid -gt 0 -or $_.DateTime -gt $Now.AddDays(-7) } | Where-Object { $_.Wallet } | Group-Object Pool, Currency, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime -Bottom 1 })
 
             # Fix for pool reporting incorrect currency, e.g ZergPool ZER instead of BTC
-            $BalanceObjects = @($BalanceObjects | Where-Object { $_.Pool -match "^MiningDutch.*|^MiningPoolHub.*|$|^ProHashing.*$" }) + @($BalanceObjects | Where-Object { $_.Pool -notmatch "^MiningDutch.*|^MiningPoolHub.*|$|^ProHashing.*$" } | Group-Object Pool, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime -Bottom 1 })
+            $BalanceObjects = @($BalanceObjects | Where-Object { $_.Pool -match '^MiningDutch.*|^MiningPoolHub.*|$|^ProHashing.*$' }) + @($BalanceObjects | Where-Object { $_.Pool -notmatch "^MiningDutch.*|^MiningPoolHub.*|$|^ProHashing.*$" } | Group-Object Pool, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime -Bottom 1 })
 
             # Do not keep balances with 0
             $BalanceObjects = $BalanceObjects | Where-Object { $_.Balance -gt 0 }
@@ -100,27 +100,27 @@ Do {
 
                 $PayoutThresholdCurrency = $PoolBalanceObject.Currency
 
-                If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").Variant.($PoolBalanceObject.Pool).PayoutThreshold.$PayoutThresholdCurrency) -as [Double] }
-                If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").PayoutThreshold.$PayoutThresholdCurrency) -as [Double] }
+                If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace ' External$| Internal$').Variant.($PoolBalanceObject.Pool).PayoutThreshold.$PayoutThresholdCurrency) -as [Double] }
+                If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace ' External$| Internal$').PayoutThreshold.$PayoutThresholdCurrency) -as [Double] }
                 If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold.$PayoutThresholdCurrency) -as [Double] }
-                If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").PayoutThreshold."*".$PayoutThresholdCurrency) -as [Double] }
-                If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").PayoutThreshold."*") -as [Double] }
+                If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace ' External$| Internal$').PayoutThreshold."*".$PayoutThresholdCurrency) -as [Double] }
+                If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace ' External$| Internal$').PayoutThreshold."*") -as [Double] }
                 If (-not $PayoutThreshold) { 
-                    If ($PayoutThresholdCurrency = [String]($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").PayoutThreshold."*".Keys)) { 
-                        $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").PayoutThreshold."*".$PayoutThresholdCurrency) -as [Double]
+                    If ($PayoutThresholdCurrency = [String]($Config.PoolsConfig.($PoolBalanceObject.Pool -replace ' External$| Internal$').PayoutThreshold."*".Keys)) { 
+                        $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace ' External$| Internal$').PayoutThreshold."*".$PayoutThresholdCurrency) -as [Double]
                     }
                 }
 
                 If (-not $PayoutThreshold -and $PoolBalanceObject.Currency -eq "BTC") { 
                     $PayoutThresholdCurrency = "mBTC"
-                    If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").Variant.($PoolBalanceObject.Pool).PayoutThreshold.$PayoutThresholdCurrency) -as [Double] }
-                    If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").PayoutThreshold.$PayoutThresholdCurrency) -as [Double] }
+                    If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace ' External$| Internal$').Variant.($PoolBalanceObject.Pool).PayoutThreshold.$PayoutThresholdCurrency) -as [Double] }
+                    If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace ' External$| Internal$').PayoutThreshold.$PayoutThresholdCurrency) -as [Double] }
                     If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool).PayoutThreshold.$PayoutThresholdCurrency) -as [Double] }
-                    If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").PayoutThreshold."*".$PayoutThresholdCurrency) -as [Double] }
-                    If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").PayoutThreshold."*") -as [Double] }
+                    If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace ' External$| Internal$').PayoutThreshold."*".$PayoutThresholdCurrency) -as [Double] }
+                    If (-not $PayoutThreshold) { $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace ' External$| Internal$').PayoutThreshold."*") -as [Double] }
                     If (-not $PayoutThreshold) { 
-                        If ($PayoutThresholdCurrency = $Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").PayoutThreshold."*".Keys[0]) { 
-                            $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace " External$| Internal$").PayoutThreshold."*".$PayoutThresholdCurrency) -as [Double]
+                        If ($PayoutThresholdCurrency = $Config.PoolsConfig.($PoolBalanceObject.Pool -replace ' External$| Internal$').PayoutThreshold."*".Keys[0]) { 
+                            $PayoutThreshold = ($Config.PoolsConfig.($PoolBalanceObject.Pool -replace ' External$| Internal$').PayoutThreshold."*".$PayoutThresholdCurrency) -as [Double]
                         }
                     }
                 }
@@ -195,7 +195,7 @@ Do {
                             $PoolBalanceObject | Add-Member Earnings ([Double]($PoolBalanceObjects | Select-Object -Last 1).Earnings + $Delta) -Force
                         }
                     }
-                    ElseIf ($PoolBalanceObject.Pool -match "^ProHashing.*") { 
+                    ElseIf ($PoolBalanceObject.Pool -match '^ProHashing.*') { 
                         # ProHashing never reduces earnings
                         $Delta = $PoolBalanceObject.Balance - ($PoolBalanceObjects | Select-Object -Last 1).Balance
                         If ($PoolBalanceObject.Unpaid -lt ($PoolBalanceObjects | Select-Object -Last 1).Unpaid) { 

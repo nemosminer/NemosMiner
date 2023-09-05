@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Brains\ZPool.ps1
-Version:        4.3.6.2
+Version:        5.0.0.0
 Version date:   08 July 2023
 #>
 
@@ -72,7 +72,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
         # Add currency and convert to array for easy sorting
         $CurrenciesArray = [PSCustomObject[]]@()
         $CurrenciesData.PSObject.Properties.Name | Where-Object { $CurrenciesData.$_.algo } | Where-Object { $CurrenciesData.$_.name -ne "Hashtap" } | ForEach-Object { 
-            $CurrenciesData.$_ | Add-Member @{ Currency = If ($CurrenciesData.$_.symbol) { $CurrenciesData.$_.symbol -replace "-.+$", "" } Else { $_ -replace "-.+$", "" } } -Force
+            $CurrenciesData.$_ | Add-Member @{ Currency = If ($CurrenciesData.$_.symbol) { $CurrenciesData.$_.symbol -replace '-.+$' } Else { $_ -replace '-.+$' } } -Force
             $CurrenciesData.$_ | Add-Member @{ CoinName = If ($CurrenciesData.$_.name) { $CurrenciesData.$_.name } Else { $_ } } -Force
             $CurrenciesData.$_.PSObject.Properties.Remove("symbol")
             $CurrenciesData.$_.PSObject.Properties.Remove("name")
@@ -108,10 +108,10 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
             $BasePrice = If ($AlgoData.$Algo.actual_last24h) { $AlgoData.$Algo.actual_last24h } Else { $AlgoData.$Algo.estimate_last24h }
 
             If ($Currency = $AlgoData.$Algo.Currency) { 
-                If ($Variables.DagData.Algorithm.$Algo -and $AlgoData.$Algo.height -gt ($Variables.DAGData.Currency.$Currency.BlockHeight)) { 
+                If ($Variables.DAGdata.Algorithm.$Algo -and $AlgoData.$Algo.height -gt ($Variables.DAGdata.Currency.$Currency.BlockHeight)) { 
                     # Keep DAG data data up to date
-                    $Variables.DAGData.Currency[$Currency] = (Get-DAGData -Blockheight $AlgoData.$Algo.height -Currency $Currency -EpochReserve 2)
-                    $Variables.DAGData.Updated["$BrainName Brain"] = (Get-Date).ToUniversalTime()
+                    $Variables.DAGdata.Currency[$Currency] = (Get-DAGData -Blockheight $AlgoData.$Algo.height -Currency $Currency -EpochReserve 2)
+                    $Variables.DAGdata.Updated["$BrainName Brain"] = (Get-Date).ToUniversalTime()
                 }
                 $AlgoData.$Algo | Add-Member conversion_disabled $CurrenciesData.$Currency.conversion_disabled -Force
                 If ($CurrenciesData.$Currency.error) { 

@@ -142,8 +142,11 @@ New Configuration Items
 # If true NemosMiner will create separate miner instances per device model. This will increase profitability. (WIP: Need to change each miner to support this new feature)
   "MinerInstancePerDeviceModel": true, 
 
-# 0: Use best miner per algorithm and device only; 1: Use optimal miners (more than one per algorithm and device); 2: Use all miners per algorithm and device;
+# # Defines the set of available miners. 0: Benchmark best miner per algorithm and device only; 1: Benchmark optimal miners (more than one per algorithm and device); 2: Benchmark all miners per algorithm and device (except those in the unprofitable algorithms list); 3: Benchmark most miners per algorithm and device (even those in the unprofitable algorithms list, not recommended)
   "MinerSet": 1,
+
+# If true it will use only the best pools for mining. Some miners / algorithms are incompatible with some pools. In this case the miner will not be available. This can impact profitability, but is less CPU heavy. This was the default algorithm for versions older than 5.x
+  "MinerUseBestPoolsOnly": false, 
 
 # Show miner windows either "minimized": miner window is minimized, but accessible; "normal": miner windows are shown normally; "hidden": miners will run as a hidden background task and are not accessible (not recommended)
   "MinerWindowStyle": = "minimized",
@@ -181,13 +184,13 @@ New Configuration Items
 # Time (in seconds) until NemosMiner aborts the pool request (useful if a pool's API is stuck). Note: do not make this value too small or you will not get an pool data
   "PoolTimeout": 30,
 
-# Price of power per kW⋅h (in $Currency, e.g. CHF), valid from HH:mm (24hr format)
+# Price of power per kW⋅h (in $MainCurrency, e.g. CHF), valid from HH:mm (24hr format)
   "PowerPricekWh": {
     "00:00": 0.26,
     "12:00": 0.3
   },
 
-# Minimum profit threshold, if profit is less than the configured value (in $Currency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
+# Minimum profit threshold, if profit is less than the configured value (in $MainCurrency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
   "ProfitabilityThreshold": 0,
 
 # Static power usage per device in W, e.g. @{ "GPU#03" = 25, "GPU#04 = 55" } (in case HWiNFO cannot read power usage)
@@ -339,6 +342,7 @@ Removed Configuration Items
 
 Renamed configuration items (same functionality)
 ================================================
+  "Currency" renamed to "MainCurrency"
   "BalancesTrackerIgnorePool" renamed to "BalancesTrackerExcludePool"
   "Donate" renamed to "Donation"
   "MineWhenIdle" renamed to "IdleDetection"

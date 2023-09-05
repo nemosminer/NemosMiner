@@ -33,6 +33,7 @@
               <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#settings">Monitor Settings</button>
             </div>
             <table id="workers" class="table"
+              data-ajax-options="ajaxOptions"
               data-auto-refresh-status="true"
               data-auto-refresh="true"
               data-cache="false"
@@ -175,7 +176,7 @@
                   document.body.style.cursor = 'wait';
 
                   config.ReportToServer = document.getElementById('ReportToServer').checked;
-                  if ((document.getElementById('MonitoringServer').value).toString().trim() == "") document.getElementById('MonitoringServer').value = 'https://nemosminer.com';
+                  if ((document.getElementById('MonitoringServer').value).toString( -replace ' \s+' -replace ' $' == "") document.getElementById('MonitoringServer').value = 'https://nemosminer.com';
                   config.MonitoringServer = document.getElementById('MonitoringServer').value;
                   config.MonitoringUser = document.getElementById('MonitoringUser').value;
                   config.ShowWorkerStatus = document.getElementById('ShowWorkerStatus').checked;

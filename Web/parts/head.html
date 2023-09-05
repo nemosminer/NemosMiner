@@ -1,7 +1,6 @@
 <!doctype html>
 
 <html lang="en">
-
   <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
@@ -56,7 +55,11 @@
 <!-- Start of page scripts 'head.html' -->
   <script type='text/javascript'>
 
-function updateData(){ 
+    window.ajaxOptions = {
+      async: false
+    }
+
+    function updateData(){ 
       // Get current config
       $.ajax({
         async: false,
@@ -116,23 +119,23 @@ function updateData(){
               document.getElementById('btn-miningstart').disabled = true;
               document.getElementById('btn-miningstart').title = "Mining processes are already running.";
               document.getElementById('btn-miningpause').disabled = false;
-              document.getElementById('btn-miningpause').title = "Pause mining processes. Background processes remain running.";
+              document.getElementById('btn-miningpause').title = "Pause mining processes. Brain jobs and balances tracker remain running.";
               document.getElementById('btn-miningstop').disabled = false;
-              document.getElementById('btn-miningstop').title = "Stop mining processes. Background processes will also stop.";
+              document.getElementById('btn-miningstop').title = "Stop mining processes. Brain jobs and balances tracker will also stop.";
               break;
             case 'Paused':
               document.getElementById('btn-miningstart').disabled = false;
               document.getElementById('btn-miningstart').title ="Start the mining process.";
               document.getElementById('btn-miningpause').disabled = true;
-              document.getElementById('btn-miningpause').title = "Mining processes are stopped. Background processes remain running.";
+              document.getElementById('btn-miningpause').title = "Mining processes are stopped. Brain jobs and balances tracker remain running.";
               document.getElementById('btn-miningstop').disabled = false;
-              document.getElementById('btn-miningstop').title = "Stop mining processes. Background processes will also stop.";
+              document.getElementById('btn-miningstop').title = "Stop mining processes. Brain jobs and balances tracker will also stop.";
               break;
             case 'Idle':
               document.getElementById('btn-miningstart').disabled = false;
               document.getElementById('btn-miningstart').title ="Start the mining process.";
               document.getElementById('btn-miningpause').disabled = false;
-              document.getElementById('btn-miningpause').title = "Mining will not start. Background processes will start.";
+              document.getElementById('btn-miningpause').title = "Mining will not start. Brain jobs and balances tracker will start.";
               document.getElementById('btn-miningstop').disabled = true;
               document.getElementById('btn-miningstop').title = "All mining processes are already stopped.";
               break;
@@ -144,10 +147,10 @@ function updateData(){
     updateData();
 
   </script>
-<!-- End of page scripts 'head.html' -->
+<!-- Start of page scripts 'head.html' -->
   <body>
     <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-      <a class="navbar-brand" href="/">NemosMiner</a>
+      <a id=nav class="navbar-brand" href="/">NemosMiner</a>
       <div class="navbar-button">
         <button id="btn-miningstart" class="btn btn-success btn-lg" disabled>Start mining</button>
         <button id="btn-miningpause" class="btn btn-info btn-lg" disabled>Pause mining</button>
@@ -187,7 +190,7 @@ function updateData(){
                 </a>
               </li>
               <li class="nav-item" title="Shows a list of all miners">
-                <a id="navminers" class="nav-link" href="miners.html">
+                <a id="navminersall" class="nav-link" href="minersall.html">
                   <i class="fa-solid fa-person-digging" aria-hidden="true" style="color:rgb(0, 0, 0); margin-right:15px"></i>All Miners
                 </a>
               </li>
@@ -207,7 +210,7 @@ function updateData(){
                 </a>
               </li>
               <li class="nav-item" title="Shows a list of all pools">
-                <a id="navallpools" class="nav-link" href="pools.html">
+                <a id="navpoolsall" class="nav-link" href="poolsall.html">
                   <i class="fas fa-database" aria-hidden="true" style="color:rgb(0, 0, 0); margin-right:15px"></i>All Pools
                 </a>
               </li>
@@ -304,4 +307,4 @@ function updateData(){
               </div>
             </div>
           </div>
-          <div class="alert fixed-top" role="alert" id="div_messages"></div>
+          <div class="alert fixed-top" role="alert" id="alerts"></div>

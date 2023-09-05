@@ -8,6 +8,7 @@
           </div>
           <h3>Enabled Devices</h3>
           <table id="enableddevices" class="table"
+            data-ajax-options="ajaxOptions"
             data-cache="false"
             data-click-to-select="true"
             data-cookie="true"
@@ -33,13 +34,14 @@
             <thead>
               <tr>
                 <th data-field="state" data-checkbox="true"></th>
-                <th data-switchable="false" data-field="tStatusMessage" data-class="hidden statuscolorizer"></th>
+                <th data-switchable="false" data-field="tStatus" data-class="hidden statuscolor"></th>
                 <th data-field="Name" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
                 <th data-field="Model" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Model</th>
                 <th data-field="Vendor" data-sortable="true" data-filter-control="select">Vendor</th>
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
-                <th data-field="tStatus"data-sortable="true" data-filter-control="select" data-visible="false">Status</th>
-                <th data-field="Status" data-sortable="true" data-filter-control="select">Status Message</th>
+                <th data-field="tState"data-sortable="true" data-filter-control="select" data-visible="false">State</th>
+                <th data-field="Status"data-sortable="true" data-filter-control="select" data-visible="false">Status</th>
+                <th data-field="StatusInfo" data-sortable="true" data-filter-control="select">Status Info</th>
                 <th data-field="tMemory" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Memory</th>
                 <th data-field="tCores" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
                 <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
@@ -80,6 +82,7 @@
               <button id="btn-enable-device" class="btn btn-success" disabled>Enable Device</button>
           </div>
           <table id="disableddevices" class="table"
+            data-ajax-options="ajaxOptions"
             data-cache="false"
             data-click-to-select="true"
             data-cookie="true"
@@ -104,14 +107,15 @@
             >
             <thead>
               <tr>
-                <th data-switchable="false" data-field="tStatusMessage" data-class="hidden statuscolorizer"></th>
+                <th data-switchable="false" data-field="tStatus" data-class="hidden statuscolor"></th>
                 <th data-field="state" data-checkbox="true"></th>
                 <th data-field="Name" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
                 <th data-field="Model" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Model</th>
                 <th data-field="Vendor" data-sortable="true" data-filter-control="select">Vendor</th>
                 <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
-                <th data-field="tStatus"data-sortable="true" data-filter-control="select" data-visible="false">Status</th>
-                <th data-field="Status" data-sortable="true" data-filter-control="select">Status Message</th>
+                <th data-field="tState"data-sortable="true" data-filter-control="select" data-visible="false">State</th>
+                <th data-field="Status"data-sortable="true" data-filter-control="select" data-visible="false">Status</th>
+                <th data-field="StatusInfo" data-sortable="true" data-filter-control="select">Status Info</th>
                 <th data-field="tMemory" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Memory</th>
                 <th data-field="tCores" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
                 <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
@@ -150,6 +154,7 @@
           <div id="unsupporteddevices" style="visibility: hidden">
             <h3>Unsupported Devices</h3>
             <table id="unsupporteddevices" class="table"
+              data-ajax-options="ajaxOptions"
               data-cache="false"
               data-click-to-select="true"
               data-cookie="true"
@@ -173,13 +178,14 @@
               >
               <thead>
                 <tr>
-                  <th data-switchable="false" data-field="tStatusMessage" data-class="hidden statuscolorizer"></th>
+                  <th data-switchable="false" data-field="tStatus" data-class="hidden statuscolor"></th>
                   <th data-field="Name" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
                   <th data-field="Model" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Model</th>
                   <th data-field="Vendor" data-sortable="true" data-filter-control="select">Vendor</th>
                   <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
-                  <th data-field="tStatus"data-sortable="true" data-filter-control="select" data-visible="false">Status</th>
-                  <th data-field="Status" data-sortable="true" data-filter-control="select">Status Message</th>
+                  <th data-field="tState"data-sortable="true" data-filter-control="select" data-visible="false">State</th>
+                  <th data-field="Status"data-sortable="true" data-filter-control="select" data-visible="false">Status</th>
+                  <th data-field="StatusInfo" data-sortable="true" data-filter-control="select">Status Info</th>
                   <th data-field="tMemory" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Memory</th>
                   <th data-field="tCores" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
                   <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
@@ -241,9 +247,8 @@
 
                 if (item.Architecture) item.tArchitecture = item.Architecture;
 
-                // Format status message
-                item.tStatus = item.Status.replace(/ \{.+/g, '');
-                item.tStatusMessage = item.Status;
+                // Format status
+                item.tStatus = item.Status;
 
                 // Format device state
                 item.tState = enumdevicestatus[item.State];
@@ -255,33 +260,10 @@
               async: 'true',
               onPostBody: function () {
                 if (config.UseColorForMinerStatus == true ) {
-                  $(".statuscolorizer").each(function () {
-                    switch(this.innerText) {
-                      case this.innerText.match(/^Benchmarking|^Measuring/)?.input:
-                        $(this).parent('tr').addClass('miner-measuring');
-                        break;
-                      case this.innerText.match(/^Disabled/)?.input:
-                        $(this).parent('tr').addClass('miner-disabled');
-                        break;
-                      case this.innerText.match(/^Failed/)?.input:
-                        $(this).parent('tr').addClass('miner-failed');
-                        break;
-                      case this.innerText.match(/^Idle/)?.input:
-                        $(this).parent('tr').addClass('miner-idle');
-                        break;
-                      case this.innerText.match(/^Mining/)?.input:
-                        $(this).parent('tr').addClass('miner-running');
-                        break;
-                      case this.innerText.match(/^Stopping/)?.input:
-                        $(this).parent('tr').addClass('miner-stopping');
-                        break;
-                      case this.innerText.match(/^Unavailable/)?.input:
-                        $(this).parent('tr').addClass('miner-unavailable');
-                        break;
-                      case this.innerText.match(/^Warming/)?.input:
-                        $(this).parent('tr').addClass('miner-warmingup');
-                        break;
-                    };
+                  $(".statuscolor").each(function () {
+                    if (this.innerText) {
+                      $(this).parent('tr').addClass('color-' + this.innerText.toLowerCase());
+                    }
                   });
                 };
               },

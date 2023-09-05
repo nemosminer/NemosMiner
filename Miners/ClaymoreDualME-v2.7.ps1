@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $Variables.DriverVersion.CIM.AMD -le "20.45.01.28") -or $_.OpenCL.ComputeCapability -ge "5.0" })) { Return } # Only supports AMD drivers until 20.12.1
@@ -29,19 +29,16 @@ $Path = ".\Bin\$($Name)\EthDcrMiner64.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = [PSCustomObject[]]@( 
-    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD"; Fee = 0.006; MinMemGiB = 0.77; Minerset = 2; Tuning = " -rxboost 1"; WarmupTimes = @(45, 0); Arguments = " -platform 1" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD"; Fee = 0.006; MinMemGiB = 0.77; Minerset = 2; Tuning = " -rxboost 1"; WarmupTimes = @(60, 0); ExcludePools = @(); Arguments = " -platform 1" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
 
-    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA"; Fee = 0.006; MinMemGiB = 0.77; Minerset = 2; Tuning = " -strap 1"; WarmupTimes = @(45, 0); Arguments = " -platform 2" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA"; Fee = 0.006; MinMemGiB = 0.77; Minerset = 2; Tuning = " -strap 1"; WarmupTimes = @(60, 0); ExcludePools = @(); Arguments = " -platform 2" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm).PoolPorts }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
 
 If ($Algorithms) { 
-
-    $Algorithms | ForEach-Object { 
-        $_.MinMemGiB += $AllMinerPools.($_.Algorithm).DAGSizeGiB
-    }
 
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
@@ -50,41 +47,46 @@ If ($Algorithms) {
 
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-            If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB) { 
+            $ExcludePools = $_.ExcludePools
+            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools)) { 
 
-                $Arguments = $_.Arguments
-                $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)" -replace ' '
+                $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
+                If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $MinMemGiB) { 
 
-                $Arguments += Switch ($AllMinerPools.($_.Algorithm).Protocol) { 
-                    "ethproxy"     { " -esm 1"; Break }
-                    "ethstratum1"  { " -esm 4"; Break }
-                    "ethstratum2"  { " -esm 4"; Break }
-                    "ethstratumnh" { " -esm 4"; Break }
-                    Default        { " -esm 0" }
-                }
-                $Arguments += If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { " -epool stratum+ssl" } Else { " -epool stratum+tcp" }
-                $Arguments += "://$($AllMinerPools.($_.Algorithm).Host):$($AllMinerPools.($_.Algorithm).PoolPorts | Select-Object -Last 1) -ewal $($AllMinerPools.($_.Algorithm).User)"
-                $Arguments += " -epsw $($AllMinerPools.($_.Algorithm).Pass)"
-                If ($AllMinerPools.($_.Algorithm).WorkerName) { $Arguments += " -eworker $($AllMinerPools.($_.Algorithm).WorkerName)" }
-                If ($AllMinerPools.($_.Algorithm).PoolPorts[1]) { $Arguments += " -checkcert 0" }
+                    $Arguments = $_.Arguments
+                    $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 
-                # Apply tuning parameters
-                If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
+                    $Arguments += Switch ($Pool.Protocol) { 
+                        "ethproxy"     { " -esm 1"; Break }
+                        "ethstratum1"  { " -esm 4"; Break }
+                        "ethstratum2"  { " -esm 4"; Break }
+                        "ethstratumnh" { " -esm 4"; Break }
+                        Default        { " -esm 0" }
+                    }
+                    $Arguments += If ($Pool.PoolPorts[1]) { " -epool stratum+ssl" } Else { " -epool stratum+tcp" }
+                    $Arguments += "://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) -ewal $($Pool.User)"
+                    $Arguments += " -epsw $($Pool.Pass)"
+                    If ($Pool.WorkerName) { $Arguments += " -eworker $($Pool.WorkerName)" }
+                    If ($Pool.PoolPorts[1]) { $Arguments += " -checkcert 0" }
 
-                [PSCustomObject]@{ 
-                    Algorithms  = @($_.Algorithm)
-                    API         = "EthMiner"
-                    Arguments   = ("$Arguments -dbg -1 -wd 0 -retrydelay 3 -allpools 1 -allcoins 1 -mport -$MinerAPIPort -di $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')" -replace "\s+", " ").trim()
-                    DeviceNames = $AvailableMiner_Devices.Name
-                    Fee         = @($_.Fee) # Dev fee
-                    MinerSet     = $_.MinerSet
-                    MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
-                    Name        = $Miner_Name
-                    Path        = $Path
-                    Port        = $MinerAPIPort
-                    Type        = $_.Type
-                    URI         = $Uri
-                    WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                    # Apply tuning parameters
+                    If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
+
+                    [PSCustomObject]@{ 
+                        API         = "EthMiner"
+                        Arguments   = "$Arguments -dbg -1 -wd 0 -retrydelay 3 -allpools 1 -allcoins 1 -mport -$MinerAPIPort -di $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
+                        DeviceNames = $AvailableMiner_Devices.Name
+                        Fee         = @($_.Fee) # Dev fee
+                        MinerSet    = $_.MinerSet
+                        MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
+                        Name        = $Miner_Name
+                        Path        = $Path
+                        Port        = $MinerAPIPort
+                        Type        = $_.Type
+                        URI         = $Uri
+                        WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                        Workers     = @(@{ Pool = $Pool })
+                    }
                 }
             }
         }

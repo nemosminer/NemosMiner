@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\ZergPool.ps1
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 param(
@@ -45,10 +45,6 @@ $BrainDataFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Dir
 
 If ($DivisorMultiplier -and $Regions -and $Wallet) {
 
-    $StartTime = (Get-Date)
-
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': Start loop"
-
     $PayoutThreshold = $PoolConfig.PayoutThreshold.$PayoutCurrency
     If (-not $PayoutThreshold -and $PoolConfig.PayoutThreshold.mBTC) { $PayoutThreshold = $PoolConfig.PayoutThreshold.mBTC / 1000 }
     $PayoutThresholdParameter = ",pl=$([Double]$PayoutThreshold)"
@@ -69,7 +65,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
     $Request.PSObject.Properties.Name | Where-Object { $Request.$_.Updated -ge $Variables.Brains.$Name."Updated" } | ForEach-Object { 
         $Algorithm = $Request.$_.algo
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $Currency = "$($Request.$_.currency)".Trim() -replace "-.+$"
+        $Currency = "$($Request.$_.currency)" -replace ' \s+' -replace '-.+$'
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
         $Fee = $Request.$_.Fees / 100
 
@@ -100,7 +96,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
                     Fee                      = [Decimal]$Fee
                     Host                     = [String]$PoolHost
                     Name                     = [String]$PoolVariant
-                    Pass                     = "c=$PayoutCurrency$(If ($Currency -and -not $PoolConfig.ProfitSwitching) { ",mc=$Currency" }),ID=$($PoolConfig.WorkerName -replace "^ID=")$PayoutThresholdParameter" # Pool profit swiching breaks Option 2 (static coin), instead it will still send DAG data for any coin
+                    Pass                     = "c=$PayoutCurrency$(If ($Currency -and -not $PoolConfig.ProfitSwitching) { ",mc=$Currency" }),ID=$($PoolConfig.WorkerName -replace '^ID=')$PayoutThresholdParameter" # Pool profit swiching breaks Option 2 (static coin), instead it will still send DAG data for any coin
                     Port                     = [UInt16]$Request.$_.port
                     PortSSL                  = [UInt16]$Request.$_.tls_port
                     Price                    = [Double]$Stat.Live
@@ -108,7 +104,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
                     Reasons                  = $Reasons
                     Region                   = [String]$Region_Norm
                     SendHashrate             = $false
-                    SSLSelfSignedCertificate = $true
+                    SSLSelfSignedCertificate = $false
                     StablePrice              = [Double]$Stat.Week
                     Updated                  = [DateTime]$Request.$_.Updated
                     User                     = [String]$Wallet
@@ -119,9 +115,6 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
             }
         }
     }
-
-    # Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': $(Get-MemoryUsage)"
-    Write-Message -Level Debug "Pool '$($Name) (Variant $($PoolVariant))': End loop (Duration: $(((Get-Date) - $StartTime).TotalSeconds) sec.)"
 }
 
 $Error.Clear()

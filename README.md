@@ -2,7 +2,7 @@
 
 NemosMiner monitors mining pools in real-time in order to find the most profitable algorithm
 
-Updated 2023/08/25
+Updated 2023/09/05
 
 
 Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
@@ -64,25 +64,52 @@ Easy configuration, easy start:
 
       If '+' is used, then only the explicitly enabled algorithms are used
       If '-' is used, then all algorithms except the disabled ones are used
-      Leave empty to use ALL available algorithms (not recommended as it may cause more miner switching)
 
       Do not combine + and - for the same algo
 
       Examples:
-      Algorithm list = -x16r
+      Algorithm list = '-x16r'
       Will mine anything but x16r
 
-      Algorithm list = -x16r,-bcd
+      Algorithm list = '-x16r,-bcd'
       Will mine anything but x16r and bcd
 
       Algorithm list = +x16r
       Will mine only x16r
 
-      Algorithm list = +x16r,+bcd
+      Algorithm list = '+x16r,+bcd'
       Will mine only x16r and BCD
 
       Algorithm list blank
       Will mine anything
+
+
+   Currency selection / removal
+
+      +[currency] to enable currency
+      -[currency] to disable currency
+
+      If '+' is used, then only the explicitly enabled currencies are used
+      If '-' is used, then all currencies algorithms except the disabled ones are used
+
+      Do not combine + and - for the same algo
+
+      Examples:
+      Currency list = '-EVR'
+      Will mine anything but EVR
+
+      Algorithm list = '-EVR,-KIIRO'
+      Will mine anything but EVR and KIIRO
+
+      Algorithm list = '+EVR'
+      Will mine only EVR
+
+      Algorithm list = '+EVR,+KIIRO'
+      Will mine only EVR and KIIRO
+
+      Algorithm list blank
+      Will mine anything
+
 
    Pools Variants
 

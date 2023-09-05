@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\lolMiner.ps1
-Version:        4.3.6.2
-Version date:   2023/08/25
+Version:        5.0.0.0
+Version date:   2023/09/05
 #>
 
 Class TeamBlackMiner : Miner { 
@@ -49,7 +49,7 @@ Class TeamBlackMiner : Miner {
         ForEach ($Algorithm in $this.Algorithms) { 
             $HashRate_Name = [String]$Algorithm
             $Data.pool.PSObject.Properties.Name | ForEach-Object { 
-                If ((Get-Algorithm $Data.pool.$_.Algo) -eq $Algorithm) { 
+                If ((Get-Algorithm $Data.pool.$_.Algo) -eq ($Algorithm -replace '-\dGiB$')) { 
                     $HashRate_Value = [Double]($Data.pool.$_.total_hashrate)
                     $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 

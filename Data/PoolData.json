@@ -276,6 +276,7 @@
       "SampleSizeMinutes": 5,
       "UseTransferFile": false
     },
+    "Currency": [],
     "DefaultFee": 0.5,
     "ExcludeAlgorithm": [],
     "GuaranteedPayoutCurrencies": [

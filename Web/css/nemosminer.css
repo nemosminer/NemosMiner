@@ -180,29 +180,38 @@ legend {
 /*
 * Table colors
 */
-.miner-disabled {
+.color-benchmarking {
+  background-color: rgb(253, 235, 220);
+}
+.color-disabled {
   background-color: rgb(255, 243, 231);
 }
-.miner-unavailable {
-  background-color: rgb(254, 245, 220);
-}
-.miner-failed {
+.color-failed {
   background-color: rgb(255, 230, 230);
 }
-.miner-idle {
+.color-idle {
   background-color: rgb(230, 248, 252);
 }
-.miner-running {
-  background-color: rgb(232, 250, 232);
+.color-launched {
+  background-color: rgb(229, 255, 229);
 }
-.miner-warmingup {
-  background-color: rgb(253, 246, 241);
+.color-running {
+  background-color: rgb(212, 244, 212);
 }
-.miner-stopping {
+.color-starting {
   background-color: rgb(245, 255, 245);
 }
-.miner-measuring {
-  background-color: rgb(250, 230, 212);
+.color-stopped {
+  background-color: rgb(230, 248, 252);
+}
+.color-stopping {
+  background-color: rgb(245, 255, 245);
+}
+.color-unavailable {
+  background-color: rgb(254, 245, 220);
+}
+.color-warmingup {
+  background-color: rgb(231, 255, 230);
 }
 
 /*
