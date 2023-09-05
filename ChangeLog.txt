@@ -9,6 +9,17 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 
+ChangeLog NemosMiner 5.0.0.1 2023/09/05
+=======================================
+
+Enhancements:
+- Core: Do not create multiple miners per algorithm for CPU miners
+- Core: Minor code optimizations
+
+Fixes:
+- Web GUI: Rig monitor not working (Regression from 5.0.0.0)
+
+
 ChangeLog NemosMiner 5.0.0.0 2023/09/05
 =======================================
 
@@ -21,14 +32,14 @@ Enhancements:
 - API Server: Optimize miner queries
 - Core: Add miner version to added firewall rules
 - Core: Add coin name to miner info
-- Core: Miner code optimizations
+- Core: Minor code optimizations
 - Core: New configuration item 'MinerUseBestPoolsOnly'
 - Core: Pool data invalid for pools with multiple currencies (e.g. Ethash@MiningPoolHub)
 - Core: Rework donation randomizations (older versions did start donation just after midnight)
 - Core: Use separate stat files for DAG based algorithms (e.g. Ethash-2GiB, Ethash-3GiB)
 - Web GUI / Launched Miners: Show power usage live value
 - Web GUI: Fix 'web page is not responding' error if there are many records in a table
-- Web GUI: Launched Miners & Devices: Renamed column 'Satus Message' to 'Status Info'
+- Web GUI: Launched Miners & Devices: Renamed column 'Status Message' to 'Status Info'
 
 Fixes:
 - BZMiner miner APIs: Invalid power usage reported when more one GPU is installed
@@ -67,7 +78,6 @@ BzMiner-v16.0.2
 Rigel-v1.7.1
 SRBMinerMulti-v2.3.5
 TeamBlackMiner-v1.96
-
 
 ChangeLog NemosMiner 4.3.6.1 2023/08/18
 =======================================
