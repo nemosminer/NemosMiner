@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\include.ps1
-Version:        5.0.0.1
-Version date:   2023/09/05
+Version:        5.0.0.2
+Version date:   2023/09/08
 #>
 
 $Global:DebugPreference = "SilentlyContinue"
@@ -295,7 +295,6 @@ Class Miner {
             $this.DataReaderJob | Remove-Job -Force
             $this.DataReaderJob = $null
         }
-        $this.Data = @()
     }
 
     [Void]hidden RestartDataReader() { 
@@ -309,7 +308,6 @@ Class Miner {
         If ($this.Status -eq [MinerStatus]::DryRun) { 
             $this.StatusInfo = "Dry run '$($this.Info)'"
             Write-Message -Level Info "Dry run for miner '$($this.Info)'..."
-            $this.Data = @()
             $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
             $this.WorkersRunning = $this.Workers
         }
@@ -323,7 +321,7 @@ Class Miner {
         # Log switching information to .\Logs\SwitchingLog.csv
         [PSCustomObject]@{ 
             DateTime          = (Get-Date -Format o)
-            Action            = "Launched"
+            Action            = If ($this.Status -eq [MinerStatus]::DryRun) { "DryRun" } Else { "Launched" }
             Name              = $this.Name
             Accounts          = ($this.Workers.Pool.User | ForEach-Object { $_ -replace '\.*' } | Select-Object -Unique) -join "; "
             Algorithms        = $this.Workers.Pool.Algorithm -join "; "
@@ -372,7 +370,7 @@ Class Miner {
     }
 
     [Void]hidden StopMining() { 
-        If ($this.Status -eq [MinerStatus]::Running -or $this.Status -eq [MinerStatus]::DryRun) { 
+        If ($this.Status -in @([MinerStatus]::Running, [MinerStatus]::DryRun)) { 
             $this.StatusInfo = "Stopping miner '$($this.Info)'..."
             Write-Message -Level Info $this.StatusInfo
         }
@@ -401,7 +399,7 @@ Class Miner {
             $this.ProcessJob = $null
         }
 
-        $this.Status = If ($this.Status -eq [MinerStatus]::Running -or $this.Status -eq [MinerStatus]::DryRun) { [MinerStatus]::Idle } Else { [MinerStatus]::Failed }
+        $this.Status = If ($this.Status -in @([MinerStatus]::Running, [MinerStatus]::DryRun)) { [MinerStatus]::Idle } Else { [MinerStatus]::Failed }
 
         # Log switching information to .\Logs\SwitchingLog
         [PSCustomObject]@{ 
@@ -428,6 +426,7 @@ Class Miner {
 
         $this.StatusInfo = If ($this.Status -eq [MinerStatus]::Idle) { "Idle" }
         $this.SubStatus = $this.Status
+        $this.Data = @()
     }
 
     [MinerStatus]GetStatus() { 
@@ -618,7 +617,7 @@ Class Miner {
         $this.ReadPowerUsage = [Boolean]($this.Devices.ReadPowerUsage -notcontains $false)
 
         If ($CalculatePowerCost) { 
-            If ($Stat = Get-Stat -Name "$($this.Name)$(If ($this.Workers.Count -eq 1) { "_$($this.Workers[0].Pool.Algorithm)" })_PowerUsage") { 
+            If ($Stat = Get-Stat -Name "$($this.Name)$(If ($this.Algorithms.Count -eq 1) { "_$($this.Algorithms | Select-Object -Index 0)" })_PowerUsage") { 
                 $this.PowerUsage = $Stat.Week
                 $this.PowerCost = $this.PowerUsage * $PowerCostBTCperW
                 $this.Profit = $this.Earning - $this.PowerCost
@@ -3227,9 +3226,6 @@ Function Update-DAGdata {
     If (-not $Variables.DAGdata["Algorithm"]) { $Variables.DAGdata["Algorithm"] = [Ordered]@{ } }
     If (-not $Variables.DAGdata["Currency"]) { $Variables.DAGdata["Currency"] = [Ordered]@{ } }
     If (-not $Variables.DAGdata["Updated"]) { $Variables.DAGdata["Updated"] = [Ordered]@{ } }
-    # If (-not $Variables.DAGdata["Algorithm"]) { $Variables.DAGdata | Add-Member @{ Algorithm = [Ordered]@{ } } -Force }
-    # If (-not $Variables.DAGdata["Currency"]) { $Variables.DAGdata | Add-Member @{ Currency = [Ordered]@{ } } -Force }
-    # If (-not $Variables.DAGdata["Updated"]) { $Variables.DAGdata | Add-Member @{ Updated = [Ordered]@{ } } -Force }
 
     $Url = "https://whattomine.com/coins.json"
     If ($Variables.DAGdata.Updated.$Url -lt $Variables.ScriptStartTime -or $Variables.DAGdata.Updated.$Url -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 

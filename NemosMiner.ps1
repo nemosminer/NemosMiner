@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        5.0.0.1
-Version date:   2023/09/05
+Version:        5.0.0.2
+Version date:   2023/09/08
 #>
 
 using module .\Includes\Include.psm1
@@ -293,7 +293,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"5.0.0.1"
+    Version      = [System.Version]"5.0.0.2"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -783,8 +783,11 @@ Function MainLoop {
         # Refresh selected tab
         If ($LegacyGUIform) { Update-TabControl }
 
-        If ($LegacyGUIform) {
-            $MiningSummaryLabel.Text = $Variables.Summary -replace '<br>', '`n' -replace 'Power Cost', '`nPower Cost' -replace ' / ', '/' -replace '&ensp;', ' ' -replace '   ', '  '
+        If ($LegacyGUIform) { 
+            $MiningSummaryLabel.Text = ""
+            $MiningSummaryLabel.SendToBack()
+            ($Variables.Summary -replace 'Power Cost', '<br>Power Cost' -replace ' / ', '/' -replace '&ensp;', ' ' -replace '   ', '  ') -split '<br>' | ForEach-Object { $MiningSummaryLabel.Text += "`r`n$_" }
+            $MiningSummaryLabel.Text += "`r`n "
             If ($Variables.MiningProfit -ge 0) { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Green }
             ElseIf ($Variables.MiningProfit -lt 0) { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Red }
             Else { $MiningSummaryLabel.ForeColor = [System.Drawing.Color]::Black }
@@ -960,13 +963,13 @@ Function MainLoop {
 }
 
 While ($true) { 
-    # Show legacy GUI
     If ($Config.LegacyGUI) { 
         If (-not $LegacyGUIform.CanSelect) { 
             . .\Includes\LegacyGUI.ps1
             Form_Resize
-            $LegacyGUIform.ShowDialog() | Out-Null
         }
+        # Show legacy GUI
+        $LegacyGUIform.ShowDialog() | Out-Null
     }
     Else { 
         [Void](MainLoop)

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        5.0.0.1
+Version:        5.0.0.2
 Version date:   21 May 2023
 #>
 
@@ -555,7 +555,7 @@ Do {
                     Remove-Variable Sample, Samples -ErrorAction Ignore
                 }
 
-                If ($Miner.Status -eq [MinerStatus]::Running -or $Miner.Status -eq [MinerStatus]::DryRun) { 
+                If ($Miner.Status -in @([MinerStatus]::Running, [MinerStatus]::DryRun)) { 
                     If ($Miner.GetStatus() -eq [MinerStatus]::Running -or $Miner.Status -eq [MinerStatus]::DryRun) { 
                         $Miner.ContinousCycle ++
                         If ($Config.Watchdog) { 
@@ -587,7 +587,6 @@ Do {
                                     If ($LatestMinerSharesData.$_[1] -gt 0 -and $LatestMinerSharesData.$_[3] -gt [Int](1 / $Config.BadShareRatioThreshold) -and $LatestMinerSharesData.$_[1] / $LatestMinerSharesData.$_[3] -gt $Config.BadShareRatioThreshold) { 
                                         $Miner.StatusInfo = "Miner '$($Miner.Info)' stopped. Reasons: Too many bad shares (Shares Total = $($LatestMinerSharesData.$_[3]), Rejected = $($LatestMinerSharesData.$_[1]))."
                                         $Miner.SetStatus([MinerStatus]::Failed)
-                                        $Miner.Data = @() # Clear data because it may be incorrect caused by miner problem
                                         $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.StatusInfo = $Miner.StatusInfo }
                                     }
                                 }
@@ -656,7 +655,7 @@ Do {
                             # We don't want to store power usage if we have less than $MinDataSample, store even when fluctuating hash rates were recorded
                             If ($Miner.Data.Count -ge $Miner.MinDataSample -or $Miner.Activated -gt $Variables.WatchdogCount) { 
                                 If ([Double]::IsNaN($MinerPowerUsage )) { $MinerPowerUsage = 0 }
-                                $Stat_Name = "$($Miner.Name)$(If ($Miner.Workers.Count -eq 1) { "_$($Miner.Workers.Pool.Algorithm | Select-Object -First 1)" })_PowerUsage"
+                                $Stat_Name = "$($Miner.Name)$(If ($Miner.Workers.Count -eq 1) { "_$($Miner.Algorithms | Select-Object -First 1)" })_PowerUsage"
                                 # Always update power usage when benchmarking
                                 $Stat = Set-Stat -Name $Stat_Name -Value $MinerPowerUsage -Duration $Stat_Span -FaultDetection (-not $Miner.Benchmark -and ($Miner.Data.Count -lt $Miner.MinDataSample -or $Miner.Activated -lt $Variables.WatchdogCount)) -ToleranceExceeded ($Variables.WatchdogCount + 1)
                                 If ($Stat.Updated -gt $Miner.StatStart) { 
@@ -750,7 +749,7 @@ Do {
                 $Miners | Group-Object -Property Name | ForEach-Object { 
                     $MinersGroup = $MinersNew | Where-Object Name -eq $_.Name
                     $_.Group | ForEach-Object { 
-                        If ($_.KeepRunning = ($_.Status -eq [MinerStatus]::Running -or $_.Status -eq [MinerStatus]::DryRun) -and -not ($_.Benchmark -or $_.MeasurePowerUsage -or $Variables.DonationRunning) -and $_.ContinousCycle -lt $Config.MinCycle) { # Minimum numbers of full cycles not yet reached
+                        If ($_.KeepRunning = ($_.Status -in @([MinerStatus]::Running, [MinerStatus]::DryRun)) -and -not ($_.Benchmark -or $_.MeasurePowerUsage -or $Variables.DonationRunning) -and $_.ContinousCycle -lt $Config.MinCycle) { # Minimum numbers of full cycles not yet reached
                             $_.Restart = $false
                         }
                         Else { 
@@ -808,14 +807,12 @@ Do {
                         $WatchdogMinerCount = ($Variables.WatchdogCount, [Math]::Ceiling($Variables.WatchdogCount * $_.Group.Count / 2) | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum)
                         If ($MinersToSuspend = @($_.Group | Where-Object { @($Variables.WatchdogTimers | Where-Object MinerBaseName -EQ $_.BaseName | Where-Object MinerVersion -EQ $_.Version | Where-Object Kicked -LT $Variables.Timer).Count -gt $WatchdogMinerCount })) { 
                             $MinersToSuspend | ForEach-Object { 
-                                $_.Data = @() # Clear data because it may be incorrect caused by miner problem
                                 $_.Reasons += "Miner suspended by watchdog (all algorithms)"
                             }
                             Write-Message -Level Warn "Miner '$($_.Group[0].BaseName)-$($_.Group[0].Version) [all algorithms]' is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object MinerBaseName -EQ $_.Group[0].BaseName | Where-Object MinerVersion -EQ $_.Group[0].Version | Where-Object Kicked -LT $Variables.Timer).Kicked | Sort-Object -Bottom 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))."
                         }
                     }
                     $Miners | Where-Object { -not $_.Reasons } | Where-Object { @($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceNames -EQ $_.DeviceNames | Where-Object Algorithm -EQ ($_.Algorithm -replace '-\dGiB$') | Where-Object Kicked -LT $Variables.Timer).Count -ge $Variables.WatchdogCount } | ForEach-Object { 
-                        $_.Data = @() # Clear data because it may be incorrect caused by miner problem
                         $_.Reasons += "Miner suspended by watchdog (Algorithm $($_.Algorithm))"
                         Write-Message -Level Warn "Miner '$($_.Name) [$($_.Algorithm)]' is suspended by watchdog until $((($Variables.WatchdogTimers | Where-Object MinerName -EQ $_.Name | Where-Object DeviceNames -EQ $_.DeviceNames | Where-Object Algorithm -EQ ($_.Algorithm -replace '-\dGiB$') | Where-Object Kicked -LT $Variables.Timer).Kicked | Sort-Object -Bottom 1).AddSeconds($Variables.WatchdogReset).ToLocalTime().ToString("T"))."
                     }
@@ -1156,7 +1153,6 @@ Do {
                 $Miner.ValidDataSampleTimestamp = [DateTime]0
 
                 If ($Miner.Benchmark -or $Miner.MeasurePowerUsage) { 
-                    $Miner.Data = @() # When benchmarking clear data on each miner start
                     $Miner.Earning = [Double]::NaN
                     $Miner.Earning_Bias = [Double]::NaN
                     If ($Miner.MeasurePowerUsage) {

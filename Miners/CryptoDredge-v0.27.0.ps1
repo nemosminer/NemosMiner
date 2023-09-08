@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.1
-Version date:   2023/09/05
+Version:        5.0.0.2
+Version date:   2023/09/08
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" -and $_.Architecture -ne "Other" })) { Return }
@@ -43,9 +43,9 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightTurtle"; Fee = 0.01; MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(30, 0);  ExcludePools = @();                Arguments = " --algo cnturtle --intensity 8" }
     [PSCustomObject]@{ Algorithm = "CryptonightUpx";    Fee = 0.01; MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(30, 0);  ExcludePools = @();                Arguments = " --algo cnupx2 --intensity 8" }
     [PSCustomObject]@{ Algorithm = "CryptonightXhv";    Fee = 0.01; MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(75, 15); ExcludePools = @();                Arguments = " --algo cnhaven --intensity 8" }
-    [PSCustomObject]@{ Algorithm = "Ethash";            Fee = 0.01; MinMemGiB = 0.72; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @("MiningPoolHub"); Arguments = " --algo ethash" }
+    [PSCustomObject]@{ Algorithm = "Ethash";            Fee = 0.01; MinMemGiB = 1.25; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @("_MiningPoolHub"); Arguments = " --algo ethash" }
     [PSCustomObject]@{ Algorithm = "FiroPow";           Fee = 0.01; MinMemGiB = 1.25; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @();                Arguments = " --algo firopow" }
-    [PSCustomObject]@{ Algorithm = "KawPow";            Fee = 0.01; MinMemGiB = 0.72; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @();                Arguments = " --algo kawpow --intensity 8" } # TTMiner-v5.0.3 is fastest
+    [PSCustomObject]@{ Algorithm = "KawPow";            Fee = 0.01; MinMemGiB = 1.25; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @();                Arguments = " --algo kawpow --intensity 8" } # TTMiner-v5.0.3 is fastest
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet

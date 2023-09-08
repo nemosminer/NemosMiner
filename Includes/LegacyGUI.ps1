@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\LegacyGUI.psm1
-Version:        5.0.0.1
-Version date:   2023/09/05
+Version:        5.0.0.2
+Version date:   2023/09/08
 #>
 
 # [Void] [System.Windows.Forms.Application]::EnableVisualStyles()
@@ -39,16 +39,15 @@ $null = [ProcessDPI]::SetProcessDPIAware()
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
 $Colors = @{ }
-$Colors["benchmarking"] = [System.Drawing.Color]::FromArgb(253, 235, 220)
-$Colors["disabled"]     = [System.Drawing.Color]::FromArgb(255, 243, 231)
-$Colors["failed"]       = [System.Drawing.Color]::FromArgb(255, 230, 230)
-$Colors["idle"]         = [System.Drawing.Color]::FromArgb(230, 248, 252)
-$Colors["launched"]     = [System.Drawing.Color]::FromArgb(229, 255, 229)
-$Colors["running"]      = [System.Drawing.Color]::FromArgb(212, 244, 212)
-$Colors["starting"]     = [System.Drawing.Color]::FromArgb(245, 255, 245)
-$Colors["stopping"]     = [System.Drawing.Color]::FromArgb(245, 255, 245)
-$Colors["unavailable"]  = [System.Drawing.Color]::FromArgb(254, 245, 220)
-$Colors["warmingup"]    = [System.Drawing.Color]::FromArgb(231, 255, 230)
+$Colors["benchmarking"]                   = [System.Drawing.Color]::FromArgb(253, 235, 220)
+$Colors["disabled"]                       = [System.Drawing.Color]::FromArgb(255, 243, 231)
+$Colors["failed"]                         = [System.Drawing.Color]::FromArgb(255, 230, 230)
+$Colors["idle"] = $Colors["stopped"]      = [System.Drawing.Color]::FromArgb(230, 248, 252)
+$Colors["launched"]                       = [System.Drawing.Color]::FromArgb(229, 255, 229)
+$Colors["running"]                        = [System.Drawing.Color]::FromArgb(212, 244, 212)
+$Colors["starting"] = $Colors["stopping"] = [System.Drawing.Color]::FromArgb(245, 255, 245)
+$Colors["unavailable"]                    = [System.Drawing.Color]::FromArgb(254, 245, 220)
+$Colors["warmingup"]                      = [System.Drawing.Color]::FromArgb(231, 255, 230)
 
 Function Set-TableColor { 
 
@@ -83,7 +82,7 @@ Function CheckBoxSwitching_Click {
     If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { 
         $SwitchingLogLabel.Text = "Switching Log - Updated $((Get-ChildItem -Path ".\Logs\SwitchingLog.csv").LastWriteTime.ToString())"
 
-        $SwitchingDGV.DataSource = Get-Content ".\Logs\SwitchingLog.csv" | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 1000 | ForEach-Object { $_.Datetime = (Get-Date $_.DateTime).ToString("G"); $_ } | Select-Object @("DateTime", "Action", "Name", "Pools", "Algorithms", "Accounts", "Cycle", "Duration", "DeviceNames", "Type") | Out-DataTable
+        $SwitchingDGV.DataSource = Get-Content ".\Logs\SwitchingLog.csv" | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 1000 | ForEach-Object { $_.Datetime = (Get-Date $_.DateTime).ToString("G"); $_ } | Select-Object @("DateTime", "Action", "Name", "Pools", "Algorithms", "Accounts", "Cycle", "Duration", "DeviceNames", "Type") | Sort-Object -Property DateTime -Descending | Out-DataTable
         If ($SwitchingDGV.Columns) { 
             $SwitchingDGV.Columns[0].FillWeight = 50
             $SwitchingDGV.Columns[1].FillWeight = 50
@@ -118,14 +117,6 @@ Function Set-DataGridViewDoubleBuffer {
     $Type = $Grid.GetType();
     $PropInfo = $Type.GetProperty("DoubleBuffered", ("Instance", "NonPublic"))
     $PropInfo.SetValue($Grid, $Enabled, $null)
-}
-
-Function Table { 
-    If ($Config.UseColorForMinerStatus) { 
-        ForEach ($Row in $MinersDGV.Rows) { 
-            $Row.DefaultCellStyle.Backcolor = $Colors[$Row.DataBoundItem.Status]
-        }
-    }
 }
 
 Function Update-TabControl { 
@@ -164,7 +155,7 @@ Function Update-TabControl {
                     $LaunchedMinersDGV.DataSource = $Variables.MinersBest_Combo | Select-Object @(
                         @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join "; " } }
                         @{ Name = "Miner"; Expression = { $_.Name } }
-                        @{ Name = "Status"; Expression = { $_.SubStatus } }, 
+                        @{ Name = "Status"; Expression = { $_.Status } }, 
                         @{ Name = "Earning`r$($Config.MainCurrency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) {"{0:n$($Config.DecimalsMax)}" -f ($_.Earning * $Variables.Rates.BTC.($Config.MainCurrency)) } Else { "n/a" } } }
                         @{ Name = "Power Cost`r$($Config.MainCurrency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.PowerCost)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Powercost * $Variables.Rates.BTC.($Config.MainCurrency)) } Else { "n/a" } } }
                         @{ Name = "Profit`r$($Config.MainCurrency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.MainCurrency)) } Else { "n/a" } } }
@@ -371,7 +362,7 @@ Function Update-TabControl {
                         @{ Name = "Best"; Expression = { $_.Best } }, 
                         @{ Name = "Miner"; Expression = { $_.Name } }, 
                         @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join ', ' } }, 
-                        @{ Name = "Status"; Expression = { $_.SubStatus } }, 
+                        @{ Name = "Status"; Expression = { $_.Status } }, 
                         @{ Name = "Earning`r$($Config.MainCurrency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Earning * $Variables.Rates.BTC.($Config.MainCurrency)) } Else { "n/a" } } }, 
                         @{ Name = "Power Cost`r$($Config.MainCurrency)/day"; Expression = { If (-not [Double]::IsNaN($_.PowerCost)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Powercost * $Variables.Rates.BTC.($Config.MainCurrency)) } Else { "n/a" } } }, 
                         @{ Name = "Profit`r$($Config.MainCurrency)/day"; Expression = { If ($Variables.CalculatePowerCost -and -not [Double]::IsNaN($_.Profit)) { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.MainCurrency)) } Else { "n/a" } } }, 
@@ -703,7 +694,6 @@ $MiningSummaryLabel.Tag = ""
 $MiningSummaryLabel.TextAlign = "MiddleLeft"
 $MiningSummaryLabel.Visible = $true
 $LegacyGUIControls += $MiningSummaryLabel
-$Variables.TextBoxSystemLog
 $Tooltip.SetToolTip($MiningSummaryLabel, "Color legend:`rBlack: Mining is idle`rGreen: Mining is profitable`rRed: Mining NOT profitable")
 
 $ButtonPause = New-Object System.Windows.Forms.Button
@@ -832,13 +822,13 @@ $ContextMenuStrip.Add_ItemClicked(
                             $_.Benchmark = $true
                             $_.Restart = $true
                             $Data += "$($_.Name) ($($_.Algorithms -join ' & '))"
-                            ForEach ($Worker in $_.Workers) { 
-                                Remove-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
+                            ForEach ($Algorithm in $_.Algorithms) { 
+                                Remove-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
                                 $Worker.Hashrate = [Double]::NaN
                             }
                             Remove-Variable Worker
                             # Also clear power usage
-                            Remove-Stat -Name "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms[1])" })_PowerUsage"
+                            Remove-Stat -Name "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms | Select-Object -Index 0)" })_PowerUsage"
                             $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
 
                             $_.Reasons = @($_.Reasons | Where-Object { $_ -ne "Disabled by user" })
@@ -852,7 +842,7 @@ $ContextMenuStrip.Add_ItemClicked(
                     If ($Data) { 
                         $Data = $Data | Sort-Object -Unique
                         Write-Message -Level Verbose "GUI: Re-benchmark triggered for $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
-                        $Data += "`r$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-benchmark."
+                        $Data += "`r`r$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-benchmark."
                         Update-TabControl
                     }
                     Break
@@ -874,7 +864,7 @@ $ContextMenuStrip.Add_ItemClicked(
                                 $_.Activated = 0 # To allow 3 attempts
                             }
                             $_.PowerUsage = [Double]::NaN
-                            $Stat_Name = "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms)" })"
+                            $Stat_Name = "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms | Select-Object -Index 0)" })"
                             $Data += "$Stat_Name"
                             Remove-Stat -Name "$($Stat_Name)_PowerUsage"
                             $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
@@ -885,7 +875,7 @@ $ContextMenuStrip.Add_ItemClicked(
                     If ($Data) { 
                         $Data = $Data | Sort-Object -Unique
                         Write-Message -Level Verbose "GUI: Re-measure power usage triggered for $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
-                        $Data += "`r$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-measure power usage."
+                        $Data += "`r`r$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-measure power usage."
                         Update-TabControl
                     }
                     Break
@@ -923,7 +913,7 @@ $ContextMenuStrip.Add_ItemClicked(
                     If ($Data) { 
                         $Data = $Data | Sort-Object -Unique
                         Write-Message -Level Verbose "GUI: Marked $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" }) as failed."
-                        $Data += "`r$(If ($Data.Count -eq 1) { "The miner is" } Else { "$($Data.Count) miners are " }) marked as failed."
+                        $Data += "`r`r$(If ($Data.Count -eq 1) { "The miner is" } Else { "$($Data.Count) miners are " }) marked as failed."
                         Update-TabControl
                     }
                     Break
@@ -955,7 +945,7 @@ $ContextMenuStrip.Add_ItemClicked(
                     If ($Data) { 
                         $Data = $Data | Sort-Object -Unique
                         Write-Message -Level Verbose "GUI: Disabled $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
-                        $Data += "`r$(If ($Data.Count -eq 1) { "The miner is" } Else { "$($Data.Count) miners are " }) disabled."
+                        $Data += "`r`r$(If ($Data.Count -eq 1) { "The miner is" } Else { "$($Data.Count) miners are " }) disabled."
                         Update-TabControl
                     }
                     Break
@@ -985,7 +975,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "$($Data.Count) miner $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`r$Message"
+                        $Data += "`r`r$Message"
                     }
                     Else { 
                         $Data = "No matching watchdog timers found."
@@ -1015,7 +1005,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "Pool stats for $($Data.Count) $(If ($Data.Count -eq 1) { "pool" } Else { "pools" }) reset."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`r$Message"
+                        $Data += "`r`r$Message"
                         Update-TabControl
                     }
                     Break
@@ -1044,7 +1034,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "$($Data.Count) miner $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`r$Message"
+                        $Data += "`r`r$Message"
                     }
                     Else { 
                         $Data = "No matching watchdog timers found."
@@ -1358,7 +1348,7 @@ $WorkersDGV.Location = [System.Drawing.Point]::new(6, ($WorkersLabel.Height + 8)
 $WorkersDGV.ReadOnly = $true
 $WorkersDGV.RowHeadersVisible = $false
 $WorkersDGV.Add_Sorted(
-    { Set-WorkerColor }
+    { Set-TableColor -DataGridView $WorkersDGV }
 )
 Set-DataGridViewDoubleBuffer -Grid $WorkersDGV -Enabled $true
 $RigMonitorPageControls += $WorkersDGV

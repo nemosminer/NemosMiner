@@ -17,19 +17,19 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.1
-Version date:   2023/09/05
+Version:        5.0.0.2
+Version date:   2023/09/08
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "NVIDIA" -and $_.OpenCL.DriverVersion -ge "450.80.02" })) { Return }
 
-$URI = "https://github.com/OneZeroMiner/onezerominer/releases/download/v1.2.3/onezerominer-win64-1.2.3.zip"
+$URI = "https://github.com/OneZeroMiner/onezerominer/releases/download/v1.2.4/onezerominer-win64-1.2.4.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\onezerominer.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = [PSCustomObject[]]@( 
-    [PSCustomObject]@{ Algorithm = "DynexSolve"; Fee = @(0.03); MinMemGiB = 2; Minerset = 2; WarmupTimes = @(180, 0); ExcludeGPUArchitecture = @(); ExcludePools = @("ZergPool"); Arguments = @(" --algo dynex") }
+    [PSCustomObject]@{ Algorithm = "DynexSolve"; Fee = @(0.03); MinMemGiB = 2; Minerset = 0; WarmupTimes = @(180, 0); ExcludeGPUArchitecture = @(); ExcludePools = @("ZergPool"); Arguments = @(" --algo dynex") }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet

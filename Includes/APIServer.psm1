@@ -18,13 +18,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\APIServer.psm1
-Version:        5.0.0.1
-Version date:   2023/09/05
+Version:        5.0.0.2
+Version date:   2023/09/08
 #>
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.5.3.1"
+    $APIVersion = "0.5.3.2"
 
     If ($Variables.APIRunspace.AsyncObject.IsCompleted -or $Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
         Stop-APIServer
@@ -108,7 +108,7 @@ Function Start-APIServer {
                             # Parse any parameters in the URL - $Request.Url.Query looks like "+ ?a=b&c=d&message=Hello%20world"
                             # Decode any url escaped characters in the key and value
                             $Parameters = @{ }
-                            $Request.Url.Query -replace "\?", "" -split "&" | Foreach-Object { 
+                            $Request.Url.Query -replace '\?' -split "&" | Foreach-Object { 
                                 $Key, $Value = $_ -split "="
                                 # Decode any url escaped characters in the key and value
                                 $Key = [URI]::UnescapeDataString($Key)
@@ -273,7 +273,7 @@ Function Start-APIServer {
                                             $Data += "`n`nConfiguration saved to '$($Variables.ConfigFile)'.`nIt will become active in next cycle."
                                             $Variables.Devices | Where-Object Name -in $Values | ForEach-Object { 
                                                 $_.State = [DeviceState]::Enabled
-                                                If ($_.Status -like "* {*@*}; will get disabled at end of cycle") { $_.Status = $_.Status -replace "; will get disabled at end of cycle" }
+                                                If ($_.Status -like "* {*@*}; will get disabled at end of cycle") { $_.Status = $_.Status -replace '; will get disabled at end of cycle' }
                                                 Else { $_.Status = "Idle" }
                                             }
                                             Write-Message -Level Verbose "Web GUI: Device$(If ($Values.Count -ne 1) { "s" } ) '$($Values -join ', ')' enabled. Configuration file '$($Variables.ConfigFile)' updated."
@@ -303,7 +303,7 @@ Function Start-APIServer {
                                         }
                                         Else { 
                                             $_.State = [DeviceState]::Enabled
-                                            If ($_.Status -like "*; will get disabled at end of cycle") { $_.Status = $_.Status -replace "; will get disabled at end of cycle" } 
+                                            If ($_.Status -like "*; will get disabled at end of cycle") { $_.Status = $_.Status -replace '; will get disabled at end of cycle' } 
                                             If ($_.Status -like "Disabled *") { $_.Status = "Idle" }
                                         }
                                     }
@@ -530,7 +530,7 @@ Function Start-APIServer {
                                             }
                                             Remove-Variable Worker
                                             # Also clear power usage
-                                            Remove-Stat -Name "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms[1])" })_PowerUsage"
+                                            Remove-Stat -Name "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms | Select-Object -Index 0)" })_PowerUsage"
                                             $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
 
                                             $_.Reasons = @($_.Reasons | Where-Object { $_ -ne "Disabled by user" })
@@ -556,7 +556,7 @@ Function Start-APIServer {
                                                 $_.Activated = 0 # To allow 3 attempts
                                             }
                                             $_.PowerUsage = [Double]::NaN
-                                            $Stat_Name = "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms)" })"
+                                            $Stat_Name = "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms | Select-Object -Index 0)" })"
                                             $Data += "$Stat_Name`n"
                                             Remove-Stat -Name "$($Stat_Name)_PowerUsage"
                                             $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
@@ -626,7 +626,7 @@ Function Start-APIServer {
                             }
                             "/functions/variables/get" { 
                                 If ($Key) { 
-                                    $Data = $Variables.($Key -replace '\\|/','.' -split '\.' | Select-Object -Last 1) | Get-SortedObject | ConvertTo-Json -Depth 10
+                                    $Data = $Variables.($Key -replace '\\|/', '.' -split '\.' | Select-Object -Last 1) | Get-SortedObject | ConvertTo-Json -Depth 10
                                 }
                                 Else { 
                                     $Data = $Variables.psBase.Keys | Sort-Object | ConvertTo-Json -Depth 1
@@ -984,14 +984,14 @@ Function Start-APIServer {
                                 $Workers = [System.Collections.ArrayList]@(
                                     $Variables.Workers | Select-Object @(
                                         @{ Name = "Algorithm"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join "<br>" } }, 
-                                        @{ Name = "Benchmark Hashrate"; Expression = { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { If ([Double]$_ -gt 0) { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " } Else { "-" } }) -join " & " }) -join "<br>" } }, 
+                                        @{ Name = "Benchmark Hashrate"; Expression = { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { If ([Double]$_ -gt 0) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "-" } }) -join " & " }) -join "<br>" } }, 
                                         @{ Name = "Currency"; Expression = { $_.Data.Currency | Select-Object -Unique } }, 
                                         @{ Name = "EstimatedEarning"; Expression = { [Decimal](($_.Data.Earning | Measure-Object -Sum | Select-Object -ExpandProperty Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
                                         @{ Name = "EstimatedProfit"; Expression = { [Decimal]($_.Profit * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
                                         @{ Name = "LastSeen"; Expression = { "$($_.date)" } }, 
-                                        @{ Name = "Live Hashrate"; Expression = { ($_.data | ForEach-Object { ($_.CurrentSpeed | ForEach-Object { If ([Double]$_ -gt 0) { "$($_ | ConvertTo-Hash)/s" -replace "\s+", " " } Else { "-" } }) -join " & " }) -join "<br>" } }, 
+                                        @{ Name = "Live Hashrate"; Expression = { ($_.data | ForEach-Object { ($_.CurrentSpeed | ForEach-Object { If ([Double]$_ -gt 0) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "-" } }) -join " & " }) -join "<br>" } }, 
                                         @{ Name = "Miner"; Expression = { $_.data.name -join '<br/>'} }, 
-                                        @{ Name = "Pool"; Expression = { ($_.data | ForEach-Object { ($_.Pool -split "," | ForEach-Object { $_ -replace "Internal$", " (Internal)" -replace "External", " (External)" }) -join " & "}) -join "<br>" } }, 
+                                        @{ Name = "Pool"; Expression = { ($_.data | ForEach-Object { ($_.Pool -split "," | ForEach-Object { $_ -replace 'Internal$', ' (Internal)' -replace 'External', ' (External)' }) -join " & "}) -join "<br>" } }, 
                                         @{ Name = "Status"; Expression = { $_.status } }, 
                                         @{ Name = "Version"; Expression = { $_.version } }, 
                                         @{ Name = "Worker"; Expression = { $_.worker } }

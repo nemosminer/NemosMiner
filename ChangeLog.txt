@@ -9,6 +9,22 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 
+ChangeLog NemosMiner 5.0.0.2 2023/09/08
+=======================================
+
+Enhancements:
+- Core: Minor code optimizations, clear miner data when miner is stopped
+- Legacy GUI: Make mining summary output multi-line
+- Legacy GUI: Sort switching log descending
+
+Fixes:
+- Web GUI & Legacy GUI: 'Re-Measure Powerusage' not working (Regression from 5.0.0.0)
+
+Miner updates:
+- OneZeroMiner-v1.2.4
+- TTMiner-v2023.4.0
+
+
 ChangeLog NemosMiner 5.0.0.1 2023/09/05
 =======================================
 
