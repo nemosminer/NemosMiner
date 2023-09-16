@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.2
-Version date:   2023/09/08
+Version:        5.0.0.3
+Version date:   2023/09/15
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.CUDAVersion -ge "10.0") } )) { Return }
@@ -69,9 +69,9 @@ If ($Algorithms) {
 
                     $Arguments = $_.Arguments
                     $Arguments += Switch ($Pool.Protocol) { 
-                        "ethstratum1"  { " --url stratum"; Break }
-                        "ethstratum2"  { " --url nicehash"; Break }
-                        "ethstratumnh" { " --url nicehash"; Break }
+                        "ethstratum1"  { " --url stratum" }
+                        "ethstratum2"  { " --url nicehash" }
+                        "ethstratumnh" { " --url nicehash" }
                         Default        { " --url stratum" }
                     }
                     $Arguments += If ($Pool.PoolPorts[1]) { "+ssl://" } Else  { "+tcp://" }

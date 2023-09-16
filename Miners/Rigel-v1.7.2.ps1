@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.2
-Version date:   2023/09/08
+Version:        5.0.0.3
+Version date:   2023/09/15
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
@@ -73,7 +73,7 @@ If ($Algorithms) {
             $ExcludePools = $_.ExcludePools
             ForEach ($Pool0 in ($MinerPools[0][$_.Algorithms[0]] | Where-Object BaseName -notin $ExcludePools[0])) { 
                 ForEach ($Pool1 in ($MinerPools[1][$_.Algorithms[1]] | Where-Object BaseName -notin $ExcludePools[1])) { 
-                    $Pools = @($Pool0, $Pool1)
+                    $Pools = @($Pool0, $Pool1 | Where-Object { $_ })
 
                     $MinMemGiB = $_.MinMemGiB + $Pool0.DAGSizeGiB
                     If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
@@ -117,7 +117,7 @@ If ($Algorithms) {
                             Type        = "NVIDIA"
                             URI         = $Uri
                             WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
-                            Workers     = @($Pool0, $Pool1 | Where-Object { $_ } | ForEach-Object { @{ Pool = $_ } })
+                            Workers     = @($Pools | ForEach-Object { @{ Pool = $_ } })
                         }
                     }
                 }

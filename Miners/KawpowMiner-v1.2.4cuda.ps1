@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.2
-Version date:   2023/09/08
+Version:        5.0.0.3
+Version date:   2023/09/15
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
@@ -54,9 +54,9 @@ If ($Algorithms) {
                     $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 
                     $Protocol = Switch ($Pool.Protocol) { 
-                        "ethproxy"     { "stratum1"; Break }
-                        "ethstratum1"  { "stratum2"; Break }
-                        "ethstratum2"  { "stratum2"; Break }
+                        "ethproxy"     { "stratum1" }
+                        "ethstratum1"  { "stratum2" }
+                        "ethstratum2"  { "stratum2" }
                         Default        { "stratum" }
                     }
                     $Protocol += If ($Pool.PoolPorts[1]) { "+tls" } Else { "+tcp" }

@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.2
-Version date:   2023/09/08
+Version:        5.0.0.3
+Version date:   2023/09/15
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $Variables.DriverVersion.CIM.AMD -le "20.45.01.28") -or $_.OpenCL.ComputeCapability -ge "5.0" })) { Return } # Only supports AMD drivers until 20.12.1
@@ -57,10 +57,10 @@ If ($Algorithms) {
                     $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 
                     $Arguments += Switch ($Pool.Protocol) { 
-                        "ethproxy"     { " -esm 1"; Break }
-                        "ethstratum1"  { " -esm 4"; Break }
-                        "ethstratum2"  { " -esm 4"; Break }
-                        "ethstratumnh" { " -esm 4"; Break }
+                        "ethproxy"     { " -esm 1" }
+                        "ethstratum1"  { " -esm 4" }
+                        "ethstratum2"  { " -esm 4" }
+                        "ethstratumnh" { " -esm 4" }
                         Default        { " -esm 0" }
                     }
                     $Arguments += If ($Pool.PoolPorts[1]) { " -epool stratum+ssl" } Else { " -epool stratum+tcp" }

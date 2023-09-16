@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\include.ps1
-Version:        5.0.0.2
-Version date:   2023/09/08
+Version:        5.0.0.3
+Version date:   2023/09/15
 #>
 
 $Global:DebugPreference = "SilentlyContinue"
@@ -138,7 +138,7 @@ Class Pool {
     [Double]$Price
     [Double]$Price_Bias
     [String]$Protocol
-    [String[]]$Reasons = @()
+    [System.Collections.Generic.List[String]]$Reasons = @()
     [String]$Region
     [Boolean]$SendHashrate # If true miner will send hashrate to pool
     [Boolean]$SSLSelfSignedCertificate
@@ -217,7 +217,7 @@ Class Miner {
     [Double]$Profit
     [Double]$Profit_Bias
     [Boolean]$ReadPowerUsage = $false
-    [String[]]$Reasons # Why is a miner unavailable?
+    [System.Collections.Generic.List[String]]$Reasons # Why is a miner unavailable?
     [Boolean]$Restart = $false 
     hidden [DateTime]$StatStart
     hidden [DateTime]$StatEnd
@@ -567,7 +567,7 @@ Class Miner {
         $this.Prioritize = $false
         $this.Profit = [Double]::NaN
         $this.Profit_Bias = [Double]::NaN
-        $this.Reasons = @()
+        $this.Reasons = [System.Collections.Generic.List[String]]@()
 
         $this.Workers | ForEach-Object { 
             If ($Stat = Get-Stat -Name "$($this.Name)_$($this.Algorithms[$this.Workers.IndexOf($_)])_Hashrate") { 
@@ -1159,11 +1159,11 @@ Function Write-Message {
     If ($Host.Name -eq "ConsoleHost") { 
         # Write to console
         Switch ($Level) { 
-            "Error"   { Write-Host $Message -ForegroundColor "Red"; Break }
-            "Warn"    { Write-Host $Message -ForegroundColor "Magenta"; Break }
-            "Info"    { Write-Host $Message -ForegroundColor "White"; Break }
-            "Verbose" { Write-Host $Message -ForegroundColor "Yello"; Break }
-            "Debug"   { Write-Host $Message -ForegroundColor "Blue"; Break }
+            "Error"   { Write-Host $Message -ForegroundColor "Red" }
+            "Warn"    { Write-Host $Message -ForegroundColor "Magenta" }
+            "Info"    { Write-Host $Message -ForegroundColor "White" }
+            "Verbose" { Write-Host $Message -ForegroundColor "Yello" }
+            "Debug"   { Write-Host $Message -ForegroundColor "Blue" }
         }
     }
 
@@ -1670,11 +1670,11 @@ Function Update-ConfigFile {
         $OldRegion = $Config.Region
         # Write message about new mining regions
         $Config.Region = Switch ($OldRegion) { 
-            "Brazil"       { "USA West"; Break }
-            "Europe East"  { "Europe"; Break }
-            "Europe North" { "Europe"; Break }
-            "India"        { "Asia"; Break }
-            "US"           { "USA West"; Break }
+            "Brazil"       { "USA West" }
+            "Europe East"  { "Europe" }
+            "Europe North" { "Europe" }
+            "India"        { "Asia" }
+            "US"           { "USA West" }
             Default        { "Europe" }
         }
         Write-Message -Level Warn "Available mining locations have changed ($OldRegion -> $($Config.Region)). Please verify your configuration."
@@ -2068,7 +2068,7 @@ Function Get-Stat {
         ($Global:Stats.psBase.Keys | Select-Object | Where-Object { $_ -notin $Name }) | ForEach-Object { $Global:Stats.Remove($_) } # Remove stat if deleted on disk
     }
 
-    $Name | ForEach-Object { 
+    $Name | Select-Object | ForEach-Object { 
         $Stat_Name = $_
 
         If ($Global:Stats[$Stat_Name] -isnot [Hashtable] -or -not $Global:Stats[$Stat_Name].IsSynchronized) { 
@@ -2446,10 +2446,10 @@ Function Get-Device {
                     Bus    = $null
                     Vendor = $(
                         Switch -Regex ($Device_CIM.Manufacturer) { 
-                            "Advanced Micro Devices" { "AMD"; Break }
-                            "Intel" { "INTEL"; Break }
-                            "NVIDIA" { "NVIDIA"; Break }
-                            "AMD" { "AMD"; Break }
+                            "Advanced Micro Devices" { "AMD" }
+                            "Intel" { "INTEL" }
+                            "NVIDIA" { "NVIDIA" }
+                            "AMD" { "AMD" }
                             Default { $Device_CIM.Manufacturer -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce|Radeon|Intel' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
                         }
                     )
@@ -2506,10 +2506,10 @@ Function Get-Device {
                     )
                     Vendor = $(
                         Switch -Regex ([String]$Device_CIM.AdapterCompatibility) { 
-                            "Advanced Micro Devices" { "AMD"; Break }
-                            "Intel" { "INTEL"; Break }
-                            "NVIDIA" { "NVIDIA"; Break }
-                            "AMD" { "AMD"; Break }
+                            "Advanced Micro Devices" { "AMD" }
+                            "Intel" { "INTEL" }
+                            "NVIDIA" { "NVIDIA" }
+                            "AMD" { "AMD" }
                             Default { $Device_CIM.AdapterCompatibility -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce|Radeon|Intel' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
                         }
                     )
@@ -2568,8 +2568,8 @@ Function Get-Device {
                         Model  = $Device_OpenCL.Name
                         Type   = $(
                             Switch -Regex ([String]$Device_OpenCL.Type) { 
-                                "CPU" { "CPU"; Break }
-                                "GPU" { "GPU"; Break }
+                                "CPU" { "CPU" }
+                                "GPU" { "GPU" }
                                 Default { [String]$Device_OpenCL.Type -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce|Radeon|Intel' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
                             }
                         )
@@ -2580,10 +2580,10 @@ Function Get-Device {
                         )
                         Vendor = $(
                             Switch -Regex ([String]$Device_OpenCL.Vendor) { 
-                                "Advanced Micro Devices" { "AMD"; Break }
-                                "Intel" { "INTEL"; Break }
-                                "NVIDIA" { "NVIDIA"; Break }
-                                "AMD" { "AMD"; Break }
+                                "Advanced Micro Devices" { "AMD" }
+                                "Intel" { "INTEL" }
+                                "NVIDIA" { "NVIDIA" }
+                                "AMD" { "AMD" }
                                 Default { [String]$Device_OpenCL.Vendor -replace '\(R\)|\(TM\)|\(C\)|Series|GeForce|Radeon|Intel' -replace '[^A-Z0-9]' -replace '\s+', ' ' }
                             }
                         )
@@ -2851,8 +2851,8 @@ public static class Kernel32
 "@
 
         $ShowWindow = Switch ($WindowStyle) { 
-            "hidden" { "0x0000"; Break } # SW_HIDE
-            "normal" { "0x0001"; Break } # SW_SHOWNORMAL
+            "hidden" { "0x0000" } # SW_HIDE
+            "normal" { "0x0001" } # SW_SHOWNORMAL
             Default  { "0x0007" } # SW_SHOWMINNOACTIVE
         }
 
@@ -3019,7 +3019,7 @@ Function Get-AlgorithmFromCurrency {
         [String]$Currency
     )
 
-    If ($Currency) { 
+    If ($Currency -and $Currency -ne "*") { 
         If ($Variables.CurrencyAlgorithm[$Currency]) { 
             Return $Variables.CurrencyAlgorithm[$Currency]
         }
@@ -3231,7 +3231,7 @@ Function Update-DAGdata {
     If ($Variables.DAGdata.Updated.$Url -lt $Variables.ScriptStartTime -or $Variables.DAGdata.Updated.$Url -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
         # Get block data for from whattomine.com
         Try { 
-            $DAGdataResponse = Invoke-RestMethod -Uri $Url
+            $DAGdataResponse = Invoke-RestMethod -Uri $Url -TimeoutSec 5
 
             If ($DAGdataResponse.coins.PSObject.Properties.Name) { 
                 $DAGdataResponse.coins.PSObject.Properties.Name | Where-Object { $DAGdataResponse.coins.$_.tag -ne "NICEHASH" } | ForEach-Object { 
@@ -3300,7 +3300,7 @@ Function Update-DAGdata {
     If ($Variables.DAGdata.Updated.$Url -lt $Variables.ScriptStartTime -or $Variables.DAGdata.Updated.$Url -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
         # Get block data from ProHashing
         Try { 
-            $DAGdataResponse = Invoke-RestMethod -Uri $Url
+            $DAGdataResponse = Invoke-RestMethod -Uri $Url -TimeoutSec 5
 
             If ($DAGdataResponse.code -eq 200) { 
                 $DAGdataResponse.data.PSObject.Properties.Name | Where-Object { $DAGdataResponse.data.$_.enabled -and $DAGdataResponse.data.$_.height -and ((Get-Algorithm $DAGdataResponse.data.$_.algo) -in @("Autolykos2", "EtcHash", "Ethash", "KawPow", "Octopus", "UbqHash") -or $_ -in @($Variables.DAGdata.Currency.psBase.Keys))} | ForEach-Object { 
@@ -3332,7 +3332,7 @@ Function Update-DAGdata {
     If ($Variables.DAGdata.Updated.$Url -lt $Variables.ScriptStartTime -or $Variables.DAGdata.Updated.$Url -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
         # Get block data from EVR block explorer
         Try { 
-            $DAGdataResponse = Invoke-RestMethod -Uri $Url
+            $DAGdataResponse = Invoke-RestMethod -Uri $Url -TimeoutSec 5
 
             If ($DAGdataResponse.blockcount -gt $Variables.DAGdata.Currency.EVR.BlockHeight) { 
                 $DAGdata = Get-DAGdata -BlockHeight $DAGdataResponse.coins.$_.last_block -Currency "EVR" -EpochReserve 2
@@ -3458,7 +3458,7 @@ Function Get-Epoch {
     )
 
     Switch ($Currency) { 
-        "ERG"   { $Blockheight -= 416768; Break } # Epoch 0 starts @ 417792
+        "ERG"   { $Blockheight -= 416768 } # Epoch 0 starts @ 417792
         Default { }
     }
 

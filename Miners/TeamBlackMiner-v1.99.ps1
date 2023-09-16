@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.2
-Version date:   2023/09/08
+Version:        5.0.0.3
+Version date:   2023/09/15
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.CUDAVersion -ge "11.6") })) { Return }
@@ -93,8 +93,8 @@ If ($Algorithms) {
                             If ($Pool0.Pass) { $Arguments += " --server-passwd $($Pool0.Pass)" }
 
                             $SecondAlgo = Switch ($_.Algorithms[1]) { 
-                                "KawPow"   { "rvn"; Break }
-                                "VertHash" { "vtc"; Break }
+                                "KawPow"   { "rvn" }
+                                "VertHash" { "vtc" }
                                 Default    { "" }
                             }
                             If ($SecondAlgo) { 

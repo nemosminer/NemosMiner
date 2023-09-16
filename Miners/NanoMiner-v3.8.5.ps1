@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.2
-Version date:   2023/09/08
+Version:        5.0.0.3
+Version date:   2023/09/15
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -ne "NVIDIA" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge "455.23") })) { Return }
@@ -88,7 +88,7 @@ If ($Algorithms) {
             $ExcludePools = $_.ExcludePools
             ForEach ($Pool0 in ($MinerPools[0][$_.Algorithms[0]] | Where-Object BaseName -notin $ExcludePools[0] | Where-Object { $Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -eq $false } | Select-Object -Last $(If ($_.Type -eq "CPU") { 1 } Else { $MinerPools[0][$_.Algorithms[0]].Count }))) { 
                 ForEach ($Pool1 in ($MinerPools[1][$_.Algorithms[1]] | Where-Object BaseName -notin $ExcludePools[1] | Where-Object { $Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -eq $false } | Select-Object -Last $(If ($_.Type -eq "CPU") { 1 } Else { $MinerPools[1][$_.Algorithms[1]].Count }))) { 
-                    $Pools = @($Pool0, $Pool1)
+                    $Pools = @($Pool0, $Pool1 | Where-Object { $_ })
 
                     $MinMemGiB = $_.MinMemGiB + $Pool0.DAGSizeGiB + $Pool1.DAGSizeGiB
                     If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or $_.MemoryGiB -ge $MinMemGiB } | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
@@ -96,18 +96,15 @@ If ($Algorithms) {
                         $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })"
 
                         $Arguments = ""
-                        $Index = 0
-                        ForEach ($Pool in ($Pools | Where-Object { $_ })) { 
+                        ForEach ($Pool in $Pools) { 
                             $WorkerName = If ($Pool.WorkerName) { "$($Pool.WorkerName)" } Else { $Pool.User -split "\." | Select-Object -Last 1 }
 
-                            $Arguments += "$($_.Arguments[$Index])"
+                            $Arguments += "$($_.Arguments[$Pools.IndexOf($Pool)])"
                             $Arguments += If ($Pool.PoolPorts[1] -and $Pool.SSLSelfSignedCertificate -eq $false) { " -pool1 $($Pool.Host):$($Pool.PoolPorts[1])" } Else { " -pool1 $($Pool.Host):$($Pool.PoolPorts[0]) -useSSL false" }
                             $Arguments += " -wallet $($Pool.User -replace "\.$WorkerName")"
                             $Arguments += " -rigName '$WorkerName'"
                             $Arguments += " -rigPassword $($Pool.Pass)"
                             $Arguments += " -devices $(($AvailableMiner_Devices | Sort-Object Name -Unique | ForEach-Object { '{0:x}' -f $_.$DeviceEnumerator }) -join ',')"
-
-                            $Index ++
                         }
                         Remove-Variable Pool
 
@@ -147,7 +144,7 @@ If ($Algorithms) {
                             Type             = $_.Type
                             URI              = $Uri
                             WarmupTimes      = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
-                            Workers          = @($Pool0, $Pool1 | Where-Object { $_ } | ForEach-Object { @{ Pool = $_ } })
+                            Workers          = @($Pools | ForEach-Object { @{ Pool = $_ } })
                         }
                     }
                 }

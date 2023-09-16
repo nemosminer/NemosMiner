@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\LegacyGUI.psm1
-Version:        5.0.0.2
-Version date:   2023/09/08
+Version:        5.0.0.3
+Version date:   2023/09/15
 #>
 
 # [Void] [System.Windows.Forms.Application]::EnableVisualStyles()
@@ -64,9 +64,9 @@ Function Set-WorkerColor {
     If ($Config.UseColorForMinerStatus) { 
         ForEach ($Row in $WorkersDGV.Rows) { 
             $Row.DefaultCellStyle.Backcolor = Switch ($Row.DataBoundItem.Status) { 
-                "Offline" { $Colors["disabled"]; Break }
-                "Paused"  { $Colors["idle"]; Break }
-                "Running" { $Colors["running"]; Break }
+                "Offline" { $Colors["disabled"] }
+                "Paused"  { $Colors["idle"] }
+                "Running" { $Colors["running"] }
                 Default   { [System.Drawing.Color]::FromArgb(255, 255, 255, 255) }
             }
         }
@@ -831,9 +831,9 @@ $ContextMenuStrip.Add_ItemClicked(
                             Remove-Stat -Name "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms | Select-Object -Index 0)" })_PowerUsage"
                             $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
 
-                            $_.Reasons = @($_.Reasons | Where-Object { $_ -ne "Disabled by user" })
-                            $_.Reasons = @($_.Reasons | Where-Object { $_ -ne "0 H/s Stat file" })
-                            $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Unreal profit data *" })
+                            $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Where-Object { $_ -ne "Disabled by user" })
+                            $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Where-Object { $_ -ne "0 H/s Stat file" })
+                            $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Where-Object { $_ -notlike "Unreal profit data *" } | Sort-Object -Unique)
                             If (-not $_.Reasons) { $_.Available = $true }
                             If ($_.Status -eq "Disabled") { $_.Status = "Idle" }
                         }
@@ -900,8 +900,8 @@ $ContextMenuStrip.Add_ItemClicked(
                                     $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = $_.Earning_Accuracy = [Double]::NaN
                                     $_.Available = $false
                                     $_.Disabled = $false
-                                    $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Disabled by user" })
                                     If ($_.Reasons -notcontains "0 H/s Stat file" ) { $_.Reasons.Add("0 H/s Stat file") }
+                                    $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Where-Object { $_ -notlike "Disabled by user" } | Sort-Object -Unique)
                                     $_.Status = [MinerStatus]::Failed
                                     Set-Stat -Name $Stat_Name -Value $Parameters.Value -FaultDetection $false | Out-Null
                                 }
@@ -937,7 +937,7 @@ $ContextMenuStrip.Add_ItemClicked(
                             Remove-Variable Worker
                             $_.Disabled = $true
                             $_.Reasons.Add("Disabled by user")
-                            $_.Reasons = $_.Reasons | Sort-Object -Unique
+                            $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Sort-Object -Unique)
                             $_.Available = $false
                         }
                     }
@@ -963,7 +963,7 @@ $ContextMenuStrip.Add_ItemClicked(
                                 $Data += "$($WatchdogTimer.MinerName) {$($WatchdogTimer.Algorithm -join ', ')}"
                                 # Update miner
                                 $Variables.Miners | Where-Object Name -EQ $electedMinerName | Where-Object { [String]$_.Algorithm -eq [String]$SelectedMinerAlgorithms } | ForEach-Object { 
-                                    $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Miner suspended by watchdog *" })
+                                    $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Where-Object { $_ -notlike "Miner suspended by watchdog *" } | Sort-Object -Unique)
                                     If (-not $_.Reasons) { $_.Available = $true }
                                 }
                             }
@@ -994,7 +994,7 @@ $ContextMenuStrip.Add_ItemClicked(
                             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
                             $Data += "$($Stat_Name)"
                             Remove-Stat -Name "$($Stat_Name)_Profit"
-                            $_.Reasons = [String[]]@()
+                            $_.Reasons = [System.Collections.Generic.List[String]]@()
                             $_.Price = $_.Price_Bias = $_.StablePrice = $_.Accuracy = [Double]::Nan
                             $_.Available = $true
                             $_.Disabled = $false
@@ -1021,8 +1021,8 @@ $ContextMenuStrip.Add_ItemClicked(
                                 $Data += "$($WatchdogTimer.PoolName) {$($WatchdogTimer.Algorithm -join ', ')}"
                                 # Update pools
                                 $Variables.Pools | Where-Object Name -EQ $SelectedPoolName | Where-Object Algorithm -EQ $SelectedPoolAlgorithm | ForEach-Object { 
-                                    $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Algorithm@Pool suspended by watchdog" })
-                                    $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Pool suspended by watchdog*" })
+                                    $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Where-Object { $_ -notlike "Algorithm@Pool suspended by watchdog" })
+                                    $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Where-Object { $_ -notlike "Pool suspended by watchdog*" } | Sort-Object -Unique)
                                     If (-not $_.Reasons) { $_.Available = $true }
                                 }
                             }
@@ -1476,8 +1476,8 @@ $WatchdogTimersRemoveButton.Add_Click(
     { 
         $Variables.WatchDogTimers = @()
         $WatchdogTimersDGV.DataSource = $null
-        $Variables.Miners | ForEach-Object { $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "Miner suspended by watchdog *" }); $_ } | Where-Object { -not $_.Reasons } | ForEach-Object { $_.Available = $true }
-        $Variables.Pools | ForEach-Object { $_.Reasons = @($_.Reasons | Where-Object { $_ -notlike "*Pool suspended by watchdog" }); $_ } | Where-Object { -not $_.Reasons } | ForEach-Object { $_.Available = $true }
+        $Variables.Miners | ForEach-Object { $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Where-Object { $_ -notlike "Miner suspended by watchdog *" } | Sort-Object -Unique); $_ } | Where-Object { -not $_.Reasons } | ForEach-Object { $_.Available = $true }
+        $Variables.Pools | ForEach-Object { $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Where-Object { $_ -notlike "*Pool suspended by watchdog" } | Sort-Object -Unique); $_ } | Where-Object { -not $_.Reasons } | ForEach-Object { $_.Available = $true }
         Write-Message -Level Verbose "GUI: All watchdog timers reset."
         $WatchdogTimersRemoveButton.Enabled = $false
         [Void][System.Windows.Forms.MessageBox]::Show("Watchdog timers will be recreated in next cycle.", "$($Variables.Branding.ProductLabel) $($_.ClickedItem.Text)", [System.Windows.Forms.MessageBoxButtons]::OK)

@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.2
-Version date:   2023/09/08
+Version:        5.0.0.3
+Version date:   2023/09/15
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "CPU" -or $_.Type -eq "INTEL" -or ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0") -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge "510.00") })) { Return }
@@ -270,15 +270,16 @@ $Algorithms = $Algorithms | Where-Object { $MinerPools[1][$_.Algorithms[1]].Base
 If ($Algorithms) { 
 
     # Allowed max loss for 1. algorithm
-    # $GpuDualMaxLosses = @(2, 4, 7, 10, 15, 20, 30)
+    # $GpuDualMaxLosses = @(2, 4, 7, 10, 15, 21, 30)
     $GpuDualMaxLosses = @()
 
     # Build command sets for max loss
-    $Algorithms | ForEach-Object { 
+    $Algorithms = $Algorithms | ForEach-Object { 
+        $_.PsObject.Copy()
         If ($_.Algorithms[1]) { 
             ForEach ($GpuDualMaxLoss in $GpuDualMaxLosses) { 
                 $_ | Add-Member GpuDualMaxLoss $GpuDualMaxLoss -Force
-                $Algorithms += $_.PsObject.Copy()
+                $_.PsObject.Copy()
             }
         }
     }
@@ -293,30 +294,28 @@ If ($Algorithms) {
             $ExcludePools = $_.ExcludePools
             ForEach ($Pool0 in ($MinerPools[0][$_.Algorithms[0]] | Where-Object BaseName -notin $ExcludePools[0] | Select-Object -Last $(If ($_.Type -eq "CPU") { 1 } Else { $MinerPools[0][$_.Algorithms[0]].Count }))) { 
                 ForEach ($Pool1 in ($MinerPools[1][$_.Algorithms[1]] | Where-Object BaseName -notin $ExcludePools[1] | Select-Object -Last $(If ($_.Type -eq "CPU") { 1 } Else { $MinerPools[1][$_.Algorithms[1]].Count }))) { 
-                    $Pools = @($Pool0, $Pool1)
+                    $Pools = @($Pool0, $Pool1 | Where-Object { $_ })
 
                     $MinMemGiB = $_.MinMemGiB + $Pool0.DAGSizeGiB + $Pool1.DAGSizeGiB
                     If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or $_.MemoryGiB -gt $MinMemGiB } | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
 
-                        $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })$(If ($_.GpuDualMaxLoss) { "-$($_.$GpuDualMaxLoss)" })"
+                        $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })$(If ($_.GpuDualMaxLoss) { "-$($_.GpuDualMaxLoss)" })"
 
                         $Arguments = ""
-                        $Index = 0
-                        ForEach ($Pool in ($Pools | Where-Object { $_ })) { 
+                        ForEach ($Pool in $Pools) { 
                             $Arguments += Switch ($Pool.Protocol) { 
-                                "minerproxy"   { " --esm 0"; Break }
-                                "ethproxy"     { " --esm 0"; Break }
-                                "ethstratum1"  { " --esm 1"; Break }
-                                "ethstratum2"  { " --esm 2"; Break }
-                                "ethstratumnh" { " --esm 2"; Break }
+                                "minerproxy"   { " --esm 0" }
+                                "ethproxy"     { " --esm 0" }
+                                "ethstratum1"  { " --esm 1" }
+                                "ethstratum2"  { " --esm 2" }
+                                "ethstratumnh" { " --esm 2" }
                             }
-                            $Arguments += "$($_.Arguments[$Index]) --pool $($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --wallet $($Pool.User)"
-                            $Arguments += " --password $($Pool.Pass)$(If ($Pool.BaseName -eq "ProHashing" -and $Algorithm -eq "Ethash") { ",l=$((($AvailableMiner_Devices.Memory | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum)) / 1GB - ($_.MinMemGiB - $Pool.DAGSizeGiB))" })"
+                            $Arguments += "$($_.Arguments[$Pools.IndexOf($Pool)]) --pool $($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --wallet $($Pool.User)"
+                            $Arguments += " --password $($Pool.Pass)"
                             If ($Pool.WorkerName) { $Arguments += " --worker $($Pool.WorkerName)" }
                             $Arguments += If ($Pool.PoolPorts[1]) { " --tls true" } Else { " --tls false" }
-
                             If ($_.GpuDualMaxLoss) { $Arguments += " --gpu-dual-max-loss 5" }
-                            $Index ++
+                            # If ($_.GpuDualMaxLoss) { $Arguments += " --gpu-dual-max-loss $($_.GpuDualMaxLoss)" }
                         }
                         Remove-Variable Pool
 
@@ -352,7 +351,7 @@ If ($Algorithms) {
                             Type             = $_.Type
                             URI              = $Uri
                             WarmupTimes      = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
-                            Workers          = @($Pool0, $Pool1 | Where-Object { $_ } | ForEach-Object { @{ Pool = $_ } })
+                            Workers          = @($Pools | ForEach-Object { @{ Pool = $_ } })
                         }
                     }
                 }

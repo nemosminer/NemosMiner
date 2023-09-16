@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.2
-Version date:   2023/09/08
+Version:        5.0.0.3
+Version date:   2023/09/15
 #>
 
 using module ..\Includes\Include.psm1
@@ -94,9 +94,9 @@ If ($Algorithms) {
                         $Arguments = $_.Arguments
                         $Arguments += " --server $($Pool0.Host):$($Pool0.PoolPorts | Select-Object -Last 1)"
                         $Arguments += Switch ($Pool0.Protocol) { 
-                            "ethstratum1"  { " --proto stratum"; Break }
-                            "ethstratum2"  { " --proto stratum"; Break }
-                            "ethstratumnh" { " --proto stratum"; Break }
+                            "ethstratum1"  { " --proto stratum" }
+                            "ethstratum2"  { " --proto stratum" }
+                            "ethstratumnh" { " --proto stratum" }
                             Default        { "" }
                         }
                         If ($Pool0.PoolPorts[1]) { $Arguments += " --ssl 1" }

@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.2
-Version date:   2023/09/08
+Version:        5.0.0.3
+Version date:   2023/09/15
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $_.Architecture -eq "Other" })) { Return }
@@ -92,11 +92,11 @@ If ($Algorithms) {
 
                     $Arguments = $_.Arguments
                     $Arguments += Switch ($Pool.Protocol) { 
-                        "ethproxy"     { " --esm 0"; Break }
-                        "ethstratum1"  { " --esm 1"; Break }
-                        "ethstratum2"  { " --esm 2"; Break }
-                        "ethstratumnh" { " --esm 2"; Break }
-                        "minerproxy"   { " --esm 1"; Break }
+                        "ethproxy"     { " --esm 0" }
+                        "ethstratum1"  { " --esm 1" }
+                        "ethstratum2"  { " --esm 2" }
+                        "ethstratumnh" { " --esm 2" }
+                        "minerproxy"   { " --esm 1" }
                         Default        { "" }
                     }
                     $Arguments += " --pool $($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --wallet $($Pool.User)"

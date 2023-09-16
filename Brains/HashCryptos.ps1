@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Brains\MiningDutch.ps1
-Version:        5.0.0.2
-Version date:   2023/09/08
+Version:        5.0.0.3
+Version date:   2023/09/15
 #>
 
 using module ..\Includes\Include.psm1
@@ -89,6 +89,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
                 Workers             = $AlgoData.$Algo.workers
             }
         }
+        Remove-Variable Algo, BasePrice -ErrorAction Ignore
 
         # Created here for performance optimization, minimize # of lookups
         $CurAlgoObjects = $AlgoObjects | Where-Object { $_.Date -eq $CurDate }
@@ -110,6 +111,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
             }
             Catch { }
         }
+        Remove-Variable CurAlgoObjects, GroupAvgSampleSize, GroupMedSampleSize, GroupAvgSampleSizeHalf, GroupMedSampleSizeHalf, GroupMedSampleSizeNoPercent, Name, Penalty, Price, PenaltySampleSizeHalf, PenaltySampleSizeNoPercent, SampleSizets, SampleSizeHalfts
 
         $AlgoData.PSObject.Properties.Name | ForEach-Object { $AlgoData.$_ | Add-Member Updated $CurDate -Force }
 
@@ -125,7 +127,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
         $AlgoObjects = @($AlgoObjects | Where-Object Date -GE $CurDate.AddMinutes( - ($PoolConfig.BrainConfig.SampleSizeMinutes + 10)))
     }
     Catch { 
-        Write-Message -Level Error "Error in file $(($_.InvocationInfo.ScriptName -Split "\\" | Select-Object -Last 2) -join "\") line $($_.InvocationInfo.ScriptLineNumber) detected. Restarting brain..."
+        Write-Message -Level Error "Error in file $(($_.InvocationInfo.ScriptName -split "\\" | Select-Object -Last 2) -join "\") line $($_.InvocationInfo.ScriptLineNumber) detected. Restarting brain..."
         "$(Get-Date -Format "yyyy-MM-dd_HH:mm:ss")" >> "Logs\Error.txt"
         $_.Exception | Format-List -Force >> "Logs\Error.txt"
         $_.InvocationInfo | Format-List -Force >> "Logs\Error.txt"
@@ -137,7 +139,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
 
     Write-Message -Level Debug "Brain '$($BrainName)': End loop (Duration $($Duration) sec.); Found $($AlgoData.PSObject.Properties.Name.Count) pools."
 
-    Remove-Variable Algo, AlgoData, Name -ErrorAction Ignore
+    Remove-Variable AlgoData, Duration -ErrorAction Ignore
 
     While ($CurDate -ge $Variables.PoolDataCollectedTimeStamp -or (Get-Date).ToUniversalTime().AddSeconds([Int]($Durations | Measure-Object -Average | Select-Object -ExpandProperty Average) + 3) -le $Variables.EndCycleTime) { 
         Start-Sleep -Seconds 1

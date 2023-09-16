@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.2
-Version date:   2023/09/08
+Version:        5.0.0.3
+Version date:   2023/09/15
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -in @("AMD", "INTEL") -or $_.OpenCL.ComputeCapability -ge "5.0"} )) { Return }
@@ -140,10 +140,10 @@ If ($Algorithms) {
                         $Arguments += " --pass $($Pool0.Pass)"
                         $Arguments += If ($Pool0.PoolPorts[1]) { " --tls on" } Else { " --tls off" }
                         $Arguments += Switch ($Pool0.Protocol) { 
-                            "ethproxy"     { " --ethstratum ETHPROXY"; Break }
-                            "ethstratum1"  { " --ethstratum ETHV1"; Break }
-                            "ethstratum2"  { " --ethstratum ETHV1"; Break }
-                            "ethstratumnh" { " --ethstratum ETHV1"; Break }
+                            "ethproxy"     { " --ethstratum ETHPROXY" }
+                            "ethstratum1"  { " --ethstratum ETHV1" }
+                            "ethstratum2"  { " --ethstratum ETHV1" }
+                            "ethstratumnh" { " --ethstratum ETHV1" }
                             Default        { "" }
                         }
 

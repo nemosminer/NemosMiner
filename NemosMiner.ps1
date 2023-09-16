@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        5.0.0.2
-Version date:   2023/09/08
+Version:        5.0.0.3
+Version date:   2023/09/15
 #>
 
 using module .\Includes\Include.psm1
@@ -293,7 +293,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"5.0.0.2"
+    Version      = [System.Version]"5.0.0.3"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -330,6 +330,7 @@ $Variables.AllCommandLineParameters = [Ordered]@{ }
 $MyInvocation.MyCommand.Parameters.psBase.Keys | Where-Object { $_ -ne "ConfigFile" } | Where-Object { Get-Variable $_ -ErrorAction Ignore } | Sort-Object | ForEach-Object { 
     $Variables.AllCommandLineParameters.$_ = Get-Variable $_ -ValueOnly
     If ($MyInvocation.MyCommandLineParameters.$_ -is [Switch]) { $Variables.AllCommandLineParameters.$_ = [Boolean]$Variables.AllCommandLineParameters.$_ }
+    Remove-Variable $_
 }
 
 # Read configuration
@@ -771,6 +772,7 @@ Function MainLoop {
                     }
                 }
             }
+            Remove-Variable KeyPressed
         }
     }
 
@@ -817,6 +819,7 @@ Function MainLoop {
                     Write-Host "                        $(($_.Balance / $_.PayoutThreshold).ToString('P2')) of $(($_.PayoutThreshold * $mBTCfactor).ToString()) $($Currency) payment threshold"
                     Write-Host "Projected payment date: $(If ($_.ProjectedPayDate -is [DateTime]) { $_.ProjectedPayDate.ToString("G") } Else { $_.ProjectedPayDate })`n"
                 }
+                Remove-Variable Currency -ErrorAction Ignore
             }
             If ($Variables.MinersMissingBinary) { 
                 Write-Host "`n"
@@ -865,17 +868,18 @@ Function MainLoop {
                         $_.$Bias -ge ($MinersDeviceGroup.$Bias | Sort-Object -Bottom 5 | Select-Object -Index 0) <# Always list at least the top 5 miners per device group #>
                     } | Sort-Object -Property @{ Expression = { $_.Benchmark }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage }; Descending = $true }, @{ Expression = { $_.KeepRunning }; Descending = $true }, @{ Expression = { $_.Prioritize }; Descending = $true }, @{ Expression = { $_.$Bias }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithms[0] }; Descending = $false }, @{ Expression = { $_.Algorithms[1] }; Descending = $false } | 
                     Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (($_.Group.Devices.Name | Sort-Object -Unique).Count -gt 1) { " group" })"; Expression = { "$($_.DeviceNames -join ',') [$(($Variables.Devices | Where-Object Name -In $_.DeviceNames).Model -join ', ')]" } } -AutoSize | Out-Host
+                    Remove-Variable Miner_Table
 
                     # Display benchmarking progress
                     If ($MinersDeviceGroupNeedingBenchmark) { 
-                        "Benchmarking for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.Devices.Name | Sort-Object -Unique) -Join ',')' in progress: $($MinersDeviceGroupNeedingBenchmark.Count) miner$(If ($MinersDeviceGroupNeedingBenchmark.Count -gt 1) { 's' }) left to complete benchmark." | Out-Host
+                        "Benchmarking for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.Devices.Name | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingBenchmark.Count) miner$(If ($MinersDeviceGroupNeedingBenchmark.Count -gt 1) { 's' }) left to complete benchmark." | Out-Host
                     }
                     # Display power usage measurement progress
                     If ($MinersDeviceGroupNeedingPowerUsageMeasurement) { 
                         "Power usage measurement for device$(If (($MinersDeviceGroup.Devices.Name | Sort-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring." | Out-Host
                     }
                 }
-                Remove-Variable MinersDeviceGroup, MinersDeviceGroupNeedingBenchmark, MinersDeviceGroupNeedingPowerUsageMeasurement -ErrorAction Ignore
+                Remove-Variable Bias, MinersDeviceGroup, MinersDeviceGroupNeedingBenchmark, MinersDeviceGroupNeedingPowerUsageMeasurement -ErrorAction Ignore
             }
             ElseIf ($Variables.Miners) { 
                 Write-Host "No miners running. Waiting for next cycle."
@@ -911,6 +915,7 @@ Function MainLoop {
                     )
                     $ProcessesIdle | Sort-Object { $_.GetActiveLast } -Descending | Select-Object -First ($MinersDeviceGroup.Count * 3) | Format-Table $Miner_Table -Wrap | Out-Host
                 }
+                Remove-Variable ProcessesIdle
 
                 If ($ProcessesFailed = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Failed" -and $_.GetActiveLast().ToLocalTime().AddHours(24) -gt (Get-Date)})) { 
                     Write-Host -ForegroundColor Red "$($ProcessesFailed.Count) failed $(If ($ProcessesFailed.Count -eq 1) { "miner" } Else { "miners" }) in the past 24 hrs:"
@@ -926,6 +931,7 @@ Function MainLoop {
                     )
                     $ProcessesFailed | Sort-Object { If ($_.Process) { $_.Process.StartTime } Else { [DateTime]0 } } | Format-Table $Miner_Table -Wrap | Out-Host
                 }
+                Remove-Variable ProcessesFailed
 
                 If ($Config.Watchdog) { 
                     # Display watchdog timers
@@ -956,6 +962,7 @@ Function MainLoop {
                     $StatusInfo = "Last refresh: $($Variables.BeginCycleTime.ToLocalTime().ToString('G'))   |   Next refresh: $($Variables.EndCycleTime.ToLocalTime().ToString('G'))   |   Hot Keys: $(If ($Variables.CalculatePowerCost) { "[abcefimnprstuvwy]" } Else { "[abefimnpsvwy]" })   |   Press 'h' for help"
                     Write-Host ("-" * $StatusInfo.Length)
                     Write-Host -ForegroundColor Yellow $StatusInfo
+                    Remove-Variable StatusInfo
                 }
             }
         }

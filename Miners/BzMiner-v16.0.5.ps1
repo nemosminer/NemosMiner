@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.2
-Version date:   2023/09/08
+Version:        5.0.0.3
+Version date:   2023/09/15
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -in @("AMD", "INTEL") -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge "460.27.03" ) })) { Return }
@@ -105,10 +105,10 @@ If ($Algorithms) {
 
                         $Arguments = $_.Arguments[0]
                         Switch ($Pool0.Protocol) { 
-                            "ethproxy"     { $Arguments += " -p ethproxy"; Break }
-                            "ethstratum1"  { $Arguments += " -p ethstratum"; Break }
-                            "ethstratum2"  { $Arguments += " -p ethstratum2"; Break }
-                            "ethstratumnh" { $Arguments += " -p ethstratum"; Break }
+                            "ethproxy"     { $Arguments += " -p ethproxy" }
+                            "ethstratum1"  { $Arguments += " -p ethstratum" }
+                            "ethstratum2"  { $Arguments += " -p ethstratum2" }
+                            "ethstratumnh" { $Arguments += " -p ethstratum" }
                             Default        { $Arguments += " -p stratum"}
                         }
                         $Arguments += If ($Pool0.PoolPorts[1]) { "+ssl://" } Else { "+tcp://" }
@@ -120,10 +120,10 @@ If ($Algorithms) {
                         If ($_.Algorithms[1]) {
                             $Arguments += $_.Arguments[1]
                             Switch ($Pool1.Protocol) { 
-                                "ethproxy"     { $Arguments += " --p2 ethproxy"; Break }
-                                "ethstratum1"  { $Arguments += " --p2 ethstratum"; Break }
-                                "ethstratum2"  { $Arguments += " --p2 ethstratum2"; Break }
-                                "ethstratumnh" { $Arguments += " --p2 ethstratum"; Break }
+                                "ethproxy"     { $Arguments += " --p2 ethproxy" }
+                                "ethstratum1"  { $Arguments += " --p2 ethstratum" }
+                                "ethstratum2"  { $Arguments += " --p2 ethstratum2" }
+                                "ethstratumnh" { $Arguments += " --p2 ethstratum" }
                                 Default        { $Arguments += " --p2 stratum" }
                             }
                             $Arguments += If ($Pool1.PoolPorts[1]) { "+ssl://" } Else { "+tcp://" }

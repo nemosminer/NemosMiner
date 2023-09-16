@@ -9,6 +9,20 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 
+
+ChangeLog NemosMiner 5.0.0.3 2023/09/15
+=======================================
+
+Enhancements:
+- Optimize miner code for NanoMiner, Rigel & SRBMinerMulti
+
+Fixes:
+- Error in file Includes\Include.psm1 line 2071 detected. Restarting core
+
+Miner updates:
+- JayddeeCpu-v3.23.1
+- TTMiner-v2023.4.1
+
 ChangeLog NemosMiner 5.0.0.2 2023/09/08
 =======================================
 
