@@ -39,7 +39,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EvrProPow";        Fee = 0.01; MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -a EvrProgPow" }
     [PSCustomObject]@{ Algorithm = "FiroPow";          Fee = 0.01; MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(90, 15);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -a FiroPow" }
     [PSCustomObject]@{ Algorithm = "FiroPowSCC";       Fee = 0.01; MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(90, 0);   ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -c SCC" }
-    [PSCustomObject]@{ Algorithm = "Ghostrider";       Fee = 0.01; MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(90, 0);   ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -a Ghostrider" }
+    [PSCustomObject]@{ Algorithm = "Ghostrider";       Fee = 0.01; MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(180, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -a Ghostrider" }
     [PSCustomObject]@{ Algorithm = "KawPow";           Fee = 0.01; MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(90, 15);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -a KawPow" }
     [PSCustomObject]@{ Algorithm = "Mike";             Fee = 0.01; MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(120, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -a Mike" }
 #   [PSCustomObject]@{ Algorithm = "MemeHash";         Fee = 0.01; MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(120, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -a Memehash" } # Not yet working
