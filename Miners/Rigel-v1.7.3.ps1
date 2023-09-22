@@ -17,13 +17,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.3
-Version date:   2023/09/15
+Version:        5.0.0.4
+Version date:   2023/09/22
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
 
-$URI = "https://github.com/rigelminer/rigel/releases/download/1.7.2/rigel-1.7.2-win.zip"
+$URI = "https://github.com/rigelminer/rigel/releases/download/1.7.3/rigel-1.7.3-win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\Rigel.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"

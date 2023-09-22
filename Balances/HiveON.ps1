@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Balances\Hiveon.ps1
-Version:        5.0.0.3
-Version date:   2023/09/15
+Version:        5.0.0.4
+Version date:   2023/09/22
 #>
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
@@ -41,14 +41,14 @@ $PoolConfig.Wallets.psBase.Keys | Where-Object { $_ -in @("BTC", "ETC", "RVN") }
             $APIResponse = Invoke-RestMethod $Request -TimeoutSec $PoolConfig.PoolAPITimeout -ErrorAction Ignore
 
             If ($Config.LogBalanceAPIResponse) { 
-                "$((Get-Date).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction Ignore
-                $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction Ignore
-                $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -Encoding utf8NoBOM -ErrorAction Ignore
+                "$(([DateTime]::Now).ToUniversalTime())" | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -ErrorAction Ignore
+                $Request | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -ErrorAction Ignore
+                $APIResponse | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name).json" -Append -Force -ErrorAction Ignore
             }
 
             If ($APIResponse.earningStats) { 
                 [PSCustomObject]@{ 
-                    DateTime = (Get-Date).ToUniversalTime()
+                    DateTime = ([DateTime]::Now).ToUniversalTime()
                     Pool     = $Name
                     Currency = $_
                     Wallet   = $Wallet

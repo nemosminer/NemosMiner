@@ -9,6 +9,20 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 
+ChangeLog NemosMiner 5.0.0.4 2023/09/22
+=======================================
+
+Enhancements:
+- Core: Minor code optimizations
+
+Fixes:
+- Main text window: Miner list not shown for 2nd, 3rd... device group (Regression from 5.0.0.3)
+- Main text window: Hotkey [v] (Show all available miners) broken
+
+Miner updates
+- Rigel-v1.7.3
+- TeamBlackMiner-v2.00
+
 
 ChangeLog NemosMiner 5.0.0.3 2023/09/15
 =======================================

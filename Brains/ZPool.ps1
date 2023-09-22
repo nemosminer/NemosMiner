@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Brains\ZPool.ps1
-Version:        5.0.0.3
+Version:        5.0.0.4
 Version date:   08 July 2023
 #>
 
@@ -41,7 +41,7 @@ $BrainDataFile = "$($PWD)\Data\BrainData_$($BrainName).json"
 
 While ($PoolConfig = $Config.PoolsConfig.$BrainName) { 
 
-    $StartTime = Get-Date
+    $StartTime = [DateTime]::Now
 
     Try { 
 
@@ -63,7 +63,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
             }
         } While (-not ($AlgoData -and $CurrenciesData))
 
-        $CurDate = (Get-Date).ToUniversalTime()
+        $CurDate = ([DateTime]::Now).ToUniversalTime()
 
         # Change numeric string to numbers, some values are null
         $AlgoData = ($AlgoData | ConvertTo-Json) -replace ': "(\d+\.?\d*)"', ': $1' -replace '": null', '": 0' | ConvertFrom-Json
@@ -111,7 +111,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
                 If ($Variables.DAGdata.Algorithm.$Algo -and $AlgoData.$Algo.height -gt ($Variables.DAGdata.Currency.$Currency.BlockHeight)) { 
                     # Keep DAG data data up to date
                     $Variables.DAGdata.Currency[$Currency] = (Get-DAGData -Blockheight $AlgoData.$Algo.height -Currency $Currency -EpochReserve 2)
-                    $Variables.DAGdata.Updated["$BrainName Brain"] = (Get-Date).ToUniversalTime()
+                    $Variables.DAGdata.Updated["$BrainName Brain"] = ([DateTime]::Now).ToUniversalTime()
                 }
                 $AlgoData.$Algo | Add-Member conversion_disabled $CurrenciesData.$Currency.conversion_disabled -Force
                 If ($CurrenciesData.$Currency.error) { 
@@ -170,7 +170,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
         Remove-Variable CurAlgoObjects, GroupAvgSampleSize, GroupMedSampleSize, GroupAvgSampleSizeHalf, GroupMedSampleSizeHalf, GroupMedSampleSizeNoPercent, Name, Penalty, Price, PenaltySampleSizeHalf, PenaltySampleSizeNoPercent, SampleSizets, SampleSizeHalfts
 
         If ($PoolConfig.BrainConfig.UseTransferFile -or $Config.PoolsConfig.$BrainName.BrainDebug) { 
-            ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Out-File -FilePath $BrainDataFile -Force -Encoding utf8NoBOM -ErrorAction Ignore
+            ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Out-File -FilePath $BrainDataFile -Force -ErrorAction Ignore
         }
 
         $Variables.BrainData.Remove($BrainName)
@@ -187,7 +187,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
         $_.InvocationInfo | Format-List -Force >> "Logs\Error.txt"
     }
 
-    $Duration = ((Get-Date) - $StartTime).TotalSeconds
+    $Duration = ([DateTime]::Now - $StartTime).TotalSeconds
     $Durations += ($Duration, $Variables.Interval | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum)
     $Durations = @($Durations | Select-Object -Last 20)
 
@@ -195,7 +195,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
 
     Remove-Variable AlgoData, Duration -ErrorAction Ignore
 
-    While ($CurDate -ge $Variables.PoolDataCollectedTimeStamp -or (Get-Date).ToUniversalTime().AddSeconds([Int]($Durations | Measure-Object -Average | Select-Object -ExpandProperty Average) + 3) -le $Variables.EndCycleTime) { 
+    While ($CurDate -ge $Variables.PoolDataCollectedTimeStamp -or ([DateTime]::Now).ToUniversalTime().AddSeconds([Int]($Durations | Measure-Object -Average | Select-Object -ExpandProperty Average) + 3) -le $Variables.EndCycleTime) { 
         Start-Sleep -Seconds 1
     }
 

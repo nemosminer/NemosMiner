@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\APIServer.psm1
-Version:        5.0.0.3
-Version date:   2023/09/15
+Version:        5.0.0.4
+Version date:   2023/09/22
 #>
 
 Function Start-APIServer { 
@@ -47,7 +47,7 @@ Function Start-APIServer {
             [Void]$TCPclient.Dispose()
 
             # Start API server
-            If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Encoding utf8NoBOM -Force -ErrorAction Ignore}
+            If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): API ($APIVersion) started." | Out-File $Config.APILogFile -Force -ErrorAction Ignore}
 
             # Setup runspace to launch the API server in a separate thread
             $Variables.APIRunspace = [RunspaceFactory]::CreateRunspace()
@@ -102,7 +102,7 @@ Function Start-APIServer {
                         # Determine the requested resource and parse query strings
                         $Path = $Request.Url.LocalPath
 
-                        If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore }
+                        If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): $($Request.Url)" | Out-File $Config.APILogFile -Append -ErrorAction Ignore }
 
                         If ($Request.HttpMethod -eq "GET") { 
                             # Parse any parameters in the URL - $Request.Url.Query looks like "+ ?a=b&c=d&message=Hello%20world"
@@ -167,7 +167,7 @@ Function Start-APIServer {
                                     $Message = "$($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" }) disabled."
                                     Write-Message -Level Verbose "Web GUI: $Message"
                                     $Data += "`n$Message"
-                                    $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Out-File -FilePath $Variables.PoolsConfigFile -Force -Encoding utf8NoBOM
+                                    $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Out-File -FilePath $Variables.PoolsConfigFile -Force
                                 }
                                 Else { 
                                     $Data = "No matching stats found."
@@ -196,7 +196,7 @@ Function Start-APIServer {
                                     $Message = "$($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" }) enabled."
                                     Write-Message -Level Verbose "Web GUI: $Message"
                                     $Data += "`n$Message"
-                                    $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Out-File -FilePath $Variables.PoolsConfigFile -Force -Encoding utf8NoBOM
+                                    $PoolsConfig | Get-SortedObject | ConvertTo-Json -Depth 10 | Out-File -FilePath $Variables.PoolsConfigFile -Force
                                 }
                                 Else { 
                                     $Data = "No matching stats found."
@@ -976,7 +976,7 @@ Function Start-APIServer {
                                 Break
                             }
                             "/workers" { 
-                                If ($Config.ShowWorkerStatus -and $Config.MonitoringUser -and $Config.MonitoringServer -and $Variables.WorkersLastUpdated -lt (Get-Date).AddSeconds(-30)) { 
+                                If ($Config.ShowWorkerStatus -and $Config.MonitoringUser -and $Config.MonitoringServer -and $Variables.WorkersLastUpdated -lt ([DateTime]::Now).AddSeconds(-30)) { 
                                     Read-MonitoringData
                                 }
                                 $Workers = [System.Collections.ArrayList]@(
@@ -1057,7 +1057,7 @@ Function Start-APIServer {
                         $Response.StatusCode = $StatusCode
                         $ResponseBuffer = [System.Text.Encoding]::UTF8.GetBytes($Data)
                         $Response.ContentLength64 = $ResponseBuffer.Length
-                        # If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss") Response: $Data" | Out-File $Config.APILogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore }
+                        # If ($Config.APILogFile) { "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss") Response: $Data" | Out-File $Config.APILogFile -Append -ErrorAction Ignore }
                         $Response.OutputStream.Write($ResponseBuffer, 0, $ResponseBuffer.Length)
                         $Response.Close()
                     }
@@ -1067,7 +1067,7 @@ Function Start-APIServer {
                 }
             ) # End of $APIServer
 
-            $Variables.APIRunspace | Add-Member -Force @{ PowerShell = $PowerShell; StartTime = $((Get-Date).ToUniversalTime()) }
+            $Variables.APIRunspace | Add-Member -Force @{ PowerShell = $PowerShell; StartTime = $(([DateTime]::Now).ToUniversalTime()) }
 
             $Powershell.BeginInvoke() | Out-Null
 

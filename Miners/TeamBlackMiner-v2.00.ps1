@@ -17,13 +17,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.3
-Version date:   2023/09/15
+Version:        5.0.0.4
+Version date:   2023/09/22
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.CUDAVersion -ge "11.6") })) { Return }
 
-$URI = "https://github.com/sp-hash/TeamBlackMiner/releases/download/v1.99/TeamBlackMiner_1_99_cuda_12.7z"
+$URI = "https://github.com/sp-hash/TeamBlackMiner/releases/download/v2.00/TeamBlackMiner_2_00_cuda_12.7z"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\TBMiner.exe"
 
@@ -49,9 +49,11 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("VertHash");            Type = "INTEL"; Fee = 0.01;  MinMemGiB = 3.0;  MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(60, 60); ExcludePools = @(@(), @());           Arguments = " --algo verthash --verthash-data ..\.$($Variables.VerthashDatPath)" }
 
     [PSCustomObject]@{ Algorithms = @("EtcHash");             Type = "NVIDIA"; Fee = 0.005; MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 15); ExcludePools = @(@(), @());           Arguments = " --algo etchash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "Ethash3B"); Type = "NVIDIA"; Fee = 0.005; MinMemGiB = 1.24; Minerset = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 15); ExcludePools = @(@(), @());           Arguments = " --algo etc+ethb3" }
     [PSCustomObject]@{ Algorithms = @("EtcHash", "KawPow");   Type = "NVIDIA"; Fee = 0.005; MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 45); ExcludePools = @(@(), @("ZergPool")); Arguments = " --algo etc+rvn" }
     [PSCustomObject]@{ Algorithms = @("EtcHash", "VertHash"); Type = "NVIDIA"; Fee = 0.005; MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(60, 45); ExcludePools = @(@(), @());           Arguments = " --algo etc+vtc --verthash-data ..\.$($Variables.VerthashDatPath)" }
     [PSCustomObject]@{ Algorithms = @("Ethash");              Type = "NVIDIA"; Fee = 0.005; MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 15); ExcludePools = @(@(), @());           Arguments = " --algo ethash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithms = @("Ethash", "Ethash3B");  Type = "NVIDIA"; Fee = 0.005; MinMemGiB = 1.24; Minerset = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 15); ExcludePools = @(@(), @());           Arguments = " --algo eth+ethb3" }
     [PSCustomObject]@{ Algorithms = @("Ethash", "KawPow");    Type = "NVIDIA"; Fee = 0.005; MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 45); ExcludePools = @(@(), @("ZergPool")); Arguments = " --algo eth+rvn" }
     [PSCustomObject]@{ Algorithms = @("Ethash", "VertHash");  Type = "NVIDIA"; Fee = 0.005; MinMemGiB = 1.51; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(60, 45); ExcludePools = @(@(), @());           Arguments = " --algo eth+vtc --verthash-data ..\.$($Variables.VerthashDatPath)" }
     [PSCustomObject]@{ Algorithms = @("Ethash3B");            Type = "NVIDIA"; Fee = 0.005; MinMemGiB = 1.24; Minerset = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 15); ExcludePools = @(@(), @());           Arguments = " --algo ethash3b" }
@@ -93,6 +95,7 @@ If ($Algorithms) {
                             If ($Pool0.Pass) { $Arguments += " --server-passwd $($Pool0.Pass)" }
 
                             $SecondAlgo = Switch ($_.Algorithms[1]) { 
+                                "Ethash3B" { "ethb3" }
                                 "KawPow"   { "rvn" }
                                 "VertHash" { "vtc" }
                                 Default    { "" }
@@ -106,7 +109,7 @@ If ($Algorithms) {
                             # Apply tuning parameters
                             If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
 
-                            If ($_.Algorithms[0] -eq "VertHash" -and (Get-Item -Path $Variables.VerthashDatPath -ErrorAction Ignore).length -ne 1283457024) { 
+                            If ($_.Algorithms -contains "VertHash" -and (Get-Item -Path $Variables.VerthashDatPath -ErrorAction Ignore).length -ne 1283457024) { 
                                 $PrerequisitePath = $Variables.VerthashDatPath
                                 $PrerequisiteURI = "https://github.com/Minerx117/miners/releases/download/Verthash.Dat/VertHash.dat"
                             }

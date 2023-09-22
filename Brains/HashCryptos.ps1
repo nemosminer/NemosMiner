@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Brains\MiningDutch.ps1
-Version:        5.0.0.3
-Version date:   2023/09/15
+Version:        5.0.0.4
+Version date:   2023/09/22
 #>
 
 using module ..\Includes\Include.psm1
@@ -43,7 +43,7 @@ $Useragent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 
 While ($PoolConfig = $Config.PoolsConfig.$BrainName) { 
 
-    $StartTime = Get-Date
+    $StartTime = [DateTime]::Now
 
     Try { 
 
@@ -62,7 +62,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
             }
         } While ($AlgoData.PSObject.Properties.Name.Count -lt 2)
 
-        $CurDate = (Get-Date).ToUniversalTime()
+        $CurDate = ([DateTime]::Now).ToUniversalTime()
 
         # Change numeric string to numbers, some values are null
         $AlgoData = ($AlgoData | ConvertTo-Json) -replace ': "(\d+\.?\d*)"', ': $1' -replace '": null', '": 0' | ConvertFrom-Json
@@ -116,7 +116,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
         $AlgoData.PSObject.Properties.Name | ForEach-Object { $AlgoData.$_ | Add-Member Updated $CurDate -Force }
 
         If ($PoolConfig.BrainConfig.UseTransferFile -or $Config.PoolsConfig.$BrainName.BrainDebug) { 
-            ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Out-File -FilePath $BrainDataFile -Force -Encoding utf8NoBOM -ErrorAction Ignore
+            ($AlgoData | ConvertTo-Json).replace("NaN", 0) | Out-File -FilePath $BrainDataFile -Force -ErrorAction Ignore
         }
 
         $Variables.BrainData.Remove($BrainName)
@@ -133,7 +133,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
         $_.InvocationInfo | Format-List -Force >> "Logs\Error.txt"
     }
 
-    $Duration = ((Get-Date) - $StartTime).TotalSeconds
+    $Duration = ([DateTime]::Now - $StartTime).TotalSeconds
     $Durations += ($Duration, $Variables.Interval | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum)
     $Durations = @($Durations | Select-Object -Last 20)
 
@@ -141,7 +141,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
 
     Remove-Variable AlgoData, Duration -ErrorAction Ignore
 
-    While ($CurDate -ge $Variables.PoolDataCollectedTimeStamp -or (Get-Date).ToUniversalTime().AddSeconds([Int]($Durations | Measure-Object -Average | Select-Object -ExpandProperty Average) + 3) -le $Variables.EndCycleTime) { 
+    While ($CurDate -ge $Variables.PoolDataCollectedTimeStamp -or ([DateTime]::Now).ToUniversalTime().AddSeconds([Int]($Durations | Measure-Object -Average | Select-Object -ExpandProperty Average) + 3) -le $Variables.EndCycleTime) { 
         Start-Sleep -Seconds 1
     }
 

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        5.0.0.3
-Version date:   2023/09/15
+Version:        5.0.0.4
+Version date:   2023/09/22
 #>
 
 using module .\Includes\Include.psm1
@@ -276,7 +276,7 @@ Set-Location (Split-Path $MyInvocation.MyCommand.Path)
 
 @"
 NemosMiner
-Copyright (c) 2018-$((Get-Date).Year) Nemo, MrPlus & UselessGuru
+Copyright (c) 2018-$(([DateTime]::Now).Year) Nemo, MrPlus & UselessGuru
 This is free software, and you are welcome to redistribute it under certain conditions.
 https://github.com/Minerx117/NemosMiner/blob/master/LICENSE
 "@
@@ -293,7 +293,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"5.0.0.3"
+    Version      = [System.Version]"5.0.0.4"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -347,7 +347,7 @@ If ($Config.Transcript) { Start-Transcript -Path ".\Debug\$((Get-Item $MyInvocat
 # Start Log reader (SnakeTail) [https://github.com/snakefoot/snaketail-net]
 Start-LogReader
 
-Write-Message -Level Info "Starting $($Variables.Branding.ProductLabel)® v$($Variables.Branding.Version) © 2017-$((Get-Date).Year) Nemo, MrPlus and UselessGuru"
+Write-Message -Level Info "Starting $($Variables.Branding.ProductLabel)® v$($Variables.Branding.Version) © 2017-$(([DateTime]::Now).Year) Nemo, MrPlus and UselessGuru"
 If (-not $Variables.FreshConfig) { Write-Message -Level Info "Using configuration file '$($Variables.ConfigFile)'." }
 Write-Message -Level Info "PWSH version $($PSVersiontable.PSVersion)"
 Write-Host ""
@@ -485,7 +485,7 @@ If ($Variables.DriverVersion.OpenCL.NVIDIA) {
 # Driver version changed
 If ((Get-Content -Path ".\Cache\DriverVersion.json" | ConvertFrom-Json | ConvertTo-Json -Compress) -ne ($Variables.DriverVersion | ConvertTo-Json -Compress)) { 
     If (Test-Path -Path ".\Cache\DriverVersion.json" -PathType Leaf) { Write-Message -Level Warn "Graphis card driver version data changed. It is recommended to re-benchmark all miners." }
-    $Variables.DriverVersion | ConvertTo-Json | Out-File -FilePath ".\Cache\DriverVersion.json" -Encoding utf8NoBOM -Force
+    $Variables.DriverVersion | ConvertTo-Json | Out-File -FilePath ".\Cache\DriverVersion.json" -Force
 }
 
 # Start API server
@@ -512,10 +512,10 @@ If ($Variables.FreshConfig) {
 Function MainLoop { 
 
     # Core watchdog. Sometimes core loop gets stuck
-    If (-not $Variables.SuspendCycle -and $Variables.EndCycleTime -and $Variables.MiningStatus -eq "Running" -and (Get-Date).ToUniversalTime() -gt $Variables.EndCycleTime.AddSeconds(10 * $Config.Interval)) { 
+    If (-not $Variables.SuspendCycle -and $Variables.EndCycleTime -and $Variables.MiningStatus -eq "Running" -and ([DateTime]::Now).ToUniversalTime() -gt $Variables.EndCycleTime.AddSeconds(10 * $Config.Interval)) { 
         Write-Message -Level Warn "Core cycle is stuck - restarting..."
         Stop-Core -Quick
-        $Variables.EndCycleTime = (Get-Date).ToUniversalTime()
+        $Variables.EndCycleTime = ([DateTime]::Now).ToUniversalTime()
         $Variables.MiningStatus = $Variables.NewMiningStatus
         Start-Core
     }
@@ -535,7 +535,7 @@ Function MainLoop {
                     Stop-Brain
                     Stop-IdleDetection
                     Stop-BalancesTracker
-                    Write-MonitoringData | Out-Null
+                    Write-MonitoringData
 
                     If ($Variables.MiningStatus -and $LegacyGUIform) { 
                         $MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel) is stopped"
@@ -558,7 +558,7 @@ Function MainLoop {
                     Stop-Brain @($Variables.Brains.psBase.Keys | Where-Object { $_ -notin (Get-PoolBaseName $Variables.PoolName) })
                     Start-Brain @(Get-PoolBaseName $Variables.PoolName)
                     Start-BalancesTracker
-                    Write-MonitoringData | Out-Null
+                    Write-MonitoringData
 
                     If ($LegacyGUIform) { 
                         $MiningStatusLabel.Text = "$($Variables.Branding.ProductLabel) is paused"
@@ -589,7 +589,7 @@ Function MainLoop {
                         $ButtonStop.Enabled = $true
                     }
 
-                    If ($Variables.ContinousCycleStarts -eq 1) { 
+                    If ($Variables.CycleStarts.Count -eq 1) { 
                         $Variables.Summary = "$($Variables.Branding.ProductLabel) is getting ready.<br>Please wait..."
                         Write-Host "`n"
                         Write-Message -Level Info ($Variables.Summary -replace '<br>', ' ')
@@ -617,7 +617,7 @@ Function MainLoop {
                 }
                 Else { 
                     Write-Message -Level Debug "'<Ctrl><Alt>P' pressed. Core cycle is running again."
-                    If ((Get-Date).ToUniversalTime() -gt $Variables.EndCycleTime) { $Variables.EndCycleTime = (Get-Date).ToUniversalTime() }
+                    If (([DateTime]::Now).ToUniversalTime() -gt $Variables.EndCycleTime) { $Variables.EndCycleTime = ([DateTime]::Now).ToUniversalTime() }
                 }
             }
             Else { 
@@ -779,7 +779,7 @@ Function MainLoop {
     If ($Variables.RefreshNeeded) { 
         $Variables.RefreshNeeded = $false
 
-        $host.UI.RawUI.WindowTitle = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) - Runtime: {0:dd} days {0:hh} hrs {0:mm} mins - Path: $($Variables.Mainpath)" -f [TimeSpan]((Get-Date).ToUniversalTime() - $Variables.ScriptStartTime)
+        $host.UI.RawUI.WindowTitle = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) - Runtime: {0:dd} days {0:hh} hrs {0:mm} mins - Path: $($Variables.Mainpath)" -f [TimeSpan](([DateTime]::Now).ToUniversalTime() - $Variables.ScriptStartTime)
         If ($LegacyGUIForm) { $LegacyGUIForm.Text = $host.UI.RawUI.WindowTitle }
 
         # Refresh selected tab
@@ -796,7 +796,7 @@ Function MainLoop {
         }
 
         If ($Config.ShowConsole) { 
-            If ($Variables.Timer) { Clear-Host }
+            If ($Variables.CycleStarts.Count -gt 1) { Clear-Host }
 
             # Get and display earnings stats
             If ($Variables.Balances -and $Variables.ShowPoolBalances) { 
@@ -820,10 +820,6 @@ Function MainLoop {
                     Write-Host "Projected payment date: $(If ($_.ProjectedPayDate -is [DateTime]) { $_.ProjectedPayDate.ToString("G") } Else { $_.ProjectedPayDate })`n"
                 }
                 Remove-Variable Currency -ErrorAction Ignore
-            }
-            If ($Variables.MinersMissingBinary) { 
-                Write-Host "`n"
-                Write-Host "Some miners binaries are missing, downloader is installing miner binaries..." -ForegroundColor Yellow
             }
 
             If ($Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
@@ -862,13 +858,12 @@ Function MainLoop {
                     $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object Benchmark)
                     $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object MeasurePowerUsage)
                     $MinersDeviceGroup | Where-Object { 
-                        $Config.ShowAllMiners -or <#List all miners#>
+                        $Variables.ShowAllMiners -or <# List all miners #>
                         $MinersDeviceGroupNeedingBenchmark.Count -gt 0 -or <# List all miners when benchmarking #>
                         $MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 0 -or <# List all miners when measuring power usage #>
                         $_.$Bias -ge ($MinersDeviceGroup.$Bias | Sort-Object -Bottom 5 | Select-Object -Index 0) <# Always list at least the top 5 miners per device group #>
                     } | Sort-Object -Property @{ Expression = { $_.Benchmark }; Descending = $true }, @{ Expression = { $_.MeasurePowerUsage }; Descending = $true }, @{ Expression = { $_.KeepRunning }; Descending = $true }, @{ Expression = { $_.Prioritize }; Descending = $true }, @{ Expression = { $_.$Bias }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }, @{ Expression = { $_.Algorithms[0] }; Descending = $false }, @{ Expression = { $_.Algorithms[1] }; Descending = $false } | 
-                    Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If (($_.Group.Devices.Name | Sort-Object -Unique).Count -gt 1) { " group" })"; Expression = { "$($_.DeviceNames -join ',') [$(($Variables.Devices | Where-Object Name -In $_.DeviceNames).Model -join ', ')]" } } -AutoSize | Out-Host
-                    Remove-Variable Miner_Table
+                    Format-Table $Miner_Table -GroupBy @{ Name = "Device$(If ($MinersDeviceGroup[0].DeviceNames.Count -gt 1) { " group" })"; Expression = { "$($MinersDeviceGroup[0].DeviceNames -join ',') [$(($Variables.EnabledDevices | Where-Object Name -In $MinersDeviceGroup[0].DeviceNames).Model -join ', ')]" } } -AutoSize | Out-Host
 
                     # Display benchmarking progress
                     If ($MinersDeviceGroupNeedingBenchmark) { 
@@ -879,10 +874,7 @@ Function MainLoop {
                         "Power usage measurement for device$(If (($MinersDeviceGroup.Devices.Name | Sort-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring." | Out-Host
                     }
                 }
-                Remove-Variable Bias, MinersDeviceGroup, MinersDeviceGroupNeedingBenchmark, MinersDeviceGroupNeedingPowerUsageMeasurement -ErrorAction Ignore
-            }
-            ElseIf ($Variables.Miners) { 
-                Write-Host "No miners running. Waiting for next cycle."
+                Remove-Variable Bias, Miner_Table, MinersDeviceGroup, MinersDeviceGroupNeedingBenchmark, MinersDeviceGroupNeedingPowerUsageMeasurement -ErrorAction Ignore
             }
 
             If ($Variables.MinersBest_Combo) { 
@@ -890,7 +882,7 @@ Function MainLoop {
                 [System.Collections.ArrayList]$Miner_Table = @(
                     @{ Label = "Hashrate(s)"; Expression = { (($_.Hashrates_Live | ForEach-Object { If ([Double]::IsNaN($_)) { "n/a" } Else { "$($_ | ConvertTo-Hash)/s" } }) -join ' & ') -replace '\s+', ' ' }; Align = "right" }
                     If ($Config.CalculatePowerCost -and $Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ([Double]::IsNaN($_.PowerUsage_Live)) { "n/a" } Else { "$($_.PowerUsage_Live.ToString("N2")) W" } }; Align = "right" } }
-                    @{ Label = "Active (this run)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f ((Get-Date).ToUniversalTime() - $_.BeginTime) } }
+                    @{ Label = "Active (this run)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f (([DateTime]::Now).ToUniversalTime() - $_.BeginTime) } }
                     @{ Label = "Active (total)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f ($_.TotalMiningDuration) } }
                     @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
                     @{ Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }
@@ -898,15 +890,16 @@ Function MainLoop {
                     @{ Label = "Command"; Expression = { $_.CommandLine } }
                 )
                 $Variables.MinersBest_Combo | Sort-Object -Property DeviceNames | Format-Table $Miner_Table -Wrap | Out-Host
+                Remove-Variable Miner_Table
             }
 
             If ($Variables.UIStyle -eq "full" -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
-                If ($ProcessesIdle = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Idle" -and $_.GetActiveLast().ToLocalTime().AddHours(24) -gt (Get-Date) })) { 
+                If ($ProcessesIdle = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Idle" -and $_.GetActiveLast().ToLocalTime().AddHours(24) -gt ([DateTime]::Now) })) { 
                     Write-Host " $($ProcessesIdle.Count) previously executed miner$(If ($ProcessesIdle.Count -ne 1) { "s" }) in the past 24 hrs:"
                     [System.Collections.ArrayList]$Miner_Table = @(
                         @{ Label = "Hashrate(s)"; Expression = { (($_.Workers.Hashrate | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ') -replace '\s+', ' ' }; Align = "right" }
                         If ($Config.CalculatePowerCost -and $Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W" } }; Align = "right" } }
-                        @{ Label = "Time since last run"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }
+                        @{ Label = "Time since last run"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $(([DateTime]::Now) - $_.GetActiveLast().ToLocalTime()) } }
                         @{ Label = "Active (total)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $_.TotalMiningDuration } }
                         @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
                         @{ Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }
@@ -914,15 +907,16 @@ Function MainLoop {
                         @{ Label = "Command"; Expression = { $_.CommandLine } }
                     )
                     $ProcessesIdle | Sort-Object { $_.GetActiveLast } -Descending | Select-Object -First ($MinersDeviceGroup.Count * 3) | Format-Table $Miner_Table -Wrap | Out-Host
+                    Remove-Variable Miner_Table
                 }
                 Remove-Variable ProcessesIdle
 
-                If ($ProcessesFailed = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Failed" -and $_.GetActiveLast().ToLocalTime().AddHours(24) -gt (Get-Date)})) { 
+                If ($ProcessesFailed = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Failed" -and $_.GetActiveLast().ToLocalTime().AddHours(24) -gt ([DateTime]::Now)})) { 
                     Write-Host -ForegroundColor Red "$($ProcessesFailed.Count) failed $(If ($ProcessesFailed.Count -eq 1) { "miner" } Else { "miners" }) in the past 24 hrs:"
                     [System.Collections.ArrayList]$Miner_Table = @(
                         @{ Label = "Hashrate(s)"; Expression = { (($_.Workers.Hashrate | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ') -replace '\s+', ' ' }; Align = "right" }
                         If ($Config.CalculatePowerCost -and $Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W" } }; Align = "right" } }
-                        @{ Label = "Time since last fail"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $((Get-Date) - $_.GetActiveLast().ToLocalTime()) } }
+                        @{ Label = "Time since last fail"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $(([DateTime]::Now) - $_.GetActiveLast().ToLocalTime()) } }
                         @{ Label = "Active (total)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f $_.TotalMiningDuration } }
                         @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }
                         @{ Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }
@@ -940,13 +934,13 @@ Function MainLoop {
                         @{Label = "Pool"; Expression = { $_.PoolName } }, 
                         @{Label = "Algorithm"; Expression = { $_.Algorithm } }, 
                         @{Label = "Device(s)"; Expression = { $_.DeviceNames -join ',' } }, 
-                        @{Label = "Last Updated"; Expression = { "{0:mm} min {0:ss} sec ago" -f ((Get-Date).ToUniversalTime() - $_.Kicked) }; Align = "right" }
+                        @{Label = "Last Updated"; Expression = { "{0:mm} min {0:ss} sec ago" -f (([DateTime]::Now).ToUniversalTime() - $_.Kicked) }; Align = "right" }
                     ) | Out-Host
                 }
             }
 
             If ($Variables.MiningStatus -eq "Running") { 
-                If ($Variables.Timer) { $Variables.Summary -split '<br>' | ForEach-Object { Write-Host ($_ -replace '&ensp;', ' ' -replace '/ ', '/') } }
+                If ($Variables.Timer) { Write-Host ($Variables.Summary -replace '<br>', ' ' -replace '&ensp;', ' ' -replace '/ ', '/') }
                 If ($Variables.Miners | Where-Object Available | Where-Object { -not ($_.Benchmark -or $_.MeasurePowerUsage) }) { 
                     If ($Variables.MiningProfit -lt 0) { 
                         # Mining causes a loss
@@ -958,7 +952,7 @@ Function MainLoop {
                     }
                 }
 
-                If ($Variables.Timer) { 
+                If ($Variables.CycleStarts.Count -gt 1 -or $Variables.Miners) { 
                     $StatusInfo = "Last refresh: $($Variables.BeginCycleTime.ToLocalTime().ToString('G'))   |   Next refresh: $($Variables.EndCycleTime.ToLocalTime().ToString('G'))   |   Hot Keys: $(If ($Variables.CalculatePowerCost) { "[abcefimnprstuvwy]" } Else { "[abefimnpsvwy]" })   |   Press 'h' for help"
                     Write-Host ("-" * $StatusInfo.Length)
                     Write-Host -ForegroundColor Yellow $StatusInfo

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\LegacyGUI.psm1
-Version:        5.0.0.3
-Version date:   2023/09/15
+Version:        5.0.0.4
+Version date:   2023/09/22
 #>
 
 # [Void] [System.Windows.Forms.Application]::EnableVisualStyles()
@@ -148,7 +148,7 @@ Function Update-TabControl {
             If ($Variables.MinersBest_Combo) { 
 
                 If (-not ($ContextMenuStrip.Visible -and $ContextMenuStrip.Enabled)) { 
-                    $LaunchedMinersLabel.Text = "Launched Miners - Updated $((Get-Date).ToString())"
+                    $LaunchedMinersLabel.Text = "Launched Miners - Updated $(([DateTime]::Now).ToString())"
 
                     $LaunchedMinersDGV.BeginInit()
                     $LaunchedMinersDGV.ClearSelection()
@@ -163,7 +163,7 @@ Function Update-TabControl {
                         @{ Name = "Algorithm(s)"; Expression = { $_.Algorithms -join ' & ' } }, 
                         @{ Name = "Pool(s)"; Expression = { $_.WorkersRunning.Pool.Name -join ' & ' } }
                         @{ Name = "Hashrate(s)"; Expression = { If (-not $_.Benchmark) { ($_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" -replace '\s+', ' ' }) -join ' & ' } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } } }
-                        @{ Name = "Running Time`r(hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [Math]::floor(((Get-Date).ToUniversalTime() - $_.BeginTime).TotalDays * 24), ((Get-Date).ToUniversalTime() - $_.BeginTime) } }
+                        @{ Name = "Running Time`r(hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [Math]::floor((([DateTime]::Now).ToUniversalTime() - $_.BeginTime).TotalDays * 24), (([DateTime]::Now).ToUniversalTime() - $_.BeginTime) } }
                         @{ Name = "Total active`r(hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [Math]::floor($_.TotalMiningDuration.TotalDays * 24), $_.TotalMiningDuration } }
                         If ($RadioButtonPoolsUnavailable.checked) { @{ Name = "Reason"; Expression = { $_.Reasons -join ', ' } } }
                     ) | Sort-Object -Property "Device(s)" | Out-DataTable
@@ -348,7 +348,7 @@ Function Update-TabControl {
             $ContextMenuStripItem5.Visible = (-not $RadioButtonMinersBest.Checked)
 
             If ($Variables.Miners) { 
-                $MinersLabel.Text = "Miner data read from stats - Updated $((Get-Date).ToString())"
+                $MinersLabel.Text = "Miner data read from stats - Updated $(([DateTime]::Now).ToString())"
 
                 If (-not ($ContextMenuStrip.Visible -and $ContextMenuStrip.Enabled)) { 
 
@@ -402,7 +402,7 @@ Function Update-TabControl {
             $ContextMenuStripItem5.Visible = $false
 
             If ($Variables.Pools) { 
-                $PoolsLabel.Text = "Pool data read from stats - Updated $((Get-Date).ToString())"
+                $PoolsLabel.Text = "Pool data read from stats - Updated $(([DateTime]::Now).ToString())"
 
                 If (-not ($ContextMenuStrip.Visible -and $ContextMenuStrip.Enabled)) { 
 
@@ -528,7 +528,7 @@ Function Update-TabControl {
 
             If ($Config.Watchdog) { 
                 If ($Variables.WatchdogTimers) { 
-                    $WatchdogTimersLabel.Text = "Watchdog Timers - Updated $((Get-Date).ToString())"
+                    $WatchdogTimersLabel.Text = "Watchdog Timers - Updated $(([DateTime]::Now).ToString())"
 
                     $WatchdogTimersDGV.BeginInit()
                     $WatchdogTimersDGV.ClearSelection()
@@ -773,7 +773,7 @@ $CopyrightLabel.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $CopyrightLabel.Location = [System.Drawing.Point]::new(10, ($LegacyGUIForm.Bottom - 26))
 $CopyrightLabel.LinkColor = [System.Drawing.Color]::Blue
 $CopyrightLabel.Size = New-Object System.Drawing.Size(380, 26)
-$CopyrightLabel.Text = "Copyright (c) 2018-$((Get-Date).Year) Nemo, MrPlus && UselessGuru"
+$CopyrightLabel.Text = "Copyright (c) 2018-$(([DateTime]::Now).Year) Nemo, MrPlus && UselessGuru"
 $CopyrightLabel.TextAlign = "MiddleRight"
 $CopyrightLabel.Add_Click({ Start-Process "https://github.com/Minerx117/NemosMiner/blob/master/LICENSE" })
 $LegacyGUIControls += $CopyrightLabel
@@ -1588,7 +1588,7 @@ $LegacyGUIForm.Add_FormClosing(
 
                 If ($LegacyGUIForm.DesktopBounds.Width -ge 0) { 
                     # Save window settings
-                    $LegacyGUIForm.DesktopBounds | ConvertTo-Json | Out-File -FilePath ".\Config\WindowSettings.json" -Force -Encoding utf8NoBOM -ErrorAction Ignore
+                    $LegacyGUIForm.DesktopBounds | ConvertTo-Json | Out-File -FilePath ".\Config\WindowSettings.json" -Force -ErrorAction Ignore
                 }
 
                 Write-Message -Level Info "$($Variables.Branding.ProductLabel) has shut down."

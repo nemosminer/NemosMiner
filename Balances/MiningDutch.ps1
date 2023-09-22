@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Balances\MiningDutch.ps1
-Version:        5.0.0.3
-Version date:   2023/09/15
+Version:        5.0.0.4
+Version date:   2023/09/22
 #>
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
@@ -46,11 +46,11 @@ While (-not $APIResponse -and $RetryCount -gt 0 -and $Config.MiningDutchAPIKey) 
                         $RetryCount = $Config.PoolsConfig.$Name.PoolAPIAllowedFailureCount
 
                         If ($Config.LogBalanceAPIResponse) { 
-                            @{ $Currency = $APIResponse } | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name)_$($Currency).json" -Append -Force -Encoding utf8NoBOM -ErrorAction Ignore
+                            @{ $Currency = $APIResponse } | ConvertTo-Json -Depth 10 | Out-File -FilePath ".\Logs\BalanceAPIResponse_$($Name)_$($Currency).json" -Append -Force -ErrorAction Ignore
                         }
 
                         [PSCustomObject]@{ 
-                            DateTime        = (Get-Date).ToUniversalTime()
+                            DateTime        = ([DateTime]::Now).ToUniversalTime()
                             Pool            = $Name
                             Currency        = $Currency
                             Wallet          = $Config.MiningDutchUserName

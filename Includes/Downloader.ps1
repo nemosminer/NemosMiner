@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\Downloader.ps1
-Version:        5.0.0.3
-Version date:   2023/09/15
+Version:        5.0.0.4
+Version date:   2023/09/22
 #>
 
 using module .\Includes\Include.psm1
@@ -37,7 +37,7 @@ $DownloadList | Select-Object | ForEach-Object {
 
     If (-not (Test-Path -Path $Path -PathType Leaf)) { 
         Try { 
-            Write-Message -Level Info "Downloader: Initiated download of '$URI'."
+            Write-Message -Level Info "Downloader:<br>Initiated download of '$URI'."
 
             If ($URI -and (Split-Path $URI -Leaf) -eq (Split-Path $Path -Leaf)) { 
                 New-Item (Split-Path $Path) -ItemType Directory | Out-Null
@@ -46,16 +46,16 @@ $DownloadList | Select-Object | ForEach-Object {
             Else { 
                 Expand-WebRequest $URI $Path -ErrorAction Stop
             }
-            Write-Message -Level Info "Downloader: Installed downloaded miner binary '$($Path.Replace("$($Variables.MainPath)\", ''))'."
+            Write-Message -Level Info "Downloader:<br>Installed downloaded miner binary '$($Path.Replace("$($Variables.MainPath)\", ''))'."
         }
         Catch { 
             $Path_Old = $null
 
-            If ($URI) { Write-Message -Level Warn "Downloader: Cannot download '$(Split-Path $Path -Leaf)' distributed at '$URI'." }
-            Else { Write-Message -Level Warn "Downloader: Cannot download '$(Split-Path $Path -Leaf)'." }
+            If ($URI) { Write-Message -Level Warn "Downloader:<br>Cannot download '$(Split-Path $Path -Leaf)' distributed at '$URI'." }
+            Else { Write-Message -Level Warn "Downloader:<br>Cannot download '$(Split-Path $Path -Leaf)'." }
 
             If ($Searchable) { 
-                Write-Message -Level Info "Downloader: Searching for $(Split-Path $Path -Leaf) on local computer..."
+                Write-Message -Level Info "Downloader:<br>Searching for $(Split-Path $Path -Leaf) on local computer..."
 
                 $Path_Old = Get-PSDrive -PSProvider FileSystem | ForEach-Object { Get-ChildItem -Path $_.Root -Include (Split-Path $Path -Leaf) -Recurse } | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
                 $Path_New = $Path
@@ -64,14 +64,14 @@ $DownloadList | Select-Object | ForEach-Object {
             If ($Path_Old) { 
                 If (Test-Path -Path (Split-Path $Path_New) -PathType Container) { (Split-Path $Path_New) | Remove-Item -Recurse -Force }
                 (Split-Path $Path_Old) | Copy-Item -Destination (Split-Path $Path_New) -Recurse -Force
-                Write-Message -Level Info "Downloader: Copied '$($Path.Replace("$($Variables.MainPath)\", ''))' from local repository '$PathOld'."
+                Write-Message -Level Info "Downloader:<br>Copied '$($Path.Replace("$($Variables.MainPath)\", ''))' from local repository '$PathOld'."
             }
             Else { 
-                If ($URI) { Write-Message -Level Warn "Downloader: Cannot find '$($Path.Replace("$($Variables.MainPath)\", ''))' distributed at '$URI'." }
-                Else { Write-Message -Level Warn "Downloader: Cannot find '$($Path.Replace("$($Variables.MainPath)\", ''))'." }
+                If ($URI) { Write-Message -Level Warn "Downloader:<br>Cannot find '$($Path.Replace("$($Variables.MainPath)\", ''))' distributed at '$URI'." }
+                Else { Write-Message -Level Warn "Downloader:<br>Cannot find '$($Path.Replace("$($Variables.MainPath)\", ''))'." }
             }
         }
     }
 }
 
-Write-Message -Level Info "Downloader: All tasks complete."
+Write-Message -Level Info "Downloader:<br>All tasks complete."

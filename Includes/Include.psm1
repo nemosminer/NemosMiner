@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\include.ps1
-Version:        5.0.0.3
-Version date:   2023/09/15
+Version:        5.0.0.4
+Version date:   2023/09/22
 #>
 
 $Global:DebugPreference = "SilentlyContinue"
@@ -143,7 +143,7 @@ Class Pool {
     [Boolean]$SendHashrate # If true miner will send hashrate to pool
     [Boolean]$SSLSelfSignedCertificate
     [Double]$StablePrice
-    [DateTime]$Updated = (Get-Date).ToUniversalTime()
+    [DateTime]$Updated = ([DateTime]::Now).ToUniversalTime()
     [String]$User
     [String]$WorkerName = ""
     [Nullable[Int]]$Workers
@@ -158,7 +158,7 @@ Class Worker {
     [Double]$Hashrate
     [Pool]$Pool
     [TimeSpan]$TotalMiningDuration
-    [DateTime]$Updated = (Get-Date).ToUniversalTime()
+    [DateTime]$Updated = ([DateTime]::Now).ToUniversalTime()
 }
 
 Enum MinerStatus { 
@@ -178,7 +178,7 @@ Class Miner {
     [String]$Arguments
     [Boolean]$Available = $true
     [String]$BaseName
-    [DateTime]$BeginTime
+    [DateTime]$BeginTime # UniversalTime
     [Boolean]$Benchmark = $false # derived from stats
     [Boolean]$Best = $false
     [String]$CommandLine
@@ -191,7 +191,7 @@ Class Miner {
     [Double]$Earning # derived from pool and stats
     [Double]$Earning_Bias # derived from pool and stats
     [Double]$Earning_Accuracy # derived from pool and stats
-    [DateTime]$EndTime
+    [DateTime]$EndTime # UniversalTime
     [String[]]$EnvVars = @()
     [Double[]]$Hashrates_Live = @()
     [String]$Info
@@ -270,9 +270,9 @@ Class Miner {
 
                 While ($true) { 
                     # Start-Sleep -Seconds 60
-                    $NextLoop = (Get-Date).AddSeconds($Miner.DataCollectInterval)
+                    $NextLoop = ([DateTime]::Now).AddSeconds($Miner.DataCollectInterval)
                     $Miner.GetMinerData()
-                    While ((Get-Date) -lt $NextLoop) { Start-Sleep -Milliseconds 50 }
+                    While (([DateTime]::Now) -lt $NextLoop) { Start-Sleep -Milliseconds 50 }
                 }
             }
             Catch { 
@@ -308,7 +308,7 @@ Class Miner {
         If ($this.Status -eq [MinerStatus]::DryRun) { 
             $this.StatusInfo = "Dry run '$($this.Info)'"
             Write-Message -Level Info "Dry run for miner '$($this.Info)'..."
-            $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
+            $this.StatStart = $this.BeginTime = ([DateTime]::Now).ToUniversalTime()
             $this.WorkersRunning = $this.Workers
         }
         Else { 
@@ -354,7 +354,7 @@ Class Miner {
                     $this.DataSampleTimestamp = [DateTime]0
                     $this.Status = [MinerStatus]::Running
                     $this.SubStatus = "Starting"
-                    $this.StatStart = $this.BeginTime = (Get-Date).ToUniversalTime()
+                    $this.StatStart = $this.BeginTime = ([DateTime]::Now).ToUniversalTime()
                     $this.WorkersRunning = $this.Workers
                     $this.Process = Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue
                     $this.StartDataReader()
@@ -380,7 +380,7 @@ Class Miner {
 
         $this.StopDataReader()
 
-        $this.EndTime = (Get-Date).ToUniversalTime()
+        $this.EndTime = ([DateTime]::Now).ToUniversalTime()
 
         If ($this.Process) { 
             $this.Process.CloseMainWindow()
@@ -469,7 +469,7 @@ Class Miner {
             Return $this.Process.EndTime
         }
         ElseIf ($this.Process.BeginTime) { 
-            Return [DateTime]::Now
+            Return ([DateTime]::Now).ToUniversalTime()
         }
         ElseIf ($this.EndTime) { 
             Return $this.EndTime
@@ -728,7 +728,7 @@ namespace PInvoke.Win32 {
         }
     )
 
-    $Variables.IdleRunspace | Add-Member @{ PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime() }
+    $Variables.IdleRunspace | Add-Member @{ PowerShell = $PowerShell; StartTime = ([DateTime]::Now).ToUniversalTime() }
     $Powershell.BeginInvoke() | Out-Null
 }
 
@@ -752,12 +752,12 @@ Function Start-Core {
         Write-Message -Level Verbose ($Variables.Summary -replace '<br>', ' ')
 
         $Variables.Timer = $null
-        $Variables.LastDonated = (Get-Date).AddDays(-1).AddHours(1)
+        $Variables.LastDonated = ([DateTime]::Now).AddDays(-1).AddHours(1)
         $Variables.Pools = [Pool[]]@()
         $Variables.Miners = [Miner[]]@()
         $Variables.MinersBest_Combo = [Miner[]]@()
 
-        $Variables.ContinousCycleStarts = @()
+        $Variables.CycleStarts = @()
 
         $Runspace = [RunspaceFactory]::CreateRunspace()
         $Runspace.ApartmentState = "STA"
@@ -773,7 +773,7 @@ Function Start-Core {
         $PowerShell.Runspace = $Runspace
         [Void]$Powershell.AddScript("$($Variables.MainPath)\Includes\Core.ps1")
 
-        $Global:CoreRunspace = @{ PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime() }
+        $Global:CoreRunspace = @{ PowerShell = $PowerShell; StartTime = ([DateTime]::Now).ToUniversalTime() }
 
         $Powershell.BeginInvoke() | Out-Null
 
@@ -793,8 +793,8 @@ Function Stop-Core {
         Write-Message -Level Verbose ($Variables.Summary -replace '<br>', ' ')
 
         # Give core loop time to shut down gracefully
-        $Timestamp = (Get-Date).AddSeconds(30)
-        While (-not $Quick -and ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }) -and (Get-Date) -le $Timestamp) { 
+        $Timestamp = ([DateTime]::Now).AddSeconds(30)
+        While (-not $Quick -and ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }) -and ([DateTime]::Now) -le $Timestamp) { 
             Start-Sleep -Seconds 1
         }
 
@@ -804,7 +804,9 @@ Function Stop-Core {
             $Miner.WorkersRunning = [Worker[]]@()
             $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.StatusInfo = $Miner.StatusInfo }
         }
-
+        $Variables.RunningMiners = [Miner[]]@()
+        $Variables.BenchmarkingOrMeasuringMiners = [Miner[]]@()
+        $Variables.FailedMiners = [Miner[]]@()
         $Global:CoreRunspace.PowerShell.Runspace.Dispose()
         Remove-Variable CoreRunspace -Scope Global -ErrorAction Ignore
     }
@@ -818,7 +820,7 @@ Function Stop-Core {
     $Variables.MiningEarning = $Variables.MiningProfit = $Variables.MiningPowerCost = [Double]::NaN
     $Variables.EndCycleTime = $null
     $Variables.WatchdogTimers = @()
-    $Variables.ContinousCycleStarts = @()
+    $Variables.CycleStarts = @()
 
     [System.GC]::Collect()
 }
@@ -852,7 +854,7 @@ Function Start-Brain {
                     $PowerShell.Runspace = $Runspace
                     $Powershell.AddScript($BrainScript)
 
-                    $Variables.Brains.$_ = @{ PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime() }
+                    $Variables.Brains.$_ = @{ PowerShell = $PowerShell; StartTime = ([DateTime]::Now).ToUniversalTime() }
 
                     $PowerShell.BeginInvoke() | Out-Null
 
@@ -915,7 +917,7 @@ Function Start-BalancesTracker {
                 $PowerShell = [PowerShell]::Create()
                 $PowerShell.Runspace = $Runspace
                 [Void]$Powershell.AddScript("$($Variables.MainPath)\Includes\BalancesTracker.ps1")
-                $Variables.BalancesTrackerRunspace = @{ PowerShell = $PowerShell; StartTime = (Get-Date).ToUniversalTime() }
+                $Variables.BalancesTrackerRunspace = @{ PowerShell = $PowerShell; StartTime = ([DateTime]::Now).ToUniversalTime() }
 
                 $Powershell.BeginInvoke() | Out-Null
             }
@@ -1067,7 +1069,7 @@ Function Get-Rate {
 
     $Variables.AllCurrencies = @(@(@($Config.MainCurrency) + @($Config.Wallets.psBase.Keys) + @($Config.ExtraCurrencies) + @($Variables.BalancesCurrencies) | Select-Object) -replace 'mBTC', 'BTC' | Sort-Object -Unique)
 
-    If (-not $Variables.Rates.BTC.($Config.MainCurrency) -or (Compare-Object @(@($Variables.Rates.PSObject.Properties.Name | Select-Object) + @($Variables.RatesMissingCurrencies | Select-Object)) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "=>") -or ($Variables.RatesUpdated -lt (Get-Date).ToUniversalTime().AddMinutes(-(3, ($Config.BalancesTrackerPollInterval, 15 | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum) | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum)))) { 
+    If (-not $Variables.Rates.BTC.($Config.MainCurrency) -or (Compare-Object @(@($Variables.Rates.PSObject.Properties.Name | Select-Object) + @($Variables.RatesMissingCurrencies | Select-Object)) @($Variables.AllCurrencies | Select-Object) | Where-Object SideIndicator -eq "=>") -or ($Variables.RatesUpdated -lt ([DateTime]::Now).ToUniversalTime().AddMinutes(-(3, ($Config.BalancesTrackerPollInterval, 15 | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum) | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum)))) { 
         Try { 
             $TSymBatches = @()
             $TSyms = "BTC"
@@ -1126,9 +1128,9 @@ Function Get-Rate {
                 }
                 Write-Message -Level Info "Loaded currency exchange rates from 'min-api.cryptocompare.com'.$(If ($Variables.RatesMissingCurrencies = Compare-Object @($Currencies | Select-Object) @($Variables.AllCurrencies | Select-Object) -PassThru) { " API does not provide rates for '$($Variables.RatesMissingCurrencies -join ', ')'." })"
                 $Variables.Rates = $Rates
-                $Variables.RatesUpdated = (Get-Date).ToUniversalTime()
+                $Variables.RatesUpdated = ([DateTime]::Now).ToUniversalTime()
 
-                $Variables.Rates | ConvertTo-Json -Depth 5 | Out-File -FilePath $RatesCacheFileName -Encoding utf8NoBOM -Force -ErrorAction Ignore
+                $Variables.Rates | ConvertTo-Json -Depth 5 | Out-File -FilePath $RatesCacheFileName -Force -ErrorAction Ignore
             }
         }
         Catch { 
@@ -1154,6 +1156,8 @@ Function Write-Message {
         [Parameter(Mandatory = $false)]
         [String]$Level = "Info"
     )
+
+    $Message = $Message -replace '<br>', ' ' -replace '&ensp;', ' ' -replace '/ ', '/'
 
     # Make sure we are in main script
     If ($Host.Name -eq "ConsoleHost") { 
@@ -1197,7 +1201,7 @@ Function Write-Message {
 
         # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
         If ($Mutex.WaitOne(1000)) { 
-            $Message | Out-File -FilePath $Variables.LogFile -Append -Encoding utf8NoBOM -ErrorAction Ignore
+            $Message | Out-File -FilePath $Variables.LogFile -Append -ErrorAction Ignore
             [Void]$Mutex.ReleaseMutex()
         }
     }
@@ -1257,7 +1261,7 @@ Function Write-MonitoringData {
 
 Function Read-MonitoringData { 
 
-    If ($Config.ShowWorkerStatus -and $Config.MonitoringUser -and $Config.MonitoringServer -and $Variables.WorkersLastUpdated -lt (Get-Date).AddSeconds(-30)) { 
+    If ($Config.ShowWorkerStatus -and $Config.MonitoringUser -and $Config.MonitoringServer -and $Variables.WorkersLastUpdated -lt ([DateTime]::Now).AddSeconds(-30)) { 
         Try { 
             $Workers = Invoke-RestMethod -Uri "$($Config.MonitoringServer)/api/workers.php" -Method Post -Body @{ user = $Config.MonitoringUser } -TimeoutSec 10 -ErrorAction Stop
             # Calculate some additional properties and format others
@@ -1266,10 +1270,10 @@ Function Read-MonitoringData {
                 $_ | Add-Member @{ date = [TimeZone]::CurrentTimeZone.ToLocalTime(([datetime]'1/1/1970').AddSeconds($_.lastseen)) } -Force
 
                 # If a machine hasn't reported in for more than 10 minutes, mark it as offline
-                If ((New-TimeSpan -Start $_.date -End (Get-Date)).TotalMinutes -gt 10) { $_.status = "Offline" }
+                If ((New-TimeSpan -Start $_.date -End ([DateTime]::Now)).TotalMinutes -gt 10) { $_.status = "Offline" }
             }
             $Variables.Workers = $Workers
-            $Variables.WorkersLastUpdated = (Get-Date)
+            $Variables.WorkersLastUpdated = ([DateTime]::Now)
 
             Write-Message -Level Verbose "Retrieved worker status from '$($Config.MonitoringServer)' [ID $($Config.MonitoringUser)]."
         }
@@ -1284,10 +1288,10 @@ Function Get-TimeSince {
 
     Param(
         [Parameter(Mandatory = $true)]
-        [datetime]$TimeStamp
+        [DateTime]$TimeStamp
     )
 
-    $TimeSpan = New-TimeSpan -Start $TimeStamp -End (Get-Date)
+    $TimeSpan = New-TimeSpan -Start $TimeStamp -End ([DateTime]::Now)
     $TimeSince = ""
 
     If ($TimeSpan.Days -ge 1) { $TimeSince += " {0:n0} day$(If ($TimeSpan.Days -ne 1) { "s" })" -f $TimeSpan.Days }
@@ -1652,7 +1656,7 @@ Function Update-ConfigFile {
                 $PoolsConfig.$_.PSObject.Members.Remove("Wallet")
             }
         }
-        $PoolsConfig | ConvertTo-Json | Out-File -FilePath $Variables.PoolsConfigFile -Force -Encoding utf8NoBOM -ErrorAction Ignore
+        $PoolsConfig | ConvertTo-Json | Out-File -FilePath $Variables.PoolsConfigFile -Force -ErrorAction Ignore
     }
 
     # Rename MPH to MiningPoolHub
@@ -1726,7 +1730,7 @@ Function Write-Config {
 
     $Config.Remove("ConfigFile")
     $Config.Remove("PoolsConfig")
-    "$Header$($Config | Get-SortedObject | ConvertTo-Json -Depth 10)" | Out-File -FilePath $ConfigFile -Force -Encoding utf8NoBOM
+    "$Header$($Config | Get-SortedObject | ConvertTo-Json -Depth 10)" | Out-File -FilePath $ConfigFile -Force
 
     If ($Config.ShowConsole) { 
         If ($Variables.Summary) { Show-Console }
@@ -1867,7 +1871,7 @@ Function Enable-Stat {
             Duration              = [String]$Stat.Duration
             Updated               = [DateTime]$Stat.Updated
             Disabled              = [Boolean]$Stat.Disabled
-        } | ConvertTo-Json | Out-File -FilePath $Path -Force -Encoding utf8NoBOM
+        } | ConvertTo-Json | Out-File -FilePath $Path -Force
     }
 }
 
@@ -1878,11 +1882,10 @@ Function Disable-Stat {
         [String]$Name
     )
 
-    If (-not $Stat) { $Stat = (Set-Stat -Name $Name -Value 0) }
-
     $Path = "Stats\$Name.txt"
-
+    If (-not $Stat) { $Stat = Set-Stat -Name $Name -Value 0 }
     $Stat.Disabled = $true
+
     @{ 
         Live                  = [Double]$Stat.Live
         Minute                = [Double]$Stat.Minute
@@ -1900,7 +1903,7 @@ Function Disable-Stat {
         Duration              = [String]$Stat.Duration
         Updated               = [DateTime]$Stat.Updated
         Disabled              = [Boolean]$Stat.Disabled
-    } | ConvertTo-Json | Out-File -FilePath $Path -Force -Encoding utf8NoBOM
+    } | ConvertTo-Json | Out-File -FilePath $Path -Force
 }
 
 Function Set-Stat { 
@@ -1911,7 +1914,7 @@ Function Set-Stat {
         [Parameter(Mandatory = $true)]
         [Double]$Value, 
         [Parameter(Mandatory = $false)]
-        [DateTime]$Updated = (Get-Date), 
+        [DateTime]$Updated = ([DateTime]::Now), 
         [Parameter(Mandatory = $false)]
         [TimeSpan]$Duration, 
         [Parameter(Mandatory = $false)]
@@ -1945,11 +1948,12 @@ Function Set-Stat {
         }
 
         If ($Value -lt $ToleranceMin -or $Value -gt $ToleranceMax) { $Stat.ToleranceExceeded ++ }
-        Else { $Stat | Add-Member ToleranceExceeded ([UInt16]0) -Force }
+        Else { $Stat.ToleranceExceeded = [UInt16]0 }
+        # Else { $Stat | Add-Member ToleranceExceeded ([UInt16]0) -Force }
 
         If ($Value -gt 0 -and $Stat.ToleranceExceeded -gt 0 -and $Stat.ToleranceExceeded -lt $ToleranceExceeded -and $Stat.Week -gt 0) { 
             If ($Name -match '.+_Hashrate$') { 
-                Write-Message -Level Warn "Error saving hashrate for '$($Name -replace '_Hashrate$')'. $(($Value | ConvertTo-Hash) -replace '\s+', '') is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Iteration $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
+                Write-Message -Level Warn "Error saving hashrate for '$($Name -replace '_Hashrate$')'. $(($Value | ConvertTo-Hash) -replace '\s+', ' ') is outside fault tolerance ($(($ToleranceMin | ConvertTo-Hash) -replace '\s+', ' ') to $(($ToleranceMax | ConvertTo-Hash) -replace '\s+', ' ')) [Iteration $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
             }
             ElseIf ($Name -match '.+_PowerUsage') { 
                 Write-Message -Level Warn "Error saving power usage for '$($Name -replace '_PowerUsage$')'. $($Value.ToString("N2"))W is outside fault tolerance ($($ToleranceMin.ToString("N2"))W to $($ToleranceMax.ToString("N2"))W) [Iteration $($Stats.($Stat.Name).ToleranceExceeded) of $ToleranceExceeded until enforced update]."
@@ -2020,8 +2024,8 @@ Function Set-Stat {
                 Duration              = [TimeSpan]$Duration
                 Updated               = [DateTime]$Updated
                 Disabled              = [Boolean]$false
-                ToleranceExceeded     = [UInt16]0
                 Timer                 = [DateTime]$Timer
+                ToleranceExceeded     = [UInt16]0
             }
         )
     }
@@ -2043,7 +2047,7 @@ Function Set-Stat {
         Duration              = [String]$Stat.Duration
         Updated               = [DateTime]$Stat.Updated
         Disabled              = [Boolean]$Stat.Disabled
-    } | ConvertTo-Json | Out-File -FilePath $Path -Force -Encoding utf8NoBOM
+    } | ConvertTo-Json | Out-File -FilePath $Path -Force
 
     Return $Stat
 }
@@ -2064,15 +2068,15 @@ Function Get-Stat {
     }
 
     If (-not $Name) { 
-        [String[]]$Name = ((Get-ChildItem -Path "Stats" -File).BaseName | Sort-Object -Unique)
-        ($Global:Stats.psBase.Keys | Select-Object | Where-Object { $_ -notin $Name }) | ForEach-Object { $Global:Stats.Remove($_) } # Remove stat if deleted on disk
+        [String[]]$Name = (Get-ChildItem -Path "Stats" -File).BaseName
+        $Global:Stats.psBase.Keys | Select-Object | Where-Object { $_ -notin $Name } | ForEach-Object { $Global:Stats.Remove($_) } # Remove stat if deleted on disk
     }
 
     $Name | Select-Object | ForEach-Object { 
         $Stat_Name = $_
 
         If ($Global:Stats[$Stat_Name] -isnot [Hashtable] -or -not $Global:Stats[$Stat_Name].IsSynchronized) { 
-            # Reduce number of errors
+            # # Reduce number of errors
             If (-not (Test-Path -Path "Stats\$Stat_Name.txt" -PathType Leaf)) { 
                 Return
             }
@@ -2115,11 +2119,11 @@ Function Get-Stat {
 Function Remove-Stat { 
 
     Param(
-        [Parameter(Mandatory = $false)]
-        [String[]]$Name = @($Global:Stats.psBase.Keys | Select-Object) + @((Get-ChildItem -Path "Stats" -Directory ).BaseName)
+        [Parameter(Mandatory = $true)]
+        [String[]]$Name
     )
 
-    $Name | Sort-Object -Unique | ForEach-Object { 
+    $Name | ForEach-Object { 
         Remove-Item -Path "Stats\$_.txt" -Force -Confirm:$false -ErrorAction Ignore
         $Global:Stats.Remove($_)
     }
@@ -2999,12 +3003,12 @@ Function Add-CoinName {
         If ($Mutex.WaitOne(1000)) { 
             If (-not $Variables.CurrencyAlgorithm[$Currency]) { 
                 $Variables.CurrencyAlgorithm[$Currency] = Get-Algorithm $Algorithm
-                $Variables.CurrencyAlgorithm | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction Ignore -Encoding utf8NoBOM -Force
+                $Variables.CurrencyAlgorithm | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction Ignore -Force
             }
             If (-not $Variables.CoinNames[$Currency]) { 
                 If ($CoinName = ((Get-Culture).TextInfo.ToTitleCase($CoinName.Trim().ToLower()) -replace '[^A-Z0-9\$\.]' -replace 'coin$', 'Coin' -replace 'bitcoin$', 'Bitcoin')) { 
                     $Variables.CoinNames[$Currency] = $CoinName
-                    $Variables.CoinNames | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CoinNames.json" -ErrorAction Ignore -Encoding utf8NoBOM -Force
+                    $Variables.CoinNames | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CoinNames.json" -ErrorAction Ignore -Force
                 }
             }
             [Void]$Mutex.ReleaseMutex()
@@ -3201,7 +3205,7 @@ Function Start-LogReader {
 
 Function Get-ObsoleteMinerStats { 
 
-    Get-Stat | Out-Null
+    [Void](Get-Stat)
 
     $MinerNames = @(Get-ChildItem ".\Miners\*.ps1").BaseName
 
@@ -3228,7 +3232,7 @@ Function Update-DAGdata {
     If (-not $Variables.DAGdata["Updated"]) { $Variables.DAGdata["Updated"] = [Ordered]@{ } }
 
     $Url = "https://whattomine.com/coins.json"
-    If ($Variables.DAGdata.Updated.$Url -lt $Variables.ScriptStartTime -or $Variables.DAGdata.Updated.$Url -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
+    If ($Variables.DAGdata.Updated.$Url -lt $Variables.ScriptStartTime -or $Variables.DAGdata.Updated.$Url -lt ([DateTime]::Now).ToUniversalTime().AddDays(-1)) { 
         # Get block data for from whattomine.com
         Try { 
             $DAGdataResponse = Invoke-RestMethod -Uri $Url -TimeoutSec 5
@@ -3240,7 +3244,7 @@ Function Update-DAGdata {
                     If ((Get-Algorithm $DAGdataResponse.coins.$_.algorithm) -match $Variables.RegexAlgoHasDAG) { 
                         If ($DAGdataResponse.coins.$_.last_block -ge $Variables.DAGdata.Currency.$Currency.BlockHeight) { 
                             $DAGdata = Get-DAGdata -BlockHeight $DAGdataResponse.coins.$_.last_block -Currency $Currency -EpochReserve 2
-                            $DAGdata.Date = (Get-Date).ToUniversalTime()
+                            $DAGdata.Date = ([DateTime]::Now).ToUniversalTime()
                             $DAGdata.Url = $Url
                             If ($DAGdata.Algorithm -match $Variables.RegexAlgoHasDAG) { 
                                 $Variables.DAGdata.Currency[$Currency] = $DAGdata
@@ -3248,7 +3252,7 @@ Function Update-DAGdata {
                         }
                     }
                 }
-                $Variables.DAGdata.Updated.$Url = (Get-Date).ToUniversalTime()
+                $Variables.DAGdata.Updated.$Url = ([DateTime]::Now).ToUniversalTime()
                 Write-Message -Level Info "Loaded DAG data from '$Url'."
             }
             Else { 
@@ -3264,7 +3268,7 @@ Function Update-DAGdata {
     If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.MiningStatus -eq "Idle") { Continue }
 
     $Url = "https://minerstat.com/dag-size-calculator"
-    If ($Variables.DAGdata.Updated.$Url -lt $Variables.ScriptStartTime -or $Variables.DAGdata.Updated.$Url -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
+    If ($Variables.DAGdata.Updated.$Url -lt $Variables.ScriptStartTime -or $Variables.DAGdata.Updated.$Url -lt ([DateTime]::Now).ToUniversalTime().AddDays(-1)) { 
         # Get block data from Minerstat
         Try { 
             $DAGdataResponse = Invoke-WebRequest -Uri $Url -TimeoutSec 5 # PWSH 6+ no longer supports basic parsing -> parse text
@@ -3274,14 +3278,14 @@ Function Update-DAGdata {
                     $BlockHeight = [Int]($_ -replace "^<div class='block' title='Current block height of $Currency'>" -replace "</div>")
                     If ($BlockHeight -ge $Variables.DAGdata.Currency.$Currency.BlockHeight -and $Currency) { 
                         $DAGdata = Get-DAGdata -BlockHeight $BlockHeight -Currency $Currency -EpochReserve 2
-                        $DAGdata.Date = (Get-Date).ToUniversalTime()
+                        $DAGdata.Date = ([DateTime]::Now).ToUniversalTime()
                         $DAGdata.Url = $Url
                         If ($DAGdata.Algorithm -match $Variables.RegexAlgoHasDAG) { 
                             $Variables.DAGdata.Currency[$Currency] = $DAGdata
                         }
                     }
                 }
-                $Variables.DAGdata.Updated.$Url = (Get-Date).ToUniversalTime()
+                $Variables.DAGdata.Updated.$Url = ([DateTime]::Now).ToUniversalTime()
                 Write-Message -Level Info "Loaded DAG data from '$Url'."
             }
             Else { 
@@ -3297,7 +3301,7 @@ Function Update-DAGdata {
     If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.MiningStatus -eq "Idle") { Continue }
 
     $Url = "https://prohashing.com/api/v1/currencies"
-    If ($Variables.DAGdata.Updated.$Url -lt $Variables.ScriptStartTime -or $Variables.DAGdata.Updated.$Url -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
+    If ($Variables.DAGdata.Updated.$Url -lt $Variables.ScriptStartTime -or $Variables.DAGdata.Updated.$Url -lt ([DateTime]::Now).ToUniversalTime().AddDays(-1)) { 
         # Get block data from ProHashing
         Try { 
             $DAGdataResponse = Invoke-RestMethod -Uri $Url -TimeoutSec 5
@@ -3306,14 +3310,14 @@ Function Update-DAGdata {
                 $DAGdataResponse.data.PSObject.Properties.Name | Where-Object { $DAGdataResponse.data.$_.enabled -and $DAGdataResponse.data.$_.height -and ((Get-Algorithm $DAGdataResponse.data.$_.algo) -in @("Autolykos2", "EtcHash", "Ethash", "KawPow", "Octopus", "UbqHash") -or $_ -in @($Variables.DAGdata.Currency.psBase.Keys))} | ForEach-Object { 
                     If ($DAGdataResponse.data.$_.height -gt $Variables.DAGdata.Currency.$_.BlockHeight) { 
                         $DAGdata = Get-DAGdata -BlockHeight $DAGdataResponse.data.$_.height -Currency $_ -EpochReserve 2
-                        $DAGdata.Date = (Get-Date).ToUniversalTime()
+                        $DAGdata.Date = ([DateTime]::Now).ToUniversalTime()
                         $DAGdata.Url = $Url
                         If ($DAGdata.Algorithm -match $Variables.RegexAlgoHasDAG) { 
                             $Variables.DAGdata.Currency[$_] = $DAGdata
                         }
                     }
                 }
-                $Variables.DAGdata.Updated.$Url = (Get-Date).ToUniversalTime()
+                $Variables.DAGdata.Updated.$Url = ([DateTime]::Now).ToUniversalTime()
                 Write-Message -Level Info "Loaded DAG data from '$Url'."
             }
             Else { 
@@ -3329,18 +3333,18 @@ Function Update-DAGdata {
     If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.MiningStatus -eq "Idle") { Continue }
 
     $Url = "https://evr.cryptoscope.io/api/getblockcount"
-    If ($Variables.DAGdata.Updated.$Url -lt $Variables.ScriptStartTime -or $Variables.DAGdata.Updated.$Url -lt (Get-Date).ToUniversalTime().AddDays(-1)) { 
+    If ($Variables.DAGdata.Updated.$Url -lt $Variables.ScriptStartTime -or $Variables.DAGdata.Updated.$Url -lt ([DateTime]::Now).ToUniversalTime().AddDays(-1)) { 
         # Get block data from EVR block explorer
         Try { 
             $DAGdataResponse = Invoke-RestMethod -Uri $Url -TimeoutSec 5
 
             If ($DAGdataResponse.blockcount -gt $Variables.DAGdata.Currency.EVR.BlockHeight) { 
                 $DAGdata = Get-DAGdata -BlockHeight $DAGdataResponse.coins.$_.last_block -Currency "EVR" -EpochReserve 2
-                $DAGdata.Date = (Get-Date).ToUniversalTime()
+                $DAGdata.Date = ([DateTime]::Now).ToUniversalTime()
                 $DAGdata.Url = $Url
                 If ($DAGdata.Algorithm -match $Variables.RegexAlgoHasDAG) { 
                     $Variables.DAGdata.Currency[$Currency] = $DAGdata
-                    $Variables.DAGdata.Updated.$Url = (Get-Date).ToUniversalTime()
+                    $Variables.DAGdata.Updated.$Url = ([DateTime]::Now).ToUniversalTime()
                     Write-Message -Level Info "Loaded DAG data from '$Url'."
                 }
             }
@@ -3387,7 +3391,7 @@ Function Update-DAGdata {
         }
 
         $Variables.DAGdata = $Variables.DAGdata | Get-SortedObject
-        $Variables.DAGdata | ConvertTo-Json | Out-File -FilePath ".\Data\DAGdata.json" -Force -Encoding utf8NoBOM
+        $Variables.DAGdata | ConvertTo-Json | Out-File -FilePath ".\Data\DAGdata.json" -Force
     }
 }
 
@@ -3489,7 +3493,7 @@ Function Get-DAGdata {
 
     Param(
         [Parameter(Mandatory = $false)]
-        [Double]$Blockheight = ((Get-Date) - [DateTime]"07/31/2015").Days * 6400,
+        [Double]$Blockheight = (([DateTime]::Now) - [DateTime]"07/31/2015").Days * 6400,
         [Parameter(Mandatory = $false)]
         [String]$Currency = "ETH",
         [Parameter(Mandatory = $false)]
