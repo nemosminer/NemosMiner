@@ -91,7 +91,7 @@ If ($Algorithms) {
                             $Arguments = $_.Arguments
                             $Arguments += " --hostname $($Pool0.Host)"
                             $Arguments += " --wallet $($Pool0.User)"
-                            $Arguments += If ($Pool0.PoolPorts[1]) { " --ssl-port $($Pool0.PoolPorts[1])" } Else { " --port $($Pool0.PoolPorts[0])"}
+                            $Arguments += If (($Pool0.PoolPorts[1] -and -not $_.Algorithms[1]) -or ($Pool0.PoolPorts[1] -and $Pool1.PoolPorts[1])) { " --ssl --ssl-verify-none --ssl-port $($Pool0.PoolPorts[1])" } Else { " --port $($Pool0.PoolPorts[0])"}
                             If ($Pool0.Pass) { $Arguments += " --server-passwd $($Pool0.Pass)" }
 
                             $SecondAlgo = Switch ($_.Algorithms[1]) { 
@@ -102,9 +102,8 @@ If ($Algorithms) {
                             }
                             If ($SecondAlgo) { 
                                 $Arguments += " --$($SecondAlgo)-hostname $($Pool1.Host) --$($SecondAlgo)-wallet $($Pool1.User) "
-                                $Arguments += If ($Pool1.PoolPorts[1]) { " --$($SecondAlgo)-port $($Pool1.PoolPorts[1])" } Else { " --$($SecondAlgo)-port $($Pool1.PoolPorts[0])" }
+                                $Arguments += If ($Pool0.PoolPorts[1] -and $Pool1.PoolPorts[1]) { " --$($SecondAlgo)-port $($Pool1.PoolPorts[1])" } Else { " --$($SecondAlgo)-port $($Pool1.PoolPorts[0])" }
                             }
-                            $Arguments += If ($Pool0.PoolPorts[1]) { " --ssl --ssl-verify-none"}
 
                             # Apply tuning parameters
                             If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
