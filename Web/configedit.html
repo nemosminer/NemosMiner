@@ -102,8 +102,8 @@
                     <div title="Default payout currency for all pools&#10;Important: Not all pools allow payouts in currencies other than BTC.&#10;Consult the pool API for more information&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">Default payout currency
                       <select id="PayoutCurrency" name="PayoutCurrency" style="margin-top: 0.2rem"></select>
                     </div>
-                    <div title="Extra currencies to be shown in balances summary.&#10;Values must be separated by commas.&#10;&#10;Enter 'real-world' or crypto currencies&#10;mBTC (milli BTC) is also supported" for="ExtraCurrencies" style="padding-top: 0.3rem">Extra currencies</label>
-                      <input title="Extra currencies to be shown in balances summary. &#10;Values must be separated by commas. &#10;&#10;Enter 'real-world' or crypto currencies&#10;mBTC (milli BTC) is also supported" type="text" id="ExtraCurrencies" name="ExtraCurrencies" maxlength=45 size=50 value="USD, ETC">
+                    <div title="Extra currencies to be shown in balances summary.&#10;Values must be separated by commas.&#10;&#10;Enter 'real-world' or crypto currencies.&#10;mBTC (milli BTC) is also supported." for="ExtraCurrencies" style="padding-top: 0.3rem">Extra currencies</label>
+                      <input type="text" id="ExtraCurrencies" name="ExtraCurrencies" maxlength=45 size=50 value="USD, ETC">
                     </div>
                     <div style="padding-top: 0.5rem" title="If enabled NemosMiner will display BTC values in milli BTC">
                       <input type="checkbox" class="toggle-switch" id="UsemBTC" name="UsemBTC"> Show BTC values in mBTC (BTC/1000)
@@ -149,7 +149,7 @@
                     <div style="padding-top: 0.3rem" title="Defines the minimum number of data samples to be collected from the miner&#10;while benchmarking before ending the cycle. Smaller numbers will&#10;cause faster benchmarking but the measured data will be less accurate&#10;(min=10, max=100, default=20 samples)" for="MinDataSample">Minimum
                       <input type="number" id="MinDataSample" name="MinDataSample" min=10 max=100 value=20 step=1 size=4> data samples while benchmarking
                     </div>
-                    <div style="padding-top: 0.3rem" title="Minimum number of full cycles a miner must mine continously&#10;the same algorithm@pool before switching is allowed&#10;&#10;e.g. 3 would force a miner to stick mining the same algorithm@pool&#10;for at least 3 full cycles before switching to another algorithm or pool&#10;(min=1, max=10, default=1 cycles)&#10;&#10;Note: This does not apply when benchmarking" for="MinCycle"> Enforce mining for at least
+                    <div style="padding-top: 0.3rem" title="Minimum number of continous full cycles a miner must mine&#10;the same algorithm@pool before switching is allowed&#10;&#10;e.g. 3 would force a miner to mine the same algorithm@pool&#10;for at least 3 full cycles before switching to another algorithm or pool&#10;(min=1, max=10, default=1 cycles)&#10;&#10;Note: This does not apply when benchmarking" for="MinCycle"> Enforce mining for at least
                       <input type="number" id="MinCycle" name="MinCycle" min=1 max=10 value=0 step=1 size=2> full cycles before switching
                     </div>
                     <div style="padding-top: 0.2rem" title="Enter Proxy IP address and port&#10;e.g. 192.168.1.1:3128"> Proxy address:port
@@ -349,10 +349,10 @@
                       <legend class=h6><b>Balance Tracker Settings</b></legend>
                       <div style="padding-top: 0.3rem" title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;(min=10, max=60, default=15 minutes). Set to 0 to disable the balance tracker.&#10;&#10;Note: If set to 0 it will also disable pool balances summary in the Web GUI dashboard and API"> Poll pools for balances & earnings every
                         <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60 step=1 value=15> minutes
-                      <div style="padding-top: 0.6rem" title="Show 1hr / 6hrs / 24hr / 7 day & 30day pool earning sums&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)&#10;&#10;This setting applies to the Console and web dashboard.">
-                        <input type="checkbox" class="toggle-switch" id="BalancesShowSums" name="BalancesShowSums" style="margin-left:20px"> Show sums for each pool
+                      <div style="padding-top: 0.6rem" title="Show 1hr / 6hrs / 24hr / 7 day & 30day pool earning sums&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)&#10;&#10;This setting applies to the main text window and web dashboard.">
+                        <input type="checkbox" class="toggle-switch" id="BalancesShowSums" name="BalancesShowSums" style="margin-left:20px"> Show earning sums for each pool
                       </div>
-                      <div style="padding-top: 0.6rem" title="Show 1hr / 24hr & 7day pool earning averages&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)&#10;&#10;This setting applies to the Console and web dashboard.">
+                      <div style="padding-top: 0.6rem" title="Show 1hr / 24hr & 7day pool earning averages&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)&#10;&#10;This setting applies to the main text window and web dashboard.">
                         <input type="checkbox" class="toggle-switch" id="BalancesShowAverages" name="BalancesShowAverages" style="margin-left:20px"> Show average earnings for each pool
                       </div>
                       <div style="padding-top: 0.6rem" title="Pool balances will be shown in main currency&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">

@@ -797,7 +797,6 @@ Function Stop-Core {
         While (-not $Quick -and ($Variables.Miners | Where-Object { $_.Status -eq [MinerStatus]::Running }) -and ([DateTime]::Now) -le $Timestamp) { 
             Start-Sleep -Seconds 1
         }
-        $Global:CoreRunspace.PowerShell.Runspace.Dispose()
 
         #Stop all running miners
         ForEach ($Miner in ($Variables.Miners | Where-Object { $_.Status -ne [MinerStatus]::Idle })) { 
@@ -808,6 +807,7 @@ Function Stop-Core {
         $Variables.RunningMiners = [Miner[]]@()
         $Variables.BenchmarkingOrMeasuringMiners = [Miner[]]@()
         $Variables.FailedMiners = [Miner[]]@()
+        $Global:CoreRunspace.PowerShell.Runspace.Dispose()
         Remove-Variable CoreRunspace -Scope Global -ErrorAction Ignore
     }
 
@@ -1157,7 +1157,7 @@ Function Write-Message {
         [String]$Level = "Info"
     )
 
-    $Message = $Message -replace '<br>', ' ' -replace '&ensp;', ' '
+    $Message = $Message -replace '<br>', ' ' -replace '&ensp;', ' ' -replace '/ ', '/'
 
     # Make sure we are in main script
     If ($Host.Name -eq "ConsoleHost") { 

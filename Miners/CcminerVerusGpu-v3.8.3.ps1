@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.4
-Version date:   2023/09/22
+Version:        5.0.0.5
+Version date:   2023/09/26
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "7.5" })) { Return }
@@ -29,7 +29,7 @@ $Path = ".\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "VerusHash"; MinMemGiB = 2; MinerSet = 0; WarmupTimes = @(30, 0); ExcludePools = @(); Arguments = " --algo verus --intensity 23" }
+    [PSCustomObject]@{ Algorithm = "VerusHash"; MinMemGiB = 2; MinerSet = 0; WarmupTimes = @(30, 0); ExcludePools = @("NiceHash"); Arguments = " --algo verus --intensity 23" }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet

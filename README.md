@@ -300,7 +300,7 @@ When running multiple cards its recommended to increase Virtual Memory. 64GB is 
 
 **Recommended/optimal Windows Nvidia driver**
 
-[Windows Nvidia driver 531.79](https://us.download.nvidia.com/Windows/531.79/531.79-desktop-win10-win11-64bit-international-dch-whql.exe)
+[Windows Nvidia driver 537.42](https://us.download.nvidia.com/Windows/537.42/537.42-desktop-win10-win11-64bit-international-dch-whql.exe)
 If you use older drivers some miners will not be available.
 
 **Recommended/optimal Windows AMD driver**

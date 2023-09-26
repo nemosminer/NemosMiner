@@ -17,13 +17,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.4
-Version date:   2023/09/22
+Version:        5.0.0.5
+Version date:   2023/09/26
 #>
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
 
-$URI = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.23.1/cpuminer-opt-3.23.1-windows.zip"
+$URI = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.23.2/cpuminer-opt-3.23.2-windows.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
 

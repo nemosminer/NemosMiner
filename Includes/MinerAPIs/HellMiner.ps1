@@ -17,16 +17,16 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-File:           \Includes\MinerAPIs\Trex.ps1
+File:           \Includes\MinerAPIs\lolMiner.ps1
 Version:        5.0.0.5
 Version date:   2023/09/26
 #>
 
-Class Trex : Miner { 
+Class HellMiner : Miner { 
     [Object]GetMinerData () { 
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
-        $Request = "http://127.0.0.1:$($this.Port)/summary"
+        $Request = "http://127.0.0.1:$($this.Port)/stats"
 
         Try { 
             $Data = Invoke-RestMethod -Uri $Request -TimeoutSec $Timeout
@@ -39,35 +39,19 @@ Class Trex : Miner {
 
         $HashRate = [PSCustomObject]@{ }
         $HashRate_Name = [String]$this.Algorithms[0]
-        $HashRate_Value = [Double]$Data.hashrate_minute
-        If (-not $Data.hashrate_minute) { $HashRate_Value = [Double]$Data.hashrate }
+        $HashRate_Value = [Double]($Data.total_mhs * [Math]::Pow(10,6))
         $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 
         $Shares = [PSCustomObject]@{ }
-        $Shares_Accepted = [Int64]$Data.accepted_count
-        $Shares_Rejected = [Int64]$Data.rejected_count
+        $Shares_Accepted = [Int64]$Data.total_accepted
+        $Shares_Rejected = [Int64]$Data.total_rejected
         $Shares_Invalid = [Int64]0
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
-
-        If ($HashRate_Name = [String]($this.Algorithms -ne $HashRate_Name)) { # Dual algo mining
-            $HashRate_Value = [Double]$Data.dual_stat.hashrate_minute
-            If (-not $HashRate_Value) { $HashRate_Value = [Double]$Data.dual_stat.hashrate }
-            $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
-
-            $Shares_Accepted = [Int64]$Data.dual_stat.accepted_count
-            $Shares_Rejected = [Int64]$Data.dual_stat.rejected_count
-            $Shares_Invalid = [Int64]0
-            $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
-        }
-
         $PowerUsage = [Double]0
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 
             If ($this.ReadPowerUsage) { 
-                $PowerUsage = [Double]($Data.gpus | Measure-Object power -Sum | Select-Object -ExpandProperty Sum)
-                If (-not $PowerUsage) { 
-                    $PowerUsage = $this.GetPowerUsage()
-                }
+                $PowerUsage = $this.GetPowerUsage()
             }
 
             Return [PSCustomObject]@{ 

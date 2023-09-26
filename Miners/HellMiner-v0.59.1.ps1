@@ -23,19 +23,21 @@ Version date:   2023/09/26
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
 
-$URI = "https://github.com/fireworm71/veriumMiner/releases/download/v1.4/cpuminer_1.4_windows_x64_O2_GCC7.zip"
+If ($AvailableMiner_Devices.CpuFeatures -contains "avx2") { $URI = "https://github.com/hellcatz/hminer/releases/download/v0.59.1/hellminer_win64_avx2.zip" }
+ElseIf ($AvailableMiner_Devices.CpuFeatures -contains "avx") { $URI = "https://github.com/hellcatz/hminer/releases/download/v0.59.1/hellminer_win64_avx.zip" }
+Else { $URI = "https://github.com/hellcatz/hminer/releases/download/v0.59.1/hellminer_win64.zip"}
+
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\cpuminer.exe" 
+$Path = ".\Bin\$($Name)\hellminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "ScryptN2"; MinerSet = 0; WarmupTimes = @(90, 30); ExcludePools = @(); Arguments = "" } # Empty command
+    [PSCustomObject]@{ Algorithm = "VerusHash"; Fee = @(0.01); Minerset = 0; WarmupTimes = @(45, 90); ExcludePools = @(); Arguments = "" } # NheqMiner-v0.8.2 is faster, SRBMinerMulti-v2.3.5 is fastest, but has 0.85% miner fee
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].PoolPorts[0] }
 
 If ($Algorithms) { 
 
@@ -48,10 +50,12 @@ If ($Algorithms) {
         ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object { $_.PoolPorts[0] } | Where-Object BaseName -notin $ExcludePools | Select-Object -Last 1)) { 
 
             [PSCustomObject]@{ 
-                API         = "CcMiner"
-                Arguments   = "$($_.Arguments) --url stratum+tcp://$($Pool.Host):$($Pool.PoolPorts[0]) --user $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass) --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --retry-pause 1 --api-bind $MinerAPIPort"
+                API         = "HellMiner"
+                Arguments   = " --pool=stratum+$(If ($Pool.PoolPorts[1]) { "ssl" } Else { "tcp" } )://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user=$($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass=$($Pool.Pass) --api-port=$MinerAPIPort"
                 DeviceNames = $AvailableMiner_Devices.Name
+                Fee         = @($_.Fee) # Dev fee
                 MinerSet    = $_.MinerSet
+                MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
                 Name        = $Miner_Name
                 Path        = $Path
                 Port        = $MinerAPIPort

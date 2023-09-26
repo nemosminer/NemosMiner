@@ -17,15 +17,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.4
-Version date:   2023/09/22
+Version:        5.0.0.5
+Version date:   2023/09/26
 #>
 
 using module ..\Includes\Include.psm1
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or $_.OpenCL.ComputeCapability -ge "5.0" } )) { Return }
 
-$URI = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v2.1c_win-x64.zip"
+$URI = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v2.2c_win-x64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\miniZ.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -40,6 +40,8 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Equihash965";      Type = "AMD"; Fee = @(0.02);   MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=96,5 --smart-pers" }
     [PSCustomObject]@{ Algorithm = "EtcHash";          Type = "AMD"; Fee = @(0.0075); MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=etcHash --dag-fix" }
     [PSCustomObject]@{ Algorithm = "Ethash";           Type = "AMD"; Fee = @(0.0075); MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=ethash --dag-fix" }
+    [PSCustomObject]@{ Algorithm = "EthashB3";         Type = "AMD"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=ethashb3 --dag-fix" }
+    [PSCustomObject]@{ Algorithm = "EvrProgPoW";       Type = "AMD"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=evrprogpow --dag-fix" }
     [PSCustomObject]@{ Algorithm = "FiroPow";          Type = "AMD"; Fee = @(0.0075); MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(55, 45); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --pers=firo" }
     [PSCustomObject]@{ Algorithm = "KawPow";           Type = "AMD"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 35); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=kawpow --dag-fix --pers=RAVENCOINKAWPOW" }
     [PSCustomObject]@{ Algorithm = "kHeavyHash";       Type = "AMD"; Fee = @(0.008);  MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 35); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=kaspa" }
@@ -57,6 +59,8 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Equihash965";      Type = "NVIDIA"; Fee = @(0.02);   MinMemGiB = 2.0;  Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --par=96,5 --smart-pers" }
     [PSCustomObject]@{ Algorithm = "EtcHash";          Type = "NVIDIA"; Fee = @(0.0075); MinMemGiB = 1.08; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --par=etcHash --dag-fix" }
     [PSCustomObject]@{ Algorithm = "Ethash";           Type = "NVIDIA"; Fee = @(0.0075); MinMemGiB = 1.08; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --par=ethash --dag-fix" }
+    [PSCustomObject]@{ Algorithm = "EthashB3";         Type = "NVIDIA"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --par=ethashb3 --dag-fix" }
+    [PSCustomObject]@{ Algorithm = "EvrProgPoW";       Type = "NVIDIA"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --par=evrprogpow --dag-fix" }
     [PSCustomObject]@{ Algorithm = "FiroPow";          Type = "NVIDIA"; Fee = @(0.0075); MinMemGiB = 1.08; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(55, 45); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --pers=firo" }
     [PSCustomObject]@{ Algorithm = "kHeavyHash";       Type = "NVIDIA"; Fee = @(0.008);  MinMemGiB = 1.08; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(45, 35); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --par=kaspa" }
     [PSCustomObject]@{ Algorithm = "KawPow";           Type = "NVIDIA"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(45, 35); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --par=kawpow --dag-fix --pers=RAVENCOINKAWPOW" }
@@ -87,7 +91,7 @@ If ($Algorithms) {
             ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools)) { 
 
                 $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
-                If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -ge $MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
+                If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -ge $MinMemGiB | Where-Object Architecture -notin $_._ExcludeGPUArchitecture) { 
 
                     $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 

@@ -33,7 +33,7 @@ param(
     [Parameter(Mandatory = $false)]
     [Int]$APIPort = 3999, # TCP Port for API & Web GUI
     [Parameter(Mandatory = $false)]
-    [Switch]$AutoReboot = $true, # If true will reboot computer when a miner is completely dead, e.g. unresponsive
+    [Switch]$AutoReboot = $true, # If true will reboot computer when a miner is completely dead, eg. unresponsive
     [Parameter(Mandatory = $false)]
     [Switch]$AutoUpdate = $true, # If true will automatically update to the new version
     [Parameter(Mandatory = $false)]
@@ -512,7 +512,7 @@ If ($Variables.FreshConfig) {
 Function MainLoop { 
 
     # Core watchdog. Sometimes core loop gets stuck
-    If (-not $Variables.SuspendCycle -and $Variables.EndCycleTime -and $Variables.MiningStatus -eq "Running" -and ([DateTime]::Now).ToUniversalTime() -gt $Variables.EndCycleTime.AddSeconds(15 * $Config.Interval)) { 
+    If (-not $Variables.SuspendCycle -and $Variables.EndCycleTime -and $Variables.MiningStatus -eq "Running" -and ([DateTime]::Now).ToUniversalTime() -gt $Variables.EndCycleTime.AddSeconds(10 * $Config.Interval)) { 
         Write-Message -Level Warn "Core cycle is stuck - restarting..."
         Stop-Core -Quick
         $Variables.EndCycleTime = ([DateTime]::Now).ToUniversalTime()
@@ -833,6 +833,9 @@ Function MainLoop {
                 # Miner list format
                 [System.Collections.ArrayList]$Miner_Table = @(
                     @{ Label = "Miner"; Expression = { $_.Name } }
+                    @{ Label = "Algorithm"; Expression = { $_.Workers.Pool.Algorithm -join ' & ' } }
+                    If ($Variables.ShowMinerFee -and ($Variables.Miners.Workers.Fee)) { @{ Label = "Fee"; Expression = { $_.Workers.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } }; Align = "right" } }
+                    @{ Label = "Hashrate"; Expression = { If (-not $_.Benchmark) { $_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" } } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } }; Align = "right" }
                     If (-not $Config.IgnorePowerCost -and $Variables.ShowProfitBias -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost -and -not $Config.IgnorePowerCost) { @{ Label = "ProfitBias"; Expression = { If ([Double]::IsNaN($_.Profit_Bias)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit_Bias * $Variables.Rates.BTC.($Config.MainCurrency)) } }; Align = "right" } }
                     If (-not $Config.IgnorePowerCost -and $Variables.ShowProfit -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost -and -not $Config.IgnorePowerCost) { @{ Label = "Profit"; Expression = { If ([Double]::IsNaN($_.Profit)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Profit * $Variables.Rates.BTC.($Config.MainCurrency)) } }; Align = "right" } }
                     If ($Variables.ShowEarningBias) { @{ Label = "EarningBias"; Expression = { If ([Double]::IsNaN($_.Earning_Bias)) { "n/a" } Else { "{0:n$($Config.DecimalsMax)}" -f ($_.Earning_Bias * $Variables.Rates.BTC.($Config.MainCurrency)) } }; Align = "right" } }
@@ -842,12 +845,9 @@ Function MainLoop {
                     If ($Variables.ShowPowerUsage -and $Config.CalculatePowerCost) { @{ Label = "PowerUsage"; Expression = { If (-not $_.MeasurePowerUsage) { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W"} } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } }; Align = "right" } }
                     If ($Variables.ShowPowerCost -and $Config.CalculatePowerCost -and $Variables.MiningPowerCost) { @{ Label = "PowerCost"; Expression = { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "-{0:n$($Config.DecimalsMax)}" -f ($_.PowerCost * $Variables.Rates.($Config.PayoutCurrency).($Config.MainCurrency)) } }; Align = "right" } }
                     If ($Variables.ShowAccuracy) { @{ Label = "Accuracy"; Expression = { $_.Workers.Pool.Accuracy | ForEach-Object { "{0:P0}" -f [Double]$_ } }; Align = "right" } }
-                    @{ Label = "Algorithm"; Expression = { $_.Workers.Pool.Algorithm -join ' & ' } }
-                    If ($Variables.ShowMinerFee -and ($Variables.Miners.Workers.Fee)) { @{ Label = "Fee"; Expression = { $_.Workers.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } }; Align = "right" } }
                     If ($Variables.ShowPool) { @{ Label = "Pool"; Expression = { $_.Workers.Pool.Name -join ' & ' } } }
                     If ($Variables.ShowUser) { @{ Label = "User"; Expression = { $_.Workers.Pool.User -join ' & ' } } }
                     If ($Variables.ShowPoolFee -and ($Variables.Miners.Workers.Pool.Fee)) { @{ Label = "Fee"; Expression = { $_.Workers.Pool.Fee | ForEach-Object { "{0:P2}" -f [Double]$_ } }; Align = "right" } }
-                    @{ Label = "Hashrate"; Expression = { If (-not $_.Benchmark) { $_.Workers | ForEach-Object { "$($_.Hashrate | ConvertTo-Hash)/s" } } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } }; Align = "right" }
                     If ($Variables.ShowCurrency) { @{ Label = "Currency"; Expression = { If ($_.Workers.Pool.Currency) { $_.Workers.Pool.Currency } } } }
                     If ($Variables.ShowCoinName) { @{ Label = "CoinName"; Expression = { If ($_.Workers.Pool.CoinName) { $_.Workers.Pool.CoinName } } } }
                 )
@@ -895,7 +895,7 @@ Function MainLoop {
 
             If ($Variables.UIStyle -eq "full" -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
                 If ($ProcessesIdle = @($Variables.Miners | Where-Object { $_.Activated -and $_.Status -eq "Idle" -and $_.GetActiveLast().ToLocalTime().AddHours(24) -gt ([DateTime]::Now) })) { 
-                    Write-Host "$($ProcessesIdle.Count) previously executed miner$(If ($ProcessesIdle.Count -ne 1) { "s" }) in the past 24 hrs:"
+                    Write-Host " $($ProcessesIdle.Count) previously executed miner$(If ($ProcessesIdle.Count -ne 1) { "s" }) in the past 24 hrs:"
                     [System.Collections.ArrayList]$Miner_Table = @(
                         @{ Label = "Hashrate(s)"; Expression = { (($_.Workers.Hashrate | ForEach-Object { "$($_ | ConvertTo-Hash)/s" }) -join ' & ') -replace '\s+', ' ' }; Align = "right" }
                         If ($Config.CalculatePowerCost -and $Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ([Double]::IsNaN($_.PowerUsage)) { "n/a" } Else { "$($_.PowerUsage.ToString("N2")) W" } }; Align = "right" } }
@@ -906,7 +906,7 @@ Function MainLoop {
                         @{ Label = "Name"; Expression = { $_.Name } }
                         @{ Label = "Command"; Expression = { $_.CommandLine } }
                     )
-                    $ProcessesIdle | Sort-Object { $_.GetActiveLast } -Descending | Format-Table $Miner_Table -Wrap | Out-Host
+                    $ProcessesIdle | Sort-Object { $_.GetActiveLast } -Descending | Select-Object -First ($MinersDeviceGroup.Count * 3) | Format-Table $Miner_Table -Wrap | Out-Host
                     Remove-Variable Miner_Table
                 }
                 Remove-Variable ProcessesIdle
@@ -940,7 +940,7 @@ Function MainLoop {
             }
 
             If ($Variables.MiningStatus -eq "Running") { 
-                If ($Variables.Timer) { Write-Host ($Variables.Summary -replace '<br>', ' ' -replace '&ensp;', ' ' -replace '\s*/\s*', '/' -replace '\s*=\s*', '=') }
+                If ($Variables.Timer) { Write-Host ($Variables.Summary -replace '<br>', ' ' -replace '&ensp;', ' ' -replace '/ ', '/') }
                 If ($Variables.Miners | Where-Object Available | Where-Object { -not ($_.Benchmark -or $_.MeasurePowerUsage) }) { 
                     If ($Variables.MiningProfit -lt 0) { 
                         # Mining causes a loss

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        5.0.0.4
+Version:        5.0.0.5
 Version date:   21 May 2023
 #>
 

@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\lolMiner.ps1
-Version:        5.0.0.4
-Version date:   2023/09/22
+Version:        5.0.0.5
+Version date:   2023/09/26
 #>
 
 Class TeamBlackMiner : Miner { 
@@ -74,7 +74,7 @@ Class TeamBlackMiner : Miner {
             }
 
             Return [PSCustomObject]@{ 
-                Date       = (Get-Date).ToUniversalTime()
+                Date       = ([DateTime]::Now).ToUniversalTime()
                 HashRate   = $HashRate
                 PowerUsage = $PowerUsage
                 Shares     = $Shares
