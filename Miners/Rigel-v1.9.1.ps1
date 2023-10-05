@@ -108,7 +108,7 @@ If ($Algorithms) {
                         $Arguments += If ($Pool0.PoolPorts[1] -or ($_.Algorithms[1] -and $Pool1.PoolPorts[1])) { " --no-strict-ssl" } # Parameter cannot be used multiple times
 
                         # Apply tuning parameters
-                        If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
+                        If ($Variables.UseMinerTweaks -and ($AvailableMiner_Devices.Architecture | Sort-Object -Unique ) -eq "Pascal") { $Arguments += $_.Tuning }
 
                         [PSCustomObject]@{ 
                             API         = "Rigel"
