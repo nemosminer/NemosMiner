@@ -7,7 +7,7 @@ function formatMiners(data) {
   $.each(data, function(index, item) {
     try {
       // Format miner link
-      if (item.MinerUri && item.Best && item.Status == 0) item.tName = '<a href="' + item.MinerUri + '" target ="_blank">' + item.Name + '</a>';
+      if (item.MinerUri && item.Best && item.Status == 4) item.tName = '<a href="' + item.MinerUri + '" target ="_blank">' + item.Name + '</a>';
       else item.tName = item.Name;
 
       // Format the device(s)
@@ -28,8 +28,8 @@ function formatMiners(data) {
           item.tPrimaryPoolUser = item.Workers[0].Pool.User;
         }
         if (item.Workers.length > 1) {
-          item.tSecondaryHashrate = item.Workers[1].Hashrate;
           item.tSecondaryMinerFee = item.Workers[1].Fee;
+          item.tSecondaryHashrate = item.Workers[1].Hashrate;
           if (item.Workers[1].Pool) {
             item.tSecondaryAlgorithm = item.Algorithms[1];
             item.tSecondaryCurrency = item.Workers[1].Pool.Currency;
@@ -56,8 +56,8 @@ function formatMiners(data) {
         }
 
         if (item.WorkersRunning.length > 1) {
-          item.tSecondaryHashrate = item.WorkersRunning[1].Hashrate;
           item.tSecondaryMinerFee = item.WorkersRunning[1].Fee;
+          item.tSecondaryHashrate = item.WorkersRunning[1].Hashrate;
           if (item.WorkersRunning[1].Pool) {
             item.tSecondaryAlgorithm = item.Algorithms[1];
             item.tSecondaryCurrency = item.WorkersRunning[1].Pool.Currency;

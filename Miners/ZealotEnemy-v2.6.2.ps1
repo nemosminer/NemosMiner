@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.5
-Version date:   2023/09/26
+Version:        5.0.1.0
+Version date:   2023/10/05
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -gt "5.0" })) { Return }
@@ -84,7 +84,7 @@ If ($Algorithms) {
                         API         = "Trex"
                         Arguments   = "$Arguments $(If ($Pool.PoolPorts[1]) { "--no-cert-verify --url stratum+ssl" } Else { "--url stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass) --api-bind 0 --api-bind-http $MinerAPIPort --retry-pause 1 --quiet --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
                         DeviceNames = $AvailableMiner_Devices.Name
-                        Fee         = 0.01 # dev fee
+                        Fee         = @(0.01) # dev fee
                         MinerSet    = $_.MinerSet
                         MinerUri    = "" # "http://127.0.0.1:$($MinerAPIPort)" # Always offline
                         Name        = $Miner_Name

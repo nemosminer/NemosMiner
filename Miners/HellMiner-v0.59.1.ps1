@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.5
-Version date:   2023/09/26
+Version:        5.0.1.0
+Version date:   2023/10/05
 #>
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
@@ -32,7 +32,7 @@ $Path = ".\Bin\$($Name)\hellminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "VerusHash"; Fee = @(0.01); Minerset = 0; WarmupTimes = @(45, 90); ExcludePools = @(); Arguments = "" } # NheqMiner-v0.8.2 is faster, SRBMinerMulti-v2.3.5 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "VerusHash"; Fee = @(0.01); Minerset = 0; WarmupTimes = @(45, 90); ExcludePools = @(); Arguments = "" }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
@@ -53,7 +53,7 @@ If ($Algorithms) {
                 API         = "HellMiner"
                 Arguments   = " --pool=stratum+$(If ($Pool.PoolPorts[1]) { "ssl" } Else { "tcp" } )://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user=$($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass=$($Pool.Pass) --api-port=$MinerAPIPort"
                 DeviceNames = $AvailableMiner_Devices.Name
-                Fee         = @($_.Fee) # Dev fee
+                Fee         = $_.Fee # Dev fee
                 MinerSet    = $_.MinerSet
                 MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
                 Name        = $Miner_Name

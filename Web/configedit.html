@@ -278,11 +278,14 @@
                       </select>
                       <label for="GPUMinerProcessPriority">process priority</label>
                     </div>
-                    <div style="padding-top: 0.2rem" title="Enable miner specific tweaks, e.g. sharper memory timings or mild overclock&#10;&#10;Note: This may cause stability issues, use with caution!">
-                      <input type="checkbox" class="toggle-switch" id="UseMinerTweaks" name="UseMinerTweaks"> Enable miner tweaks (admin rights required)
+                    <div style="padding-top: 0.2rem" title="NemosMiner will not use CPU miners while computer is running on battery&#10;(Note: Some laptop computers will lower CPU speed while on battery)">
+                      <input type="checkbox" class="toggle-switch" id="DisableCpuMiningOnBattery" name="DisableCpuMiningOnBattery"> Disable CPU miners while running on battery
                     </div>
                     <div style="padding-top: 0.6rem" title="NemosMiner will disable developer fee mining&#10;(Note: not all miners support disabling their built in fees, others will reduce the hashrate.&#10;For miners that do not allow disabling the miner fees the effective fee will still be shown in the miner list.)">
                       <input type="checkbox" class="toggle-switch" id="DisableMinerFee" name="DisableMinerFee"> Disable miner fees
+                    </div>
+                    <div style="padding-top: 0.6rem" title="Enable miner specific tweaks, e.g. sharper memory timings or mild overclock&#10;&#10;Note: This may cause stability issues, use with caution!">
+                      <input type="checkbox" class="toggle-switch" id="UseMinerTweaks" name="UseMinerTweaks"> Enable miner tweaks (admin rights required)
                     </div>
                     <br>
 
@@ -812,8 +815,9 @@
               else document.getElementById('CPUMinerProcessPriority').value = -2;
               if (parseInt(config.GPUMinerProcessPriority) >= -2 && parseInt(config.GPUMinerProcessPriority) <= 1) document.getElementById('GPUMinerProcessPriority').value = config.GPUMinerProcessPriority;
               else document.getElementById('GPUMinerProcessPriority').value = -1;
-              if (config.UseMinerTweaks) document.getElementById('UseMinerTweaks').checked = true;
+              if (config.DisableCpuMiningOnBattery) document.getElementById('DisableCpuMiningOnBattery').checked = true;
               if (config.DisableMinerFee) document.getElementById('DisableMinerFee').checked = true;
+              if (config.UseMinerTweaks) document.getElementById('UseMinerTweaks').checked = true;
 
               // Power Cost Calculation Settings
               if (config.CalculatePowerCost) document.getElementById('CalculatePowerCost').checked = true;
@@ -1305,6 +1309,7 @@
                   config.DisableMinersWithFee = document.getElementById('DisableMinersWithFee').checked;
                   config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
                   config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
+
                   config.Currency = []; // Enforce array
                   if (document.getElementById('Currency').value) config.Currency = document.getElementById('Currency').value.replace(' ', '').split(',');
 
@@ -1313,8 +1318,9 @@
                   config.MinerWindowStyleNormalWhenBenchmarking = document.getElementById('MinerWindowStyleNormalWhenBenchmarking').checked;
                   config.CPUMinerProcessPriority = parseInt(document.getElementById('CPUMinerProcessPriority').value);
                   config.GPUMinerProcessPriority = parseInt(document.getElementById('GPUMinerProcessPriority').value);
-                  config.UseMinerTweaks = document.getElementById('UseMinerTweaks').checked;
+                  config.DisableCpuMiningOnBattery = document.getElementById('DisableCpuMiningOnBattery').checked;
                   config.DisableMinerFee = document.getElementById('DisableMinerFee').checked;
+                  config.UseMinerTweaks = document.getElementById('UseMinerTweaks').checked;
 
                   // Power Cost Calculation Settings
                   config.CalculatePowerCost = document.getElementById('CalculatePowerCost').checked;

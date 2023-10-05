@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\ZPool.ps1
-Version:        5.0.0.5
-Version date:   2023/09/26
+Version:        5.0.1.0
+Version date:   2023/10/05
 #>
 
 param(
@@ -83,7 +83,7 @@ If ($PriceField -and $Wallet) {
                     Fee                      = [Decimal]$Fee
                     Host                     = "$($Algorithm).$($Region).$($HostSuffix)"
                     Name                     = [String]$PoolVariant
-                    Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
+                    Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency$(If ($Currency -and -not $PoolConfig.ProfitSwitching) { ",zap=$Currency" })"
                     Port                     = [UInt16]$Request.$_.port
                     PortSSL                  = [UInt16]("5$([String]$Request.$_.port)")
                     Price                    = [Double]$Stat.Live

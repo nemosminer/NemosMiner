@@ -17,13 +17,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.5
-Version date:   2023/09/26
+Version:        5.0.1.0
+Version date:   2023/10/05
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "NVIDIA" -and $_.OpenCL.DriverVersion -ge "450.80.02" })) { Return }
 
-$URI = "https://github.com/OneZeroMiner/onezerominer/releases/download/v1.2.4/onezerominer-win64-1.2.4.zip"
+$URI = "https://github.com/OneZeroMiner/onezerominer/releases/download/v1.2.5/onezerominer-win64-1.2.5.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\onezerominer.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -56,6 +56,7 @@ If ($Algorithms) {
                         API         = "OneZero"
                         Arguments   = "$($_.Arguments) --pool $(If ($Pool.PoolPorts[1]) { "ssl://"} )$($Pool.Host):$($AllMinerPools.$Algorithm.PoolPorts | Select-Object -Last 1)) --wallet $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass)$(If ($Pool.PoolPorts[1] -and $Config.SSLAllowSelfSignedCertificate) { " --no-cert-validation" } ) --api-port $MinerAPIPort --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
                         DeviceNames = $AvailableMiner_Devices.Name
+                        Fee         = $_.Fee # Dev fee
                         MinerSet    = $_.MinerSet
                         Name        = $Miner_Name
                         Path        = $Path

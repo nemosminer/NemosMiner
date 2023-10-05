@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.5
-Version date:   2023/09/26
+Version:        5.0.1.0
+Version date:   2023/10/05
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.ComputeCapability -lt "8.6" })) { Return }
@@ -30,12 +30,12 @@ $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "CryptonightBittube2"; MinMemGiB = 4; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
-    [PSCustomObject]@{ Algorithm = "CryptonightGpu";      MinMemGiB = 3; Type = "AMD"; Minerset = 1; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" } # SRBMinerMulti-v2.3.5 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "CryptonightGpu";      MinMemGiB = 3; Type = "AMD"; Minerset = 1; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" } # SRBMinerMulti-v2.3.7 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "CryptonightLite";     MinMemGiB = 1; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";   MinMemGiB = 1; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc"; MinMemGiB = 1; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightHeavy";    MinMemGiB = 1; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" } # XmRig-v6.20.0 is fastest
-#   [PSCustomObject]@{ Algorithm = "CryptonightHeavyXhv"; MinMemGiB = 4; Type = "AMD"; Minerset = 1; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" } # PARSE error: Invalid job length; SRBMinerMulti-v2.3.5 is fastest, but has 0.85% miner fee
+#   [PSCustomObject]@{ Algorithm = "CryptonightHeavyXhv"; MinMemGiB = 4; Type = "AMD"; Minerset = 1; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" } # PARSE error: Invalid job length; SRBMinerMulti-v2.3.7 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "CryptonightMsr";      MinMemGiB = 2; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
 #   [PSCustomObject]@{ Algorithm = "CryptonightR";        MinMemGiB = 2; Type = "AMD"; Minerset = 3; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" } # ASIC
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";   MinMemGiB = 2; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" } # XmRig-v6.20.0 is fastest
@@ -176,7 +176,7 @@ If ($Algorithms) {
                         API         = "Fireice"
                         Arguments   = $Arguments | ConvertTo-Json -Depth 10 -Compress
                         DeviceNames = $AvailableMiner_Devices.Name
-                        Fee         = @(0.02)
+                        Fee         = @(0.02) # dev fee
                         MinerSet    = $_.MinerSet
                         MinerUri    = "http://127.0.0.1:$($MinerAPIPort)/h"
                         Name        = $Miner_Name

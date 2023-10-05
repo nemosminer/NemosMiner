@@ -367,7 +367,7 @@
     "PoolCurrenciesUri": "https://www.zpool.ca/api/currencies",
     "PoolStatusUri": "https://www.zpool.ca/api/status",
     "PoolDebug": false,
-    "ProfitSwitching": true, // Pool changes DAG epoch when best coin switches
+    "ProfitSwitching": false, // Pool changes DAG epoch when best coin switches
     "Region": [
       "eu",
       "jp",

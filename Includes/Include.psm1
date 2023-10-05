@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\include.ps1
-Version:        5.0.0.5
-Version date:   2023/09/26
+Version:        5.0.1.0
+Version date:   2023/10/05
 #>
 
 $Global:DebugPreference = "SilentlyContinue"
@@ -312,7 +312,7 @@ Class Miner {
             $this.WorkersRunning = $this.Workers
         }
         Else { 
-            $this.StatusInfo = "Starting $($this.Info)"
+            $this.StatusInfo = "Starting '$($this.Info)'"
             Write-Message -Level Info "Starting miner '$($this.Info)'..."
         }
 
@@ -375,6 +375,7 @@ Class Miner {
             Write-Message -Level Info $this.StatusInfo
         }
         Else { 
+            $this.SubStatus = [MinerStatus]::Failed
             Write-Message -Level Error $this.StatusInfo
         }
 
@@ -424,8 +425,10 @@ Class Miner {
             Type              = $this.Type
         } | Export-Csv -Path ".\Logs\SwitchingLog.csv" -Append -NoTypeInformation
 
-        $this.StatusInfo = If ($this.Status -eq [MinerStatus]::Idle) { "Idle" }
-        $this.SubStatus = $this.Status
+        If ($this.Status -eq [MinerStatus]::Idle) { 
+            $this.StatusInfo = "Idle"
+            $this.SubStatus = $this.Status
+        }
         $this.Data = @()
     }
 
@@ -2056,7 +2059,13 @@ Function Get-Stat {
 
     Param(
         [Parameter(Mandatory = $false)]
-        [String[]]$Name
+        [String[]]$Name = (
+            & { 
+                [String[]]$StatFiles = Get-ChildItem -Path "Stats" -File -ErrorAction Ignore | Select-Object -ExpandProperty BaseName
+                ($Global:Stats.psBase.Keys | Select-Object | Where-Object { $_ -notin $StatFiles }) | ForEach-Object { $Global:Stats.Remove($_) } # Remove stat if deleted on disk
+                $StatFiles
+            }
+        )
     )
 
     If ($Global:Stats -isnot [Hashtable] -or -not $Global:Stats.IsSynchronized) { 
@@ -2065,11 +2074,6 @@ Function Get-Stat {
 
     If (-not (Test-Path -Path "Stats" -PathType Container)) { 
         New-Item "Stats" -ItemType Directory -Force | Out-Null
-    }
-
-    If (-not $Name) { 
-        [String[]]$Name = (Get-ChildItem -Path "Stats" -File).BaseName
-        $Global:Stats.psBase.Keys | Select-Object | Where-Object { $_ -notin $Name } | ForEach-Object { $Global:Stats.Remove($_) } # Remove stat if deleted on disk
     }
 
     $Name | Select-Object | ForEach-Object { 
@@ -3016,6 +3020,31 @@ Function Add-CoinName {
     }
 }
 
+Function Add-CurrcencyAlgorithm { 
+
+    Param(
+        [Parameter(Mandatory = $true)]
+        [String]$Algorithm,
+        [Parameter(Mandatory = $true)]
+        [String]$Currency
+    )
+
+    If (-not ($Variables.CoinNames[$Currency] -and $Variables.CurrencyAlgorithm[$Currency])) { 
+        # Get mutex. Mutexes are shared across all threads and processes. 
+        # This lets us ensure only one thread is trying to write to the file at a time. 
+        $Mutex = New-Object System.Threading.Mutex($false, "$($PWD -replace '[^A-Z0-9]')_Add-CoinName")
+
+        # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, update the coin names file and release mutex
+        If ($Mutex.WaitOne(1000)) { 
+            If (-not $Variables.CurrencyAlgorithm[$Currency]) { 
+                $Variables.CurrencyAlgorithm[$Currency] = Get-Algorithm $Algorithm
+                $Variables.CurrencyAlgorithm | Get-SortedObject | ConvertTo-Json | Out-File -Path ".\Data\CurrencyAlgorithm.json" -ErrorAction Ignore -Force
+            }
+        }
+        [Void]$Mutex.ReleaseMutex()
+    }
+}
+
 Function Get-AlgorithmFromCurrency { 
 
     Param(
@@ -3240,13 +3269,14 @@ Function Update-DAGdata {
             If ($DAGdataResponse.coins.PSObject.Properties.Name) { 
                 $DAGdataResponse.coins.PSObject.Properties.Name | Where-Object { $DAGdataResponse.coins.$_.tag -ne "NICEHASH" } | ForEach-Object { 
                     $Currency = $DAGdataResponse.coins.$_.tag
+                    Add-CurrcencyAlgorithm -Algorithm $DAGdataResponse.coins.$_.algorithm -Currency $Currency
                     If (-not $Variables.CoinNames[$Currency]) { [Void](Add-CoinName -Algorithm (Get-Algorithm $DAGdataResponse.coins.$_.algorithm) -Currency $Currency -CoinName $_) }
                     If ((Get-Algorithm $DAGdataResponse.coins.$_.algorithm) -match $Variables.RegexAlgoHasDAG) { 
                         If ($DAGdataResponse.coins.$_.last_block -ge $Variables.DAGdata.Currency.$Currency.BlockHeight) { 
                             $DAGdata = Get-DAGdata -BlockHeight $DAGdataResponse.coins.$_.last_block -Currency $Currency -EpochReserve 2
-                            $DAGdata.Date = ([DateTime]::Now).ToUniversalTime()
-                            $DAGdata.Url = $Url
                             If ($DAGdata.Algorithm -match $Variables.RegexAlgoHasDAG) { 
+                                $DAGdata.Date = ([DateTime]::Now).ToUniversalTime()
+                                $DAGdata.Url = $Url
                                 $Variables.DAGdata.Currency[$Currency] = $DAGdata
                             }
                         }
@@ -3278,9 +3308,9 @@ Function Update-DAGdata {
                     $BlockHeight = [Int]($_ -replace "^<div class='block' title='Current block height of $Currency'>" -replace "</div>")
                     If ($BlockHeight -ge $Variables.DAGdata.Currency.$Currency.BlockHeight -and $Currency) { 
                         $DAGdata = Get-DAGdata -BlockHeight $BlockHeight -Currency $Currency -EpochReserve 2
-                        $DAGdata.Date = ([DateTime]::Now).ToUniversalTime()
-                        $DAGdata.Url = $Url
                         If ($DAGdata.Algorithm -match $Variables.RegexAlgoHasDAG) { 
+                            $DAGdata.Date = ([DateTime]::Now).ToUniversalTime()
+                            $DAGdata.Url = $Url
                             $Variables.DAGdata.Currency[$Currency] = $DAGdata
                         }
                     }
@@ -3310,9 +3340,9 @@ Function Update-DAGdata {
                 $DAGdataResponse.data.PSObject.Properties.Name | Where-Object { $DAGdataResponse.data.$_.enabled -and $DAGdataResponse.data.$_.height -and ((Get-Algorithm $DAGdataResponse.data.$_.algo) -in @("Autolykos2", "EtcHash", "Ethash", "KawPow", "Octopus", "UbqHash") -or $_ -in @($Variables.DAGdata.Currency.psBase.Keys))} | ForEach-Object { 
                     If ($DAGdataResponse.data.$_.height -gt $Variables.DAGdata.Currency.$_.BlockHeight) { 
                         $DAGdata = Get-DAGdata -BlockHeight $DAGdataResponse.data.$_.height -Currency $_ -EpochReserve 2
-                        $DAGdata.Date = ([DateTime]::Now).ToUniversalTime()
-                        $DAGdata.Url = $Url
                         If ($DAGdata.Algorithm -match $Variables.RegexAlgoHasDAG) { 
+                            $DAGdata.Date = ([DateTime]::Now).ToUniversalTime()
+                            $DAGdata.Url = $Url
                             $Variables.DAGdata.Currency[$_] = $DAGdata
                         }
                     }
@@ -3333,16 +3363,16 @@ Function Update-DAGdata {
     If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.MiningStatus -eq "Idle") { Continue }
 
     $Url = "https://evr.cryptoscope.io/api/getblockcount"
-    If ($Variables.DAGdata.Updated.$Url -lt $Variables.ScriptStartTime -or $Variables.DAGdata.Updated.$Url -lt ([DateTime]::Now).ToUniversalTime().AddDays(-1)) { 
+    If (-not $Variables.DAGdata.Currency.EVR.BlockHeight -or $Variables.DAGdata.Updated.$Url -lt $Variables.ScriptStartTime -or $Variables.DAGdata.Updated.$Url -lt ([DateTime]::Now).ToUniversalTime().AddDays(-1)) { 
         # Get block data from EVR block explorer
         Try { 
             $DAGdataResponse = Invoke-RestMethod -Uri $Url -TimeoutSec 5
 
             If ($DAGdataResponse.blockcount -gt $Variables.DAGdata.Currency.EVR.BlockHeight) { 
-                $DAGdata = Get-DAGdata -BlockHeight $DAGdataResponse.coins.$_.last_block -Currency "EVR" -EpochReserve 2
-                $DAGdata.Date = ([DateTime]::Now).ToUniversalTime()
-                $DAGdata.Url = $Url
+                $DAGdata = Get-DAGdata -BlockHeight $DAGdataResponse.blockcount -Currency "EVR" -EpochReserve 2
                 If ($DAGdata.Algorithm -match $Variables.RegexAlgoHasDAG) { 
+                    $DAGdata.Date = ([DateTime]::Now).ToUniversalTime()
+                    $DAGdata.Url = $Url
                     $Variables.DAGdata.Currency[$Currency] = $DAGdata
                     $Variables.DAGdata.Updated.$Url = ([DateTime]::Now).ToUniversalTime()
                     Write-Message -Level Info "Loaded DAG data from '$Url'."
@@ -3363,9 +3393,9 @@ Function Update-DAGdata {
 
         ForEach ($Algorithm in @($DAGdataKeys | ForEach-Object { $Variables.DAGdata.Currency.$_.Algorithm } | Select-Object -Unique)) { 
             $Variables.DAGdata.Algorithm.$Algorithm = @{ 
-                BlockHeight = [Int]($DAGdataKeys | Where-Object { (Get-AlgorithmFromCurrency $_) -eq $Algorithm } | ForEach-Object { $Variables.DAGdata.Currency.$_.BlockHeight } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum)
-                DAGsize     = [Int64]($DAGdataKeys | Where-Object { (Get-AlgorithmFromCurrency $_) -eq $Algorithm } | ForEach-Object { $Variables.DAGdata.Currency.$_.DAGsize } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum)
-                Epoch       = [Int]($DAGdataKeys | Where-Object { (Get-AlgorithmFromCurrency $_) -eq $Algorithm } | ForEach-Object { $Variables.DAGdata.Currency.$_.Epoch } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum)
+                BlockHeight = [Int](($Variables.DAGdata.Currency | ForEach-Object { $_.psBase.Values | Where-Object Algorithm -eq $Algorithm }).Blockheight | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum)
+                DAGsize     = [Int64](($Variables.DAGdata.Currency | ForEach-Object { $_.psBase.Values | Where-Object Algorithm -eq $Algorithm }).DAGsize | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum)
+                Epoch       = [Int](($Variables.DAGdata.Currency | ForEach-Object { $_.psBase.Values | Where-Object Algorithm -eq $Algorithm }).Epoch | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum)
             }
             $Variables.DAGdata.Algorithm.$Algorithm | Add-Member CoinName ($DAGdataKeys | Where-Object { $Variables.DAGdata.Currency.$_.DAGsize -eq $Variables.DAGdata.Algorithm.$Algorithm.DAGsize -and $Variables.DAGdata.Currency.$_.Algorithm -eq $Algorithm }) -Force
         }

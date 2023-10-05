@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        5.0.0.5
-Version date:   2023/09/26
+Version:        5.0.1.0
+Version date:   2023/10/05
 #>
 
 using module .\Includes\Include.psm1
@@ -70,6 +70,8 @@ param(
     [Int]$DecimalsMax = 6, # Display numbers with maximal n decimal digits (larger numbers are shown with less decimal digits)
     [Parameter(Mandatory = $false)]
     [Int]$Delay = 0, # seconds between stop and start of miners, use only when getting blue screens on miner switches
+    [Parameter(Mandatory = $false)]
+    [Switch]$DisableCpuMiningOnBattery = $false, # If true will not use CPU miners while running on battery
     [Parameter(Mandatory = $false)]
     [Switch]$DisableDualAlgoMining = $false, # If true will not use any dual algorithm miners
     [Parameter(Mandatory = $false)]
@@ -293,7 +295,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"5.0.0.5"
+    Version      = [System.Version]"5.0.1.0"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell

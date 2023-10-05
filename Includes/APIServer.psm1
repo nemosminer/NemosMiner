@@ -18,13 +18,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\APIServer.psm1
-Version:        5.0.0.5
-Version date:   2023/09/26
+Version:        5.0.1.0
+Version date:   2023/10/05
 #>
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.5.3.2"
+    $APIVersion = "0.5.3.4"
 
     If ($Variables.APIRunspace.AsyncObject.IsCompleted -or $Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
         Stop-APIServer
@@ -386,6 +386,7 @@ Function Start-APIServer {
                                     $Algorithms = @($Parameters.Pools | ConvertFrom-Json -ErrorAction Ignore).Algorithm
                                     $Currencies = @($Parameters.Pools | ConvertFrom-Json -ErrorAction Ignore).Currency
                                     If ($Pools = @($Variables.Pools | Select-Object | Where-Object { $_.Name -in $Names -and $_.Algorithm -in $Algorithms -and $_.Currency -in $Currencies })) { 
+                                        $Pools = $Pools | Sort-Object -Property Name -Unique
                                         $Pools | ForEach-Object { 
                                             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
                                             $Data += "$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })@$($_.Name)`n"
@@ -406,7 +407,8 @@ Function Start-APIServer {
                                 }
                                 ElseIf ($Parameters.Miners) { 
                                     If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
-                                        $Miners | Sort-Object -Property Name, Algorithms | ForEach-Object { 
+                                        $Miners = $Miners | Sort-Object -Property Name, Algorithms -Unique
+                                        $Miners | ForEach-Object { 
                                             $Data += "$($_.Name) ($($_.Algorithms -join " & "))`n"
                                             ForEach ($Algorithm in $_.Algorithms) { 
                                                 Disable-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
@@ -434,6 +436,7 @@ Function Start-APIServer {
                                     $Algorithms = @($Parameters.Pools | ConvertFrom-Json -ErrorAction Ignore).Algorithm
                                     $Currencies = @($Parameters.Pools | ConvertFrom-Json -ErrorAction Ignore).Currency
                                     If ($Pools = @($Variables.Pools | Select-Object | Where-Object { $_.Name -in $Names -and $_.Algorithm -in $Algorithms -and $_.Currency -in $Currencies})) { 
+                                        $Pools = $Pools | Sort-Object -Property Name -Unique
                                         $Pools | ForEach-Object { 
                                             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
                                             $Data += "$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })@$($_.Name)`n"
@@ -453,7 +456,8 @@ Function Start-APIServer {
                                 }
                                 ElseIf ($Parameters.Miners) { 
                                     If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
-                                        $Miners | Sort-Object -Property Name, Algorithms | ForEach-Object { 
+                                        $Miners = $Miners | Sort-Object -Property Name, Algorithms -Unique
+                                        $Miners | ForEach-Object { 
                                             $Data += "$($_.Name) ($($_.Algorithms -join " & "))`n"
                                             ForEach ($Algorithm in $_.Algorithms) {  
                                                 Enable-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
@@ -495,7 +499,8 @@ Function Start-APIServer {
                             "/functions/stat/remove" { 
                                 If ($Parameters.Pools) { 
                                     If ($Pools = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @($Parameters.Pools | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Algorithm, Currency, Name)) { 
-                                        $Pools | Sort-Object -Property Name | ForEach-Object { 
+                                        $Pools = $Pools | Sort-Object -Property Name -Unique
+                                        $Pools | ForEach-Object { 
                                             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
                                             $Data += "$($Stat_Name)`n"
                                             Remove-Stat -Name "$($Stat_Name)_Profit"
@@ -515,7 +520,8 @@ Function Start-APIServer {
                                 }
                                 ElseIf ($Parameters.Miners -and $Parameters.Type -eq "Hashrate") { 
                                     If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
-                                        $Miners | Sort-Object -Property Name, Algorithms | ForEach-Object { 
+                                        $Miners = $Miners | Sort-Object -Property Name, Algorithms -Unique
+                                        $Miners | ForEach-Object { 
                                             $_.Activated = 0 # To allow 3 attempts
                                             $_.Available = $true
                                             $_.Benchmark = $true
@@ -547,7 +553,8 @@ Function Start-APIServer {
                                 }
                                 ElseIf ($Parameters.Miners -and $Parameters.Type -eq "PowerUsage") { 
                                     If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
-                                        $Miners | Sort-Object -Property Name, Algorithms | ForEach-Object { 
+                                        $Miners = $Miners | Sort-Object -Property Name, Algorithms -Unique
+                                        $Miners | ForEach-Object { 
                                             If ($_.Earning -eq 0) { $_.Available = $true }
                                             If ($Variables.CalculatePowerCost) { 
                                                 $_.MeasurePowerUsage = $true
@@ -588,7 +595,8 @@ Function Start-APIServer {
                             "/functions/stat/set" { 
                                 If ($Parameters.Miners -and $Parameters.Type -eq "Hashrate" -and $null -ne $Parameters.Value) { 
                                     If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) {
-                                        $Miners | Sort-Object -Property Name, Algorithms | ForEach-Object {
+                                        $Miners = $Miners | Sort-Object -Property Name, Algorithms -Unique
+                                        $Miners | ForEach-Object { 
                                             $_.Data = @()
                                             If ($Parameters.Value -le 0 -and $Parameters.Type -eq "Hashrate") { $_.Available = $false; $_.Disabled = $true }
                                             $Data += "$($_.Name) ($($_.Algorithms -join " & "))`n"
@@ -639,6 +647,7 @@ Function Start-APIServer {
 
                                         # Update miner
                                         $Variables.Miners | Where-Object Name -EQ $Miner.Name | Where-Object { [String]$_.Algorithms -eq [String]$Miner.Algorithm } | ForEach-Object { 
+                                            $Data = $Data | Sort-Object -Unique
                                             $Data += "$($Miner.Name) {$($Miner.Algorithms -join ', ')}`n"
                                             $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Where-Object { $_ -notlike "Miner suspended by watchdog *" } | Sort-Object -Unique)
                                             If (-not $_.Reasons) { $_.Available = $true }

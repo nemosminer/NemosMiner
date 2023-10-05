@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.5
-Version date:   2023/09/26
+Version:        5.0.1.0
+Version date:   2023/10/05
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "AMD")) { Return }
@@ -29,14 +29,14 @@ $Path = ".\Bin\$($Name)\kawpowminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "KawPow"; MinMemGiB = 0.93; Minerset = 2; WarmupTimes = @(75, 10); ExcludePools = @("MiningDutch", "ZergPool"); Arguments = "" }
+    [PSCustomObject]@{ Algorithm = "KawPow"; MinMemGiB = 0.93; Minerset = 2; WarmupTimes = @(75, 10); ExcludePools = @(); Arguments = "" }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
 
-If ($Algorithms) {  
+If ($Algorithms) { 
 
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 

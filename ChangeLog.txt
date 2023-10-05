@@ -9,6 +9,33 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 
+ChangeLog NemosMiner 5.0.1.0 2023/10/05
+=======================================
+
+Changes:
+- Core: Added configuration item 'DisableCpuMiningOnBattery'
+- Core: Use separate stat files for DAG based algorithms (e.g. Ethash-2GiB, Ethash-3GiB) also for DAG sizes larger than 3GB
+- Web GUI: 'All Miners' & 'Unavailable Miners' are now grouped by name, algorithm & pool
+
+Enhancements:
+- ZPool: Add currency (zap=[currency]) to password field
+
+Fixes:
+- Core: Status message for failed miners empty (e.g. seen in Web dashboard)
+- Web GUI: Dashboard / Active miners: href to API data broken
+
+Improvements:
+- Core: Extend DAG creation time by 90 seconds  when computer is on battery
+
+Miner changes:
+- BzMiner-v17.0.1b1
+- JayddeeCpu-v3.23.3
+- MiniZ-v2.2c: Fix EvrProPow algorithm (regression from 5.0.0.5)
+- OneZeroMiner-v1.2.5
+- Rigel-v1.9.1
+- SRBMinerMulti-v2.3.7
+
+
 ChangeLog NemosMiner 5.0.0.5 2023/09/26
 =======================================
 

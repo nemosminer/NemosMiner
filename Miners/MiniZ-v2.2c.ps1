@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.5
-Version date:   2023/09/26
+Version:        5.0.1.0
+Version date:   2023/10/05
 #>
 
 using module ..\Includes\Include.psm1
@@ -41,7 +41,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EtcHash";          Type = "AMD"; Fee = @(0.0075); MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=etcHash --dag-fix" }
     [PSCustomObject]@{ Algorithm = "Ethash";           Type = "AMD"; Fee = @(0.0075); MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=ethash --dag-fix" }
     [PSCustomObject]@{ Algorithm = "EthashB3";         Type = "AMD"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=ethashb3 --dag-fix" }
-    [PSCustomObject]@{ Algorithm = "EvrProgPoW";       Type = "AMD"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=evrprogpow --dag-fix" }
+    [PSCustomObject]@{ Algorithm = "EvrProgPow";       Type = "AMD"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --pers=EVRMORE-PROGPOW --dag-fix" }
     [PSCustomObject]@{ Algorithm = "FiroPow";          Type = "AMD"; Fee = @(0.0075); MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(55, 45); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --pers=firo" }
     [PSCustomObject]@{ Algorithm = "KawPow";           Type = "AMD"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 35); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=kawpow --dag-fix --pers=RAVENCOINKAWPOW" }
     [PSCustomObject]@{ Algorithm = "kHeavyHash";       Type = "AMD"; Fee = @(0.008);  MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 35); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=kaspa" }
@@ -60,7 +60,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EtcHash";          Type = "NVIDIA"; Fee = @(0.0075); MinMemGiB = 1.08; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --par=etcHash --dag-fix" }
     [PSCustomObject]@{ Algorithm = "Ethash";           Type = "NVIDIA"; Fee = @(0.0075); MinMemGiB = 1.08; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --par=ethash --dag-fix" }
     [PSCustomObject]@{ Algorithm = "EthashB3";         Type = "NVIDIA"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --par=ethashb3 --dag-fix" }
-    [PSCustomObject]@{ Algorithm = "EvrProgPoW";       Type = "NVIDIA"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --par=evrprogpow --dag-fix" }
+    [PSCustomObject]@{ Algorithm = "EvrProgPow";       Type = "NVIDIA"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --pers=EVRMORE-PROGPOW --dag-fix" }
     [PSCustomObject]@{ Algorithm = "FiroPow";          Type = "NVIDIA"; Fee = @(0.0075); MinMemGiB = 1.08; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(55, 45); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --pers=firo" }
     [PSCustomObject]@{ Algorithm = "kHeavyHash";       Type = "NVIDIA"; Fee = @(0.008);  MinMemGiB = 1.08; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(45, 35); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --par=kaspa" }
     [PSCustomObject]@{ Algorithm = "KawPow";           Type = "NVIDIA"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(45, 35); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --par=kawpow --dag-fix --pers=RAVENCOINKAWPOW" }
@@ -108,7 +108,7 @@ If ($Algorithms) {
                         API          = "MiniZ"
                         Arguments    = "$Arguments --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int=10 --nohttpheaders --latency --all-shares --extra --tempunits=C --show-pers --fee-time=60 --telemetry $MinerAPIPort -cd $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:d2}' -f $_ }) -join ' ')"
                         DeviceNames  = $AvailableMiner_Devices.Name
-                        Fee          = @($_.Fee) # Dev fee
+                        Fee          = $_.Fee # Dev fee
                         MinerSet     = $_.MinerSet
                         MinerUri     = "http://127.0.0.1:$($MinerAPIPort)"
                         Name         = $Miner_Name

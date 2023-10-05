@@ -17,13 +17,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.5
-Version date:   2023/09/26
+Version:        5.0.1.0
+Version date:   2023/10/05
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
 
-$URI = "https://github.com/rigelminer/rigel/releases/download/1.8.1/rigel-1.8.1-win.zip"
+$URI = "https://github.com/rigelminer/rigel/releases/download/1.9.1/rigel-1.9.1-win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\Rigel.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -31,7 +31,7 @@ $DeviceEnumerator = "Type_Vendor_Slot"
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Autolykos2");                 Fee = @(0.01);         MinMemGiB = 0.84; Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(45, 10); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm autolykos2" }
     [PSCustomObject]@{ Algorithms = @("Autolykos2", "kHeavyHash");   Fee = @(0.01, 0.01);   MinMemGiB = 0.84; Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(45, 10); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm autolykos2+kheavyhash" }
-    [PSCustomObject]@{ Algorithms = @("Autolykos2", "SHA512256d");   Fee = @(0.01, 0.01);   MinMemGiB = 0.84; Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(45, 10); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm autolykos2+sha512256d" }
+    [PSCustomObject]@{ Algorithms = @("Autolykos2", "SHA512256d");   Fee = @(0.01, 0.01);   MinMemGiB = 0.84; Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(45, 10); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @("ZPool")); Arguments = " --algorithm autolykos2+sha512256d" }
     [PSCustomObject]@{ Algorithms = @("Blake3");                     Fee = @(0.007);        MinMemGiB = 2.0;  Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(45, 10); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm alephium" }
     [PSCustomObject]@{ Algorithms = @("EtcHash");                    Fee = @(0.007);        MinMemGiB = 0.84; Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(55, 10); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm etchash" }
     [PSCustomObject]@{ Algorithms = @("EtcHash", "Blake3");          Fee = @(0.007, 0.007); MinMemGiB = 0.84; Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(55, 25); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm etchash+alephium" }
@@ -43,7 +43,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Fee = @(0.007, 0.007); MinMemGiB = 0.84; Tuning = " --mt2"; Minerset = 2; WarmupTimes = @(55, 25); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm ethash+kheavyhash" }
     [PSCustomObject]@{ Algorithms = @("EthashB3");                   Fee = @(0.01);         MinMemGiB = 0.84; Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(55, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm ethashb3" }
     [PSCustomObject]@{ Algorithms = @("EthashB3", "Blake3");         Fee = @(0.01, 0.007);  MinMemGiB = 0.84; Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(55, 10); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm ethashb3+alephium" }
-    [PSCustomObject]@{ Algorithms = @("EthashB3", "SHA512256d");     Fee = @(0.01, 0.01);   MinMemGiB = 0.84; Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(55, 10); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm ethashb3+sha512256d" }
+    [PSCustomObject]@{ Algorithms = @("EthashB3", "SHA512256d");     Fee = @(0.01, 0.01);   MinMemGiB = 0.84; Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(55, 10); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @("ZPool")); Arguments = " --algorithm ethashb3+sha512256d" }
     [PSCustomObject]@{ Algorithms = @("Flora");                      Fee = @(0.007);        MinMemGiB = 0.84; Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(45, 10); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm flora" }
     [PSCustomObject]@{ Algorithms = @("IronFish");                   Fee = @(0.007);        MinMemGiB = 2.0;  Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(45, 10); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm ironfish" }
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Fee = @(0.007);        MinMemGiB = 2.0;  Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(45, 10); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm kheavyhash" }
@@ -53,6 +53,9 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("OctaSpace", "Blake3");        Fee = @(0.007, 0.007); MinMemGiB = 0.84; Tuning = " --mt2"; Minerset = 1; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm octa+alephium" }
     [PSCustomObject]@{ Algorithms = @("OctaSpace", "IronFish");      Fee = @(0.007, 0.007); MinMemGiB = 0.84; Tuning = " --mt2"; Minerset = 1; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm octa+ironfish" }
     [PSCustomObject]@{ Algorithms = @("OctaSpace", "kHeavyHash");    Fee = @(0.007, 0.007); MinMemGiB = 0.84; Tuning = " --mt2"; Minerset = 1; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm octa+kheavyhash" }
+    [PSCustomObject]@{ Algorithms = @("Octopus");                    Fee = @(0.02);         MinMemGiB = 0.84; Tuning = " --mt2"; MinerSet = 0; WarmupTimes = @(55, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm octopus" }
+    [PSCustomObject]@{ Algorithms = @("Octopus", "Blake3");          Fee = @(0.02, 0.007);  MinMemGiB = 0.84; Tuning = " --mt2"; Minerset = 1; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm octopus+alephium" }
+    [PSCustomObject]@{ Algorithms = @("Octopus", "IronFish");        Fee = @(0.02, 0.007);  MinMemGiB = 0.84; Tuning = " --mt2"; Minerset = 1; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());        Arguments = " --algorithm octopus+ironfish" }
     [PSCustomObject]@{ Algorithms = @("SHA512256d");                 Fee = @(0.01);         MinMemGiB = 1.0;  Tuning = " --mt2"; Minerset = 1; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@("ZPool"), @()); Arguments = " --algorithm sha512256d" }
 )
 
@@ -82,6 +85,8 @@ If ($Algorithms) {
                         $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })"
 
                         $Arguments = $_.Arguments
+                        If ($_.Algorithms[0] -eq "KawPow" -and $Pool0.Currency -in @("CLORE", "NEOX", "XNA")) { $Arguments = $Arguments -replace 'ravencoin', $Pool0.Currency.ToLower() }
+
                         $Index = 1
                         ForEach ($Pool in ($Pools | Where-Object { $_ })) { 
                             Switch ($Pool.Protocol) { 
@@ -108,8 +113,8 @@ If ($Algorithms) {
                         [PSCustomObject]@{ 
                             API         = "Rigel"
                             Arguments   = "$Arguments --api-bind 127.0.0.1:$($MinerAPIPort) --no-watchdog --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
-                            Fee         = @($_.Fee) # Dev fee
                             DeviceNames = $AvailableMiner_Devices.Name
+                            Fee         = $_.Fee # Dev fee
                             MinerSet    = $_.MinerSet
                             MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
                             Name        = $Miner_Name

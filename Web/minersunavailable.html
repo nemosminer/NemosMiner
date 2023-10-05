@@ -23,6 +23,11 @@
             data-detail-view="true"
             data-disable-control-when-search="true"
             data-filter-control="true"
+            data-group-by="true"
+            data-group-by-collapsed-groups=""
+            data-group-by-field='["tName", "tPrimaryAlgorithm", "tSecondaryAlgorithm"]'
+            data-group-by-show-toggle-icon="true"
+            data-group-by-toggle="true"
             data-header-style="headerStyleAlignTop"
             data-icons="icons"
             data-maintain-meta-data="true"
@@ -42,7 +47,7 @@
             <thead>
               <tr>
                 <th data-switchable="false" data-field="SubStatus" data-class="hidden statuscolor"></th>
-                <th data-field="state" data-checkbox="true"></th>
+                <th data-field="state" data-checkbox="true" data-checkbox-enabled="true"></th>
                 <th data-field="tName" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
                 <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">Miner</th>
                 <th data-field="Version" data-sortable="true" data-filter-control="select" data-visible="false">Version</th>
@@ -121,6 +126,12 @@
               },
 
               onPostBody: function () {
+                $("td.bs-checkbox").each(function () {
+                  this.disabled = 'true';
+                });
+                // $("td.bs-checkbox").each(function () {
+                //   this.disabled = 'true';
+                // });
                 if (config.UseColorForMinerStatus == true) {
                   $(".statuscolor").each(function () {
                     if (this.innerText) $(this).parent('tr').addClass('color-' + this.innerText.toLowerCase());

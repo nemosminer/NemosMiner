@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.5
-Version date:   2023/09/26
+Version:        5.0.1.0
+Version date:   2023/10/05
 #>
 
 using module ..\Includes\Include.psm1
@@ -31,9 +31,9 @@ $Path = ".\Bin\$($Name)\miner.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Equihash1927"; Fee = 0.02; MinMemGiB = 2.8; Type = "AMD"; Tuning = ""; MinerSet = 0; WarmupTimes = @(30, 0); ExcludePools = @(); AutoCoinPers = " --pers auto"; Arguments = " --algo equihash192_7 --cuda 0 --opencl 1" } # FPGA
+    [PSCustomObject]@{ Algorithm = "Equihash1927"; Fee = @(0.02); MinMemGiB = 2.8; Type = "AMD"; Tuning = ""; MinerSet = 0; WarmupTimes = @(30, 0); ExcludePools = @(); AutoCoinPers = " --pers auto"; Arguments = " --algo equihash192_7 --cuda 0 --opencl 1" } # FPGA
 
-    [PSCustomObject]@{ Algorithm = "Equihash1927"; Fee = 0.02; MinMemGiB = 2.8; Type = "NVIDIA"; Tuning = ""; MinerSet = 1; WarmupTimes = @(30, 0); ExcludePools = @(); AutoCoinPers = " --pers auto"; Arguments = " --algo equihash192_7  --cuda 0 --opencl 1" } # FPGA
+    [PSCustomObject]@{ Algorithm = "Equihash1927"; Fee = @(0.02); MinMemGiB = 2.8; Type = "NVIDIA"; Tuning = ""; MinerSet = 1; WarmupTimes = @(30, 0); ExcludePools = @(); AutoCoinPers = " --pers auto"; Arguments = " --algo equihash192_7  --cuda 0 --opencl 1" } # FPGA
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
@@ -77,7 +77,7 @@ If ($Algorithms) {
                         API         = "Gminer"
                         Arguments   = "$Arguments --api $MinerAPIPort --watchdog 0 --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ' ')"
                         DeviceNames = $AvailableMiner_Devices.Name
-                        Fee         = @($_.Fee) # Dev fee
+                        Fee         = $_.Fee # Dev fee
                         MinerSet    = $_.MinerSet
                         MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
                         Name        = $Miner_Name

@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.5
-Version date:   2023/09/26
+Version:        5.0.1.0
+Version date:   2023/10/05
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
@@ -29,7 +29,7 @@ $Path = ".\Bin\$($Name)\kawpowminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "KawPow"; MinMemGiB = 0.93; Minerset = 2; WarmupTimes = @(75, 10); ExcludePools = @("MiningDutch", "ZergPool"); Arguments = "" }
+    [PSCustomObject]@{ Algorithm = "KawPow"; MinMemGiB = 0.93; Minerset = 2; WarmupTimes = @(75, 10); ExcludePools = @(); Arguments = "" }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
@@ -59,10 +59,11 @@ If ($Algorithms) {
                         "ethstratum2"  { "stratum2" }
                         Default        { "stratum" }
                     }
-                    $Protocol += If ($Pool.PoolPorts[1]) { "+tls" } Else { "+tcp" }
+                    $Protocol += If ($Pool.PoolPorts[1]) { "+ssl" } Else { "+tcp" }
+
                     [PSCustomObject]@{ 
                         API         = "EthMiner"
-                        Arguments   = "$($_.Arguments) --pool $($Protocol)://$([System.Web.HttpUtility]::UrlEncode("$($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" })")):$([System.Web.HttpUtility]::UrlEncode($($Pool.Pass)))@$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --farm-recheck 10000 --farm-retries 40 --work-timeout 100000 --response-timeout 720 --api-port -$($MinerAPIPort) --cuda --cuda-devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
+                        Arguments   = "$($_.Arguments) --pool $($Protocol)://$([System.Web.HttpUtility]::UrlEncode("$($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" })")):$([System.Web.HttpUtility]::UrlEncode($($Pool.Pass)))@$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --farm-recheck 10000 --farm-retries 40 --work-timeout 100000 --response-timeout 720 --api-bind 127.0.0.1:-$($MinerAPIPort) --cuda --cuda-devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
                         DeviceNames = $AvailableMiner_Devices.Name
                         EnvVars     = @("SSL_NOVERIFY=TRUE")
                         MinerSet     = $_.MinerSet

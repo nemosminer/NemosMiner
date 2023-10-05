@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.0.5
-Version date:   2023/09/26
+Version:        5.0.1.0
+Version date:   2023/10/05
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $Variables.DriverVersion.CIM.AMD -le "20.45.01.28") -or $_.OpenCL.ComputeCapability -ge "5.0" })) { Return } # Only supports AMD drivers until 20.12.1
@@ -29,9 +29,9 @@ $Path = ".\Bin\$($Name)\EthDcrMiner64.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = [PSCustomObject[]]@( 
-    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD"; Fee = 0.006; MinMemGiB = 0.77; Minerset = 2; Tuning = " -rxboost 1"; WarmupTimes = @(60, 0); ExcludePools = @(); Arguments = " -platform 1" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "AMD"; Fee = @(0.006); MinMemGiB = 0.77; Minerset = 2; Tuning = " -rxboost 1"; WarmupTimes = @(60, 0); ExcludePools = @(); Arguments = " -platform 1" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
 
-    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA"; Fee = 0.006; MinMemGiB = 0.77; Minerset = 2; Tuning = " -strap 1"; WarmupTimes = @(60, 0); ExcludePools = @(); Arguments = " -platform 2" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithm = "Ethash"; Type = "NVIDIA"; Fee = @(0.006); MinMemGiB = 0.77; Minerset = 2; Tuning = " -strap 1"; WarmupTimes = @(60, 0); ExcludePools = @(); Arguments = " -platform 2" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
@@ -76,7 +76,7 @@ If ($Algorithms) {
                         API         = "EthMiner"
                         Arguments   = "$Arguments -dbg -1 -wd 0 -retrydelay 3 -allpools 1 -allcoins 1 -mport -$MinerAPIPort -di $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
                         DeviceNames = $AvailableMiner_Devices.Name
-                        Fee         = @($_.Fee) # Dev fee
+                        Fee         = $_.Fee # Dev fee
                         MinerSet    = $_.MinerSet
                         MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
                         Name        = $Miner_Name
