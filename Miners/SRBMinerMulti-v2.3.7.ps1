@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.0
-Version date:   2023/10/05
+Version:        5.0.1.1
+Version date:   2023/10/06
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "CPU" -or $_.Type -eq "INTEL" -or ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0") -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge "510.00") })) { Return }
@@ -130,7 +130,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("RandomxL");             Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(60, 0);   ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm Randomxl --Randomx-use-1gb-pages") } # XmRig-v6.20.0 is fastest
     [PSCustomObject]@{ Algorithms = @("RandomYada");           Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(60, 0);   ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm randomyada") }
     [PSCustomObject]@{ Algorithms = @("ScryptN2");             Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(90, 20);  ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm scryptn2") }
-    [PSCustomObject]@{ Algorithms = @("VerusHash");            Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(30, 15);  ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm verushash") }
+    [PSCustomObject]@{ Algorithms = @("VerusHash");            Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm verushash") }
     [PSCustomObject]@{ Algorithms = @("Xdag");                 Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(60, 0);   ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm xdag") }
     [PSCustomObject]@{ Algorithms = @("YescryptR16");          Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(60, 25);  ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm yescryptr16") }
     [PSCustomObject]@{ Algorithms = @("YescryptR32");          Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(60, 45);  ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm yescryptr32") }

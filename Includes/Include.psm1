@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\include.ps1
-Version:        5.0.1.0
-Version date:   2023/10/05
+Version:        5.0.1.1
+Version date:   2023/10/06
 #>
 
 $Global:DebugPreference = "SilentlyContinue"
@@ -2059,13 +2059,7 @@ Function Get-Stat {
 
     Param(
         [Parameter(Mandatory = $false)]
-        [String[]]$Name = (
-            & { 
-                [String[]]$StatFiles = Get-ChildItem -Path "Stats" -File -ErrorAction Ignore | Select-Object -ExpandProperty BaseName
-                ($Global:Stats.psBase.Keys | Select-Object | Where-Object { $_ -notin $StatFiles }) | ForEach-Object { $Global:Stats.Remove($_) } # Remove stat if deleted on disk
-                $StatFiles
-            }
-        )
+        [String[]]$Name
     )
 
     If ($Global:Stats -isnot [Hashtable] -or -not $Global:Stats.IsSynchronized) { 
@@ -2074,6 +2068,13 @@ Function Get-Stat {
 
     If (-not (Test-Path -Path "Stats" -PathType Container)) { 
         New-Item "Stats" -ItemType Directory -Force | Out-Null
+    }
+
+    If (-not $Name) { 
+        [String[]]$Name = ((Get-ChildItem -Path "Stats" -File).BaseName | Sort-Object -Unique)
+        $Keys = $Global:Stats.psBase.Keys # Workaround for 'Collection was modified; enumeration operation may not execute'
+        $Keys | Where-Object { $_ -notin $Name } | ForEach-Object { $Global:Stats.Remove($_) } # Remove stat if deleted on disk
+        Remove-Variable Keys
     }
 
     $Name | Select-Object | ForEach-Object { 

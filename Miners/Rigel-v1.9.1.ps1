@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.0
-Version date:   2023/10/05
+Version:        5.0.1.1
+Version date:   2023/10/06
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
@@ -108,7 +108,7 @@ If ($Algorithms) {
                         $Arguments += If ($Pool0.PoolPorts[1] -or ($_.Algorithms[1] -and $Pool1.PoolPorts[1])) { " --no-strict-ssl" } # Parameter cannot be used multiple times
 
                         # Apply tuning parameters
-                        If ($Variables.UseMinerTweaks -and ($AvailableMiner_Devices.Architecture | Sort-Object -Unique ) -eq "Pascal") { $Arguments += $_.Tuning }
+                        If ($Variables.UseMinerTweaks -and ($AvailableMiner_Devices.Architecture | Sort-Object -Unique) -eq "Pascal" -and ($AvailableMiner_Devices.Model | Sort-Object -Unique) -notmatch "^MX\d+") { $Arguments += $_.Tuning }
 
                         [PSCustomObject]@{ 
                             API         = "Rigel"
