@@ -49,7 +49,7 @@ Do {
                 ForEach ($Miner in ($Variables.Miners | Where-Object { $_.Status -ne [MinerStatus]::Idle })) { 
                     $Miner.SetStatus([MinerStatus]::Idle)
                     $Miner.WorkersRunning = [Worker[]]@()
-                    $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.StatusInfo = $Miner.StatusInfo }
+                    $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.SubStatus = $Miner.SubStatus; $_.StatusInfo = $Miner.StatusInfo }
                 }
                 $Variables.RunningMiners = [Miner[]]@()
                 $Variables.BenchmarkingOrMeasuringMiners = [Miner[]]@()
@@ -81,7 +81,7 @@ Do {
                     $Miner.SetStatus([MinerStatus]::Idle)
                     $Miner.StatusInfo = "Waiting for system to become idle '$($Miner.Info)'"
                     $Miner.WorkersRunning = [Worker[]]@()
-                    $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.StatusInfo = $Miner.StatusInfo }
+                    $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.SubStatus = $Miner.SubStatus; $_.StatusInfo = $Miner.StatusInfo }
                 }
                 $Variables.RunningMiners = [Miner[]]@()
                 $Variables.BenchmarkingOrMeasuringMiners = [Miner[]]@()
@@ -593,7 +593,7 @@ Do {
                                     If ($LatestMinerSharesData.$_[1] -gt 0 -and $LatestMinerSharesData.$_[3] -gt [Int](1 / $Config.BadShareRatioThreshold) -and $LatestMinerSharesData.$_[1] / $LatestMinerSharesData.$_[3] -gt $Config.BadShareRatioThreshold) { 
                                         $Miner.StatusInfo = "Error: '$($Miner.Info)' stopped. Too many bad shares (Shares Total = $($LatestMinerSharesData.$_[3]), Rejected = $($LatestMinerSharesData.$_[1]))"
                                         $Miner.SetStatus([MinerStatus]::Failed)
-                                        $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.StatusInfo = $Miner.StatusInfo }
+                                        $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.SubStatus = $Miner.SubStatus; $_.StatusInfo = $Miner.StatusInfo }
                                     }
                                 }
                             }
@@ -602,7 +602,7 @@ Do {
                     Else { 
                         $Miner.StatusInfo = "Error: '$($Miner.Info)' exited unexpectedly"
                         $Miner.SetStatus([MinerStatus]::Failed)
-                        $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.StatusInfo = $Miner.StatusInfo }
+                        $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.SubStatus = $Miner.SubStatus; $_.StatusInfo = $Miner.StatusInfo }
                     }
                 }
 
@@ -651,7 +651,7 @@ Do {
                                 ElseIf ($Miner_Hashrates.$Algorithm -gt 0 -and $Miner.Status -eq [MinerStatus]::Running -and $Stat.Week -and ($Miner_Hashrates.$Algorithm -gt $Stat.Week * 2 -or $Miner_Hashrates.$Algorithm -lt $Stat.Week / 2)) { # Stop miner if new value is outside ±200% of current value
                                     $Miner.StatusInfo = "Error: '$($Miner.Info)'' Reported hashrate is unreal ($($Algorithm): $(($Miner_Hashrates.$Algorithm | ConvertTo-Hash) -replace ' ') is not within ±200% of stored value of $(($Stat.Week | ConvertTo-Hash) -replace ' '))"
                                     $Miner.SetStatus([MinerStatus]::Failed)
-                                    $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.StatusInfo = $Miner.StatusInfo }
+                                    $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.SubStatus = $Miner.SubStatus; $_.StatusInfo = $Miner.StatusInfo }
                                 }
                             }
                         }
@@ -669,7 +669,7 @@ Do {
                                     # Stop miner if new value is outside ±200% of current value
                                     $Miner.StatusInfo = "Error: '$($Miner.Info)' Reported power usage is unreal ($($PowerUsage.ToString("N2"))W is not within ±200% of stored value of $(([Double]$Stat.Week).ToString("N2"))W)"
                                     $Miner.SetStatus([MinerStatus]::Failed)
-                                    $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.StatusInfo = $Miner.StatusInfo }
+                                    $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.SubStatus = $Miner.SubStatus; $_.StatusInfo = $Miner.StatusInfo }
                                 }
                             }
                         }
@@ -1029,7 +1029,7 @@ Do {
                     $Miner.WorkersRunning = [Worker[]]@()
                 }
             }
-            $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.StatusInfo = $Miner.StatusInfo }
+            $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.SubStatus = $Miner.SubStatus; $_.StatusInfo = $Miner.StatusInfo }
         }
         Remove-Variable CompareMiners, Miner, WatchdogTimers, Worker -ErrorAction Ignore
 
@@ -1156,7 +1156,7 @@ Do {
                 }
 
                 # Add extra time when CPU mining and miner requires DAG creation
-                If ($Miner.Workers.Pool.DAGSizeGiB -and $Variables.MinersBest_Combo.Devices.Type -contains "CPU") { $Miner.WarmupTimes[0] += 15 <# seconds #>}
+                If ($Miner.Workers.Pool.DAGSizeGiB -and $Variables.MinersBest_Combo.Devices.Name -like "CPU#*") { $Miner.WarmupTimes[0] += 15 <# seconds #>}
                 # Add extra time when notebook is on battery
                 If ($Miner.Workers.Pool.DAGSizeGiB -and (Get-CimInstance Win32_Battery).BatteryStatus -eq 1) { $Miner.WarmupTimes[0] += 90 <# seconds #>}
 
@@ -1190,7 +1190,7 @@ Do {
                 Else { 
                     $Miner.SetStatus([MinerStatus]::Running)
                 }
-                $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.StatusInfo = $Miner.StatusInfo }
+                $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.SubStatus = $Miner.SubStatus; $_.StatusInfo = $Miner.StatusInfo }
 
                 # Add watchdog timer
                 If ($Config.Watchdog) { 
@@ -1330,7 +1330,7 @@ Do {
                             }
                         }
                     }
-                    $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.StatusInfo = $Miner.StatusInfo }
+                    $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.SubStatus = $Miner.SubStatus; $_.StatusInfo = $Miner.StatusInfo }
                 }
                 Catch { 
                     "$(Get-Date -Format "yyyy-MM-dd_HH:mm:ss")" >> "Logs\Error.txt"
@@ -1386,7 +1386,7 @@ Do {
 ForEach ($Miner in ($Variables.Miners | Where-Object { $_.Status -ne [MinerStatus]::Idle })) { 
     $Miner.SetStatus([MinerStatus]::Idle)
     $Miner.WorkersRunning = [Worker[]]@()
-    $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.StatusInfo = $Miner.StatusInfo }
+    $Variables.Devices | Where-Object Name -in $Miner.DeviceNames | ForEach-Object { $_.Status = $Miner.Status; $_.SubStatus = $Miner.SubStatus; $_.StatusInfo = $Miner.StatusInfo }
 }
 $Variables.RunningMiners = [Miner[]]@()
 $Variables.BenchmarkingOrMeasuringMiners = [Miner[]]@()
