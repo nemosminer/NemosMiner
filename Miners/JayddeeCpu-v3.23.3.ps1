@@ -23,7 +23,7 @@ Version date:   2023/10/07
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
 
-$URI = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.23.3/cpuminer-opt-3.23.3-windows.zip"
+$URI = "https://github.com/JayDDee/cpuminer-opt/releases/download/v3.23.3/cpuminer-opt-3.23.3-windows2.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
 
