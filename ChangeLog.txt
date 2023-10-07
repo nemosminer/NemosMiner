@@ -15,12 +15,12 @@ ChangeLog NemosMiner 5.0.1.1 2023/10/06
 
 Enhancements:
 - Core: Minor code optimizations
-- Core / Includes.psm1: Optimze functions Get-GPUArchitectureAMD & Get-GPUArchitectureNvidia
+- Core / Includes.psm1: Optimze functions 'Get-GPUArchitectureAMD' & 'Get-GPUArchitectureNvidia'
 - Web GUI / Devices: Use colors for status
 
 Fixes:
 - Core: Extend wait time to build DAG if CPU mining
-- Core: Error Collection was modified; enumeration operation may not execute'
+- Core: Error 'Collection was modified; enumeration operation may not execute'
 - Miners / Rigel-v1.9.1: Only apply tuning parameter to Pascal GPUs
 - Miners / Raptor3umCpu-v2.0: SSL is not supported
 
