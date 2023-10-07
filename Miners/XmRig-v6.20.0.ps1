@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 Version:        5.0.1.1
-Version date:   2023/10/06
+Version date:   2023/10/07
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -in @("AMD", "CPU") -or $_.OpenCL.ComputeCapability -gt "5.0" })) { Return }
@@ -74,38 +74,38 @@ $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "AMD"; MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo rx/wow" } # GPUs don't do Randomx and when they do it's a watt-wasting miracle anyway
     [PSCustomObject]@{ Algorithm = "Uplexa";               Type = "AMD"; MinMemGiB = 0.25; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo rx/upx2" } # GPUs don't do Randomx and when they do it's a watt-wasting miracle anyway
 
-    [PSCustomObject]@{ Algorithm = "Argon2Chukwa";         Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo argon2/chukwa" }
-    [PSCustomObject]@{ Algorithm = "Argon2ChukwaV2";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo argon2/chukwav2" }
-    [PSCustomObject]@{ Algorithm = "Argon2Ninja";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo argon2/ninja" }
-    [PSCustomObject]@{ Algorithm = "Argon2WRKZ";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo argon2/wrkz" }
-#   [PSCustomObject]@{ Algorithm = "Cryptonight";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/0" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/ccx" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightDouble";    Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/double" }  # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightFast";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/fast" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightLite";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn-lite/0" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";    Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn-lite/1" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightHalf";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/half" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 20); ExcludePools = @(); Arguments = " --algo cn-heavy/0" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn-heavy/tube" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightPico";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn-pico" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightPicoTlo";   Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn-pico/tlo" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightR";         Type = "CPU"; Minerset = 3; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/r" } # ASIC
-#   [PSCustomObject]@{ Algorithm = "CryptonightRto";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/rto" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightRwz";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/rwz" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/upx2" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightV1";        Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/1" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightV2";        Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/2" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightXao";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/xao" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightHeavyXhv";  Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn-heavy/xhv" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/zls" } # Not profitable with CPU
-#   [PSCustomObject]@{ Algorithm = "Randomx";              Type = "CPU"; Minerset = 3; WarmupTimes = @(45, 20); ExcludePools = @(); Arguments = " --algo rx/0" } # ASIC
-    [PSCustomObject]@{ Algorithm = "Ghostrider";           Type = "CPU"; Minerset = 0; WarmupTimes = @(45, 20); ExcludePools = @(); Arguments = " --algo gr" }
-    [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo rx/arq" } # FPGA
-    [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo rx/keva" }
-    [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo rx/loki" }
-    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo rx/sfx" } # SRBMinerMulti-v2.3.7 is fastest, but has 0.85% miner fee
-    [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo rx/wow" }
-    [PSCustomObject]@{ Algorithm = "Uplexa";               Type = "CPU"; Minerset = 0; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo rx/upx2" }
+    [PSCustomObject]@{ Algorithm = "Argon2Chukwa";         Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo argon2/chukwa" }
+    [PSCustomObject]@{ Algorithm = "Argon2ChukwaV2";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo argon2/chukwav2" }
+    [PSCustomObject]@{ Algorithm = "Argon2Ninja";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo argon2/ninja" }
+    [PSCustomObject]@{ Algorithm = "Argon2WRKZ";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo argon2/wrkz" }
+#   [PSCustomObject]@{ Algorithm = "Cryptonight";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn/0" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn/ccx" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightDouble";    Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn/double" }  # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightFast";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn/fast" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightLite";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn-lite/0" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";    Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn-lite/1" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightHalf";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn/half" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightHeavy";     Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 20);  ExcludePools = @(); Arguments = " --algo cn-heavy/0" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightHeavyTube"; Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn-heavy/tube" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightPico";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn-pico" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightPicoTlo";   Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn-pico/tlo" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightR";         Type = "CPU"; Minerset = 3; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn/r" } # ASIC
+#   [PSCustomObject]@{ Algorithm = "CryptonightRto";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn/rto" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightRwz";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn/rwz" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightUpx";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn/upx2" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightV1";        Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn/1" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightV2";        Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn/2" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightXao";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn/xao" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightHeavyXhv";  Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn-heavy/xhv" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "CryptonightZls";       Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo cn/zls" } # Not profitable with CPU
+#   [PSCustomObject]@{ Algorithm = "Randomx";              Type = "CPU"; Minerset = 3; WarmupTimes = @(45, 20);  ExcludePools = @(); Arguments = " --algo rx/0" } # ASIC
+    [PSCustomObject]@{ Algorithm = "Ghostrider";           Type = "CPU"; Minerset = 0; WarmupTimes = @(180, 20); ExcludePools = @(); Arguments = " --algo gr" }
+    [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo rx/arq" } # FPGA
+    [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo rx/keva" }
+    [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo rx/loki" }
+    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo rx/sfx" } # SRBMinerMulti-v2.3.7 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo rx/wow" }
+    [PSCustomObject]@{ Algorithm = "Uplexa";               Type = "CPU"; Minerset = 0; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo rx/upx2" }
 
     [PSCustomObject]@{ Algorithm = "Cryptonight";          Type = "NVIDIA"; MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/0" }
     [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "NVIDIA"; MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/ccx" } # CryptoDredge-v0.27.0 is fastest, but has 1% miner fee

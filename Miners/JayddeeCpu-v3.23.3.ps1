@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 Version:        5.0.1.1
-Version date:   2023/10/06
+Version date:   2023/10/07
 #>
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
@@ -38,7 +38,7 @@ Else { Return }
 
 $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Blake2b";       MinerSet = 3; WarmupTimes = @(45, 30); ExcludePools = @(); Arguments = " --algo blake2b" } # FPGA
-    [PSCustomObject]@{ Algorithm = "HMQ1725";       Minerset = 3; WarmupTimes = @(45, 45); ExcludePools = @(); Arguments = " --algo hmq1725" } # GPU
+    [PSCustomObject]@{ Algorithm = "HMQ1725";       Minerset = 3; WarmupTimes = @(45, 60); ExcludePools = @(); Arguments = " --algo hmq1725" } # GPU
 #   [PSCustomObject]@{ Algorithm = "Lyra2z330";     MinerSet = 3; WarmupTimes = @(45, 45); ExcludePools = @(); Arguments = " --algo lyra2z330" } # Algorithm is dead
     [PSCustomObject]@{ Algorithm = "m7m";           Minerset = 1; WarmupTimes = @(45, 80); ExcludePools = @(); Arguments = " --algo m7m" } # NosuchCpu-v3.8.8.1 is fastest
     [PSCustomObject]@{ Algorithm = "SHA3d";         MinerSet = 3; WarmupTimes = @(45, 40); ExcludePools = @(); Arguments = " --algo SHA3d" } # FPGA

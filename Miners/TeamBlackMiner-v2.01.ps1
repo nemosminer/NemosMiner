@@ -21,9 +21,11 @@ Version:        5.0.1.1
 Version date:   2023/10/07
 #>
 
+Return
+
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.CUDAVersion -ge "11.6") })) { Return }
 
-$URI = "https://github.com/sp-hash/TeamBlackMiner/releases/download/v2.00/TeamBlackMiner_2_00_cuda_12.7z"
+$URI = "https://github.com/Minerx117/miners/releases/download/TeamBlackMiner/TeamBlackMiner_v2.01.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\TBMiner.exe"
 
@@ -39,7 +41,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Ethash", "VertHash");  Type = "AMD"; Fee = @(0.005, 0.005); MinMemGiB = 1.51; Minerset = 1; Tuning = ""; WarmupTimes = @(60, 45); ExcludePools = @(@(), @());           Arguments = " --algo eth+vtc --verthash-data ..\.$($Variables.VerthashDatPath)" }
     [PSCustomObject]@{ Algorithms = @("VertHash");            Type = "AMD"; Fee = @(0.010);        MinMemGiB = 3.0;  Minerset = 1; Tuning = ""; WarmupTimes = @(60, 0);  ExcludePools = @(@(), @());           Arguments = " --algo verthash --verthash-data ..\.$($Variables.VerthashDatPath)" }
 
-    [PSCustomObject]@{ Algorithms = @("EtcHash");             Type = "NVIDIA"; Fee = @(0.005);        MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 15); ExcludePools = @(@(), @());           Arguments = " --algo etchash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithms = @("EtcHash");             Type = "NVIDIA"; Fee = @(0.0055);       MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 15); ExcludePools = @(@(), @());           Arguments = " --algo etchash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithms = @("EtcHash", "Ethash3B"); Type = "NVIDIA"; Fee = @(0.005, 0.005); MinMemGiB = 1.24; Minerset = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 15); ExcludePools = @(@(), @());           Arguments = " --algo etc+ethb3" }
     [PSCustomObject]@{ Algorithms = @("EtcHash", "KawPow");   Type = "NVIDIA"; Fee = @(0.005, 0.005); MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 45); ExcludePools = @(@(), @("ZergPool")); Arguments = " --algo etc+rvn" }
     [PSCustomObject]@{ Algorithms = @("EtcHash", "VertHash"); Type = "NVIDIA"; Fee = @(0.005, 0.005); MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(60, 45); ExcludePools = @(@(), @());           Arguments = " --algo etc+vtc --verthash-data ..\.$($Variables.VerthashDatPath)" }
@@ -48,7 +50,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Ethash", "KawPow");    Type = "NVIDIA"; Fee = @(0.005, 0.005); MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 45); ExcludePools = @(@(), @("ZergPool")); Arguments = " --algo eth+rvn" }
     [PSCustomObject]@{ Algorithms = @("Ethash", "VertHash");  Type = "NVIDIA"; Fee = @(0.005, 0.005); MinMemGiB = 1.51; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(60, 45); ExcludePools = @(@(), @());           Arguments = " --algo eth+vtc --verthash-data ..\.$($Variables.VerthashDatPath)" }
     [PSCustomObject]@{ Algorithms = @("Ethash3B");            Type = "NVIDIA"; Fee = @(0.005);        MinMemGiB = 1.24; Minerset = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 15); ExcludePools = @(@(), @());           Arguments = " --algo ethash3b" }
-#   [PSCustomObject]@{ Algorithms = @("KawPow");              Type = "NVIDIA"; Fee = @(0.005);        MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(75, 45); ExcludePools = @(@(), @());           Arguments = " --algo kawpow" }
+    [PSCustomObject]@{ Algorithms = @("KawPow");              Type = "NVIDIA"; Fee = @(0.005);        MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(75, 45); ExcludePools = @(@(), @());           Arguments = " --algo kawpow" }
     [PSCustomObject]@{ Algorithms = @("VertHash");            Type = "NVIDIA"; Fee = @(0.005);        MinMemGiB = 3.0;  MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(60, 60); ExcludePools = @(@(), @());           Arguments = " --algo verthash --verthash-data ..\.$($Variables.VerthashDatPath)" }
 )
 
@@ -92,7 +94,7 @@ If ($Algorithms) {
                                 Default    { "" }
                             }
                             If ($SecondAlgo) { 
-                                $Arguments += " --$($SecondAlgo)-hostname $($Pool1.Host) --$($SecondAlgo)-wallet $($Pool1.User)"
+                                $Arguments += " --$($SecondAlgo)-hostname $($Pool1.Host) --$($SecondAlgo)-wallet $($Pool1.User) --$($SecondAlgo)-passwd $($Pool1.Pass)"
                                 $Arguments += If ($Pool0.PoolPorts[1] -and $Pool1.PoolPorts[1]) { " --$($SecondAlgo)-port $($Pool1.PoolPorts[1])" } Else { " --$($SecondAlgo)-port $($Pool1.PoolPorts[0])" }
                             }
 

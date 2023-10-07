@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           \Includes\include.ps1
 Version:        5.0.1.1
-Version date:   2023/10/06
+Version date:   2023/10/07
 #>
 
 $Global:DebugPreference = "SilentlyContinue"
@@ -94,6 +94,7 @@ Class Device {
     [DeviceState]$State = [DeviceState]::Enabled
     [String]$Status = "Idle"
     [String]$StatusInfo = ""
+    [String]$SubStatus
     [String]$Type
     [Int]$Type_Id
     [Int]$Type_Index
@@ -2318,28 +2319,12 @@ Function Get-GPUArchitectureAMD {
     $Model = $Model -replace '[^A-Z0-9]'
     $Architecture = $Architecture -replace ':.+$' -replace '[^A-Za-z0-9]+'
 
-    Try { 
-        $GPUArchitectureDB = Get-Content "Data\GPUArchitectureAMD.json" | ConvertFrom-Json -ErrorAction Ignore
-
-        ForEach($GPUArchitecture in $GPUArchitectureDB.PSObject.Properties) { 
-            $Arch_Match = $GPUArchitecture.Value -join '|'
-            If ($Architecture -match $Arch_Match) { 
-                Return $GPUArchitecture.Name
-            }
+    ForEach($GPUArchitecture in $Variables.GPUArchitectureDbAMD.PSObject.Properties) { 
+        If ($Architecture -match $GPUArchitecture.Value) { 
+            Return $GPUArchitecture.Name
         }
-        ForEach($GPUArchitecture in $GPUArchitectureDB.PSObject.Properties) { 
-            $Arch_Match = $GPUArchitecture.Value -join '|'
-            If ($Model -match $Arch_Match) { 
-                Return $GPUArchitecture.Name
-            }
-        }
-    } 
-    Catch { 
-        If ($Error.Count) { $Error.RemoveAt(0) }
-        Write-Message -Level Warn "Cannot determine architecture for AMD $($Model)/$($Architecture)"
     }
-
-    Return Architecture
+    Return $Architecture
 }
 
 Function Get-GPUArchitectureNvidia { 
@@ -2354,27 +2339,17 @@ Function Get-GPUArchitectureNvidia {
     $Model = $Model -replace '[^A-Z0-9]'
     $ComputeCapability = $ComputeCapability -replace '[^\d\.]'
 
-    Try { 
-        $GPUArchitectureDB = Get-Content "Data\GPUArchitectureNvidia.json" | ConvertFrom-Json -ErrorAction Ignore
-
-        ForEach ($GPUArchitecture in $GPUArchitectureDB.PSObject.Properties) { 
-            If ($ComputeCapability -in $GPUArchitecture.Value.Compute) { 
-                Return $GPUArchitecture.Name
-            }
+    ForEach ($GPUArchitecture in $Variables.GPUArchitectureDbNvidia.PSObject.Properties) { 
+        If ($ComputeCapability -in $GPUArchitecture.Value.Compute) { 
+            Return $GPUArchitecture.Name
         }
-
-        ForEach ($GPUArchitecture in $GPUArchitectureDB.PSObject.Properties) { 
-            $Model_Match = $GPUArchitecture.Value.Model -join '|'
-            If ($Model -match $Model_Match) {
-                Return $GPUArchitecture.Name
-            }
-        }
-    } 
-    Catch { 
-        If ($Error.Count) { $Error.RemoveAt(0) }
-        Write-Message -Level Warn "Cannot determine architecture for Nvidia $($Model)/$($ComputeCapability)"
     }
 
+    ForEach ($GPUArchitecture in $GPUArchitectureDbNvidia.PSObject.Properties) { 
+        If ($Model -match $GPUArchitecture.Value.Model) {
+            Return $GPUArchitecture.Name
+        }
+    }
     Return "Other"
 }
 

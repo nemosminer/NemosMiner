@@ -56,7 +56,7 @@
       "^GTX10\\d{2}",
       "^JETSONTX2",
       "^MX[23]30",
-      "^MX150",
+      "^MX[123]50",
       "^P",
       "^QUADROGP\\d",
       "^QUADROP\\d",

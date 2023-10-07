@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           NemosMiner.ps1
 Version:        5.0.1.1
-Version date:   2023/10/06
+Version date:   2023/10/07
 #>
 
 using module .\Includes\Include.psm1
@@ -454,6 +454,11 @@ Write-Message -Level Verbose ($Variables.Summary -replace '<br>', ' ')
 
 $Variables.SupportedCPUDeviceVendors = @("AMD", "INTEL")
 $Variables.SupportedGPUDeviceVendors = @("AMD", "INTEL", "NVIDIA")
+$Variables.GPUArchitectureDbNvidia = Get-Content "Data\GPUArchitectureNvidia.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+$Variables.GPUArchitectureDbNvidia.PSObject.Properties | ForEach-Object { $_.Value.Model = $_.Value.Model -join '|' }
+$Variables.GPUArchitectureDbAMD = Get-Content "Data\GPUArchitectureAMD.json" -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
+$Variables.GPUArchitectureDbAMD.PSObject.Properties | ForEach-Object { $_.Value = $_.Value -join '|' }
+
 $Variables.Devices = [Device[]](Get-Device -Refresh)
 
 $Variables.Devices | Where-Object { $_.Type -eq "CPU" -and $_.Vendor -notin $Variables.SupportedCPUDeviceVendors } | ForEach-Object { $_.State = [DeviceState]::Unsupported; $_.Status = "Unavailable"; $_.StatusInfo = "Unsupported CPU Vendor: '$($_.Vendor)'" }

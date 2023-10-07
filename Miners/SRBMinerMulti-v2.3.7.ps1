@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 Version:        5.0.1.1
-Version date:   2023/10/06
+Version date:   2023/10/07
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "CPU" -or $_.Type -eq "INTEL" -or ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0") -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge "510.00") })) { Return }
@@ -112,7 +112,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("CpuPower");             Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm cpupower") }
 #   [PSCustomObject]@{ Algorithms = @("CurveHash");            Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(60, 20);  ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm curvehash") } # Not profitable with CPU
     [PSCustomObject]@{ Algorithms = @("DynamoCoin");           Type = "CPU"; Fee = @(0.01);   Minerset = 2; WarmupTimes = @(30, 15);  ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm dynamo") }
-    [PSCustomObject]@{ Algorithms = @("Ghostrider");           Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(30, 60);  ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm ghostrider") }
+    [PSCustomObject]@{ Algorithms = @("Ghostrider");           Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(180, 60); ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm ghostrider") }
     [PSCustomObject]@{ Algorithms = @("Lyra2v2Webchain");      Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(30, 0);   ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm lyra2v2_webchain") }
     [PSCustomObject]@{ Algorithms = @("Mike");                 Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(30, 30);  ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm mike") }
     [PSCustomObject]@{ Algorithms = @("Minotaur");             Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(30, 0);   ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm minotaur") }

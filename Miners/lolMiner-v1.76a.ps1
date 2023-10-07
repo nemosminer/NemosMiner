@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 Version:        5.0.1.1
-Version date:   2023/10/06
+Version date:   2023/10/07
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -in @("AMD", "INTEL") -or $_.OpenCL.ComputeCapability -ge "5.0"} )) { Return }
@@ -51,7 +51,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.85; Minerset = 2; WarmupTimes = @(45, 90); ExcludeGPUArchitecture = @("RDNA1");                ExcludePools = @(@(), @()); Arguments = " --algo ETHASH --dualmode KASPADUAL" }
     [PSCustomObject]@{ Algorithms = @("IronFish");                   Type = "AMD"; Fee = @(0.0075);     MinMemGiB = 2.0;  Minerset = 1; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @("GCN1", "GCN2");         ExcludePools = @(@(), @()); Arguments = " --algo IRONFISH" }
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Type = "AMD"; Fee = @(0.0075);     MinMemGiB = 2.0;  Minerset = 1; WarmupTimes = @(60, 50); ExcludeGPUArchitecture = @("RDNA3");                ExcludePools = @(@(), @()); Arguments = " --algo KASPA" }
-    [PSCustomObject]@{ Algorithms = @("NexaPow");                    Type = "AMD"; Fee = @(0.02);       MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3"); ExcludePools = @(@(), @()); Arguments = " --algo NEXA" }
+    [PSCustomObject]@{ Algorithms = @("NexaPow");                    Type = "AMD"; Fee = @(0.02);       MinMemGiB = 3.0;  Minerset = 2; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3"); ExcludePools = @(@(), @()); Arguments = " --algo NEXA" }
     [PSCustomObject]@{ Algorithms = @("UbqHash");                    Type = "AMD"; Fee = @(0.007);      MinMemGiB = 0.85; MinerSet = 0; WarmupTimes = @(60, 70); ExcludeGPUArchitecture = @("RDNA3");                ExcludePools = @(@(), @()); Arguments = " --algo UBQHASH" }
     [PSCustomObject]@{ Algorithms = @("UbqHash", "Blake3");          Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.85; Minerset = 2; WarmupTimes = @(60, 90); ExcludeGPUArchitecture = @("RDNA3");                ExcludePools = @(@(), @()); Arguments = " --algo UBQHASH --dualmode ALEPHDUAL" }
     [PSCustomObject]@{ Algorithms = @("UbqHash", "kHeavyHash");      Type = "AMD"; Fee = @(0.01, 0.01); MinMemGiB = 0.85; MinerSet = 0; WarmupTimes = @(60, 90); ExcludeGPUArchitecture = @("RDNA1", "RDNA3");       ExcludePools = @(@(), @()); Arguments = " --algo UBQHASH --dualmode KASPADUAL" }
@@ -87,7 +87,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.85; Minerset = 2; WarmupTimes = @(45, 90); ExcludeGPUArchitecture = @();                  ExcludePools = @(@(), @()); Arguments = " --algo ETHASH --dualmode KASPADUAL --maxdualimpact *" }
     [PSCustomObject]@{ Algorithms = @("IronFish");                   Type = "NVIDIA"; Fee = @(0.0075);     MinMemGiB = 2.0;  Minerset = 1; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @("Other");           ExcludePools = @(@(), @()); Arguments = " --algo IRONFISH" }
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Type = "NVIDIA"; Fee = @(0.0075);     MinMemGiB = 2.0;  MinerSet = 0; WarmupTimes = @(60, 50); ExcludeGPUArchitecture = @();                  ExcludePools = @(@(), @()); Arguments = " --algo KASPA" }
-    [PSCustomObject]@{ Algorithms = @("NexaPow");                    Type = "NVIDIA"; Fee = @(0.02);       MinMemGiB = 2.0;  Minerset = 1; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @("Other", "Pascal"); ExcludePools = @(@(), @()); Arguments = " --algo NEXA" }
+    [PSCustomObject]@{ Algorithms = @("NexaPow");                    Type = "NVIDIA"; Fee = @(0.02);       MinMemGiB = 3.0;  Minerset = 1; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @("Other", "Pascal"); ExcludePools = @(@(), @()); Arguments = " --algo NEXA" }
     [PSCustomObject]@{ Algorithms = @("UbqHash");                    Type = "NVIDIA"; Fee = @(0.007);      MinMemGiB = 0.85; Minerset = 2; WarmupTimes = @(60, 70); ExcludeGPUArchitecture = @();                  ExcludePools = @(@(), @()); Arguments = " --algo UBQHASH" }
     [PSCustomObject]@{ Algorithms = @("UbqHash", "Blake3");          Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.85; Minerset = 2; WarmupTimes = @(60, 90); ExcludeGPUArchitecture = @();                  ExcludePools = @(@(), @()); Arguments = " --algo UBQHASH --dualmode ALEPHDUAL --maxdualimpact *" }
     [PSCustomObject]@{ Algorithms = @("UbqHash", "kHeavyHash");      Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 0.85; MinerSet = 0; WarmupTimes = @(60, 90); ExcludeGPUArchitecture = @();                  ExcludePools = @(@(), @()); Arguments = " --algo UBQHASH --dualmode KASPADUAL --maxdualimpact *" }
