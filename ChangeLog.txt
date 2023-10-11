@@ -10,6 +10,28 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 
 
+ChangeLog NemosMiner 5.0.1.2 2023/10/11
+=======================================
+
+Changes:
+- Core: Replace functions 'Start-TreadJob' with 'Start-Job' (hopefully this reduces memory leaks)
+
+Enhancements:
+- Core: Minor code optimizations
+- Core: Added Region 'India'
+
+Fixes:
+- Core: Benchmarking & Power Measuring miner count too large (Regression from 5.0.0.0)
+- Web GUI / API: Incorrect pool data reset list
+
+Miner changes:
+- TeamBlackMiner-v2.03
+- TTMiner-v2023.4.1: Fix fees
+
+Pool changes:
+- MiningDutch: Add region 'India'
+
+
 ChangeLog NemosMiner 5.0.1.1 2023/10/06
 =======================================
 
@@ -21,8 +43,9 @@ Enhancements:
 Fixes:
 - Core: Extend wait time to build DAG if CPU mining
 - Core: Error 'Collection was modified; enumeration operation may not execute'
-- Miners / Rigel-v1.9.1: Only apply tuning parameter to Pascal GPUs
+- Miners / JayddeeCpu-v3.23.3: Update download link
 - Miners / Raptor3umCpu-v2.0: SSL is not supported
+- Miners / Rigel-v1.9.1: Only apply tuning parameter to Pascal GPUs
 
 
 ChangeLog NemosMiner 5.0.1.0 2023/10/05

@@ -1,0 +1,1428 @@
+<!--#include file="/parts/head.html" -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h2 id="title" data-navbaractive="navconfigedit">Edit Configuration</h2>
+          </div>
+          <div id="configfilenames" class="alert alert-info" role="alert">&ensp;</div>
+          <form id="configuration">
+            <input name="submit" type="submit" id="save-button" value="Save configuration" class="btn btn-success" alt="Submit" title="Save configuration&#10;It will become active in next cycle.">
+            <input name="reset" type="reset" id="reset-button" value="Reset" class="btn btn-warning" alt="Reset" title="Reset configuration data to previous values">
+            <button type="button" class="btn btn-primary" id="btn-editconfig" name="btn-editconfig" title="Edit Config file&#10;It will become active in next cycle.">Edit Config file</button>
+            <button type="button" class="btn btn-primary" id="btn-editpoolsconfig" name="btn-editpoolsconfig" title="Edit PoolsConfig file&#10;It will become active in next cycle.">Edit PoolsConfig file</button>
+            <br>
+            <br>
+            <div>
+              <table>
+                <tr style="vertical-align: top; line-height: 125%">
+                  <td>
+                    <!-- Wallet Addresses and User Names -->
+                    <legend title="Define your wallet and user names.&#10;All your earnings will be sent to the accounts defined here.&#10;Correct data is essential." class=h6><b>Wallet Addresses and User Names</b></legend>
+                    <fieldset style="padding-top: 0.3rem" title="Set your wallet addresses&#10;To add more currencies you need to edit pools config file manually.">
+                      <div id="Wallets"></div>
+                    </fieldset>
+                    <br>
+
+                    <legend class=h6 title="You must have a registered account with Mining Dutch">Mining Dutch
+                      <a id="RegisterMiningDutch" href="https://www.mining-dutch.nl/pools/account.php?page=register" target="_blank" hidden style="float: right;" title="Click here to go to the pool registration web site to register an account">Goto registration page</a>
+                    </legend>
+                    <div style="padding-top: 0.2rem" title="Your username as registered with Mining Dutch&#10;(min. 2 and max. 32 characters)">
+                      <label for="MiningDutchUserName">Mining Dutch user name</label>
+                      <input type="text" id="MiningDutchUserName" name="MiningDutchUserName" maxlength=33 size=38>
+                    </div>
+                    <div title="Your Mining Dutch API Key&#10;taken from your Mining Dutch account settings&#10;If left empty NemosMiner cannot retrieve balance data from Mining Dutch">
+                      <label for="MiningDutchAPIKey">Mining Dutch API key</label>
+                      <input type="text" id="MiningDutchAPIKey" name="MiningDutchAPIKey" maxlength=65 size=70>
+                    </div>
+                    <br>
+
+                    <legend class=h6 title="You must have a registered account with Mining Pool Hub">Mining Pool Hub
+                      <a id="RegisterMiningPoolHub" href="https://miningpoolhub.com/index.php?page=register" target="_blank" hidden style="float: right;" title="Click here to go to the pool registration web site to register an account">Goto registration page</a>
+                    </legend>
+                    <div style="padding-top: 0.2rem" title="Your username as registered with Mining Pool Hub&#10;(min. 2 and max. 32 characters)">
+                      <label for="MiningPoolHubUserName">Mining Pool Hub user name</label>
+                      <input type="text" id="MiningPoolHubUserName" name="MiningPoolHubUserName" maxlength=33 size=38>
+                    </div>
+                    <div title="Your Mining Pool Hub API Key&#10;taken from your Mining Pool Hub account settings&#10;If left empty NemosMiner cannot retrieve balance data from Mining Pool Hub">
+                      <label for="MiningPoolHubAPIKey">Mining Pool Hub API key</label>
+                      <input type="text" id="MiningPoolHubAPIKey" name="MiningPoolHubAPIKey" maxlength=65 size=70>
+                    </div>
+                    <br>
+
+                    <legend class=h6 title="You must have a registered account with NiceHash">NiceHash
+                      <a id="RegisterNiceHash" href="https://www.nicehash.com/my/register" target="_blank" hidden style="float: right;" title="Click here to go to the pool registration web site to register an account">Goto registration page</a>
+                    </legend>
+                    <div style="padding-top: 0.2rem" title="Your NiceHash Bitcoin wallet address (must be between 26 and 35 chars long)&#10;configure only if different from main Bitcoin wallet address">
+                      <label for="NiceHashWallet">NiceHash Bitcoin wallet address</label>
+                      <input type="text" id="NiceHashWallet" name="NiceHashWallet" minlenght=26 maxlength=35 size=40>
+                    </div>
+                    <div title="Select NiceHash wallet type&#10;&#10;Note: Internal wallets have lower pool fees&#10;but you must register the with NiceHash">
+                      <label for="NiceHashWalletIsInternal">NiceHash Bitcoin wallet address is a NiceHash</label>
+                      <select name="" id="NiceHashWalletIsInternal">
+                        <option value=internal>internal</option>
+                        <option value=external>external</option>
+                      </select>
+                      <label for="NiceHashWalletIsInternal">address</label>
+                    </div>
+                    <div title="Your NiceHash API Key&#10;taken from your NiceHash account settings&#10;If left empty NemosMiner cannot retrieve balance data from NiceHash internal wallet" for="NiceHashAPIKey">
+                      <label for="NiceHashAPIKey">NiceHash API key</label>
+                      <input type="text" id="NiceHashAPIKey" name="NiceHashAPIKey" maxlength=37 size=42>
+                    </div>
+                    <div title="Your NiceHash API Secret Key&#10;taken from your NiceHash account settings&#10;If left empty NemosMiner cannot retrieve balance data from NiceHash internal wallet" for="NiceHashAPISecret">
+                      <label for="NiceHashAPISecret">NiceHash API secret</label>
+                      <input type="text" id="NiceHashAPISecret" name="NiceHashAPISecret" maxlength=73 size=73>
+                    </div>
+                    <div title="Your NiceHash Organization Id (must be 36 chars long)&#10;taken from your NiceHash account settings&#10;If left empty NemosMiner cannot retrieve balance data from NiceHash internal wallet" for="NiceHashOrganizationId">
+                      <label for="NiceHashOrganizationId">NiceHash organization Id</label>
+                      <input type="text" id="NiceHashOrganizationId" name="NiceHashOrganizationId" maxlength=37 size=42>
+                    </div>
+                    <br>
+
+                    <legend class=h6 title="You must have a registered account with ProHashing">ProHashing
+                      <a id="RegisterProHashing" href="https://prohashing.com?r=3pH68Dhj" target="_blank" hidden style="float: right;" title="Click here to go to the pool registration web site to register an account">Goto registration page</a>
+                    </legend>
+                    <div style="padding-top: 0.2rem" title="Your username as registered with ProHashing" for="ProHashingUserName">
+                      <label for="ProHashingUserName">ProHashing user name</label>
+                      <input type="text" id="ProHashingUserName" name="ProHashingUserName" maxlength=37 size=42>
+                    </div>
+                    <div title="Your ProHashing API key&#10;taken from your ProHashing account settings&#10;If left empty NemosMiner cannot retrieve balance data from ProHashing" for="ProHashingAPIKey">
+                      <label for="ProHashingAPIKey">ProHashing API key</label>
+                      <input type="text" id="ProHashingAPIKey" name="ProHashingAPIKey" maxlength=65 size=70>
+                    </div>
+                    <a href="https://prohashing.com/help/configuring-miners-at-prohashing#miningmodes" target="_blank" title="PPLNS is only supported for algorithms&#10;that have a currency assigned">ProHashing mining mode</a>
+                    <select name="" id="ProHashingMiningMode">
+                      <option title="Pay Per Share (high pool fee)" value=PPS>PPS</option>
+                      <option title="Pay Per Last N Shares (lower pool fee)" value=PPLNS>PPLNS</option>
+                    </select>
+                    <br><br>
+
+                    <!-- Currency Settings -->
+                    <legend class=h6><b>Currency Settings</b></legend>
+                    <div title="Main currency used for BTC conversion&#10;Power cost, profit and earnings are shown in this currency">Main currency
+                      <select id="MainCurrency" name="MainCurrency" style="margin-top: 0.2rem"></select>
+                    </div>
+                    <div title="Default payout currency for all pools&#10;Important: Not all pools allow payouts in currencies other than BTC.&#10;Consult the pool API for more information&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">Default payout currency
+                      <select id="PayoutCurrency" name="PayoutCurrency" style="margin-top: 0.2rem"></select>
+                    </div>
+                    <div title="Extra currencies to be shown in balances summary.&#10;Values must be separated by commas.&#10;&#10;Enter 'real-world' or crypto currencies.&#10;mBTC (milli BTC) is also supported." for="ExtraCurrencies" style="padding-top: 0.3rem">Extra currencies</label>
+                      <input type="text" id="ExtraCurrencies" name="ExtraCurrencies" maxlength=45 size=50 value="USD, ETC">
+                    </div>
+                    <div style="padding-top: 0.5rem" title="If enabled NemosMiner will display BTC values in milli BTC">
+                      <input type="checkbox" class="toggle-switch" id="UsemBTC" name="UsemBTC"> Show BTC values in mBTC (BTC/1000)
+                    </div>
+                    <br>
+
+                    <!-- General Settings -->
+                    <legend class=h6><b>General Settings</b></legend>
+                    <div style="padding-top: 0.2rem" title="Identifies your worker&#10;e.g. Computername&#10;(min. 2 and max. 32 characters or numbers)">
+                      <label for="WorkerName">Worker name</label>
+                      <input type="text" id="WorkerName" name="WorkerName" maxlength=33 size=38 value="Workername">
+                    </div>
+                    <label style="padding-top: 0.2rem" for="StartupMode" title="Defines NemosMiner startup mode">NemosMiner starts in</label>
+                    <select size=1 name="" required id="StartupMode">
+                      <option value="Idle" title="Initiate application, but do not start mining or run any background processes&#10;&#10;Same as pressing the 'Stop Mining' button">idle</option>
+                      <option value="Paused" title="Initiate application and run background processes, but do not start mining&#10;&#10;Same as pressing the 'Pause Mining' button">paused</option>
+                      <option value="Running" title="Initiate application and start mining&#10;&#10;Same as pressing the 'Start Mining' button">running</option>
+                    </select>
+                    <label for="StartupMode" title="Defines NemosMiner startup mode">mode</label>
+                    <div title="Mining will start when system is idle, e.g. no mouse&#10;or keyboard activity is detected for n seconds&#10;&#10;(min=0, max=3600, default=120 seconds)&#10;&#10;Mining will stop when mouse or keyboard activity is detected.">
+                      <input type="checkbox" class="toggle-switch" id="IdleDetection" name="IdleDetection"> Idle detection: Start mining when system is idle for
+                      <input type="number" id="IdleSec" name="IdleSec" min=0 max=3600 value=120 step=1 size=4> seconds
+                    </div>
+                    <div style="padding-top: 0.5rem" title="Start the legacy GUI&#10;&#10;Note: You must keep the console window open when you disable the legacy GUI.">
+                      <input type="checkbox" class="toggle-switch" id="LegacyGUI" name="LegacyGUI"> Start legacy GUI
+                      <input type="checkbox" style="margin-left:20px" class="toggle-switch" id="LegacyGUIStartMinimized" name="LegacyGUIStartMinimized"> Start legacy GUI minimized
+                    </div>
+                    <div style="padding-top: 0.7rem" title="Show the console window&#10;&#10;Note: You must keep the legacy GUI open when you disable the console window.">
+                      <input type="checkbox" class="toggle-switch" id="ShowConsole" name="Show Console"> Show console window
+                    </div>
+                    <div style="padding-top: 0.7rem" title="Watchdog will monitor pools & miners for frequent failures&#10;and suspend failing pools or miners for some cycles.">
+                      <input type="checkbox" class="toggle-switch" id="Watchdog" name="Watchdog"> Activate watchdog (recommended)
+                    </div>
+                    <div style="padding-top: 0.7rem" title="Computer will restart when a dead miner is detected&#10;(e.g. miner cannot get stopped gracefully)">
+                      <input type="checkbox" class="toggle-switch" id="AutoReboot" name="AutoReboot"> Restart computer on dead miners
+                    </div>
+                    <div style="padding-top: 0.5rem" title="Donation duration per day&#10;&#10;Please help support the great team behind NemosMiner&#10;by leaving mining donations turned on&#10;(min=0, max=60, default 13 &#8792; 0.9% minutes)"> Donation 
+                      <input type="number" id="Donation" name="Donation" min=0 max=60 value=13> minutes per day
+                    </div>
+                    <div style="padding-top: 0.3rem" title="Cycle duration&#10;This defines the approximate duration for one cycle.&#10;(min=30, max=3600, default=90 seconds)" for="Interval">Cycle duration
+                      <input type="number" id="Interval" name="Interval" min=30 max=3600 step=1 value=90> seconds
+                    </div>
+                    <div style="padding-top: 0.3rem" title="Defines the minimum number of data samples to be collected from the miner&#10;while benchmarking before ending the cycle. Smaller numbers will&#10;cause faster benchmarking but the measured data will be less accurate&#10;(min=10, max=100, default=20 samples)" for="MinDataSample">Minimum
+                      <input type="number" id="MinDataSample" name="MinDataSample" min=10 max=100 value=20 step=1 size=4> data samples while benchmarking
+                    </div>
+                    <div style="padding-top: 0.3rem" title="Minimum number of continous full cycles a miner must mine&#10;the same algorithm@pool before switching is allowed&#10;&#10;e.g. 3 would force a miner to mine the same algorithm@pool&#10;for at least 3 full cycles before switching to another algorithm or pool&#10;(min=1, max=10, default=1 cycles)&#10;&#10;Note: This does not apply when benchmarking" for="MinCycle"> Enforce mining for at least
+                      <input type="number" id="MinCycle" name="MinCycle" min=1 max=10 value=0 step=1 size=2> full cycles before switching
+                    </div>
+                    <div style="padding-top: 0.2rem" title="Enter Proxy IP address and port&#10;e.g. 192.168.1.1:3128"> Proxy address:port
+                      <input type="text" id="Proxy" name="Proxy" maxlength=22 size=30>
+                    </div>
+                    <div style="padding-top: 0.4rem" title="If enabled NemosMiner will open firewall ports for all miners&#10;Admin rights required (or you must accept the UAC prompts)">
+                      <input type="checkbox" class="toggle-switch" id="OpenFirewallPorts" name="OpenFirewallPorts"> Open firewall ports (admin rights required)
+                    </div>
+                    <div style="padding-top: 0.3rem" title="Display numbers with maximal n decimal digits&#10;(larger numbers are shown with less decimal digits)&#10;&#10;(min=0, max=10, default=6)" for="DecimalsMax">Display numbers with maximal
+                      <input type="number" id="DecimalsMax" name="DecimalsMax" min=0 max=10 value=6 step=1 size=4> decimal digits
+                    </div>
+                    <br>
+                  </td>
+                  <td>
+                    <div style="line-height: 100%" class="col-md-12">
+                      <!-- Select Mining Devices -->
+                      <fieldset title="Enable / disable mining devices&#10;&#10;Unsupported devices are greyed out and cannot be enabled.">
+                        <legend class=h6><b>Select Mining Devices</b></legend>
+                        <div id="Devices"></div>
+                      </fieldset>
+                      <br>
+
+                      <!-- Pool Selection -->
+                      <fieldset title="You cannot select multiple variants of the same pool">
+                        <legend class=h6><b>Pool Selection</b></legend>
+                        <div style="padding-top: 0.1rem" id="Pools"></div>
+                      </fieldset>
+                      <br>
+
+                      <!-- Pool Network Settings -->
+                      <fieldset title="Note: Region is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
+                        <legend class=h6><b>Pool Network Settings</b></legend>
+                        <div style="padding-top: 0.2rem" title="Pools establish fastest network route based on your location&#10;Currently only ZergPool supports this feature.&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
+                          <input type="checkbox" class="toggle-switch" id="UseAnycast" name="UseAnycast"> Use anycast for best network performance and ping times
+                        </div>
+                        <div style="padding-top: 0.5rem" title="This setting definines how miners will connect to the pools">
+                          <select id="SSL">
+                            <option value="Never" title="Never use SSL/TLS for pool connections">Never use</option>
+                            <option value="Prefer" title="Prefer SSL/TLS pool connections">Prefer</option>
+                            <option value="Always" title="Always use SSL/TLS for pool connections&#10;Pools that do not support SSL/TLS connections are ignored&#10;&#10;Note: This setting might reduce earnings because not all pools & miners support SSL connections">Always use</option>
+                          </select>
+                          <label for="SSL"> SSL/TLS for pool connections</label>
+                        </div>
+                        <div style="padding-top: 0.4rem" title="Some pools use self signed certificates for SSL and/or TLS encryption&#10;&#10;Note: This is a security issue and allows 'Man in the middle attacks'">
+                          <input type="checkbox" class="toggle-switch" id="SSLAllowSelfSignedCertificate" name="SSLAllowSelfSignedCertificate"> Allow SSL/TLS connections with self signed certificates
+                        </div>
+                      </fieldset>
+                      <br>
+
+                      <!-- Select the Region closest to your Location -->
+                      <fieldset title="Note: Region is also a per pool configuration item (edit .'\Config\PoolsConfig.json')">
+                        <legend class=h6><b>Select the Region closest to your Location</b></legend>
+                        <div style="padding-top: 0.1rem; line-height: 125%" id="Regions"></div>
+                      </fieldset>
+                    </div>
+                  </td>
+
+                  <td>
+                    <!-- Miner Selection -->
+                    <legend class=h6><b>Miner Selection</b></legend>
+                    <div style="padding-top: 0.3rem" title="NemosMiner will run separate miner instances per GPU device model.&#10;Recommended for rigs with mixed GPU device models of the same vendor installed, e.g. GTX 1060 & GTX 1070&#10;This will increase profitability&#10;&#10;Note: AMD, INTEL & NVIDIA GPU miners will always run as separate instances.">
+                      <input type="checkbox" class="toggle-switch" id="MinerInstancePerDeviceModel" name="MinerInstancePerDeviceModel"> Run separate miner instance per GPU device model
+                    </div>
+                    <div style="padding-top: 0.6rem" title="Some miners / algorithms are incompatible with some pools.&#10;&#10;If a miner is not compatible with the only pool in the best pool list then the miner will not be available.&#10;This can impact profitability, but is less CPU heavy.&#10;&#10;This was the default algorithm for versions older than 5.x">
+                      <input type="checkbox" class="toggle-switch" id="MinerUseBestPoolsOnly" name="MinerUseBestPoolsOnly"> Miners will use only the best pools for mining
+                      
+                    </div>
+                    <div style="padding-top: 0.3rem" title="Select miner set to be used by NemosMiner">Use
+                      <select name="" id="MinerSet" width="10">
+                        <option title="The best miners chosen by the developers may not be the best miners for you&#10;(Minerset 0)" value=0>only best miner per algorithm and per device</option>
+                        <option title="recommended, select to ensure best profitability&#10;(Minerset 1)" value=1>optimal miners (more than one per algorithm and device)</option>
+                        <option title="This will prolongue benchmarking, but may not improve profitability&#10;(Minerset 2)" value=2>most miners (excl. those in UnprofitableAlgorithms.json)</option>
+                        <option title="This will prolongue benchmarking, but will not improve profitability&#10;(Minerset 3) - not recommended" value=3>all miners (incl. those in UnprofitableAlgorithms.json)</option>
+                      </select>
+                    </div>
+                    <div style="padding-top: 0.3rem" title="List of miners to be excluded&#10;Values must be sparated by commas&#10;&#10;To exclude all version of a miner specify the short miner name, e.g. 'PhoenixMiner' (without '-v...')&#10;To exclude a specific miner version use the full miner name (incl. version information)&#10;"> Exclude miners
+                      <input type="text" id="ExcludeMinerName" name="ExcludeMinerName" size=47>
+                    </div>
+                    <div style="padding-top: 0.2rem" title="'+[Algorithm]' to enable algorithm&#10;'-[Algorithm]' to disable algorithm&#10;Values must be sparated by commas&#10;e.g. '-Ethash,-EtcHash'&#10;&#10;Leave empty to use ALL available algorithms (not recommended as it may cause more switching)&#10;If '+' is used, then only the explicitly enabled algorithms are used&#10;If '-' is used, then all algorithms are used except the disabled ones&#10;You can either use '+' or '-'; you cannot combine both&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')"> Include / exclude algorithms
+                      <input type="text" id="Algorithm" name="Algorithm" size=30>
+                      <button type="button" class="btn btn-light btn-sm" id="DefaultAlgorithm" name="DefaultAlgorithm" title="Load the default algorithm list&#10;for the selected pools">Load default algorithms</button>
+                    </div>
+                    <div style="padding-top: 0.2rem" title="NemosMiner will disable all miners which sometimes mine to a miner developer wallet (a.k.a. comission or donation)">
+                      <input type="checkbox" class="toggle-switch" id="DisableMinersWithFee" name="DisableMinersWithFee"> Disable miners with dev fees
+                    </div>
+                    <div style="padding-top: 0.6rem" title="NemosMiner will disable all dual algorithm miners&#10;(Note: This will enable single algorithm mining)">
+                      <input type="checkbox" class="toggle-switch" id="DisableDualAlgoMining" name="DisableDualAlgoMining"> Disable dual algorithm miners
+                    </div>
+                    <div style="padding-top: 0.6rem" title="NemosMiner will disable all single algorithm miners&#10;(Note: This will enable dual algorithm mining)">
+                      <input type="checkbox" class="toggle-switch" id="DisableSingleAlgoMining" name="DisableSingleAlgoMining"> Disable single algorithm miners
+                    </div>
+                    <div style="padding-top: 0.3rem" title="'+[Currency]' to enable currency&#10;'-[Currency]' to disable currency&#10;Values must be sparated by commas&#10;e.g. '-SATOX,-PAPRY'&#10;&#10;Leave empty to use ALL available currencies&#10;If '+' is used, then only the explicitly enabled currencies are used&#10;If '-' is used, then all currencies are used except the disabled ones&#10;You can either use '+' or '-'; you cannot combine both&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')"> Include / exclude currencies
+                      <input type="text" id="Currency" name="Currency" size=30>
+                    </div>
+                    <br>
+
+                    <!-- Miner Runtime Settings -->
+                    <legend title="Miner Runtime Settings" class=h6><b>Miner Runtime Settings</b></legend>
+
+                    <label for="MinerWindowStyle">Run miner</label>
+                    <select name="" id="MinerWindowStyle">
+                      <option value = "hidden" title="Miners will run as a hidden background task and are not accessible (not recommended)">as a hidden background task</option>
+                      <option value = "minimized" title="Miner windows are minimized (default), but accessible">in a minimized window</option>
+                      <option value = "normal" title="Miner windows are shown normally on desktop">in a normal window</option>
+                    </select>
+                    <div title="This is helpful to check the miner output for errors">
+                      <input type="checkbox" class="toggle-switch" id="MinerWindowStyleNormalWhenBenchmarking" name="MinerWindowStyleNormalWhenBenchmarking"> Run miner in a normal window while benchmarking
+                    </div>
+                    <div style="padding-top: 0.3rem" title="Select the process priority for CPU miners&#10;Higher priorities may lead to fluctuating hashrates with GPU miners">
+                      <label for="CPUMinerProcessPriority">Run CPU miners with</label>
+                      <select name="" id="CPUMinerProcessPriority">
+                        <option value = 1>above normal</option>
+                        <option value = 0>normal</option>
+                        <option value = -1>below normal</option>
+                        <option value = -2>idle</option>
+                      </select>
+                      <label for="CPUMinerProcessPriority">process priority</label>
+                    </div>
+                    <div title="Select the process priority for GPU miners&#10;Higher priorities may lead to fluctuating hashrates with CPU miners">
+                      <label for="GPUMinerProcessPriority">Run GPU miners with</label>
+                      <select name="" id="GPUMinerProcessPriority">
+                        <option value = 1>above normal</option>
+                        <option value = 0>normal</option>
+                        <option value = -1>below normal</option>
+                        <option value = -2>idle</option>
+                      </select>
+                      <label for="GPUMinerProcessPriority">process priority</label>
+                    </div>
+                    <div style="padding-top: 0.2rem" title="NemosMiner will not use CPU miners while computer is running on battery&#10;(Note: Some laptop computers will lower CPU speed while on battery)">
+                      <input type="checkbox" class="toggle-switch" id="DisableCpuMiningOnBattery" name="DisableCpuMiningOnBattery"> Disable CPU miners while running on battery
+                    </div>
+                    <div style="padding-top: 0.6rem" title="NemosMiner will disable developer fee mining&#10;(Note: not all miners support disabling their built in fees, others will reduce the hashrate.&#10;For miners that do not allow disabling the miner fees the effective fee will still be shown in the miner list.)">
+                      <input type="checkbox" class="toggle-switch" id="DisableMinerFee" name="DisableMinerFee"> Disable miner fees
+                    </div>
+                    <div style="padding-top: 0.6rem" title="Enable miner specific tweaks, e.g. sharper memory timings or mild overclock&#10;&#10;Note: This may cause stability issues, use with caution!">
+                      <input type="checkbox" class="toggle-switch" id="UseMinerTweaks" name="UseMinerTweaks"> Enable miner tweaks (admin rights required)
+                    </div>
+                    <br>
+
+                    <!-- Power Cost Calculation Settings -->
+                    <legend title="These settings are relevant for true profit calculation" class=h6><b>Power Cost Calculation Settings</b></legend>
+                    <div style="padding-top: 0.3rem" title="Calculate power cost, required for true profit calculation&#10;Requires extra configuration of HWiNFO64&#10;(See ConfigHWinfo64.pdf)">
+                      <input type="checkbox" class="toggle-switch" id="CalculatePowerCost" name="CalculatePowerCost"> Calculate power cost
+                    </div>
+                    <div style="padding-top: 0.3rem" id=PowerPricekWhTitle>
+                      <label style="margin-left:20px" for="PowerPricekWh">Power price</label>
+                      <input type="text" id="PowerPricekWh" name="PowerPricekWh" maxlength=128 size=24 value='{"00:00":0.0}'>
+                      <label id="PowerPricekWhCurrency" for="PowerPricekWh">
+                    </div>
+                    <div title="Power usage of idle system. Part of profit calculation.&#10;(min=0, max=999, default=60 Watt)&#10;&#10;Note: When CPU miners are running their&#10;power usage is deducted fronm this value">
+                      <label style="margin-left:20px" for="PowerUsageIdleSystemW">Power usage of idle system</label>
+                      <input type="number" step=1 min=0 max=999 value=60 size=3 id="PowerUsageIdleSystemW" name="PowerUsageIdleSystemW"> W
+                    </div>
+                    <div style="padding-top: 0.2rem" title="NemosMiner will ignore power cost in best miner selection&#10;and will select miners with best earnings (and not best profit)">
+                      <input style="margin-left:20px" type="checkbox" class="toggle-switch" id="IgnorePowerCost" name="IgnorePowerCost"> Ignore power cost
+                    </div>
+                    <br>
+
+                    <!-- Calculation Settings -->
+                    <legend title="These settings are used to calculate the best miners" class=h6><b>Calculation Settings</b></legend>
+                    <div style="padding-top: 0.3rem" title="Mark a pool as unavailable if price is x times higher than&#10;the second highest price of all other pools with same algorithm&#10;(min=1, max=10, default=1.5; 1 disables this check)&#10;&#10;Note: This applies only to algorithms that have at two least pools"> Unreal pool price factor
+                      <input type="number" step=0.1 min=1 max=10 value=1.5 size=3 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor">
+                    </div>
+                    <div style="padding-top: 0.3rem" title="Mark pool as unavailable if accuracy is below this value&#10;(min: 0%, max 100%, default=50%"> Minimum accuracy
+                      <input type="number" step=1 min=0 max=100 value=10 size=3 id="MinAccuracy" name="MinAccuracy"> %
+                    </div>
+                    <div style="padding-top: 0.5rem" title="NemosMiner will ignore the pool fee for earning & profit calculation">
+                      <input type="checkbox" class="toggle-switch" id="IgnorePoolFee" name="IgnorePoolFee"> Ignore pool fees
+                    </div>
+                    <div style="padding-top: 0.5rem" title="Minimum workers mining the algorithm at the pool&#10;If less miners are mining the algorithm then the pool will be disabled.&#10;This is also a per pool setting configurable in 'PoolsConfig.json'&#10;(min=0, max=99, default=10 workers). Set to 0 to disable this check."> Minimum
+                      <input type="number" step=1 min=0 max=99 value=10 size=3 id="MinWorker" name="MinWorker"> workers at pool
+                    </div>
+                    <div style="padding-top: 0.3rem" title="Default factor with which NemosMiner multiplies the prices reported by ALL pools.&#10;&#10;E.g. If you feel that the effective earnings seen at the pools are 20% lower than what NemosMiner projects&#10;then set Earnings Adjustment Factor to 0.80&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')&#10;(min=0.00, max=10.00, default=1.00)" for="EarningsAdjustmentFactor"> Earnings adjustment factor
+                      <input type="number" id="EarningsAdjustmentFactor" name="EarningsAdjustmentFactor" min=0 max=10 value=1 step=0.01 size=4>
+                    </div>
+                    <div style="padding-top: 0.3rem" title="Mark a miner as unavailable if earning is x times higher than the&#10;next best 10% or at least 5 miners with same algorithm&#10;(min=1, max=99, default=5; 1 disables this check)">Unreal miner earning factor
+                      <input type="number" step=0.1 min=1 max=99 value=5 size=3 id="UnrealMinerEarningFactor" name="UnrealMinerEarningFactor">
+                    </div>
+                    <div style="padding-top: 0.3rem" title="NemosMiner will not switch miners&#10;unless another miner has n% higher earnings / profit.&#10;&#10;Smaller numbers will cause more switching&#10;(min=0%, max=100%, default=5%)" for="MinerSwitchingThreshold">Miner switching threshold
+                      <input type="number" id="MinerSwitchingThreshold" name="MinerSwitchingThreshold" min=0 max=100 value=5 step=0.1 size=3> %
+                    </div>
+                    <div style="padding-top: 0.5rem" title="NemosMiner will ignore the miner fee for earning & profit calculation">
+                      <input type="checkbox" class="toggle-switch" id="IgnoreMinerFee" name="IgnoreMinerFee"> Ignore miner fees
+                    </div>
+                    <div style="padding-top: 0.3rem" title="Acceptable bad shares threshold ((invalid + rejected + stale) / total) as reported by the miner.&#10;If the threshold is exceeded then the miner will get stopped.&#10;(min: 0%, max 100%, default=5%). Set to 0 to disable this check."> Acceptable bad shares threshold
+                      <input type="number" step=1 min=0 max=100 value=5 size=3 id="BadShareRatioThreshold" name="BadShareRatioThreshold"> %
+                    </div>
+                    <div style="padding-top: 0.5rem" title="NemosMiner will deduct bad shares (e.g. invalid, rejected or stale) when calculating effective hashrates&#10;This will lower stored hashrates and increase earnings accuracy">
+                      <input type="checkbox" class="toggle-switch" id="SubtractBadShares" name="SubtractBadShares"> Deduct bad shares when calculating effective hashrates
+                    </div>
+                    <div style="padding-top: 0.5rem" id="ProfitabilityThresholdTitle">
+                      <label for="ProfitabilityThreshold">Profitability threshold</label>
+                      <input type="number" step="0.001" min=-999999 max=999999 id="ProfitabilityThreshold" name="ProfitabilityThreshold" value=0.0>
+                      <label id="ProfitabilityThresholdCurrency" for="ProfitabilityThreshold">
+                    </div>
+                    <br>
+
+                    <!-- Balance Tracker Settings -->
+                    <fieldset>
+                      <legend class=h6><b>Balance Tracker Settings</b></legend>
+                      <div style="padding-top: 0.3rem" title="Interval duration to run background task to periodically collect pool balances & earnings data&#10;(min=10, max=60, default=15 minutes). Set to 0 to disable the balance tracker.&#10;&#10;Note: If set to 0 it will also disable pool balances summary in the Web GUI dashboard and API"> Poll pools for balances & earnings every
+                        <input type="number" id="BalancesTrackerPollInterval" name="BalancesTrackerPollInterval" length=2 min=0 max=60 step=1 value=15> minutes
+                      <div style="padding-top: 0.6rem" title="Show 1hr / 6hrs / 24hr / 7 day & 30day pool earning sums&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)&#10;&#10;This setting applies to the main text window and web dashboard.">
+                        <input type="checkbox" class="toggle-switch" id="BalancesShowSums" name="BalancesShowSums" style="margin-left:20px"> Show earning sums for each pool
+                      </div>
+                      <div style="padding-top: 0.6rem" title="Show 1hr / 24hr & 7day pool earning averages&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)&#10;&#10;This setting applies to the main text window and web dashboard.">
+                        <input type="checkbox" class="toggle-switch" id="BalancesShowAverages" name="BalancesShowAverages" style="margin-left:20px"> Show average earnings for each pool
+                      </div>
+                      <div style="padding-top: 0.6rem" title="Pool balances will be shown in main currency&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
+                        <input type="checkbox" class="toggle-switch" id="BalancesShowInMainCurrency" name="BalancesShowInMainCurrency" style="margin-left:20px"> Show pool balances in main currency
+                      </div>
+                      <div style="padding-top: 0.6rem" title="Pool balances will be shown in extra currencies &#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
+                        <input type="checkbox" class="toggle-switch" id="BalancesShowInAllCurrencies" name="BalancesShowInAllCurrencies" style="margin-left:20px"> Show pool balances all currencies
+                      </div>
+                      <div style="padding-top: 0.6rem" title="Most pools clear pending balances after a longer period of inactivity.&#10;To avoid forfeiting pool balances NemosMiner will enforce mining&#10;at the pool the day before it would clear the balance.&#10;(one cycle only, even if it is not the most profitable pool).&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
+                        <input type="checkbox" class="toggle-switch" id="BalancesKeepAlive" name="BalancesKeepAlive" style="margin-left:20px"> Keep pool balances alive
+                      </div>
+                      <div style="padding-top: 0.6rem" title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">
+                        <input type="checkbox" class="toggle-switch" id="BalancesTrackerLog" name="BalancesTrackerLog" style="margin-left:20px"> Write balances tracker log
+                      </div>
+                    </fieldset>
+                  </td>
+                  <td style="vertical-align: top; line-height: 125%">
+                    <!-- Console Display Settings -->
+                    <div class="col-md-12">
+                      <legend class=h6 title="These Settings will not affect the information available in the in Web GUI"><b>Console Display Settings</b></legend>
+                      <div style="padding-top: 0.3rem" title="'light' will not show information about previously run & failed miners and watchdog timers&#10;except while benchmarking or measuring power usage&#10;Can be toggled by pressing 's' in the console window while waiting for the next cycle"> UI Style
+                        <select name="UIStyle" id="UIStyle">
+                          <option value='full' title="Information about miners run in the past, failed miners & watchdog timers will be shown">full</option>
+                          <option value='light' title="Information about miners run in the past, failed miners & watchdog timers will not be shown">light</option>
+                        </select>
+                      </div>
+                      <div style="padding-top: 0.5rem" title="Show the 'PowerCost' column in the console window&#10;(requires 'Calculate power cost' to be enabled)&#10;&#10;Can be toggled by pressing 'c' in the console window while waiting for the next cycle">
+                        <input type="checkbox" class="toggle-switch" id="ShowPowerCost" name="ShowPowerCost"> Show power cost column
+                      </div>
+                      <div style="padding-top: 0.5rem" title="Show the 'PowerUsage' column in the console window&#10;(requires 'Calculate power cost' to be enabled)&#10;&#10;Can be toggled by pressing 'w' in the console window while waiting for the next cycle">
+                        <input type="checkbox" class="toggle-switch" id="ShowPowerUsage" name="ShowPowerUsage"> Show power usage column
+                      </div>
+                      <div style="padding-top: 0.5rem" title="Show the 'Profit' column in the console window&#10;(requires 'Calculate power cost' to be enabled)&#10;&#10;Can be toggled by pressing 't' in the console window while waiting for the next cycle&#10;">
+                        <input type="checkbox" class="toggle-switch" id="ShowProfit" name="ShowProfit"> Show profit column
+                      </div>
+                      <div style="padding-top: 0.5rem" title="Show the 'Profit Bias' column in the console window&#10;(requires 'Calculate power cost' to be enabled)&#10;&#10;Can be toggled by pressing 'r' in the console window while waiting for the next cycle&#10;">
+                        <input type="checkbox" class="toggle-switch" id="ShowProfitBias" name="ShowProfitBias"> Show profit bias column
+                      </div>
+                      <div style="padding-top: 0.5rem" title="Show the 'Earning' column in the console window&#10;&#10;Can be toggled by pressing 'e' in the console window while waiting for the next cycle">
+                        <input type="checkbox" class="toggle-switch" id="ShowEarning" name="ShowEarning"> Show earning column
+                      </div>
+                      <div style="padding-top: 0.5rem" title="Show the 'Earning Bias' column in the console window&#10;&#10;Can be toggled by pressing 'i' in the console window while waiting for the next cycle">
+                        <input type="checkbox" class="toggle-switch" id="ShowEarningBias" name="ShowEarningBias"> Show earning bias column
+                      </div>
+                      <div style="padding-top: 0.5rem" title="Show the 'Accuracy' column in the console window&#10;&#10;Can be toggled by pressing 'a' in the console window while waiting for the next cycle">
+                        <input type="checkbox" class="toggle-switch" id="ShowAccuracy" name="ShowAccuracy"> Show accuracy column
+                      </div>
+                      <div style="padding-top: 0.5rem" title="Show the 'CoinName' column in the console window&#10;&#10;Can be toggled by pressing 'n' in the console window while waiting for the next cycle">
+                        <input type="checkbox" class="toggle-switch" id="ShowCoinName" name="ShowCoinName"> Show coin name column 
+                      </div>
+                      <div style="padding-top: 0.5rem" title="Show the 'Currency' column in the console window&#10;&#10;Can be toggled by pressing 'y' in the console window while waiting for the next cycle">
+                        <input type="checkbox" class="toggle-switch" id="ShowCurrency" name="ShowCurrency"> Show currency column
+                      </div>
+                      <div style="padding-top: 0.5rem" title="Show the 'User' column in the console window&#10;&#10;Can be toggled by pressing 'u' in the console window while waiting for the next cycle">
+                        <input type="checkbox" class="toggle-switch" id="ShowUser" name="ShowUser"> Show user column
+                      </div>
+                      <div style="padding-top: 0.5rem" title="Show the 'Pool' column in the console window&#10;&#10;Can be toggled by pressing 'p' in the console window while waiting for the next cycle">
+                        <input type="checkbox" class="toggle-switch" id="ShowPool" name="ShowPool"> Show pool column
+                      </div>
+                      <div style="padding-top: 0.5rem" title="Show the 'Pool fee' column in the console window&#10;&#10;Can be toggled by pressing 'f' in the console window while waiting for the next cycle">
+                        <input type="checkbox" class="toggle-switch" id="ShowPoolFee" name="ShowPoolFee"> Show pool fee column
+                      </div>
+                      <br>
+
+                      <div title="When disabled only the best 5 miners per device are shown&#10;except while not benchmarking or measuring power usage&#10;&#10;Can be toggled by pressing 'v' in the console window while waiting for the next cycle">
+                        <input type="checkbox" class="toggle-switch" id="ShowAllMiners" name="ShowAllMiners"> Show all miners
+                      </div>
+                      <div style="padding-top: 0.5rem" title="Show the Pool Balances in the console window&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)&#10;&#10;Can be toggled by pressing 'b' in the console window while waiting for the next cycle">
+                        <input type="checkbox" class="toggle-switch" id="ShowPoolBalances" name="ShowPoolBalances" > Show pool balances
+                      </div>
+                      <br>
+
+                      <!-- GUI Display Settings -->
+                      <legend class=h6><b>GUI Display Settings</b></legend>
+                      <div style="padding-top: 0.3rem" title="Miners and Rigs will be shown with colored background depending on status">
+                        <input type="checkbox" class="toggle-switch" id="UseColorForMinerStatus" name="UseColorForMinerStatus"> Use colors for miner & rig status
+                      </div>
+                      <br>
+
+                      <!-- Log To File Settings -->
+                      <fieldset title="Defines the detail level of information written to the log file&#10;&#10;It is recommended to keep at least 'Info' enabled.">
+                        <legend class=h6><b>Log Level Details (File)</b></legend>
+                        <div style="padding-top: 0.3rem" id="LogToFile"></div>
+                      </fieldset>
+                      <br>
+
+                      <!-- Log To Screen Settings -->
+                      <fieldset title="Defines the detail level of information written to the screen&#10;&#10;It is recommended to keep at least 'Info' enabled.">
+                        <legend class=h6><b>Log Level Details (Screen)</b></legend>
+                        <div style="padding-top: 0.3rem" id="LogToScreen"></div>
+                      </fieldset>
+                      <br>
+
+                      <!-- Auto Update Settings -->
+                      <legend class=h6><b>Auto Update Settings</b></legend>
+                      <div style="padding-top: 0.3rem" title="NemosMiner will periodically check for a new program version&#10;(min=0, max=30, default=1 days).&#10;Set to 0 to disable checking for new versions"> Check for new version every
+                        <input type="number" id="AutoUpdateCheckInterval" name="AutoUpdateCheckInterval" min=0 max=50 step=1 value=15> days
+                      </div>
+                      <div style="padding-top: 0.4rem" title="Automatically update NemosMiner to the newest program version&#10;NemosMiner will check for a new version on each start&#10;and every n days as configured by 'AutoUpdateCheckInterval'">
+                        <input type="checkbox" class="toggle-switch" id="AutoUpdate" name="AutoUpdate"> Automatically install newest version
+                      </div>
+                      <div style="padding-top: 0.6rem" title="If enabled NemosMiner will show the changlog when an update is available">
+                        <input type="checkbox" class="toggle-switch" id="ShowChangeLog" name="ShowChangeLog"> Show change log
+                      </div>
+                      <div style="padding-top: 0.6rem" title="If enabled NemosMiner will backup installed version before updating to a new version">
+                        <input type="checkbox" class="toggle-switch" id="BackupOnAutoUpdate" name="BackupOnAutoUpdate"> Backup installed version before updating
+                      </div>
+                    </div>
+                    <br>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <br>
+          </form>
+<!-- Start of page scripts 'configedit.html' -->
+          <script type="text/javascript">
+
+            const walletscontainer = document.getElementById('Wallets');
+            const fiatcurrencycontainer = document.getElementById('MainCurrency');
+            const payoutcurrencycontainer = document.getElementById('PayoutCurrency');
+            const poolscontainer = document.getElementById('Pools');
+            const regionscontainer = document.getElementById('Regions');
+            const devicescontainer = document.getElementById('Devices');
+            const logtofilecontainer = document.getElementById('LogToFile');
+            const logtoscreencontainer = document.getElementById('LogToScreen');
+
+            var configfile = '';
+            var regions = [];
+
+            $(document).ready(function () {
+              document.body.style.cursor = 'wait';
+
+              //Edit config file
+              $('#btn-editconfig').click(function () {
+                document.getElementById('btn-editconfig').disabled = true;
+                document.getElementById('btn-editpoolsconfig').disabled = true;
+                $('.modal-body').load('/functions/file/edit?FileName=' + encodeURIComponent(configfile), function () {
+                  if (this.outerText) {
+                    $('.modal-title').text('Edit Config file');
+                    $('#myModal').modal({ 
+                      show: true
+                    });
+                    $('#myModal').on('hidden.bs.modal', function () {
+                      location.reload(true);
+                    })
+                  }
+                  document.getElementById('btn-editconfig').disabled = false;
+                  document.getElementById('btn-editpoolsconfig').disabled = false;
+                });
+              });
+
+              //Edit poolsconfig file
+              $('#btn-editpoolsconfig').click(function () {
+                document.getElementById('btn-editconfig').disabled = true;
+                document.getElementById('btn-editpoolsconfig').disabled = true;
+                $('.modal-body').load('/functions/file/edit?FileName=' + encodeURIComponent(poolsconfigfile), function () {
+                  if (this.outerText) {
+                    $('.modal-title').text('Edit PoolsConfig file');
+                    $('#myModal').modal({ 
+                      show: true
+                    });
+                  }
+                  document.getElementById('btn-editconfig').disabled = false;
+                  document.getElementById('btn-editpoolsconfig').disabled = false;
+                });
+              });
+
+              // Get FIAT currencies
+              $.ajax({
+                async: false,
+                dataType: 'json',
+                url: '/fiatcurrencies',
+                success: function (result) {
+                  fiatcurrencies = result;
+                }
+              });
+
+              // Get config file names
+              $.ajax({
+                async: false,
+                dataType: 'text',
+                url: '/configfile',
+                success: function (result) {
+                  configfile = result;
+                  $.ajax({
+                    async: false,
+                    dataType: 'text',
+                    url: '/poolsconfigfile',
+                    success: function (result) {
+                      poolsconfigfile = result;
+                      $('#configfilenames').text("Current configuration files: '" + configfile + "' & '" + poolsconfigfile + "'");
+                    }
+                  });
+                }
+              });
+
+              // Wallet addresses and User Names
+              // Fill wallet addresses
+              $.each(config.Wallets, function (key, value) {
+                key = key.toUpperCase();
+                $('<label/>', { for: ('Wallet' + key), style: 'width:4rem', text: key }).appendTo(walletscontainer);
+                if (key === 'BTC' || key === 'LTC') $('<input/>', { type: 'text', id: ('Wallet' + key), value: value, name: ('Wallet' + key), minlength: 26, maxlength: 35, size: 64 }).appendTo(walletscontainer);
+                else if (key === 'ETC' || key === 'ETH') $('<input/>', { type: 'text', id: ('Wallet' + key), value: value, name: ('Wallet' + key), maxlength: 42, size: 64 }).appendTo(walletscontainer);
+                else $('<input/>', { type: 'text', id: ('Wallet' + key), value: value, name: ('Wallet' + key), size: 64 }).appendTo(walletscontainer);
+                $('<br>').appendTo(walletscontainer);
+                $('<option/>', { value: key, text: key }).appendTo(payoutcurrencycontainer);
+              })
+              // Mining Dutch
+              document.getElementById('MiningDutchUserName').value = config.MiningDutchUserName || '';
+              $(document.getElementById('MiningDutchUserName')).change(function (event) {
+                document.getElementById('RegisterMiningDutch').hidden = Boolean(document.getElementById('MiningDutchUserName').value);
+              });
+              $(document.getElementById('MiningDutchUserName')).trigger('change');
+              document.getElementById('MiningDutchAPIKey').value = config.MiningDutchAPIKey || '';
+              // Mining Pool Hub
+              document.getElementById('MiningPoolHubUserName').value = config.MiningPoolHubUserName || '';
+              $(document.getElementById('MiningPoolHubUserName')).change(function (event) {
+                document.getElementById('RegisterMiningPoolHub').hidden = Boolean(document.getElementById('MiningPoolHubUserName').value);
+              });
+              $(document.getElementById('MiningPoolHubUserName')).trigger('change');
+              document.getElementById('MiningPoolHubAPIKey').value = config.MiningPoolHubAPIKey || '';
+              // NiceHash
+              document.getElementById('NiceHashWallet').value = config.NiceHashWallet || '';
+              $(document.getElementById('NiceHashWallet')).change(function (event) {
+                document.getElementById('RegisterNiceHash').hidden = Boolean(document.getElementById('NiceHashWallet').value);
+              });
+              $(document.getElementById('NiceHashWallet')).trigger('change');
+              document.getElementById('NiceHashAPIKey').value = config.NiceHashAPIKey || '';
+              document.getElementById('NiceHashAPISecret').value = config.NiceHashAPISecret || '';
+              if (config.NiceHashWalletIsInternal) document.getElementById('NiceHashWalletIsInternal').value = 'internal';
+              else document.getElementById('NiceHashWalletIsInternal').value = 'external';
+              // NiceHashWalletIsInternal
+              $(document.getElementById('NiceHashWallet')).change(function (event) {
+                document.getElementById('NiceHashWalletIsInternal').disabled = (document.getElementById('NiceHashWallet')).value.notmatch(/^[0-9A-Za-z]{34}$/);
+              });
+              document.getElementById('NiceHashOrganizationId').value = config.NiceHashOrganizationId || '';
+              // ProHashing
+              document.getElementById('ProHashingUserName').value = config.ProHashingUserName || '';
+              $(document.getElementById('ProHashingUserName')).change(function (event) {
+                document.getElementById('RegisterProHashing').hidden = Boolean(document.getElementById('ProHashingUserName').value);
+              });
+              document.getElementById('ProHashingAPIKey').value = config.ProHashingAPIKey || '';
+              if (config.ProHashingMiningMode === 'PPLNS') document.getElementById('ProHashingMiningMode').value = config.ProHashingMiningMode;
+              else document.getElementById('ProHashingMiningMode').value = 'PPS';
+
+              // Currency Settings
+              $.each(fiatcurrencies, function(key, value) {
+                $('<option/>', { value: key, text: key + ' (' + value + ')' }).appendTo(fiatcurrencycontainer);
+              });
+              document.getElementById('MainCurrency').value = config.MainCurrency.trim();
+              document.getElementById('ExtraCurrencies').value = config.ExtraCurrencies.toString().trim();
+              document.getElementById('PayoutCurrency').value = config.PayoutCurrency.trim();
+              if (config.UsemBTC) document.getElementById('UsemBTC').checked = config.UsemBTC;
+
+              // General Runtime Settings
+              document.getElementById('WorkerName').value = config.WorkerName.trim();
+              if (config.StartupMode === 'Idle' || config.StartupMode === 'Paused' || config.StartupMode === 'Running') document.getElementById('StartupMode').value = config.StartupMode;
+              else document.getElementById('StartupMode').value = 'Idle';
+              // StartPaused
+              $(document.getElementById('AutoStart')).click(function (event) {
+                document.getElementById('StartPaused').disabled = !(document.getElementById('AutoStart').checked);
+              });
+              if (config.IdleDetection) document.getElementById('IdleDetection').checked = true;
+              else document.getElementById('IdleSec').disabled = true;
+              document.getElementById('IdleSec').value = parseInt(config.IdleSec);
+              if (config.StartPaused) document.getElementById('StartPaused').checked = true;
+              // IdleSec
+              $(document.getElementById('IdleDetection')).click(function (event) {
+                document.getElementById('IdleSec').disabled = !(document.getElementById('IdleDetection').checked);
+              });
+              if (config.LegacyGUI) document.getElementById('LegacyGUI').checked = true;
+              if (config.LegacyGUIStartMinimized) document.getElementById('LegacyGUIStartMinimized').checked = true;
+              $(document.getElementById('LegacyGUI')).change(function (event) {
+                document.getElementById('LegacyGUIStartMinimized').disabled = !(document.getElementById('LegacyGUI').checked);
+                if (!(document.getElementById('LegacyGUI').checked)) {
+                  document.getElementById('ShowConsole').checked = true;
+                  $(document.getElementById('ShowConsole')).trigger('change');
+                }
+              });
+              $(document.getElementById('LegacyGUI')).trigger('change');
+              if (config.ShowConsole) document.getElementById('ShowConsole').checked = true;
+              if (config.Watchdog) document.getElementById('Watchdog').checked = true;
+              if (config.AutoReboot) document.getElementById('AutoReboot').checked = true;
+              if (Number.isInteger(config.Donation)) document.getElementById('Donation').value = parseInt(config.Donation);
+              // Donation nag
+              if (parseInt(document.getElementById('Donation').value) <= 0) {
+                $('.modal-title').html('&#128546  Donation duration set to 0 minutes  &#128546');
+                $('.modal-body').html('Please help support the great team behind NemosMiner by leaving mining donations turned on.&#10;&#10;Thank you!');
+                $('#myModal').modal({ show: true });
+              };
+              document.getElementById('Interval').value = parseInt(config.Interval);
+              document.getElementById('MinDataSample').value = parseInt(config.MinDataSample);
+              document.getElementById('MinCycle').value = parseInt(config.MinCycle);
+              document.getElementById('Proxy').value = config.Proxy.trim();
+              if (config.OpenFirewallPorts) document.getElementById('OpenFirewallPorts').checked = true;
+              document.getElementById('DecimalsMax').value = parseInt(config.DecimalsMax);
+
+              // Select Mining Devices
+              $.ajax({
+                async: false,
+                dataType: 'json',
+                url: '/devices',
+                success: function (result) {
+                  devices = result;
+                  $.each(devices, function (key, value) {
+                    $('<input/>', { type: 'checkbox', class: 'toggle-switch', id: ('device-' + value.Name).toLowerCase(), value: value.Name, style: 'margin-top:0.3rem' }).appendTo(devicescontainer);
+                    $('<label/>', { for: ('device-' + value.Name).toLowerCase(), text: (value.Name + ': ' + value.Model), style: 'margin-left:5px' }).appendTo(devicescontainer);
+                    $('<br>').appendTo(devicescontainer);
+                    if (value.State == 0) document.getElementById(('device-' + value.Name).toLowerCase()).checked = true;
+                    if (value.State == 2) {
+                      document.getElementById(('device-' + value.Name).toLowerCase()).disabled = true;
+                      document.getElementById(('device-' + value.Name).toLowerCase()).checked = false;
+                    }
+                  })
+                }
+              });
+
+              // Pool Selection
+              // Populate pool checkbox list
+              $.ajax({
+                async: false,
+                dataType: 'json',
+                url: '/poolvariants',
+                success: function (result) {
+                  poolvariants = result;
+                  var basePoolName = '';
+                  $.each(result, function (key, value) {
+                    if (basePoolName != '' && basePoolName != value.toLowerCase().replace('24hr', '').replace('plus', '')) $('<br>').appendTo(poolscontainer);
+                    basePoolName = value.toLowerCase().replace('24hr', '').replace('plus', '');
+                    $('<input/>', { type: 'checkbox', class: 'toggle-switch', id: ('pool-' + value).toLowerCase(), value: value, style: 'margin-top:0.3rem' }).appendTo(poolscontainer);
+                    $('<label/>', { for: ('pool-' + value).toLowerCase(), text: (value), style: 'margin-left: 5px; line-height: 75%' }).appendTo(poolscontainer);
+                    $('<br>').appendTo(poolscontainer);
+                  })
+                }
+              });
+              // Only one pool variant can be checked
+              const Pools = document.getElementById('Pools');
+              $(Pools).click(function (event) {
+                var poolname = (event.target).id.toLowerCase();
+                var basePoolName = poolname.replace('24hr', '').replace('plus', '');
+                var pool = document.getElementById(basePoolName);
+                if (pool && poolname != pool.id) pool.checked = false;
+                var pool = document.getElementById(basePoolName + '24hr');
+                if (pool && poolname != pool.id) pool.checked = false;
+                var pool = document.getElementById(basePoolName + 'plus');
+                if (pool && poolname != pool.id) pool.checked = false;
+                if (poolname.match('pool-miningdutch(|24hr|plus)')) {
+                  document.getElementById('MiningDutchUserName').disabled = !(document.getElementById(poolname).checked);
+                  document.getElementById('MiningDutchAPIKey').disabled = !(document.getElementById(poolname).checked);
+                };
+                if (poolname == 'pool-miningpoolhub') {
+                  document.getElementById('MiningPoolHubUserName').disabled = !(document.getElementById(poolname).checked);
+                  document.getElementById('MiningPoolHubAPIKey').disabled = !(document.getElementById(poolname).checked);
+                };
+                if (poolname == 'pool-nicehash') {
+                  document.getElementById('NiceHashAPIKey').disabled = !(document.getElementById(poolname).checked);
+                  document.getElementById('NiceHashAPISecret').disabled = !(document.getElementById(poolname).checked);
+                  document.getElementById('NiceHashWallet').disabled = !(document.getElementById(poolname).checked);
+                  document.getElementById('NiceHashWalletIsInternal').disabled = !(document.getElementById(poolname).checked);
+                  document.getElementById('NiceHashOrganizationId').disabled = !(document.getElementById(poolname).checked);
+                };
+                if (poolname.match('pool-prohashing(|24hr|plus)$')) {
+                  document.getElementById('ProHashingUserName').disabled = !(document.getElementById(poolname).checked);
+                  document.getElementById('ProHashingAPIKey').disabled = !(document.getElementById(poolname).checked);
+                  document.getElementById('ProHashingMiningMode').disabled = !(document.getElementById(poolname).checked);
+                };
+              });
+              $.each([config.PoolName].flat(), function (key, value) {
+                if (document.getElementById(('pool-' + value).toString().toLowerCase())) document.getElementById(('pool-' + value).toString().toLowerCase()).checked = true;
+              });
+              if (document.getElementById('pool-miningdutch')) {
+                document.getElementById('MiningDutchUserName').disabled = !(document.getElementById('pool-miningdutch').checked || (document.getElementById('pool-miningdutch24hr').checked) || document.getElementById('pool-miningdutchplus').checked);
+                document.getElementById('MiningDutchAPIKey').disabled = !(document.getElementById('pool-miningdutch').checked || (document.getElementById('pool-miningdutch24hr').checked) || document.getElementById('pool-miningdutchplus').checked);
+              }
+              if (document.getElementById('pool-miningpoolhub')) {
+                document.getElementById('MiningPoolHubUserName').disabled = !(document.getElementById('pool-miningpoolhub').checked);
+                document.getElementById('MiningPoolHubAPIKey').disabled = !(document.getElementById('pool-miningpoolhub').checked);
+              }
+              if (document.getElementById('pool-nicehash')) {
+                document.getElementById('NiceHashAPIKey').disabled = !(document.getElementById('pool-nicehash').checked);
+                document.getElementById('NiceHashAPISecret').disabled = !(document.getElementById('pool-nicehash').checked);
+                document.getElementById('NiceHashWalletIsInternal').disabled = !(document.getElementById('pool-nicehash').checked);
+                document.getElementById('NiceHashWallet').disabled = !(document.getElementById('pool-nicehash').checked);
+                document.getElementById('NiceHashOrganizationId').disabled = !(document.getElementById('pool-nicehash').checked);
+              }
+              if (document.getElementById('pool-prohashing')) {
+                document.getElementById('ProHashingUserName').disabled = !(document.getElementById('pool-prohashing').checked || document.getElementById('pool-prohashing24hr').checked || document.getElementById('pool-prohashingplus').checked);
+                document.getElementById('ProHashingAPIKey').disabled = !(document.getElementById('pool-prohashing').checked || document.getElementById('pool-prohashing24hr').checked || document.getElementById('pool-prohashingplus').checked);
+                document.getElementById('ProHashingMiningMode').disabled = !(document.getElementById('pool-prohashing').checked || document.getElementById('pool-prohashing24hr').checked || document.getElementById('pool-prohashingplus').checked);
+              }
+
+              // Pool Network Settings
+              if (config.UseAnycast) document.getElementById('UseAnycast').checked = true;
+              if (config.SSL === 'Never' || config.SSL === 'Prefer' || config.SSL === 'Always') document.getElementById('SSL').value = config.SSL;
+              else document.getElementById('SSL').value = 'Prefer';
+              if (config.SSLAllowSelfSignedCertificate) document.getElementById('SSLAllowSelfSignedCertificate').checked = true;
+              $(document.getElementById('SSL')).click(function (event) {
+                document.getElementById('SSLAllowSelfSignedCertificate').disabled = (document.getElementById('SSL').value === 'Never');
+              });
+
+              // Select the Region closest to your Location
+              // Fill region list
+              $.ajax({
+                async: false,
+                dataType: 'json',
+                url: '/regions',
+                success: function (result) {
+                  regions = result;
+                  $.each(regions, function (key, value) {
+                    $('<input/>', { type: 'radio', id: ('region-' + value).toLowerCase(), value: value, name: 'Region' }).appendTo(regionscontainer);
+                    $('<label/>', { for: ('region-' + value).toLowerCase(), text: value, style: 'margin-left:5px' }).appendTo(regionscontainer);
+                    $('<br>').appendTo(regionscontainer);
+                  })
+                }
+              });
+              try {
+                document.getElementById(('region-' + config.Region).toLowerCase()).checked = true;
+              } catch {
+                document.getElementById(('region-europe').toLowerCase()).checked = true;
+              }
+
+              // Miner Selection
+              if (config.MinerInstancePerDeviceModel) document.getElementById('MinerInstancePerDeviceModel').checked = true;
+              if (config.MinerUseBestPoolsOnly) document.getElementById('MinerUseBestPoolsOnly').checked = true;
+              if (parseInt(config.MinerSet) >= 0 && parseInt(config.MinerSet) <= 3) document.getElementById('MinerSet').value = config.MinerSet;
+              else document.getElementById('MinerSet').value = 2;
+              if (config.ExcludeMinerName) document.getElementById('ExcludeMinerName').value = (config.ExcludeMinerName).toString().trim();
+              if (config.Algorithm) document.getElementById('Algorithm').value = (config.Algorithm).toString().trim();
+              // Load default Algorithm list
+              $('#DefaultAlgorithm').click(function () {
+                $.ajax({
+                  async: false,
+                  dataType: 'json',
+                  url: '/defaultAlgorithm',
+                  success: function (result) {
+                    Algorithm.value = result.sort().join(',');
+                  }
+                });
+              });
+              if (config.DisableMinersWithFee) document.getElementById('DisableMinersWithFee').checked = true;
+              if (config.DisableDualAlgoMining) document.getElementById('DisableDualAlgoMining').checked = true;
+              if (config.DisableSingleAlgoMining) document.getElementById('DisableSingleAlgoMining').checked = true;
+              if (config.Currency) document.getElementById('Currency').value = (config.Currency).toString().trim();
+              // Dual AND single algorithm mining cannot be disabled at the same time
+              $(document.getElementById('DisableDualAlgoMining')).click(function (event) {
+                if (document.getElementById('DisableDualAlgoMining').checked) document.getElementById('DisableSingleAlgoMining').checked = false;
+              });
+              $(document.getElementById('DisableSingleAlgoMining')).click(function (event) {
+                if (document.getElementById('DisableSingleAlgoMining').checked) document.getElementById('DisableDualAlgoMining').checked = false;
+              });
+
+              // Miner Runtime Settings
+              document.getElementById('MinerWindowStyle').value = config.MinerWindowStyle.toLowerCase();
+              if (config.MinerWindowStyleNormalWhenBenchmarking) document.getElementById('MinerWindowStyleNormalWhenBenchmarking').checked = true;
+              if (parseInt(config.CPUMinerProcessPriority) >= -2 && parseInt(config.CPUMinerProcessPriority) <= 1) document.getElementById('CPUMinerProcessPriority').value = config.CPUMinerProcessPriority;
+              else document.getElementById('CPUMinerProcessPriority').value = -2;
+              if (parseInt(config.GPUMinerProcessPriority) >= -2 && parseInt(config.GPUMinerProcessPriority) <= 1) document.getElementById('GPUMinerProcessPriority').value = config.GPUMinerProcessPriority;
+              else document.getElementById('GPUMinerProcessPriority').value = -1;
+              if (config.DisableCpuMiningOnBattery) document.getElementById('DisableCpuMiningOnBattery').checked = true;
+              if (config.DisableMinerFee) document.getElementById('DisableMinerFee').checked = true;
+              if (config.UseMinerTweaks) document.getElementById('UseMinerTweaks').checked = true;
+
+              // Power Cost Calculation Settings
+              if (config.CalculatePowerCost) document.getElementById('CalculatePowerCost').checked = true;
+              else {
+                document.getElementById('PowerPricekWh').disabled = true;
+                document.getElementById('PowerUsageIdleSystemW').disabled = true;
+                document.getElementById('IgnorePowerCost').disabled = true;
+              }
+              document.getElementById('PowerPricekWh').value = JSON.stringify(config.PowerPricekWh);
+              if (config.IgnorePowerCost) document.getElementById('IgnorePowerCost').checked = true;
+              if (parseInt(config.PowerUsageIdleSystemW) >= 0) document.getElementById('PowerUsageIdleSystemW').value = parseInt(config.PowerUsageIdleSystemW);
+
+              // CalculatePowerCost click
+              $(document.getElementById('CalculatePowerCost')).click(function (event) {
+                document.getElementById('PowerPricekWh').disabled = !(document.getElementById('CalculatePowerCost').checked);
+                document.getElementById('PowerUsageIdleSystemW').disabled = !(document.getElementById('CalculatePowerCost').checked);
+                document.getElementById('IgnorePowerCost').disabled = !(document.getElementById('CalculatePowerCost').checked);
+                $(document.getElementById('Currency')).trigger('change');
+              });
+
+              // ProfitabilityThreshold
+              $(document.getElementById('Currency')).change(function (event) {
+                document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
+                document.getElementById('PowerPricekWhCurrency').innerHTML = '(time: ' + document.getElementById('Currency').value.split(',')[0] + ' per kW/h)';
+                document.getElementById('PowerPricekWhTitle').title = 'Price of power in ' + document.getElementById('Currency').value.split(',')[0] + ' per kW⋅h, valid from HH:mm (24hr format)\nData must be in compressed JSON format\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom 00:00h to 11:59h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom 12:00h to 23:59h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h'
+                if (document.getElementById('CalculatePowerCost').checked) document.getElementById('ProfitabilityThresholdTitle').title = 'Mining will stop when profit (earnings - power cost) is less than the configured value\n(e.g. ' + document.getElementById('Currency').value.split(',')[0] + ' 1.00). Use negative numbers to allow mining at loss.\n\nNote: This does not apply when benchmarking or measuring power cost'
+                else document.getElementById('ProfitabilityThresholdTitle').title = 'Mining will stop when earning is less than the configured value\n(e.g. ' + document.getElementById('Currency').value.split(',')[0] + ' 1.00). Use negative numbers to allow mining at loss.\n\nNote: This does not apply when benchmarking'
+              });
+              $(document.getElementById('Currency')).trigger('change');
+
+              // Calculation Settings
+              document.getElementById('UnrealPoolPriceFactor').value = parseFloat(config.UnrealPoolPriceFactor);
+              document.getElementById('MinAccuracy').value = parseFloat(config.MinAccuracy) * 100;
+              if (config.IgnorePoolFee) document.getElementById('IgnorePoolFee').checked = true;
+              document.getElementById('MinWorker').value = parseInt(config.MinWorker);
+              document.getElementById('BadShareRatioThreshold').value = parseFloat(config.BadShareRatioThreshold) * 100;
+              document.getElementById('EarningsAdjustmentFactor').value = parseFloat(config.EarningsAdjustmentFactor);
+              document.getElementById('UnrealMinerEarningFactor').value = parseFloat(config.UnrealMinerEarningFactor);
+              document.getElementById('MinerSwitchingThreshold').value = parseFloat(config.MinerSwitchingThreshold);
+              if (config.SubtractBadShares) document.getElementById('SubtractBadShares').checked = true;
+              if (config.IgnoreMinerFee) document.getElementById('IgnoreMinerFee').checked = true;
+              document.getElementById('ProfitabilityThreshold').value = config.ProfitabilityThreshold;
+
+              // Balance Tracker Settings
+              if (parseInt(config.BalancesTrackerPollInterval) >= 1 && parseInt(config.BalancesTrackerPollInterval) <= 9) document.getElementById('BalancesTrackerPollInterval').value = 10;
+              else document.getElementById('BalancesTrackerPollInterval').value = parseInt(config.BalancesTrackerPollInterval);
+              // Poll Pools for Balances & Earnings
+              $(document.getElementById('BalancesTrackerPollInterval')).change(function (event) {
+                if (document.getElementById('BalancesTrackerPollInterval').value == 9) document.getElementById('BalancesTrackerPollInterval').value = 0;
+                if (document.getElementById('BalancesTrackerPollInterval').value == 1) document.getElementById('BalancesTrackerPollInterval').value = 10;
+                if (document.getElementById('BalancesTrackerPollInterval').value > 1 && document.getElementById('BalancesTrackerPollInterval').value < 9) document.getElementById('BalancesTrackerPollInterval').value = 0;
+                document.getElementById('BalancesShowSums').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
+                document.getElementById('BalancesShowAverages').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
+                document.getElementById('BalancesShowInMainCurrency').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
+                document.getElementById('BalancesShowInAllCurrencies').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
+                document.getElementById('BalancesKeepAlive').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
+                document.getElementById('BalancesTrackerLog').disabled = (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
+                document.getElementById('ShowPoolBalances').disabled = !(document.getElementById('ShowConsole').checked) || (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
+              });
+              if (config.BalancesShowSums) document.getElementById('BalancesShowSums').checked = true;
+              if (config.BalancesShowAverages) document.getElementById('BalancesShowAverages').checked = true;
+              if (config.BalancesShowInMainCurrency) document.getElementById('BalancesShowInMainCurrency').checked = true;
+              if (config.BalancesShowInAllCurrencies) document.getElementById('BalancesShowInAllCurrencies').checked = true;
+              if (config.BalancesKeepAlive) document.getElementById('BalancesKeepAlive').checked = true;
+              if (config.BalancesTrackerLog) document.getElementById('BalancesTrackerLog').checked = true;
+              $(document.getElementById('BalancesTrackerPollInterval')).trigger('change');
+
+              // Console Display Settings
+              $(document.getElementById('ShowConsole')).change(function (event) {
+                document.getElementById('UIStyle').disabled = !(document.getElementById('ShowConsole').checked);
+                document.getElementById('ShowPowerCost').disabled = !(document.getElementById('ShowConsole').checked);
+                document.getElementById('ShowPowerUsage').disabled = !(document.getElementById('ShowConsole').checked);
+                document.getElementById('ShowProfit').disabled = !(document.getElementById('ShowConsole').checked);
+                document.getElementById('ShowProfitBias').disabled = !(document.getElementById('ShowConsole').checked);
+                document.getElementById('ShowEarning').disabled = !(document.getElementById('ShowConsole').checked);
+                document.getElementById('ShowEarningBias').disabled = !(document.getElementById('ShowConsole').checked);
+                document.getElementById('ShowAccuracy').disabled = !(document.getElementById('ShowConsole').checked);
+                document.getElementById('ShowCoinName').disabled = !(document.getElementById('ShowConsole').checked);
+                document.getElementById('ShowCurrency').disabled = !(document.getElementById('ShowConsole').checked);
+                document.getElementById('ShowPool').disabled = !(document.getElementById('ShowConsole').checked);
+                document.getElementById('ShowPoolFee').disabled = !(document.getElementById('ShowConsole').checked);
+                document.getElementById('ShowUser').disabled = !(document.getElementById('ShowConsole').checked);
+                document.getElementById('ShowAllMiners').disabled = !(document.getElementById('ShowConsole').checked);
+                document.getElementById('ShowPoolBalances').disabled = !(document.getElementById('ShowConsole').checked) || (parseInt(document.getElementById('BalancesTrackerPollInterval').value) == 0);
+                if (!(document.getElementById('ShowConsole').checked)) {
+                  document.getElementById('LegacyGUI').checked = true;
+                  $(document.getElementById('LegacyGUI')).trigger('change');
+                }
+              });
+              $(document.getElementById('ShowConsole')).trigger('change');
+
+              if (config.UIStyle.trim().toLowerCase() == 'full') document.getElementById('UIStyle').value = 'full';
+              else document.getElementById('UIStyle').value = 'light';
+              if (config.ShowPowerCost) document.getElementById('ShowPowerCost').checked = true;
+              if (config.ShowPowerUsage) document.getElementById('ShowPowerUsage').checked = true;
+              if (config.ShowProfit) document.getElementById('ShowProfit').checked = true;
+              if (config.ShowProfitBias) document.getElementById('ShowProfitBias').checked = true;
+              if (config.ShowEarning) document.getElementById('ShowEarning').checked = true;
+              if (config.ShowEarningBias) document.getElementById('ShowEarningBias').checked = true;
+              if (config.ShowAccuracy) document.getElementById('ShowAccuracy').checked = true;
+              if (config.ShowCoinName) document.getElementById('ShowCoinName').checked = true;
+              if (config.ShowCurrency) document.getElementById('ShowCurrency').checked = true;
+              if (config.ShowPool) document.getElementById('ShowPool').checked = true;
+              if (config.ShowPoolFee) document.getElementById('ShowPoolFee').checked = true;
+              if (config.ShowUser) document.getElementById('ShowUser').checked = true;
+              if (config.ShowAllMiners) document.getElementById('ShowAllMiners').checked = true;
+              if (config.ShowPoolBalances) document.getElementById('ShowPoolBalances').checked = true;
+
+              // CalculatePowerCost click
+              $(document.getElementById('CalculatePowerCost')).click(function (event) {
+                document.getElementById('ShowPowerCost').disabled = !(document.getElementById('ShowConsole').checked) || !(document.getElementById('CalculatePowerCost').checked);
+                document.getElementById('ShowPowerUsage').disabled = !(document.getElementById('ShowConsole').checked) || !(document.getElementById('CalculatePowerCost').checked);
+                document.getElementById('ShowProfit').disabled = !(document.getElementById('ShowConsole').checked) || !(document.getElementById('CalculatePowerCost').checked);
+                document.getElementById('ShowProfitBias').disabled = !(document.getElementById('ShowConsole').checked) || !(document.getElementById('CalculatePowerCost').checked);
+              });
+
+              // GUI Display Settings
+              if (config.UseColorForMinerStatus) document.getElementById('UseColorForMinerStatus').checked = true;
+
+              // Log To File Settings
+              values = ["Info", "Warn", "Error", "Verbose", "Debug"];
+              $.each(values, function (key, value) {
+                $('<input/>', { type: 'checkbox', class: 'toggle-switch', id: ('logtofile-' + value), value: value }).appendTo(logtofilecontainer);
+                $('<label/>', { for: ('logtofile-' + value), text: (value), style: 'margin-left:5px' }).appendTo(logtofilecontainer);
+                $('<br>').appendTo(logtofilecontainer);
+                document.getElementById(('logtofile-' + value)).checked = config.LogToFile.includes(value);
+              })
+
+              // Log To Screen Settings
+              values = ["Info", "Warn", "Error", "Verbose", "Debug"];
+              $.each(values, function (key, value) {
+                $('<input/>', { type: 'checkbox', class: 'toggle-switch', id: ('logtoscreen-' + value), value: value }).appendTo(logtoscreencontainer);
+                $('<label/>', { for: ('logtoscreen-' + value), text: (value), style: 'margin-left:5px' }).appendTo(logtoscreencontainer);
+                $('<br>').appendTo(logtoscreencontainer);
+                document.getElementById(('logtoscreen-' + value)).checked = config.LogToScreen.includes(value);
+              })
+
+              // Auto Update Settings
+              if (config.AutoUpdateCheckInterval) document.getElementById('AutoUpdateCheckInterval').value = parseInt(config.AutoUpdateCheckInterval)
+              else document.getElementById('AutoUpdateCheckInterval').value = 1;
+              if (config.AutoUpdate) document.getElementById('AutoUpdate').checked = true;
+              if (config.ShowChangeLog) document.getElementById('ShowChangeLog').checked = true;
+              if (config.BackupOnAutoUpdate) document.getElementById('BackupOnAutoUpdate').checked = true;
+
+              document.body.style.cursor = 'default';
+
+              // Error when reading configuration
+              if (config && configfile && poolvariants && regions && devices) {
+                document.getElementById('save-button').disabled = false;
+              } else {
+                $('.modal-title').text('Error reading configuration');
+                $('.modal-body').html('This may be a temporary issue.&#10;Please refresh your browser window.&#10;&#10;If the problem persists restore the config file and restart NemosMiner.');
+                $('#myModal').modal({ show: true });
+              }
+
+              $('#configuration').bind('reset', function () {
+                location.reload(true);
+              });
+
+              $('#configuration').validate({
+                rules: {
+                  WalletBTC: {
+                    required: false,
+                    minlength: 26,
+                    maxlength: 35,
+                    pattern: '^[0-9A-Za-z]{26,35}$'
+                  },
+                  WalletETC: {
+                    required: false,
+                    minlength: 42,
+                    maxlength: 42,
+                    pattern: '^0[x|X][0-9A-Za-z]{40}$'
+                  },
+                  WalletETH: {
+                    required: false,
+                    minlength: 42,
+                    maxlength: 42,
+                    pattern: '^0[x|X][0-9A-Za-z]{40}$'
+                  },
+                  MiningDutchUserName: {
+                    required: false,
+                    minlength: 2,
+                    maxlength: 32,
+                    pattern: '^[0-9A-Za-z]{2,32}$'
+                  },
+                  MiningDutchAPIKey: {
+                    required: false,
+                    minlength: 64,
+                    maxlength: 64,
+                    pattern: '^[0-9a-f]{64}$'
+                  },
+                  MiningPoolHubUserName: {
+                    required: false,
+                    minlength: 2,
+                    maxlength: 32,
+                    pattern: '^[0-9A-Za-z]{2,32}$'
+                  },
+                  MiningPoolHubAPIKey: {
+                    required: false,
+                    minlength: 64,
+                    maxlength: 64,
+                    pattern: '^[0-9a-f]{64}$'
+                  },
+                  NiceHashWallet: {
+                    required: false,
+                    minlength: 26,
+                    maxlength: 35,
+                    pattern: '^[0-9A-Za-z]{26,35}$'
+                  },
+                  NiceHashAPIKey: {
+                    required: false,
+                    minlength: 36,
+                    maxlength: 36,
+                    pattern: '^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$'
+                  },
+                  NiceHashAPISecret: {
+                    required: false,
+                    minlength: 72,
+                    maxlength: 72,
+                    pattern: '^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{20}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$'
+                  },
+                  NiceHashOrganizationId: {
+                    required: false,
+                    minlength: 36,
+                    maxlength: 36,
+                    pattern: '^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$'
+                  },
+                  ProHashingUserName: {
+                    required: false,
+                    minlength: 1,
+                    maxlength: 32,
+                    pattern: '^.{1,32}$'
+                  },
+                  ProHashingAPIKey: {
+                    required: false,
+                    minlength: 64,
+                    maxlength: 64,
+                    pattern: '^[0-9a-f]{64}$'
+                  },
+                  WorkerName: {
+                    required: true,
+                    minlength: 2,
+                    maxlength: 32,
+                    pattern: '^[0-9A-Za-z=\-]{2,32}$'
+                  },
+                  ExtraCurrencies: {
+                    required: false,
+                    minlength: 3,
+                    maxlength: 64,
+                    pattern: '^([A-Za-z0-9$]{3,4}?)+(?:,([A-Za-z0-9$]{3,4})+)*$'
+                  },
+                  IdleSec: {
+                    digits: true,
+                    range: [0, 3600],
+                    required: true,
+                    step: 1
+                  },
+                  Donation: {
+                    digits: true,
+                    range: [0, 60],
+                    required: true,
+                    step: 1
+                  },
+                  Interval: {
+                    digits: true,
+                    range: [30, 3600],
+                    required: true,
+                    step: 1
+                  },
+                  MinDataSample: {
+                    range: [10, 100],
+                    required: true,
+                    step: 1
+                  },
+                  MinCycle: {
+                    digits: true,
+                    range: [0, 10],
+                    required: true,
+                    step: 1
+                  },
+                  Proxy: {
+                    required: false,
+                    pattern: '^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+                  },
+                  ExcludeMinerName: {
+                    required: false,
+                    minlength: 4,
+                    maxlength: 256,
+                    pattern: '^([A-Za-z0-9\-\._]{4,}?)+(?:,(| )([A-Za-z0-9\-\._]{4,})+)*$'
+                  },
+                  Algorithm: {
+                    required: false,
+                    minlength: 3,
+                    maxlength: 1024,
+                    pattern: '^[+|-]([A-Za-z0-9]{2,}?)+(?:,[+|-]([A-Za-z0-9]{2,})+)*$'
+                  },
+                  PowerUsageIdleSystemW: {
+                    digits: true,
+                    range: [0, 999],
+                    required: true,
+                    step: 1
+                  },
+                  UnrealPoolPriceFactor: {
+                    range: [1, 10],
+                    required: true,
+                    step: 0.1
+                  },
+                  MinAccuracy: {
+                    range: [0, 100],
+                    required: true,
+                    step: 1
+                  },
+                  MinWorker: {
+                    range: [0, 99],
+                    required: true,
+                    step: 1
+                  },
+                  EarningsAdjustmentFactor: {
+                    range: [0, 10],
+                    required: true,
+                    step: 0.01
+                  },
+                  UnrealMinerEarningFactor: {
+                    range: [1, 99],
+                    required: true,
+                    step: 0.1
+                  },
+                  MinerSwitchingThreshold: {
+                    range: [0, 99],
+                    required: true,
+                    step: 0.1
+                  },
+                  BadShareRatioThreshold: {
+                    range: [0, 100],
+                    required: true,
+                    step: 1
+                  },
+                  ProfitabilityThreshold: {
+                    range: [-999999, 999999],
+                    required: true,
+                    step: 0.001
+                  },
+                  BalancesTrackerPollInterval: {
+                    digits: true,
+                    range: [0, 60],
+                    required: true,
+                    step: 1
+                  },
+                  AutoUpdateCheckInterval: {
+                    digits: true,
+                    range: [0, 30],
+                    required: true,
+                    step: 1
+                  }
+                },
+                messages: {
+                  Wallet: {
+                    pattern: "<br>Bitcoin address must be between 26 and 35 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
+                  },
+                  MiningDutchserName: {
+                    pattern: "<br>MiningPoolHub user name must be between 2 and 32 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
+                  },
+                  MiningDutchAPIKey: {
+                    pattern: "<br>Mining Dutch API key must be exactly 64 characters long<br>and may only contain lower case letters (a-f) and digits"
+                  },
+                  MiningPoolHubUserName: {
+                    pattern: "<br>Mining Dutch user name must be between 2 and 32 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
+                  },
+                  MiningPoolHubAPIKey: {
+                    pattern: "<br>MiningPoolHub API key must be exactly 64 characters long<br>and may only contain lower case letters (a-f) and digits"
+                  },
+                  NiceHashWallet: {
+                    pattern: "<br>NiceHash internal Bitcoin address must be be between 26 and 35 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
+                  },
+                  NiceHashAPIKey: {
+                    pattern: "<br>NiceHash internal Bitcoin address must be exactly 36 characters long<br>and must match '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}'"
+                  },
+                  NiceHashAPISecret: {
+                    pattern: "<br>NiceHash API secret must be exactly 72 characters long<br>and must match '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{20}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}'"
+                  },
+                  NiceHashOrganizationId: {
+                    pattern: "<br>NiceHash Organisation ID must be exactly 36 characters long<br>and must match '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}'"
+                  },
+                  ProHashingUserName: {
+                    pattern: "<br>ProHashing user name must be between 1 and 32 characters long"
+                  },
+                  ProHashingAPIKey: {
+                    pattern: "<br>ProHashing API key must be exactly 64 characters long<br>and may only contain lower case letters (a-f) and digits"
+                  },
+                  WorkerName: {
+                    pattern: "<br>Workername must be between 2 and 32 characters long<br>and may only contain upper and lower case letters and digits<br>(case sensitive)"
+                  },
+                  Proxy: {
+                    pattern: "<br>Enter Proxy IP V4 address and port<br>;e.g. 192.168.1.1:3128"
+                  },
+                  ExcludeMinerName: {
+                    minlength: "<br>Miner Name is too short",
+                    pattern: "<br>Miner names must separated by commas"
+                  },
+                  Algorithm: {
+                    pattern: "<br>Algorithms must be prefixed with '+' or '-' and separated by commas"
+                  }
+                },
+                invalidHandler: function(event, validator) {
+                  if (validator.numberOfInvalids()) $("#alerts").append('<div class="alert alert-danger alert-dismissible fade show" role="alert">Error saving data - fields with invalid data are marked in red.<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>')
+                },
+                submitHandler: function (form) {
+                  document.body.style.cursor = 'wait';
+
+                  // Wallet addresses and user names
+                  $.each(config.Wallets, function (key, value) {
+                    config.Wallets[key] = document.getElementById('Wallet' + key).value.toString();
+                  });
+                  config.MiningDutchUserName = document.getElementById('MiningDutchUserName').value.toString().trim();
+                  if ((document.getElementById('MiningDutchUserName').value) == '') config.MiningDutchUserName = document.getElementById('MiningDutchUserName').value = 'Nemo';
+                  config.MiningDutchAPIKey = document.getElementById('MiningDutchAPIKey').value = document.getElementById('MiningDutchAPIKey').value.toString().trim();
+                  config.MiningPoolHubUserName = document.getElementById('MiningPoolHubUserName').value.toString().trim();
+                  if ((document.getElementById('MiningPoolHubUserName').value) == '') config.MiningPoolHubUserName = document.getElementById('MiningPoolHubUserName').value = 'Nemo';
+                  config.MiningPoolHubAPIKey = document.getElementById('MiningPoolHubAPIKey').value = document.getElementById('MiningPoolHubAPIKey').value.toString().trim();
+                  config.NiceHashAPIKey = document.getElementById('NiceHashAPIKey').value = document.getElementById('NiceHashAPIKey').value.toString().trim();
+                  config.NiceHashAPISecret = document.getElementById('NiceHashAPISecret').value = document.getElementById('NiceHashAPISecret').value.toString().trim();
+                  config.NiceHashWallet = document.getElementById('NiceHashWallet').value = document.getElementById('NiceHashWallet').value.toString().trim();
+                  config.NiceHashWalletIsInternal = document.getElementById('NiceHashWalletIsInternal').value === "internal";
+                  config.NiceHashOrganizationId = document.getElementById('NiceHashOrganizationId').value = document.getElementById('NiceHashOrganizationId').value.toString().trim();
+                  config.ProHashingAPIKey = document.getElementById('ProHashingAPIKey').value = document.getElementById('ProHashingAPIKey').value.toString().trim();
+                  config.ProHashingUserName = document.getElementById('ProHashingUserName').value = document.getElementById('ProHashingUserName').value.toString().trim();
+                  config.ProHashingMiningMode = document.getElementById('ProHashingMiningMode').value;
+
+                  // Currency settings
+                  config.MainCurrency = document.getElementById('MainCurrency').value.trim();
+                  config.ExtraCurrencies = []; // Enforce array
+                  if (document.getElementById('ExtraCurrencies').value) config.ExtraCurrencies = (document.getElementById('ExtraCurrencies').value).replace(" ", "").split(",");
+                  config.PayoutCurrency = document.getElementById('PayoutCurrency').value;
+                  config.UsemBTC = document.getElementById('UsemBTC').checked;
+
+                  // Runtime Settings
+                  config.WorkerName = document.getElementById('WorkerName').value.toString().trim();
+                  if ((document.getElementById('WorkerName').value) == '') config.WorkerName = document.getElementById('WorkerName').value = 'WorkerName';
+                  if (document.getElementById('StartupMode').value.match('Idle|Paused|Running')) config.StartupMode = document.getElementById('StartupMode').value;
+                  else config.StartupMode = 'Idle';
+                  config.IdleDetection = document.getElementById('IdleDetection').checked;
+                  config.IdleSec = parseInt(document.getElementById('IdleSec').value);
+                  config.LegacyGUI = document.getElementById('LegacyGUI').checked;
+                  config.LegacyGUIStartMinimized = document.getElementById('LegacyGUIStartMinimized').checked;
+                  config.ShowConsole = document.getElementById('ShowConsole').checked;
+                  config.Watchdog = document.getElementById('Watchdog').checked;
+                  config.AutoReboot = document.getElementById('AutoReboot').checked;
+                  config.Donation = parseInt(document.getElementById('Donation').value);
+                  config.Interval = parseInt(document.getElementById('Interval').value);
+                  config.MinDataSample = parseInt(document.getElementById('MinDataSample').value);
+                  config.MinCycle = parseInt(document.getElementById('MinCycle').value);
+                  config.Proxy = document.getElementById('Proxy').value;
+                  config.OpenFirewallPorts = document.getElementById('OpenFirewallPorts').checked;
+                  config.DecimalsMax = parseInt(document.getElementById('DecimalsMax').value);
+
+                  // Select mining devices
+                  config.ExcludeDeviceName = [];
+                  var enabledDevicesCount = 0
+                  $.each(devices, function (key, value) {
+                    if (value.State != 2) enabledDevicesCount ++;
+                    if (document.getElementById(('device-' + value.Name.toLowerCase())).checked == false && value.State != 2) config.ExcludeDeviceName.push(value.Name);
+                  });
+
+                  // Select one or more pools
+                  config.PoolName = [];
+                  $.each(poolvariants, function (key, value) {
+                    if (document.getElementById(('pool-' + value.toLowerCase())).checked == true) config.PoolName.push(value);
+                  });
+
+                  // Pool Network Settings
+                  config.UseAnycast = document.getElementById('UseAnycast').checked;
+                  if (document.getElementById('SSL').value.match('Never|Prefer|Always')) config.SSL = document.getElementById('SSL').value;
+                  else config.SSL = 'Prefer';
+                  config.SSLAllowSelfSignedCertificate = document.getElementById('SSLAllowSelfSignedCertificate').checked;
+
+                  // Select the region closest to your location
+                  $.each(regions, function (key, value) {
+                    if (document.getElementById('region-' + value.toLowerCase()).checked == true) config.Region = value;
+                  });
+
+                  // Miner Selection
+                  config.MinerInstancePerDeviceModel = document.getElementById('MinerInstancePerDeviceModel').checked;
+                  config.MinerUseBestPoolsOnly = document.getElementById('MinerUseBestPoolsOnly').checked;
+                  config.MinerSet = parseInt(document.getElementById('MinerSet').value);
+                  config.ExcludeMinerName = []; // Enforce array
+                  if (document.getElementById('ExcludeMinerName').value) config.ExcludeMinerName = document.getElementById('ExcludeMinerName').value.replace(' ', '').split(',');
+                  config.Algorithm = []; // Enforce array
+                  if (document.getElementById('Algorithm').value) config.Algorithm = document.getElementById('Algorithm').value.replace(' ', '').split(',');
+                  config.DisableMinersWithFee = document.getElementById('DisableMinersWithFee').checked;
+                  config.DisableDualAlgoMining = document.getElementById('DisableDualAlgoMining').checked;
+                  config.DisableSingleAlgoMining = document.getElementById('DisableSingleAlgoMining').checked;
+
+                  config.Currency = []; // Enforce array
+                  if (document.getElementById('Currency').value) config.Currency = document.getElementById('Currency').value.replace(' ', '').split(',');
+
+                  // Miner Runtime Settings
+                  config.MinerWindowStyle = document.getElementById('MinerWindowStyle').value;
+                  config.MinerWindowStyleNormalWhenBenchmarking = document.getElementById('MinerWindowStyleNormalWhenBenchmarking').checked;
+                  config.CPUMinerProcessPriority = parseInt(document.getElementById('CPUMinerProcessPriority').value);
+                  config.GPUMinerProcessPriority = parseInt(document.getElementById('GPUMinerProcessPriority').value);
+                  config.DisableCpuMiningOnBattery = document.getElementById('DisableCpuMiningOnBattery').checked;
+                  config.DisableMinerFee = document.getElementById('DisableMinerFee').checked;
+                  config.UseMinerTweaks = document.getElementById('UseMinerTweaks').checked;
+
+                  // Power Cost Calculation Settings
+                  config.CalculatePowerCost = document.getElementById('CalculatePowerCost').checked;
+                  document.getElementById('PowerPricekWh').value = document.getElementById('PowerPricekWh').value.replace('[', '').replace(']', '');
+                  if (document.getElementById('PowerPricekWh').value.toString().trim() === '') document.getElementById('PowerPricekWh').value = '{"00:00":0.0}';
+                  if (document.getElementById('PowerPricekWh').value.toString().trim().match(/^{"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+(?:,"(([0-1]|)[0-9]|[2][0-3]):([0-5][0-9])":(\d+(\.\d+)?)+)*\}$/)) config.PowerPricekWh = JSON.parse(document.getElementById('PowerPricekWh').value.toString().trim());
+                  else {
+                    $('.modal-title').text('Invalid Power Price data');
+                    $('.modal-body').text('Enter a compressed json, e.g. {"00:00":0.26,"12:00":0.3}');
+                    $('#myModal').modal({ show: true });
+                    return false;
+                  }
+                  config.PowerUsageIdleSystemW = parseInt(document.getElementById('PowerUsageIdleSystemW').value);
+                  config.IgnorePowerCost = document.getElementById('IgnorePowerCost').checked;
+
+                  // Calculation Settings
+                  config.UnrealPoolPriceFactor = parseFloat(document.getElementById('UnrealPoolPriceFactor').value);
+                  config.MinAccuracy = parseFloat(document.getElementById('MinAccuracy').value) / 100;
+                  config.IgnorePoolFee = document.getElementById('IgnorePoolFee').checked;
+                  config.MinWorker = parseInt(document.getElementById('MinWorker').value);
+                  config.EarningsAdjustmentFactor = parseFloat(document.getElementById('EarningsAdjustmentFactor').value);
+                  config.UnrealMinerEarningFactor = parseFloat(document.getElementById('UnrealMinerEarningFactor').value);
+                  config.MinerSwitchingThreshold = parseFloat(document.getElementById('MinerSwitchingThreshold').value);
+                  config.IgnoreMinerFee = document.getElementById('IgnoreMinerFee').checked;
+                  config.BadShareRatioThreshold = parseFloat(document.getElementById('BadShareRatioThreshold').value) / 100;
+                  config.SubtractBadShares = document.getElementById('SubtractBadShares').checked;
+                  config.ProfitabilityThreshold = parseFloat(document.getElementById('ProfitabilityThreshold').value);
+
+                  // Balance Tracker Settings
+                  config.BalancesTrackerPollInterval = parseInt(document.getElementById('BalancesTrackerPollInterval').value);
+                  config.BalancesShowSums = document.getElementById('BalancesShowSums').checked;
+                  config.BalancesShowAverages = document.getElementById('BalancesShowAverages').checked;
+                  config.BalancesShowInMainCurrency = document.getElementById('BalancesShowInMainCurrency').checked;
+                  config.BalancesShowInAllCurrencies = document.getElementById('BalancesShowInAllCurrencies').checked;
+                  config.BalancesKeepAlive = document.getElementById('BalancesKeepAlive').checked;
+                  config.BalancesTrackerLog = document.getElementById('BalancesTrackerLog').checked;
+
+                  // Console Display Settings
+                  config.UIStyle = document.getElementById('UIStyle').value;
+                  config.ShowPowerCost = document.getElementById('ShowPowerCost').checked;
+                  config.ShowPowerUsage = document.getElementById('ShowPowerUsage').checked;
+                  config.ShowProfit = document.getElementById('ShowProfit').checked;
+                  config.ShowProfitBias = document.getElementById('ShowProfitBias').checked;
+                  config.ShowEarning = document.getElementById('ShowEarning').checked;
+                  config.ShowEarningBias = document.getElementById('ShowEarningBias').checked;
+                  config.ShowAccuracy =  document.getElementById('ShowAccuracy').checked;
+                  config.ShowCoinName =  document.getElementById('ShowCoinName').checked;
+                  config.ShowCurrency =  document.getElementById('ShowCurrency').checked;
+                  config.ShowPool = document.getElementById('ShowPool').checked;
+                  config.ShowPoolFee = document.getElementById('ShowPoolFee').checked;
+                  config.ShowUser =  document.getElementById('ShowUser').checked;
+                  config.ShowPoolBalances = document.getElementById('ShowPoolBalances').checked;
+                  config.ShowAllMiners = document.getElementById('ShowAllMiners').checked;
+
+                  // GUI Display Settings
+                  config.UseColorForMinerStatus = document.getElementById('UseColorForMinerStatus').checked;
+
+                  // Log To File Settings
+                  values = ["Info", "Warn", "Error", "Verbose", "Debug"];
+                  config.LogToFile = [];
+                  $.each(values, function (key, value) {
+                    if (document.getElementById(('logtofile-' + value)).checked) config.LogToFile.push(value);
+                  });
+
+                  // Log To Screen Settings
+                  values = ["Info", "Warn", "Error", "Verbose", "Debug"];
+                  config.LogToScreen = [];
+                  $.each(values, function (key, value) {
+                    if (document.getElementById(('logtoscreen-' + value)).checked) config.LogToScreen.push(value);
+                  });
+
+                  // Auto Update Settings
+                  config.AutoUpdateCheckInterval = parseInt(document.getElementById('AutoUpdateCheckInterval').value);
+                  config.AutoUpdate = document.getElementById('AutoUpdate').checked;
+                  config.ShowChangeLog = document.getElementById('ShowChangeLog').checked;
+                  config.BackupOnAutoUpdate = document.getElementById('BackupOnAutoUpdate').checked;
+
+                  // Write current config
+                  if (config.PoolName.length >= 1 && config.ExcludeDeviceName.length < enabledDevicesCount ) {
+                    var $command = '/functions/config/set?' + encodeURIComponent(JSON.stringify(config));
+                    $('.modal-body').load($command, function () {
+                      $('.modal-title').text('Save configuration');
+                      $('#myModal').modal({ show: true });
+                      document.body.style.cursor = 'default';
+                      $('#myModal').on('hidden.bs.modal', function () { location.reload(true) })
+                    });
+                  } else if (config.ExcludeDeviceName.length >= enabledDevicesCount) {
+                    // No mining device selected
+                    $('.modal-title').html('Error: Invalid configuration');
+                    $('.modal-body').html('Cannot save configuration - you must select at least one mining device.');
+                    document.body.style.cursor = 'default';
+                    $('#myModal').modal({ show: true });
+                  } else {
+                    // No pool selected
+                    $('.modal-title').html('Error: Invalid configuration');
+                    $('.modal-body').html('Cannot save configuration - you must select at least one pool.');
+                    document.body.style.cursor = 'default';
+                    $('#myModal').modal({ show: true });
+                  }
+                }
+              });
+            });
+          </script>
+<!-- End of page scripts 'configedit.html' -->
+<!--#include file="/parts/foot.html" -->

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Brains\ZergPool.ps1
-Version:        5.0.1.1
-Version date:   2023/10/07
+Version:        5.0.1.2
+Version date:   2023/10/11
 #>
 
 using module ..\Includes\Include.psm1

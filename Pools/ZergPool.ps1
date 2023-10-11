@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\ZergPool.ps1
-Version:        5.0.1.1
-Version date:   2023/10/07
+Version:        5.0.1.2
+Version date:   2023/10/11
 #>
 
 param(
@@ -55,7 +55,6 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
         }
         Else { 
             $Request = Get-Content $BrainDataFile -ErrorAction Stop | ConvertFrom-Json
-            $Request.PSObject.Properties.Name | ForEach-Object { $Request.$_.Updated = ([DateTime]::Now).ToUniversalTime() }
         }
     }
     Catch { Return }

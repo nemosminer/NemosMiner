@@ -21,13 +21,13 @@
   },
   "Autolykos2": {
     "Benchmark": true,
-    "MinerName": "BzMiner-v17.0.1b1-1xGTX1660SUPER6GB",
-    "Updated": "2023-10-05T07:47:04.7863637Z"
+    "MinerName": "BzMiner-v17.0.1b1-1xGTX1660SUPER6GB-Autolykos2&kHeavyHash",
+    "Updated": "2023-10-08T20:09:41.8751767Z"
   },
   "BeamV3": {
     "Benchmark": true,
-    "MinerName": "MiniZ-v2.2c-1xGTX1660SUPER6GB",
-    "Updated": "2023-09-30T18:54:53.052711Z"
+    "MinerName": "lolMiner-v1.76a-1xGTX1660SUPER6GB",
+    "Updated": "2023-10-06T07:24:04.1182094Z"
   },
   "Blake2s": {
     "Benchmark": true,
@@ -54,6 +54,11 @@
     "MinerName": "SRBMinerMulti-v2.3.7-1xRX5700XT8GB",
     "Updated": "2023-10-03T21:29:00.8198122Z"
   },
+  "Cuckoo29": {
+    "Benchmark": true,
+    "MinerName": "lolMiner-v1.76a-1xRX5700XT8GB",
+    "Updated": "2023-10-08T07:55:59.0798653Z"
+  },
   "CurveHash": {
     "Benchmark": true,
     "MinerName": "SRBMinerMulti-v2.3.7-1xRX5700XT8GB",
@@ -76,18 +81,18 @@
   },
   "Equihash1927": {
     "Benchmark": true,
-    "MinerName": "MiniZ-v2.2c-1xGTX1660SUPER6GB",
-    "Updated": "2023-09-30T18:06:47.0747073Z"
+    "MinerName": "lolMiner-v1.76a-1xRX5700XT8GB",
+    "Updated": "2023-10-08T09:28:31.5328618Z"
   },
   "EtcHash": {
     "Benchmark": true,
-    "MinerName": "NanoMiner-v3.8.5-1xRX5700XT8GB",
-    "Updated": "2023-10-05T14:46:15.8405107Z"
+    "MinerName": "TeamBlackMiner-v2.03-1xGTX1660SUPER6GB",
+    "Updated": "2023-10-10T11:46:03.1084246Z"
   },
   "Ethash": {
     "Benchmark": true,
-    "MinerName": "BzMiner-v17.0.1b1-1xGTX1660SUPER6GB",
-    "Updated": "2023-10-05T07:45:47.1580108Z"
+    "MinerName": "TeamBlackMiner-v2.03-1xRX5700XT8GB-Ethash&VertHash",
+    "Updated": "2023-10-10T11:50:59.8211047Z"
   },
   "EthashB3": {
     "Benchmark": true,
@@ -96,8 +101,8 @@
   },
   "EvrProgPow": {
     "Benchmark": true,
-    "MinerName": "MiniZ-v2.2c-1xRX5808GB",
-    "Updated": "2023-10-02T17:01:59.8698032Z"
+    "MinerName": "SRBMinerMulti-v2.3.7-1xRX5808GB",
+    "Updated": "2023-10-05T21:06:28.3815853Z"
   },
   "FiroPow": {
     "Benchmark": true,
@@ -107,7 +112,7 @@
   "Ghostrider": {
     "Benchmark": true,
     "MinerName": "SRBMinerMulti-v2.3.7-1xCorei58600K3.60GHz",
-    "Updated": "2023-10-03T20:55:29.1074019Z"
+    "Updated": "2023-10-08T07:55:59.0207178Z"
   },
   "HeavyHash": {
     "Benchmark": true,
@@ -126,13 +131,13 @@
   },
   "KawPow": {
     "Benchmark": true,
-    "MinerName": "NanoMiner-v3.8.5-1xGTX1660SUPER6GB",
-    "Updated": "2023-10-05T16:13:34.2930571Z"
+    "MinerName": "TeamBlackMiner-v2.03-1xGTX1660SUPER6GB",
+    "Updated": "2023-10-10T11:44:36.9022572Z"
   },
   "kHeavyHash": {
     "Benchmark": true,
-    "MinerName": "BzMiner-v17.0.0-1xGT10302GB",
-    "Updated": "2023-10-05T08:05:03.091807Z"
+    "MinerName": "BzMiner-v17.0.1b1-1xGTX1660SUPER6GB-Autolykos2&kHeavyHash",
+    "Updated": "2023-10-08T20:09:41.8916441Z"
   },
   "m7m": {
     "Benchmark": true,
@@ -171,8 +176,8 @@
   },
   "NexaPow": {
     "Benchmark": true,
-    "MinerName": "BzMiner-v17.0.1b1-1xRX5700XT8GB",
-    "Updated": "2023-10-05T07:56:40.6971506Z"
+    "MinerName": "lolMiner-v1.76a-1xGT10302GB",
+    "Updated": "2023-10-06T07:24:04.0968241Z"
   },
   "Panthera": {
     "Benchmark": true,
@@ -201,8 +206,8 @@
   },
   "SHA256dt": {
     "Benchmark": true,
-    "MinerName": "BzMiner-v17.0.1b1-1xRX5700XT8GB",
-    "Updated": "2023-10-05T07:57:35.5143111Z"
+    "MinerName": "Radiator-v1.0.0-1xGT10302GB",
+    "Updated": "2023-10-06T07:25:31.9904195Z"
   },
   "Sha256t": {
     "Benchmark": true,
@@ -221,13 +226,13 @@
   },
   "UbqHash": {
     "Benchmark": true,
-    "MinerName": "NanoMiner-v3.8.5-1xRX5700XT8GB",
-    "Updated": "2023-10-05T14:48:54.4861905Z"
+    "MinerName": "lolMiner-v1.76a-1xRX5808GB-UbqHash&kHeavyHash-5",
+    "Updated": "2023-10-08T07:55:59.1630281Z"
   },
   "VertHash": {
     "Benchmark": true,
-    "MinerName": "NanoMiner-v3.8.5-1xRX5808GB",
-    "Updated": "2023-10-05T15:36:34.0831843Z"
+    "MinerName": "TeamBlackMiner-v2.03-1xRX5808GB",
+    "Updated": "2023-10-10T11:50:59.8578116Z"
   },
   "VerusHash": {
     "Benchmark": true,

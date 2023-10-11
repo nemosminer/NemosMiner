@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        5.0.1.1
-Version date:   2023/10/07
+Version:        5.0.1.2
+Version date:   2023/10/11
 #>
 
 using module .\Includes\Include.psm1
@@ -295,7 +295,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"5.0.1.1"
+    Version      = [System.Version]"5.0.1.2"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -409,7 +409,8 @@ Import-Module Defender -ErrorAction Ignore -SkipEditionCheck
 $Variables.VerthashDatPath = ".\Cache\VertHash.dat"
 If (Test-Path -Path $Variables.VerthashDatPath -PathType Leaf) { 
     Write-Message -Level Verbose "Verifying integrity of VertHash data file '$($Variables.VerthashDatPath)'..."
-    $VertHashDatCheckJob = Start-ThreadJob -StreamingHost $Null -ThrottleLimit 30 -ScriptBlock { (Get-FileHash -Path ".\Cache\VertHash.dat").Hash -eq "A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48" }
+    $VertHashDatCheckJob = Start-Job -ScriptBlock { (Get-FileHash -Path ".\Cache\VertHash.dat").Hash -eq "A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48" }
+    # $VertHashDatCheckJob = Start-ThreadJob -StreamingHost $Null -ThrottleLimit 30 -ScriptBlock { (Get-FileHash -Path ".\Cache\VertHash.dat").Hash -eq "A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48" }
 }
 
 # Unblock files
@@ -860,8 +861,8 @@ Function MainLoop {
                 )
                 # Display available miners list
                 $Bias = If ($Variables.CalculatePowerCost) { "Profit_Bias" } Else { "Earning_Bias" }
-                $Variables.Miners | Where-Object Available | Group-Object -Property { [String]$_.DeviceNames } | ForEach-Object { 
-                    $MinersDeviceGroup = $_.Group
+                $Variables.Miners | Where-Object Available | Group-Object -Property { $_.DeviceNames } | ForEach-Object { 
+                    $MinersDeviceGroup = $_.Group | Sort-Object { $_.Name, $_.Algorithms } -Unique
                     $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object Benchmark)
                     $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object MeasurePowerUsage)
                     $MinersDeviceGroup | Where-Object { 
@@ -874,11 +875,11 @@ Function MainLoop {
 
                     # Display benchmarking progress
                     If ($MinersDeviceGroupNeedingBenchmark) { 
-                        "Benchmarking for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.Devices.Name | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingBenchmark.Count) miner$(If ($MinersDeviceGroupNeedingBenchmark.Count -gt 1) { 's' }) left to complete benchmark." | Out-Host
+                        "Benchmarking for device$(If (($MinersDeviceGroup.DeviceNames | Select-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingBenchmark.Count) miner$(If ($MinersDeviceGroupNeedingBenchmark.Count -gt 1) { 's' }) left to complete benchmark." | Out-Host
                     }
                     # Display power usage measurement progress
                     If ($MinersDeviceGroupNeedingPowerUsageMeasurement) { 
-                        "Power usage measurement for device$(If (($MinersDeviceGroup.Devices.Name | Sort-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring." | Out-Host
+                        "Power usage measurement for device$(If (($MinersDeviceGroup.DeviceNames | Sort-Object -Unique).Count -gt 1) { " group" }) '$(($MinersDeviceGroup.DeviceNames | Sort-Object -Unique) -join ',')' in progress: $($MinersDeviceGroupNeedingPowerUsageMeasurement.Count) miner$(If ($MinersDeviceGroupNeedingPowerUsageMeasurement.Count -gt 1) { 's' }) left to complete measuring." | Out-Host
                     }
                 }
                 Remove-Variable Bias, Miner_Table, MinersDeviceGroup, MinersDeviceGroupNeedingBenchmark, MinersDeviceGroupNeedingPowerUsageMeasurement -ErrorAction Ignore

@@ -282,7 +282,8 @@ Class Miner {
         }
 
         # Start Miner data reader
-        $this.DataReaderJob = Start-Job -Name "$($this.Name)_DataReader" -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithms, DataCollectInterval, Devices, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore)
+        # $this.DataReaderJob = Start-Job -Name "$($this.Name)_DataReader" -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithms, DataCollectInterval, Devices, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore)
+        $this.DataReaderJob = Start-ThreadJob -Name "$($this.Name)_DataReader" -StreamingHost $null -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithms, DataCollectInterval, Devices, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore)
 
         Remove-Variable ScriptBlock -ErrorAction Ignore
     }
@@ -292,7 +293,7 @@ Class Miner {
             $this.DataReaderJob | Stop-Job
             # Get data before removing read data
             If ($this.Status -eq [MinerStatus]::Running -and $this.DataReaderJob.HasMoreData) { $this.Data += @($this.DataReaderJob | Receive-Job | Select-Object) }
-            $this.DataReaderJob | Remove-Job -Force -ErrorAction Ignore
+            $this.DataReaderJob | Remove-Job -Force
             $this.DataReaderJob = $null
         }
     }
@@ -346,9 +347,11 @@ Class Miner {
             $this.ProcessJob = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $this.GetCommandLineParameters() -WorkingDirectory (Split-Path $this.Path) -WindowStyle $this.WindowStyle -EnvBlock $this.EnvVars -JobName $this.Name -LogFile $this.LogFile
 
             # Sometimes the process cannot be found instantly
-            $Loops = 100
+            $Loops = 50
             Do { 
+                $Loops --
                 If ($this.ProcessId = ($this.ProcessJob | Receive-Job | Select-Object -ExpandProperty ProcessId)) { 
+                    $Loops = 0
                     $this.DataSampleTimestamp = [DateTime]0
                     $this.Status = [MinerStatus]::Running
                     $this.SubStatus = "Starting"
@@ -356,12 +359,9 @@ Class Miner {
                     $this.WorkersRunning = $this.Workers
                     $this.Process = Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue
                     $this.StartDataReader()
-                    Break
                 }
-                $Loops --
-                Start-Sleep -Milliseconds 50
+                Start-Sleep -Milliseconds 100
             } While ($Loops -gt 0)
-            Remove-Variable Loops
 
             If ($this.Status -ne [MinerStatus]::Running) { 
                 $this.Status = [MinerStatus]::Failed
@@ -2072,13 +2072,9 @@ Function Get-Stat {
     }
 
     If (-not $Name) { 
-        $Name = [String[]]((Get-ChildItem -Path "Stats" -File).BaseName)
-        If ($Keys = [String[]]($Global:Stats.psBase.Keys)) { 
-            Compare-Object $Name $Keys -PassThru | Where-Object SideIndicator -EQ "=>" | ForEach-Object { 
-                # Remove stat if deleted on disk
-                $Global:Stats.Remove($_)
-            }
-        }
+        [String[]]$Name = ((Get-ChildItem -Path "Stats" -File).BaseName | Sort-Object -Unique)
+        $Keys = $Global:Stats.psBase.Keys # Workaround for 'Collection was modified; enumeration operation may not execute'
+        $Keys | Where-Object { $_ -notin $Name } | ForEach-Object { $Global:Stats.Remove($_) } # Remove stat if deleted on disk
         Remove-Variable Keys
     }
 
