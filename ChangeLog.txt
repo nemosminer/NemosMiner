@@ -14,7 +14,7 @@ ChangeLog NemosMiner 5.0.1.2 2023/10/11
 =======================================
 
 Changes:
-- Core: Replace functions 'Start-TreadJob' with 'Start-Job' (hopefully this reduces memory leaks)
+- Core: Replace function calls to 'Start-TreadJob' with 'Start-Job' (hopefully this reduces memory leaks)
 
 Enhancements:
 - Core: Minor code optimizations
