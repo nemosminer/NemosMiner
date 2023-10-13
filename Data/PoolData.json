@@ -37,7 +37,7 @@
     "PoolAPIRetryInterval": 11,
     "PoolAPITimeout": 30,
     "PoolCurrenciesUri": "",
-    "PoolStatusUri": "https://www.hashcryptos.com/api/status",
+    "PoolStatusUri": "https://hashcryptos.com/api/status",
     "PoolDebug": false,
     "Region": [
       "n/a"
