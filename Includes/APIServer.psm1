@@ -24,7 +24,7 @@ Version date:   2023/10/11
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.5.3.5"
+    $APIVersion = "0.5.3.6"
 
     If ($Variables.APIRunspace.AsyncObject.IsCompleted -or $Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
         Stop-APIServer
@@ -386,7 +386,7 @@ Function Start-APIServer {
                                     $Algorithms = @($Parameters.Pools | ConvertFrom-Json -ErrorAction Ignore).Algorithm
                                     $Currencies = @($Parameters.Pools | ConvertFrom-Json -ErrorAction Ignore).Currency
                                     If ($Pools = @($Variables.Pools | Select-Object | Where-Object { $_.Name -in $Names -and $_.Algorithm -in $Algorithms -and $_.Currency -in $Currencies })) { 
-                                        $Pools | ForEach-Object { 
+                                        $Pools | Sort-Object -Property Name, Algorithm, Currency | ForEach-Object { 
                                             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
                                             $Data += "$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })@$($_.Name)`n"
                                             Disable-Stat -Name "$($Stat_Name)_Profit"
@@ -435,7 +435,7 @@ Function Start-APIServer {
                                     $Algorithms = @($Parameters.Pools | ConvertFrom-Json -ErrorAction Ignore).Algorithm
                                     $Currencies = @($Parameters.Pools | ConvertFrom-Json -ErrorAction Ignore).Currency
                                     If ($Pools = @($Variables.Pools | Select-Object | Where-Object { $_.Name -in $Names -and $_.Algorithm -in $Algorithms -and $_.Currency -in $Currencies})) { 
-                                        $Pools | ForEach-Object { 
+                                        $Pools | Sort-Object -Property Name, Algorithm, Currency | ForEach-Object {  
                                             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
                                             $Data += "$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })@$($_.Name)`n"
                                             Enable-Stat -Name "$($Stat_Name)_Profit"
@@ -497,7 +497,7 @@ Function Start-APIServer {
                             "/functions/stat/remove" { 
                                 If ($Parameters.Pools) { 
                                     If ($Pools = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Pools | Select-Object) @($Parameters.Pools | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Algorithm, Currency, Name)) { 
-                                        $Pools | ForEach-Object { 
+                                        $Pools | Sort-Object -Property Name, Algorithm, Currency | ForEach-Object { 
                                             $Stat_Name = "$($_.Name)_$($_.Algorithm)$(If ($_.Currency) { "-$($_.Currency)" })"
                                             $Data += "$($Stat_Name)`n"
                                             Remove-Stat -Name "$($Stat_Name)_Profit"

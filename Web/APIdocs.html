@@ -23,7 +23,7 @@ version date:   2023/10/11-->
 <html>
 
 <body>
-  <h1>NemosMiner API (version 0.5.3.5)</h1>
+  <h1>NemosMiner API (version 0.5.3.6)</h1>
 
   API data is available at http://localhost:[API port]/&lt;resource&gt.
   (The default API port is 3999)
@@ -310,7 +310,7 @@ version date:   2023/10/11-->
   <br>Stop mining (Balances Tracker & Brainjobs stopped, Miners stopped)
   <br>Parameters: none
   <br>
-  <br><b>/functions/querypoolapi/b>
+  <br><b>/functions/querypoolapi/b></b>
   <br>Query pool API
   <br>Parameters: Pool name & API type (only works for pools with brain support)
   <br>e.g.: /functions/querypoolapi?Pool=ZergPool&Type=PoolCurrenciesUri
@@ -333,7 +333,7 @@ version date:   2023/10/11-->
   <br><b>/functions/stat/set</b>
   <br>Set miner hashrate value, not useful for pool stats:
   <br>Parameters: (JSON, pool list as array, requires properties Name=StatName, Algorithm=Algorithm(s), Type=Hashrate, Value (0=failed; -1=disabled)
-  <br>e.g.: /functions/stat/set?Miners%3D%5B{"Name"%3A"SRBMinerMulti-v2.3.7-1xRadeonRX5700XT8GB"%2C"Algorithms"%3A%5B"Argon2d16000"%5D}%5D%26Type%3DHashrate%26Value%3D-1
+  <br>e.g.: /functions/stat/set?Miners%3D%5B{"Name"%3A"SRBMinerMulti-v2.3.8-1xRadeonRX5700XT8GB"%2C"Algorithms"%3A%5B"Argon2d16000"%5D}%5D%26Type%3DHashrate%26Value%3D-1
   <br>
   <br><b>/functions/pool/enable</b>
   <br>Enable disabled pool
