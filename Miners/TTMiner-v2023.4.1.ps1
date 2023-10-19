@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.2
-Version date:   2023/10/11
+Version:        5.0.1.4
+Version date:   2023/10/19
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -gt "5.0" } )) { Return }
@@ -39,8 +39,8 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "EvrProPow";        Fee = @(0.01); MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -a EvrProgPow" }
     [PSCustomObject]@{ Algorithm = "FiroPow";          Fee = @(0.01); MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(90, 15);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -a FiroPow" }
     [PSCustomObject]@{ Algorithm = "FiroPowSCC";       Fee = @(0.01); MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(90, 0);   ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -c SCC" }
-    [PSCustomObject]@{ Algorithm = "Ghostrider";       Fee = @(0.01); MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(180, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -a Ghostrider" }
-    [PSCustomObject]@{ Algorithm = "KawPow";           Fee = @(0.01); MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(90, 15);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -a KawPow" }
+    [PSCustomObject]@{ Algorithm = "Ghostrider";       Fee = @(0.01); MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(180, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -a Ghostrider" }
+    [PSCustomObject]@{ Algorithm = "KawPow";           Fee = @(0.01); MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(90, 60);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -a KawPow" }
     [PSCustomObject]@{ Algorithm = "Mike";             Fee = @(0.01); MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(180, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -a Mike" }
 #   [PSCustomObject]@{ Algorithm = "MemeHash";         Fee = @(0.01); MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(120, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -a Memehash" } # Not yet working
     [PSCustomObject]@{ Algorithm = "ProgPowEpic";      Fee = @(0.02); MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -c EPIC" }
@@ -65,7 +65,7 @@ If ($Algorithms) {
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Model -EQ $_.Model
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1)
+        $MinerAPIPort = $Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1
 
         $Algorithms | ForEach-Object { 
 

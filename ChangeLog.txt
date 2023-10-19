@@ -10,6 +10,23 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 
 
+ChangeLog NemosMiner 5.0.1.4 2023/10/19
+=======================================
+
+Enhancements:
+- Legacy GUI: Optimize 'Switching Log' sort order
+
+Fixes:
+- Legacy GUI: Retain 'Switching Log' coloring when re-sorting
+
+Miner changes:
+- BzMiner-v17.0.1b1: Disable kHeavyHash as secondary algorithm (https://github.com/bzminer/bzminer/issues/281)
+- SRBMinerMulti-v2.3.9
+
+Pool changes:
+- HashCryptos: Support TLS port numbers
+
+
 ChangeLog NemosMiner 5.0.1.3 2023/10/19
 =======================================
 
@@ -186,7 +203,7 @@ Enhancements:
 - Web GUI: Launched Miners & Devices: Renamed column 'Status Message' to 'Status Info'
 
 Fixes:
-- BZMiner miner APIs: Invalid power usage reported when more one GPU is installed
+- BzMiner miner APIs: Invalid power usage reported when more one GPU is installed
 - 'CcminerKlausT-v8.25' not creating miner objects
 - 'CcminerVerusGpu-v3.8.3' Intensity not reduced for low mem GPUs
 - 'ZergPool' brain not updating algorithm & coin name database

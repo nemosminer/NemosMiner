@@ -17,13 +17,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.2
-Version date:   2023/10/11
+Version:        5.0.1.4
+Version date:   2023/10/19
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.CUDAVersion -ge "11.6") })) { Return }
 
-$URI = "https://github.com/sp-hash/TeamBlackMiner/releases/download/v2.03/TeamBlackMiner_2_03_cuda_12_2.7z"
+$URI = "https://github.com/sp-hash/TeamBlackMiner/releases/download/v2.05/TeamBlackMiner_2_05_cuda_12_2.7z"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\TBMiner.exe"
 
@@ -31,25 +31,25 @@ $DeviceSelector = @{ AMD = " --cl-devices"; INTEL = " --cl-devices"; NVIDIA = " 
 $DeviceEnumerator = @{ AMD = "Type_Vendor_Id"; INTEL = "Type_Vendor_Index"; NVIDIA = "Type_Vendor_Index" } # Device numeration seems to be mixed up with OpenCL
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithms = @("EtcHash");             Type = "AMD"; Fee = @(0.005);        MinMemGiB = 1.24; Minerset = 1; Tuning = ""; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @()); Arguments = " --algo etchash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithms = @("EtcHash", "KawPow");   Type = "AMD"; Fee = @(0.005, 0.005); MinMemGiB = 1.24; Minerset = 2; Tuning = ""; WarmupTimes = @(75, 45); ExcludeGPUArchitecture = @("RDNA1"); ExcludePools = @(@(), @()); Arguments = " --algo etc+rvn" } # https://github.com/sp-hash/TeamBlackMiner/issues/376
-    [PSCustomObject]@{ Algorithms = @("EtcHash", "VertHash"); Type = "AMD"; Fee = @(0.005, 0.005); MinMemGiB = 1.51; Minerset = 1; Tuning = ""; WarmupTimes = @(60, 45); ExcludeGPUArchitecture = @("GCN4");  ExcludePools = @(@(), @()); Arguments = " --algo etc+vtc --verthash-data ..\.$($Variables.VerthashDatPath)" }
-    [PSCustomObject]@{ Algorithms = @("Ethash");              Type = "AMD"; Fee = @(0.005);        MinMemGiB = 1.24; Minerset = 1; Tuning = ""; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @()); Arguments = " --algo ethash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
-    [PSCustomObject]@{ Algorithms = @("Ethash", "KawPow");    Type = "AMD"; Fee = @(0.005, 0.005); MinMemGiB = 1.24; Minerset = 2; Tuning = ""; WarmupTimes = @(75, 45); ExcludeGPUArchitecture = @("RDNA1"); ExcludePools = @(@(), @()); Arguments = " --algo eth+rvn" } # https://github.com/sp-hash/TeamBlackMiner/issues/376
-    [PSCustomObject]@{ Algorithms = @("Ethash", "VertHash");  Type = "AMD"; Fee = @(0.005, 0.005); MinMemGiB = 1.51; Minerset = 1; Tuning = ""; WarmupTimes = @(60, 45); ExcludeGPUArchitecture = @("GCN4");  ExcludePools = @(@(), @()); Arguments = " --algo eth+vtc --verthash-data ..\.$($Variables.VerthashDatPath)" }
-    [PSCustomObject]@{ Algorithms = @("KawPow");              Type = "AMD"; Fee = @(0.005);        MinMemGiB = 1.24; Minerset = 2; Tuning = ""; WarmupTimes = @(45, 45); ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @()); Arguments = " --algo kawpow" } # https://github.com/sp-hash/TeamBlackMiner/issues/391 & https://github.com/sp-hash/TeamBlackMiner/issues/392
-    [PSCustomObject]@{ Algorithms = @("VertHash");            Type = "AMD"; Fee = @(0.005);        MinMemGiB = 3.0;  Minerset = 1; Tuning = ""; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @()); Arguments = " --algo verthash --verthash-data ..\.$($Variables.VerthashDatPath)" }
+    [PSCustomObject]@{ Algorithms = @("EtcHash");             Type = "AMD"; Fee = @(0.005);        MinMemGiB = 1.24; Minerset = 1; Tuning = ""; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();       ExcludePools = @(@(), @()); Arguments = " --algo etchash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "KawPow");   Type = "AMD"; Fee = @(0.005, 0.005); MinMemGiB = 1.24; Minerset = 2; Tuning = ""; WarmupTimes = @(90, 45); ExcludeGPUArchitecture = @();       ExcludePools = @(@(), @()); Arguments = " --algo etc+rvn" }
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "VertHash"); Type = "AMD"; Fee = @(0.005, 0.005); MinMemGiB = 1.51; Minerset = 1; Tuning = ""; WarmupTimes = @(60, 45); ExcludeGPUArchitecture = @("GCN4"); ExcludePools = @(@(), @()); Arguments = " --algo etc+vtc --verthash-data ..\.$($Variables.VerthashDatPath)" }
+    [PSCustomObject]@{ Algorithms = @("Ethash");              Type = "AMD"; Fee = @(0.005);        MinMemGiB = 1.24; Minerset = 1; Tuning = ""; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();       ExcludePools = @(@(), @()); Arguments = " --algo ethash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
+    [PSCustomObject]@{ Algorithms = @("Ethash", "KawPow");    Type = "AMD"; Fee = @(0.005, 0.005); MinMemGiB = 1.24; Minerset = 2; Tuning = ""; WarmupTimes = @(90, 45); ExcludeGPUArchitecture = @();       ExcludePools = @(@(), @()); Arguments = " --algo eth+rvn" }
+    [PSCustomObject]@{ Algorithms = @("Ethash", "VertHash");  Type = "AMD"; Fee = @(0.005, 0.005); MinMemGiB = 1.51; Minerset = 1; Tuning = ""; WarmupTimes = @(60, 45); ExcludeGPUArchitecture = @("GCN4"); ExcludePools = @(@(), @()); Arguments = " --algo eth+vtc --verthash-data ..\.$($Variables.VerthashDatPath)" }
+    [PSCustomObject]@{ Algorithms = @("KawPow");              Type = "AMD"; Fee = @(0.005);        MinMemGiB = 1.24; Minerset = 2; Tuning = ""; WarmupTimes = @(45, 45); ExcludeGPUArchitecture = @();       ExcludePools = @(@(), @()); Arguments = " --algo kawpow" }
+    [PSCustomObject]@{ Algorithms = @("VertHash");            Type = "AMD"; Fee = @(0.005);        MinMemGiB = 3.0;  Minerset = 1; Tuning = ""; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @();       ExcludePools = @(@(), @()); Arguments = " --algo verthash --verthash-data ..\.$($Variables.VerthashDatPath)" }
 
     [PSCustomObject]@{ Algorithms = @("EtcHash");             Type = "NVIDIA"; Fee = @(0.005);        MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();         ExcludePools = @(@(), @()); Arguments = " --algo etchash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithms = @("EtcHash", "Ethash3B"); Type = "NVIDIA"; Fee = @(0.005, 0.005); MinMemGiB = 1.24; Minerset = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();         ExcludePools = @(@(), @()); Arguments = " --algo etc+ethb3" }
-    [PSCustomObject]@{ Algorithms = @("EtcHash", "KawPow");   Type = "NVIDIA"; Fee = @(0.005, 0.005); MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(75, 45); ExcludeGPUArchitecture = @("Turing"); ExcludePools = @(@(), @()); Arguments = " --algo etc+rvn" }
-    [PSCustomObject]@{ Algorithms = @("EtcHash", "VertHash"); Type = "NVIDIA"; Fee = @(0.005, 0.005); MinMemGiB = 1.51; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(60, 45); ExcludeGPUArchitecture = @();         ExcludePools = @(@(), @()); Arguments = " --algo etc+vtc --verthash-data ..\.$($Variables.VerthashDatPath)" }
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "KawPow");   Type = "NVIDIA"; Fee = @(0.005, 0.005); MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(75, 45); ExcludeGPUArchitecture = @("Turing"); ExcludePools = @(@(), @()); Arguments = " --algo etc+rvn" } # https://github.com/sp-hash/TeamBlackMiner/issues/396
+    [PSCustomObject]@{ Algorithms = @("EtcHash", "VertHash"); Type = "NVIDIA"; Fee = @(0.005, 0.005); MinMemGiB = 1.51; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(75, 45); ExcludeGPUArchitecture = @();         ExcludePools = @(@(), @()); Arguments = " --algo etc+vtc --verthash-data ..\.$($Variables.VerthashDatPath)" }
     [PSCustomObject]@{ Algorithms = @("Ethash");              Type = "NVIDIA"; Fee = @(0.005);        MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();         ExcludePools = @(@(), @()); Arguments = " --algo ethash" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithms = @("Ethash", "Ethash3B");  Type = "NVIDIA"; Fee = @(0.005, 0.005); MinMemGiB = 1.24; Minerset = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();         ExcludePools = @(@(), @()); Arguments = " --algo eth+ethb3" }
-    [PSCustomObject]@{ Algorithms = @("Ethash", "KawPow");    Type = "NVIDIA"; Fee = @(0.005, 0.005); MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(75, 45); ExcludeGPUArchitecture = @("Turing"); ExcludePools = @(@(), @()); Arguments = " --algo eth+rvn" }
-    [PSCustomObject]@{ Algorithms = @("Ethash", "VertHash");  Type = "NVIDIA"; Fee = @(0.005, 0.005); MinMemGiB = 1.51; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(60, 45); ExcludeGPUArchitecture = @();         ExcludePools = @(@(), @()); Arguments = " --algo eth+vtc --verthash-data ..\.$($Variables.VerthashDatPath)" }
+    [PSCustomObject]@{ Algorithms = @("Ethash", "KawPow");    Type = "NVIDIA"; Fee = @(0.005, 0.005); MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(75, 45); ExcludeGPUArchitecture = @("Turing"); ExcludePools = @(@(), @()); Arguments = " --algo eth+rvn" } # https://github.com/sp-hash/TeamBlackMiner/issues/396
+    [PSCustomObject]@{ Algorithms = @("Ethash", "VertHash");  Type = "NVIDIA"; Fee = @(0.005, 0.005); MinMemGiB = 1.51; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(75, 45); ExcludeGPUArchitecture = @();         ExcludePools = @(@(), @()); Arguments = " --algo eth+vtc --verthash-data ..\.$($Variables.VerthashDatPath)" }
     [PSCustomObject]@{ Algorithms = @("Ethash3B");            Type = "NVIDIA"; Fee = @(0.005);        MinMemGiB = 1.24; Minerset = 1; Tuning = " --tweak 2"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();         ExcludePools = @(@(), @()); Arguments = " --algo ethash3b" }
-    [PSCustomObject]@{ Algorithms = @("KawPow");              Type = "NVIDIA"; Fee = @(0.005);        MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(60, 45); ExcludeGPUArchitecture = @();         ExcludePools = @(@(), @()); Arguments = " --algo kawpow" } #https://github.com/sp-hash/TeamBlackMiner/issues/390
+    [PSCustomObject]@{ Algorithms = @("KawPow");              Type = "NVIDIA"; Fee = @(0.005);        MinMemGiB = 1.24; Minerset = 2; Tuning = " --tweak 2"; WarmupTimes = @(60, 45); ExcludeGPUArchitecture = @();         ExcludePools = @(@(), @()); Arguments = " --algo kawpow" }
     [PSCustomObject]@{ Algorithms = @("VertHash");            Type = "NVIDIA"; Fee = @(0.005);        MinMemGiB = 3.0;  MinerSet = 0; Tuning = " --tweak 2"; WarmupTimes = @(60, 60); ExcludeGPUArchitecture = @();         ExcludePools = @(@(), @()); Arguments = " --algo verthash --verthash-data ..\.$($Variables.VerthashDatPath)" }
 )
 
@@ -64,7 +64,7 @@ If ($Algorithms) {
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1)
+        $MinerAPIPort = $Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1
 
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 

@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.2
-Version date:   2023/10/11
+Version:        5.0.1.4
+Version date:   2023/10/19
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0" })) { Return }
@@ -34,7 +34,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Autolykos2", "IronFish");     Fee = @(0.025, 0.025); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=autolykos2" } # Pools with support at this time are Herominers, Flexpool and Kryptex
     [PSCustomObject]@{ Algorithms = @("Chukwa");                     Fee = @(0.025);        MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=trtl_chukwa" }
     [PSCustomObject]@{ Algorithms = @("Chukwa2");                    Fee = @(0.025);        MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=trtl_chukwa2" }
-    [PSCustomObject]@{ Algorithms = @("CryptonightCcx");             Fee = @(0.025);        MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" } # SRBMinerMulti-v2.3.7 is fastest
+    [PSCustomObject]@{ Algorithms = @("CryptonightCcx");             Fee = @(0.025);        MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_conceal --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" } # SRBMinerMulti-v2.3.9 is fastest
     [PSCustomObject]@{ Algorithms = @("CryptonightHeavy");           Fee = @(0.025);        MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_heavy --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
     [PSCustomObject]@{ Algorithms = @("CryptonightHaven");           Fee = @(0.025);        MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_haven --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
     [PSCustomObject]@{ Algorithms = @("CryptonightHeavyTube");       Fee = @(0.025);        MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=cn_saber --auto_tune=QUICK --auto_tune_runs=2 --allow_large_alloc --no_lean" }
@@ -61,7 +61,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Nimiq");                      Fee = @(0.025);        MinMemGiB = 4.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA3");                   Arguments = " --algo=nimiq" }
     [PSCustomObject]@{ Algorithms = @("Phi2");                       Fee = @(0.03);         MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=phi2" }
     [PSCustomObject]@{ Algorithms = @("VertHash");                   Fee = @(0.025);        MinMemGiB = 4.0;  Minerset = 1; WarmupTimes = @(75, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA3");                   Arguments = " --algo=verthash --verthash_file=..\.$($Variables.VerthashDatPath)" }
-#   [PSCustomObject]@{ Algorithms = @("X16r");                       Fee = @(0.025);        MinMemGiB = 4.0;  Minerset = 3; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=x16r" } # ASIC
+#   [PSCustomObject]@{ Algorithms = @("X16r");                       Fee = @(0.025);        MinMemGiB = 4.0;  Minerset = 3; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=x16r" } # ASIC
     [PSCustomObject]@{ Algorithms = @("X16rv2");                     Fee = @(0.025);        MinMemGiB = 4.0;  MinerSet = 0; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=x16rv2" }
     [PSCustomObject]@{ Algorithms = @("X16s");                       Fee = @(0.025);        MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=x16s" }
     [PSCustomObject]@{ Algorithms = @("X16rt");                      Fee = @(0.025);        MinMemGiB = 2.0;  MinerSet = 0; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=x16rt" } # FPGA
@@ -79,7 +79,7 @@ If ($Algorithms) {
     $Devices | Select-Object Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Model -EQ $_.Model
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1)
+        $MinerAPIPort = $Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1
 
         $Algorithms | ForEach-Object { 
 

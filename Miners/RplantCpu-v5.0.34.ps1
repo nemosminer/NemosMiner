@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.2
-Version date:   2023/10/11
+Version:        5.0.1.4
+Version date:   2023/10/19
 #>
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
@@ -54,7 +54,7 @@ $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "CurveHash";     Minerset = 2; WarmupTimes = @(90, 15);  ExcludePools = @();        Arguments = " --algo curvehash" } # reported hashrates too high (https://github.com/rplant8/cpuminer-opt-rplant/issues/21)
 #   [PSCustomObject]@{ Algorithm = "Decred";        Minerset = 3; WarmupTimes = @(60, 60);  ExcludePools = @();        Arguments = " --algo Decred" } # ASIC, No hashrate in time
 #   [PSCustomObject]@{ Algorithm = "DMDGr";         Minerset = 3; WarmupTimes = @(60, 60);  ExcludePools = @();        Arguments = " --algo dmd-gr" } # ASIC
-    [PSCustomObject]@{ Algorithm = "Ghostrider";    MinerSet = 0; WarmupTimes = @(120, 10); ExcludePools = @();        Arguments = " --algo gr" }
+    [PSCustomObject]@{ Algorithm = "Ghostrider";    MinerSet = 0; WarmupTimes = @(180, 60); ExcludePools = @();        Arguments = " --algo gr" }
 #   [PSCustomObject]@{ Algorithm = "Groestl";       Minerset = 3; WarmupTimes = @(90, 15);  ExcludePools = @();        Arguments = " --algo groestl" } # ASIC
     [PSCustomObject]@{ Algorithm = "HeavyHash";     MinerSet = 0; WarmupTimes = @(30, 15);  ExcludePools = @();        Arguments = " --algo heavyhash" } # FPGA
     [PSCustomObject]@{ Algorithm = "Hex";           Minerset = 3; WarmupTimes = @(30, 15);  ExcludePools = @();        Arguments = " --algo hex" } # GPU
@@ -71,7 +71,7 @@ $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Lyra2RE3";      Minerset = 3; WarmupTimes = @(90, 15);  ExcludePools = @();        Arguments = " --algo lyra2rev3" } # ASIC
 #   [PSCustomObject]@{ Algorithm = "Lyra2Z";        MinerSet = 0; WarmupTimes = @(90, 0);   ExcludePools = @();        Arguments = " --algo lyra2z" } # ASIC
 #   [PSCustomObject]@{ Algorithm = "Lyra2z330";     Minerset = 3; WarmupTimes = @(90, 25);  ExcludePools = @();        Arguments = " --algo lyra2z330" } # Algorithm is dead
-    [PSCustomObject]@{ Algorithm = "Mike";          MinerSet = 3; WarmupTimes = @(90, 35);  ExcludePools = @();        Arguments = " --algo mike" } # GPU
+    [PSCustomObject]@{ Algorithm = "Mike";          MinerSet = 3; WarmupTimes = @(90, 60);  ExcludePools = @();        Arguments = " --algo mike" } # GPU
     [PSCustomObject]@{ Algorithm = "Minotaur";      Minerset = 2; WarmupTimes = @(90, 15);  ExcludePools = @();        Arguments = " --algo minotaur" }
     [PSCustomObject]@{ Algorithm = "MinotaurX";     MinerSet = 0; WarmupTimes = @(90, 0);   ExcludePools = @();        Arguments = " --algo minotaurx" }
 #   [PSCustomObject]@{ Algorithm = "MyriadGroestl"; Minerset = 3; WarmupTimes = @(90, 15);  ExcludePools = @();        Arguments = " --algo myr-gr" } # ASIC
@@ -116,7 +116,7 @@ $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName
 
 If ($Algorithms) { 
 
-    $MinerAPIPort = [UInt16]($Config.APIPort + ($AvailableMiner_Devices.Id | Sort-Object -Top 1) + 1)
+    $MinerAPIPort = $Config.APIPort + ($AvailableMiner_Devices.Id | Sort-Object -Top 1) + 1
     $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 
     $Algorithms | ForEach-Object { 

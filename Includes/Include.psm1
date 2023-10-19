@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\include.ps1
-Version:        5.0.1.3
+Version:        5.0.1.4
 Version date:   2023/10/19
 #>
 
@@ -3338,28 +3338,31 @@ Function Update-DAGdata {
     # Faster shutdown
     If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.MiningStatus -eq "Idle") { Continue }
 
-    $Url = "https://evr.cryptoscope.io/api/getblockcount"
-    If (-not $Variables.DAGdata.Currency.EVR.BlockHeight -or $Variables.DAGdata.Updated.$Url -lt $Variables.ScriptStartTime -or $Variables.DAGdata.Updated.$Url -lt ([DateTime]::Now).ToUniversalTime().AddDays(-1)) { 
-        # Get block data from EVR block explorer
-        Try { 
-            $DAGdataResponse = Invoke-RestMethod -Uri $Url -TimeoutSec 5
+    If ("ZergPool" -notin @(Get-PoolBaseName $Variables.PoolName)) { 
+        # ZergPool also supplies Evr DAG data
+        $Url = "https://evr.cryptoscope.io/api/getblockcount"
+        If (-not $Variables.DAGdata.Currency.EVR.BlockHeight -or $Variables.DAGdata.Updated.$Url -lt $Variables.ScriptStartTime -or $Variables.DAGdata.Updated.$Url -lt ([DateTime]::Now).ToUniversalTime().AddDays(-1)) { 
+            # Get block data from EVR block explorer
+            Try { 
+                $DAGdataResponse = Invoke-RestMethod -Uri $Url -TimeoutSec 5
 
-            If ($DAGdataResponse.blockcount -gt $Variables.DAGdata.Currency.EVR.BlockHeight) { 
-                $DAGdata = Get-DAGdata -BlockHeight $DAGdataResponse.blockcount -Currency "EVR" -EpochReserve 2
-                If ($DAGdata.Algorithm -match $Variables.RegexAlgoHasDAG) { 
-                    $DAGdata.Date = ([DateTime]::Now).ToUniversalTime()
-                    $DAGdata.Url = $Url
-                    $Variables.DAGdata.Currency[$Currency] = $DAGdata
-                    $Variables.DAGdata.Updated.$Url = ([DateTime]::Now).ToUniversalTime()
-                    Write-Message -Level Info "Loaded DAG data from '$Url'."
+                If ($DAGdataResponse.blockcount -gt $Variables.DAGdata.Currency.EVR.BlockHeight) { 
+                    $DAGdata = Get-DAGdata -BlockHeight $DAGdataResponse.blockcount -Currency "EVR" -EpochReserve 2
+                    If ($DAGdata.Algorithm -match $Variables.RegexAlgoHasDAG) { 
+                        $DAGdata.Date = ([DateTime]::Now).ToUniversalTime()
+                        $DAGdata.Url = $Url
+                        $Variables.DAGdata.Currency[$Currency] = $DAGdata
+                        $Variables.DAGdata.Updated.$Url = ([DateTime]::Now).ToUniversalTime()
+                        Write-Message -Level Info "Loaded DAG data from '$Url'."
+                    }
+                }
+                Else { 
+                    Write-Message -Level Warn "Failed to load DAG data from '$Url'."
                 }
             }
-            Else { 
+            Catch { 
                 Write-Message -Level Warn "Failed to load DAG data from '$Url'."
             }
-        }
-        Catch { 
-            Write-Message -Level Warn "Failed to load DAG data from '$Url'."
         }
     }
 

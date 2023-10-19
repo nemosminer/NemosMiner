@@ -17,7 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.2
+Version:        5.0.1.4
 Version date:   2023/10/06
 #>
 
@@ -28,7 +28,7 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
 
 $Algorithms = [PSCustomObject[]]@(
-    [PSCustomObject]@{ Algorithm = "Ghostrider"; Minerset = 1; WarmupTimes = @(180, 40); ExcludePools = @(); Arguments = " --algo gr" }
+    [PSCustomObject]@{ Algorithm = "Ghostrider"; Minerset = 1; WarmupTimes = @(180, 60); ExcludePools = @(); Arguments = " --algo gr" }
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
@@ -44,7 +44,7 @@ If ($Algorithms) {
     ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'sse2') { $Path = ".\Bin\$($Name)\cpuminer-sse2.exe" }
     Else { Return }
 
-    $MinerAPIPort = [UInt16]($Config.APIPort + ($AvailableMiner_Devices.Id | Sort-Object -Top 1) + 1)
+    $MinerAPIPort = $Config.APIPort + ($AvailableMiner_Devices.Id | Sort-Object -Top 1) + 1
     $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 
     $Algorithms | ForEach-Object { 

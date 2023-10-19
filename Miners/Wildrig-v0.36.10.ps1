@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.2
-Version date:   2023/10/11
+Version:        5.0.1.4
+Version date:   2023/10/19
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
@@ -48,7 +48,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Exosis";           Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo exosis" } 
     [PSCustomObject]@{ Algorithm = "FiroPow";          Type = "AMD"; Fee = @(0.01); MinMemGiB = 1.24; MinerSet = 0; WarmupTimes = @(55, 45);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo firopow" }
     [PSCustomObject]@{ Algorithm = "Geek";             Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo geek" }
-    [PSCustomObject]@{ Algorithm = "Ghostrider";       Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(180, 45); ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo ghostrider" }
+    [PSCustomObject]@{ Algorithm = "Ghostrider";       Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(180, 60); ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo ghostrider" }
     [PSCustomObject]@{ Algorithm = "GlobalHash";       Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo glt-globalhash" }
     [PSCustomObject]@{ Algorithm = "HeavyHash";        Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 1; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo heavyhash" } # FPGA
     [PSCustomObject]@{ Algorithm = "Hex";              Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo hex" }
@@ -60,7 +60,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Lyra2vc0ban";      Type = "AMD"; Fee = @(0.02); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo lyra2vc0ban" }
     [PSCustomObject]@{ Algorithm = "MegaBtx";          Type = "AMD"; Fee = @(0.02); MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(45, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo megabtx" }
     [PSCustomObject]@{ Algorithm = "MegaMec";          Type = "AMD"; Fee = @(0.01); MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(45, 0);   ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo megamec" }
-    [PSCustomObject]@{ Algorithm = "Mike";             Type = "AMD"; Fee = @(0.05); MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo mike" }
+    [PSCustomObject]@{ Algorithm = "Mike";             Type = "AMD"; Fee = @(0.05); MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(60, 60);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo mike" }
     [PSCustomObject]@{ Algorithm = "Minotaur";         Type = "AMD"; Fee = @(0.05); MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo minotaur" }
 #   [PSCustomObject]@{ Algorithm = "MTP";              Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo mtp" } # Algorithm is dead
     [PSCustomObject]@{ Algorithm = "MTPTcr";           Type = "AMD"; Fee = @(0.01); MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo mtp-tcr" }
@@ -87,7 +87,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Timetravel";       Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo timetravel" }
     [PSCustomObject]@{ Algorithm = "WildKeccak";       Type = "AMD"; Fee = @(0.02); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo wildkeccak" }
     [PSCustomObject]@{ Algorithm = "X11k";             Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo x11k" }
-#   [PSCustomObject]@{ Algorithm = "X16r";             Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 3; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo x16r" } # ASIC
+#   [PSCustomObject]@{ Algorithm = "X16r";             Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 3; WarmupTimes = @(30, 60);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo x16r" } # ASIC
     [PSCustomObject]@{ Algorithm = "X16rt";            Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo x16rt" } # FPGA
     [PSCustomObject]@{ Algorithm = "X16rv2";           Type = "AMD"; Fee = @(0.01); MinMemGiB = 3;    MinerSet = 0; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo x16rv2" }
     [PSCustomObject]@{ Algorithm = "X16s";             Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo x16s" } # FPGA
@@ -115,7 +115,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Exosis";           Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo exosis --watchdog" }
     [PSCustomObject]@{ Algorithm = "FiroPow";          Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 1.24; Minerset = 1; WarmupTimes = @(55, 45);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo firopow --watchdog" }
     [PSCustomObject]@{ Algorithm = "Geek";             Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo geek --watchdog" }
-    [PSCustomObject]@{ Algorithm = "Ghostrider";       Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(180, 45); ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo ghostrider --watchdog" }
+    [PSCustomObject]@{ Algorithm = "Ghostrider";       Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(180, 60); ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo ghostrider --watchdog" }
     [PSCustomObject]@{ Algorithm = "GlobalHash";       Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo glt-globalhash --watchdog" }
     [PSCustomObject]@{ Algorithm = "HeavyHash";        Type = "NVIDIA"; Fee = @(0.02); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @("Other"); ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo heavyhash --watchdog" } # FPGA
     [PSCustomObject]@{ Algorithm = "Hex";              Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @("Other"); ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo hex --watchdog" }
@@ -127,7 +127,7 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithm = "Lyra2vc0ban";      Type = "NVIDIA"; Fee = @(0.02); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo lyra2vc0ban --watchdog" }
     [PSCustomObject]@{ Algorithm = "MegaBtx";          Type = "NVIDIA"; Fee = @(0.02); MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(45, 15);  ExcludeGPUArchitecture = @("Other"); ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo megabtx --watchdog" }
     [PSCustomObject]@{ Algorithm = "MegaMec";          Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(45, 0);   ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo megamec --watchdog" }
-    [PSCustomObject]@{ Algorithm = "Mike";             Type = "NVIDIA"; Fee = @(0.05); MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @("Other"); ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo mike --watchdog" }
+    [PSCustomObject]@{ Algorithm = "Mike";             Type = "NVIDIA"; Fee = @(0.05); MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(60, 60);  ExcludeGPUArchitecture = @("Other"); ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo mike --watchdog" }
     [PSCustomObject]@{ Algorithm = "Minotaur";         Type = "NVIDIA"; Fee = @(0.05); MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo minotaur --watchdog" }
 #   [PSCustomObject]@{ Algorithm = "MTP";              Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo mtp --watchdog" } # Algorithm is dead
     [PSCustomObject]@{ Algorithm = "MTPTcr";           Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo mtp-tcr --watchdog" }
@@ -154,7 +154,7 @@ $Algorithms = [PSCustomObject[]]@(
 #   [PSCustomObject]@{ Algorithm = "Tribus";           Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo tribus --watchdog" } # ASIC
     [PSCustomObject]@{ Algorithm = "WildKeccak";       Type = "NVIDIA"; Fee = @(0.02); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo wildkecca --watchdog" }
     [PSCustomObject]@{ Algorithm = "X11k";             Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo x11k --watchdog" }
-#   [PSCustomObject]@{ Algorithm = "X16r";             Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 3; WarmupTimes = @(45, 0);   ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo x16r --watchdog" } # ASIC
+#   [PSCustomObject]@{ Algorithm = "X16r";             Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 3; WarmupTimes = @(45, 60);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo x16r --watchdog" } # ASIC
     [PSCustomObject]@{ Algorithm = "X16rt";            Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(45, 0);   ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo x16rt --watchdog" } # FPGA
     [PSCustomObject]@{ Algorithm = "X16rv2";           Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 3;    MinerSet = 0; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo x16rv2 --watchdog" }
     [PSCustomObject]@{ Algorithm = "X16s";             Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo x16s --watchdog" } # FPGA
@@ -174,7 +174,7 @@ If ($Algorithms) {
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model
-        $MinerAPIPort = [UInt16]($Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1)
+        $MinerAPIPort = $Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1
 
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 

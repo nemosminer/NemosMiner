@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\LegacyGUI.psm1
-Version:        5.0.1.3
+Version:        5.0.1.4
 Version date:   2023/10/19
 #>
 
@@ -82,7 +82,7 @@ Function CheckBoxSwitching_Click {
     If (Test-Path -Path ".\Logs\SwitchingLog.csv" -PathType Leaf) { 
         $SwitchingLogLabel.Text = "Switching Log - Updated $((Get-ChildItem -Path ".\Logs\SwitchingLog.csv").LastWriteTime.ToString())"
 
-        $SwitchingDGV.DataSource = Get-Content ".\Logs\SwitchingLog.csv" | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 1000 | ForEach-Object { $_.Datetime = (Get-Date $_.DateTime).ToString("G"); $_ } | Select-Object @("DateTime", "Action", "Name", "Pools", "Algorithms", "Accounts", "Cycle", "Duration", "DeviceNames", "Type") | Sort-Object -Property DateTime -Descending | Out-DataTable
+        $SwitchingDGV.DataSource = Get-Content ".\Logs\SwitchingLog.csv" | ConvertFrom-Csv | Where-Object { $_.Type -in $SwitchingDisplayTypes } | Select-Object -Last 1000 | ForEach-Object { $_.Datetime = (Get-Date $_.DateTime); $_ } | Sort-Object DateTime -Descending | Select-Object @("DateTime", "Action", "Name", "Pools", "Algorithms", "Accounts", "Cycle", "Duration", "DeviceNames", "Type") | Out-DataTable
         If ($SwitchingDGV.Columns) { 
             $SwitchingDGV.Columns[0].FillWeight = 50
             $SwitchingDGV.Columns[1].FillWeight = 50
@@ -1449,7 +1449,11 @@ $SwitchingDGV.Name = "SwitchingDGV"
 $SwitchingDGV.ReadOnly = $true
 $SwitchingDGV.RowHeadersVisible = $false
 $SwitchingDGV.Add_Sorted(
-    { Set-TableColor -DataGridView $SwitchingDGV }
+    {
+        If ($Config.UseColorForMinerStatus) { 
+            ForEach ($Row in $SwitchingDGV.Rows) { $Row.DefaultCellStyle.Backcolor = $Colors[$Row.DataBoundItem.Action] }
+        }
+     }
 )
 Set-DataGridViewDoubleBuffer -Grid $SwitchingDGV -Enabled $true
 $SwitchingPageControls += $SwitchingDGV

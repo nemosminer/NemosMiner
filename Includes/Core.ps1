@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        5.0.1.3
+Version:        5.0.1.4
 Version date:   21 May 2023
 #>
 
@@ -318,6 +318,9 @@ Do {
                             }
                             Catch { 
                                 Write-Message -Level Error "Error in pool file '$($PoolBaseName).ps1'."
+                                "$(Get-Date -Format "yyyy-MM-dd_HH:mm:ss")" >> "Logs\Error.txt"
+                                $_.Exception | Format-List -Force >> "Logs\Error.txt"
+                                $_.InvocationInfo | Format-List -Force >> "Logs\Error.txt"
                             }
                         }
                     } | Where-Object { 
@@ -547,7 +550,7 @@ Do {
             }
 
             # Ensure we get the hashrate for running miners prior looking for best miner
-            ForEach ($Miner in $Variables.MinersBest_Combo) { 
+            ForEach ($Miner in $Variables.MinersBest_Combo | Sort-Object { ($_.Name -Split '-')[2] }) { 
                 If ($Miner.DataReaderJob.HasMoreData -and $Miner.Status -ne [MinerStatus]::DryRun) { 
                     $Miner.Data = @($Miner.Data | Select-Object -Last ($Miner.MinDataSample * 5)) # Reduce data to MinDataSample * 5
                     If ($Samples = @($Miner.DataReaderJob | Receive-Job | Select-Object)) { 
@@ -732,6 +735,9 @@ Do {
                     }
                     Catch { 
                         Write-Message -Level Error "Failed to add Miner '$($Miner.Name)' as '$($Miner.API)' ($($Miner | ConvertTo-Json -Compress))"
+                        "$(Get-Date -Format "yyyy-MM-dd_HH:mm:ss")" >> "Logs\Error.txt"
+                        $_.Exception | Format-List -Force >> "Logs\Error.txt"
+                        $_.InvocationInfo | Format-List -Force >> "Logs\Error.txt"
                     }
                 } | Out-Null
                 Remove-Variable Algorithm, Algorithm_Pool, Miner, MinerDevices, MinerFileName, MinerPools -ErrorAction Ignore
@@ -1003,7 +1009,7 @@ Do {
         If (-not $Variables.MinersBest_Combo -and $Miners) { $Miners | ForEach-Object { $_.Best = $false } }
 
         # Stop running miners
-        ForEach ($Miner in @(@($Miners | Where-Object WorkersRunning) + @($CompareMiners | Where-Object { $_.WorkersRunning -and $_.SideIndicator -eq "<=" } <# miner object is gone #>))) { 
+        ForEach ($Miner in @(@($Miners | Where-Object WorkersRunning) + @($CompareMiners | Where-Object { $_.WorkersRunning -and $_.SideIndicator -eq "<=" } <# miner object is gone #>) | Sort-Object { ($_.Name -Split '-')[2] })) { 
             If ($Miner.Status -eq [MinerStatus]::Failed) { 
                 $Miner.WorkersRunning = [Worker[]]@()
             }
@@ -1119,7 +1125,7 @@ Do {
         # Optional delay to avoid blue screens
         Start-Sleep -Seconds $Config.Delay
 
-        ForEach ($Miner in $Variables.MinersBest_Combo) { 
+        ForEach ($Miner in ($Variables.MinersBest_Combo | Sort-Object { ($_.Name -Split '-')[2] })) { 
 
             If ($Miner.GetStatus() -ne [MinerStatus]::Running -and $Miner.Status -ne [MinerStatus]::DryRun) { 
                 If ($Miner.Status -ne [MinerStatus]::DryRun) { 
@@ -1222,17 +1228,17 @@ Do {
         }
         Remove-Variable Miner, Message -ErrorAction Ignore
 
-        $Variables.Miners | Where-Object Available | Group-Object { $_.DeviceNames } | ForEach-Object { 
+        $Variables.Miners | Where-Object Available | Group-Object { ($_.Name -Split '-')[2] } | ForEach-Object { 
             $MinersDeviceGroupNeedingBenchmark = $_.Group | Where-Object Benchmark
             $MinersDeviceGroupNeedingPowerUsageMeasurement = $_.Group | Where-Object MeasurePowerUsage
 
             # Display benchmarking progress
             If ($MinersDeviceGroupNeedingBenchmark) { 
-                Write-Message -Level Verbose "Benchmarking for '$(($MinersDeviceGroupNeedingBenchmark.DeviceNames | Sort-Object -Unique) -join ', ')' in progress: $(($MinersDeviceGroupNeedingBenchmark | Select-Object -Property { [String]$_.Algorithms, $_.Name } -Unique).Count) miner$(If (($MinersDeviceGroupNeedingBenchmark | Select-Object -Property { [String]$_.Algorithms, $_.Name } -Unique).Count -gt 1) { 's' }) left to complete benchmark."
+                Write-Message -Level Verbose "Benchmarking for '$(($MinersDeviceGroupNeedingBenchmark[0].Name -Split '-')[2])' in progress: $(($MinersDeviceGroupNeedingBenchmark | Select-Object -Property { [String]$_.Algorithms, $_.Name } -Unique).Count) miner$(If (($MinersDeviceGroupNeedingBenchmark | Select-Object -Property { [String]$_.Algorithms, $_.Name } -Unique).Count -gt 1) { 's' }) left to complete benchmark."
             }
             # Display power usage measurement progress
             If ($MinersDeviceGroupNeedingPowerUsageMeasurement) { 
-                Write-Message -Level Verbose "Power usage measurement for '$(($MinersDeviceGroupNeedingPowerUsageMeasurement.DeviceNames | Sort-Object -Unique) -join ', ')' in progress: $(($MinersDeviceGroupNeedingPowerUsageMeasurement | Select-Object -Property { [String]$_.Algorithms, $_.Name } -Unique).Count) miner$(If (($MinersDeviceGroupNeedingPowerUsageMeasurement | Select-Object -Property { [String]$_.Algorithms, $_.Name } -Unique).Count -gt 1) { 's' }) left to complete measuring."
+                Write-Message -Level Verbose "Power usage measurement for '$(($MinersDeviceGroupNeedingPowerUsageMeasurement[0].Name -Split '-')[2])' in progress: $(($MinersDeviceGroupNeedingPowerUsageMeasurement | Select-Object -Property { [String]$_.Algorithms, $_.Name } -Unique).Count) miner$(If (($MinersDeviceGroupNeedingPowerUsageMeasurement | Select-Object -Property { [String]$_.Algorithms, $_.Name } -Unique).Count -gt 1) { 's' }) left to complete measuring."
             }
         }
         Remove-Variable MinersDeviceGroupNeedingBenchmark, MinersDeviceGroupNeedingPowerUsageMeasurement -ErrorAction Ignore
