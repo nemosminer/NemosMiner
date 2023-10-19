@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\MiniZ.ps1
-Version:        5.0.1.2
-Version date:   2023/10/11
+Version:        5.0.1.3
+Version date:   2023/10/19
 #>
 
 Class MiniZ : Miner { 

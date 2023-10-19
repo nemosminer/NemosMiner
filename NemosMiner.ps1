@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        5.0.1.2
-Version date:   2023/10/11
+Version:        5.0.1.3
+Version date:   2023/10/19
 #>
 
 using module .\Includes\Include.psm1
@@ -126,8 +126,6 @@ param(
     [Int]$MinCycle = 1, # Minimum number of full cycles a miner must mine the same available algorithm@pool continously before switching is allowed (e.g. 3 would force a miner to stick mining algorithm@pool for min. 3 cycles before switching to another algorithm or pool)
     [Parameter(Mandatory = $false)]
     [Int]$MinDataSample = 20, # Minimum number of hashrate samples required to store hashrate
-    [Parameter(Mandatory = $false)]
-    [Hashtable]$MinDataSampleAlgoMultiplier = @{ "X16r" = 3; "Ghostrider" = 3 }, # Per algorithm multiply MinDataSample by this value
     [Parameter(Mandatory = $false)]
     [Switch]$MinerInstancePerDeviceModel = $true, # If true will NemosMiner will create separate miner instances for each device model. This will increase profitability, but will take longer to select the best miner
     [Parameter(Mandatory = $false)]
@@ -295,7 +293,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"5.0.1.2"
+    Version      = [System.Version]"5.0.1.3"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -862,7 +860,7 @@ Function MainLoop {
                 # Display available miners list
                 $Bias = If ($Variables.CalculatePowerCost) { "Profit_Bias" } Else { "Earning_Bias" }
                 $Variables.Miners | Where-Object Available | Group-Object -Property { $_.DeviceNames } | ForEach-Object { 
-                    $MinersDeviceGroup = $_.Group | Sort-Object { $_.Name, $_.Algorithms } -Unique
+                    $MinersDeviceGroup = $_.Group | Sort-Object { $_.Name, [String]$_.Algorithms } -Unique
                     $MinersDeviceGroupNeedingBenchmark = @($MinersDeviceGroup | Where-Object Benchmark)
                     $MinersDeviceGroupNeedingPowerUsageMeasurement = @($MinersDeviceGroup | Where-Object MeasurePowerUsage)
                     $MinersDeviceGroup | Where-Object { 
@@ -948,7 +946,11 @@ Function MainLoop {
             }
 
             If ($Variables.MiningStatus -eq "Running") { 
-                If ($Variables.Timer) { Write-Host ($Variables.Summary -replace '<br>', ' ' -replace '&ensp;', ' ' -replace '\s*/\s*', '/' -replace '\s*=\s*', '=') }
+                If ($Variables.Timer) { 
+                    $nl = "`n" # Must use variable, cannot join with '`n' directly
+                    Write-Host ($Variables.Summary -replace '<br>', $nl -replace '&ensp;', ' ' -replace '\s*/\s*', '/' -replace '\s*=\s*', '=')
+                    Remove-Variable nl
+                }
                 If ($Variables.Miners | Where-Object Available | Where-Object { -not ($_.Benchmark -or $_.MeasurePowerUsage) }) { 
                     If ($Variables.MiningProfit -lt 0) { 
                         # Mining causes a loss

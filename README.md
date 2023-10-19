@@ -288,7 +288,7 @@ Easy configuration, easy start:
 
 PowerShell Version 7.x is required:
 
-[Download Installer for version 7.3.7](https://github.com/PowerShell/PowerShell/releases/download/v7.3.7/PowerShell-7.3.7-win-x64.msi)
+[Download Installer for version 7.3.8](https://github.com/PowerShell/PowerShell/releases/download/v7.3.8/PowerShell-7.3.8-win-x64.msi)
 
 **Some miners may need 'Visual C+ RunTimes download/extract, run install_all.bat file**
 

@@ -10,6 +10,27 @@ Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 
 
+ChangeLog NemosMiner 5.0.1.3 2023/10/19
+=======================================
+
+Changes:
+- Core: Removed configuration item 'MinDataSampleAlgoMultiplier'
+
+Enhancements:
+- Core: Minor code optimizations
+- Web GUI / Pool stat remove / enable / disable: Sort pool list in modal dialog
+
+Fixes:
+- Core: Benchmarking & Power measuring miner count too small (Regression from 5.0.1.2)
+
+Miner changes:
+- SRBMinerMulti-v2.3.8
+- TeamBlackMiner-v2.05
+
+Pool changes:
+- HashCryptos: Fix SSL hostname
+
+
 ChangeLog NemosMiner 5.0.1.2 2023/10/11
 =======================================
 

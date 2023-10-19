@@ -331,6 +331,7 @@ Removed Configuration Items
   "GPUCount": 1, obsolete
   "HideConsole": false, obsolete
   "MarginOfError": 0,4, obsolete
+  "MinDataSampleAlgoMultiplier": obsolete, use miner warmuptimes instead
   "PoolsConfigFile": "", obsolete. PoolsConfig moved to normal config file
   "SelGPUDSTM": "0 1", obsolete; replaced with per device configuration option "ExcludeDeviceName"
   "SelGPUCC": "0,1", obsolete; replaced with per device configuration option "ExcludeDeviceName"

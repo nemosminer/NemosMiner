@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\include.ps1
-Version:        5.0.1.2
-Version date:   2023/10/11
+Version:        5.0.1.3
+Version date:   2023/10/19
 #>
 
 $Global:DebugPreference = "SilentlyContinue"
@@ -362,11 +362,6 @@ Class Miner {
                 Start-Sleep -Milliseconds 50
             } While ($Loops -gt 0)
             Remove-Variable Loops
-
-            If ($this.Status -ne [MinerStatus]::Running) { 
-                $this.Status = [MinerStatus]::Failed
-                $this.StatusInfo = "Failed $($this.Info)"
-            }
         }
     }
 
@@ -1201,11 +1196,12 @@ Function Write-Message {
         # This lets us ensure only one thread is trying to write to the file at a time. 
         $Mutex = New-Object System.Threading.Mutex($false, $Variables.Branding.ProductLabel)
 
-        $Variables.LogFile = "$($Variables.MainPath)\Logs\$($Variables.Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd").log"
+        $LogFile = "$($Variables.MainPath)\Logs\$($Variables.Branding.ProductLabel)_$(Get-Date -Format "yyyy-MM-dd").log"
+        If ($Variables.LogFile -ne $LogFile) { $Variables.LogFile = $LogFIle }
 
-        # Attempt to aquire mutex, waiting up to 1 second if necessary. If aquired, write to the log file and release mutex. Otherwise, display an error. 
+        # Attempt to aquire mutex, waiting up to 1 second if necessary
         If ($Mutex.WaitOne(1000)) { 
-            $Message | Out-File -FilePath $Variables.LogFile -Append -ErrorAction Ignore
+            $Message | Out-File -FilePath $LogFile -Append -ErrorAction Ignore
             [Void]$Mutex.ReleaseMutex()
         }
     }

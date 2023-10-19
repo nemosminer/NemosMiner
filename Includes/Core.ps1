@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        5.0.1.2
+Version:        5.0.1.3
 Version date:   21 May 2023
 #>
 
@@ -711,7 +711,7 @@ Do {
                 } -ThrottleLimit 5 | ForEach-Object { 
                     Try { 
                         $Miner = $_
-                        $Miner | Add-Member MinDataSample ($Config.MinDataSample * (@(1) + @($Miner.Workers.Pool.Algorithm | ForEach-Object { $Config.MinDataSampleAlgoMultiplier[($_ -replace '_.+$')] }) | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum))
+                        $Miner | Add-Member MinDataSample $Config.MinDataSample
                         $Miner | Add-Member ProcessPriority $(If ($_.Type -eq "CPU") { $Config.CPUMinerProcessPriority } Else { $Config.GPUMinerProcessPriority })
                         $Miner | Add-Member Devices @($MinerDevices | Where-Object Name -in $Miner.DeviceNames)
                         ForEach ($Algorithm in $Miner.Workers.Pool.Algorithm) { 
@@ -722,7 +722,7 @@ Do {
                         $Miner | Add-Member Algorithms @(
                             $Miner.Workers.Pool | ForEach-Object { 
                                 # Rename algoritm based on DAG size
-                                If ($_.DAGSizeGiB) { "$($_.Algorithm)-$([Math]::Ceiling($_.DAGSizeGiB))GiB" } Else { $_.Algorithm }
+                                "$($_.Algorithm)$(If ($_.DAGSizeGiB) { "-$([Math]::Ceiling($_.DAGSizeGiB))GiB" })"
                             }
                         )
                         $Algorithm_Pool = "{$(($Miner.Workers | ForEach-Object { "$($Miner.Algorithms[$Miner.Workers.IndexOf($_)])$(If ($_.Pool.Currency) { "[$($_.Pool.Currency)]" })", $_.Pool.BaseName -join '@' }) -join ' & ')}"
@@ -747,7 +747,6 @@ Do {
                 Remove-Variable Miner -ErrorAction Ignore
                 $Miners = [Miner[]]@($CompareMiners | Where-Object SideIndicator -NE "<=")
             }
-            Remove-Variable Miner -ErrorAction Ignore
 
             # Faster shutdown
             If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.MiningStatus -eq "Idle") { Continue }
@@ -777,7 +776,7 @@ Do {
                         $_.WindowStyle = If ($Config.MinerWindowStyleNormalWhenBenchmarking -and $_.Benchmark) { "normal" } Else { $Config.MinerWindowStyle }
                     }
                 }
-                Remove-Variable MinersGroup -ErrorAction Ignore
+                Remove-Variable Miner, MinersGroup -ErrorAction Ignore
 
                 # Faster shutdown
                 If ($Variables.NewMiningStatus -ne "Running" -or $Variables.IdleRunspace.MiningStatus -eq "Idle") { Continue }
@@ -844,7 +843,7 @@ Do {
                             DownloadList = $DownloadList
                             Variables = $Variables
                         }
-                        $Variables.Downloader = Start-Job -Name Downloader -InitializationScript ([scriptblock]::Create("Set-Location '$($Variables.MainPath)'")) -ArgumentList $Downloader_Parameters -FilePath ".\Includes\Downloader.ps1"
+                        $Variables.Downloader = Start-ThreadJob -Name Downloader -StreamingHost $null -FilePath ".\Includes\Downloader.ps1" -InitializationScript ([scriptblock]::Create("Set-Location '$($Variables.MainPath)'")) -ArgumentList $Downloader_Parameters
                         Remove-Variable Downloader_Parameters
                     }
                     ElseIf (-not ($Miners | Where-Object Available)) { 
@@ -924,8 +923,8 @@ Do {
             }
         }
 
-        $Variables.MinersNeedingBenchmark = @($Miners | Where-Object { $_.Available -and $_.Benchmark } | Sort-Object -Property { $_.Algorithms, $_.Name } -Unique)
-        $Variables.MinersNeedingPowerUsageMeasurement = @($Miners | Where-Object { $_.Available -and $_.MeasurePowerUsage } | Sort-Object -Property { $_.Algorithms, $_.Name } -Unique)
+        $Variables.MinersNeedingBenchmark = @($Miners | Where-Object { $_.Available -and $_.Benchmark } | Sort-Object -Property { [String]$_.Algorithms, $_.Name } -Unique)
+        $Variables.MinersNeedingPowerUsageMeasurement = @($Miners | Where-Object { $_.Available -and $_.MeasurePowerUsage } | Sort-Object -Property { [String]$_.Algorithms, $_.Name } -Unique)
 
         # ProfitabilityThreshold check - OK to run miners?
         If ($Variables.DonationRunning -or (-not $Config.CalculatePowerCost -and $Variables.MiningEarning -ge ($Config.ProfitabilityThreshold / $Variables.Rates.BTC.($Config.MainCurrency))) -or ($Config.CalculatePowerCost -and $Variables.MiningProfit -ge ($Config.ProfitabilityThreshold / $Variables.Rates.BTC.($Config.MainCurrency))) -or $Variables.MinersNeedingBenchmark -or $Variables.MinersNeedingPowerUsageMeasurement) { 
@@ -1219,7 +1218,7 @@ Do {
             }
 
             $Message = "$(If ($Miner.Benchmark) { "Benchmark" })$(If ($Miner.Benchmark -and $Miner.MeasurePowerUsage) { " and " })$(If($Miner.MeasurePowerUsage) { "Power usage measurement" })"
-            If ($Message) { Write-Message -Level Verbose "$($Message) for miner '$($Miner.Info)' in progress [Attempt $($Miner.Activated) of $($Variables.WatchdogCount + 1); min. $($Miner.MinDataSample) Samples]..." }
+            If ($Message) { Write-Message -Level Verbose "$($Message) for miner '$($Miner.Info)' in progress [Attempt $($Miner.Activated) of $($Variables.WatchdogCount + 1); min. $($Miner.MinDataSample) samples]..." }
         }
         Remove-Variable Miner, Message -ErrorAction Ignore
 
@@ -1229,11 +1228,11 @@ Do {
 
             # Display benchmarking progress
             If ($MinersDeviceGroupNeedingBenchmark) { 
-                Write-Message -Level Verbose "Benchmarking for '$(($MinersDeviceGroupNeedingBenchmark.DeviceNames | Sort-Object -Unique) -join ', ')' in progress: $(($MinersDeviceGroupNeedingBenchmark | Select-Object -Property { $_.Algorithms, $_.Name } -Unique).Count) miner$(If (($MinersDeviceGroupNeedingBenchmark | Select-Object -Property { $_.Algorithms, $_.Name } -Unique).Count -gt 1) { 's' }) left to complete benchmark."
+                Write-Message -Level Verbose "Benchmarking for '$(($MinersDeviceGroupNeedingBenchmark.DeviceNames | Sort-Object -Unique) -join ', ')' in progress: $(($MinersDeviceGroupNeedingBenchmark | Select-Object -Property { [String]$_.Algorithms, $_.Name } -Unique).Count) miner$(If (($MinersDeviceGroupNeedingBenchmark | Select-Object -Property { [String]$_.Algorithms, $_.Name } -Unique).Count -gt 1) { 's' }) left to complete benchmark."
             }
             # Display power usage measurement progress
             If ($MinersDeviceGroupNeedingPowerUsageMeasurement) { 
-                Write-Message -Level Verbose "Power usage measurement for '$(($MinersDeviceGroupNeedingPowerUsageMeasurement.DeviceNames | Sort-Object -Unique) -join ', ')' in progress: $(($MinersDeviceGroupNeedingPowerUsageMeasurement | Select-Object -Property { $_.Algorithms, $_.Name } -Unique).Count) miner$(If (($MinersDeviceGroupNeedingPowerUsageMeasurement | Select-Object -Property { $_.Algorithms, $_.Name } -Unique).Count -gt 1) { 's' }) left to complete measuring."
+                Write-Message -Level Verbose "Power usage measurement for '$(($MinersDeviceGroupNeedingPowerUsageMeasurement.DeviceNames | Sort-Object -Unique) -join ', ')' in progress: $(($MinersDeviceGroupNeedingPowerUsageMeasurement | Select-Object -Property { [String]$_.Algorithms, $_.Name } -Unique).Count) miner$(If (($MinersDeviceGroupNeedingPowerUsageMeasurement | Select-Object -Property { [String]$_.Algorithms, $_.Name } -Unique).Count -gt 1) { 's' }) left to complete measuring."
             }
         }
         Remove-Variable MinersDeviceGroupNeedingBenchmark, MinersDeviceGroupNeedingPowerUsageMeasurement -ErrorAction Ignore
