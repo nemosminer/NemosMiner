@@ -201,8 +201,8 @@ Do {
                 # Core suspended with <Ctrl><Alt>P in MainLoop
                 While ($Variables.SuspendCycle) { Start-Sleep -Seconds 1 }
 
-                # Get-Stat witout name removes stats that have been deleted from disk
-                [Void](Get-Stat)
+                # Get-Stat without name removes stats that have been deleted from disk
+                Try { [Void](Get-Stat) } Catch { }
 
                 # Load currency exchange rates from min-api.cryptocompare.com
                 [Void](Get-Rate)
