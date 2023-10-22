@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.4
-Version date:   2023/10/19
+Version:        5.0.1.5
+Version date:   2023/10/22
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $_.Architecture -eq "Other" })) { Return }
@@ -29,7 +29,7 @@ $Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 # Algorithm parameter values are case sensitive!
-$Algorithms = [PSCustomObject[]]@( 
+$Algorithms = @( 
     [PSCustomObject]@{ Algorithm = "0x10";              Fee = @(0.0085); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(60, 45); ExcludePools = @(); Arguments = " --disable-cpu -algorithm 0x10" }
     [PSCustomObject]@{ Algorithm = "Argon2d16000";      Fee = @(0.0085); MinMemGiB = 1;    Minerset = 0; WarmupTimes = @(60, 45); ExcludePools = @(); Arguments = " --disable-cpu -algorithm argon2d_16000" }
     [PSCustomObject]@{ Algorithm = "Argon2d500";        Fee = @(0.0085); MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(60, 45); ExcludePools = @(); Arguments = " --disable-cpu -algorithm argon2d_dynamic" }

@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.4
-Version date:   2023/10/19
+Version:        5.0.1.5
+Version date:   2023/10/22
 #>
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
@@ -31,7 +31,7 @@ ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'aes')  { $Path = ".\Bin\$($N
 ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'sse2') { $Path = ".\Bin\$($Name)\cpuminer-sse2.exe" }
 Else { Return }
 
-$Algorithms = [PSCustomObject[]]@(
+$Algorithms = @(
     [PSCustomObject]@{ Algorithm = "BinariumV1"; Minerset = 2; WarmupTimes = @(30, 15); ExcludePools = @(); Arguments = " --algo binarium-v1" }
     [PSCustomObject]@{ Algorithm = "m7m";        MinerSet = 0; WarmupTimes = @(30, 15); ExcludePools = @(); Arguments = " --algo m7m" }
 )

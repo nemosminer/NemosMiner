@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.4
-Version date:   2023/10/19
+Version:        5.0.1.5
+Version date:   2023/10/22
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0" })) { Return }
@@ -28,7 +28,7 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\teamredminer.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
-$Algorithms = [PSCustomObject[]]@(
+$Algorithms = @(
     [PSCustomObject]@{ Algorithms = @("Autolykos2");                 Fee = @(0.025);        MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=autolykos2" }
     [PSCustomObject]@{ Algorithms = @("Autolykos2", "kHeavyHash");   Fee = @(0.025, 0.025); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=autolykos2" }
     [PSCustomObject]@{ Algorithms = @("Autolykos2", "IronFish");     Fee = @(0.025, 0.025); MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=autolykos2" } # Pools with support at this time are Herominers, Flexpool and Kryptex
@@ -51,9 +51,9 @@ $Algorithms = [PSCustomObject[]]@(
     [PSCustomObject]@{ Algorithms = @("Ethash");                     Fee = @(0.01);         MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=ethash" } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Fee = @(0.01, 0.01);   MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=ethash" } # PhoenixMiner-v6.2c is fastest
 #   [PSCustomObject]@{ Algorithms = @("Ethash", "IronFish");         Fee = @(0.01, 0.01);   MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=ethash" } # Pools with support at this time are Herominers, Flexpool and Kryptex
-    [PSCustomObject]@{ Algorithms = @("FiroPow");                    Fee = @(0.02);         MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA3");                   Arguments = " --algo=firopow" } # Wildrig-v0.36.10is fastest on Polaris
+    [PSCustomObject]@{ Algorithms = @("FiroPow");                    Fee = @(0.02);         MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA3");                   Arguments = " --algo=firopow" } # Wildrig-v0.37.1is fastest on Polaris
     [PSCustomObject]@{ Algorithms = @("IronFish");                   Fee = @(0.025);        MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "_RDNA1");                  Arguments = " --algo=ironfish" } # Pools with support at this time are Herominers, Flexpool and Kryptex
-    [PSCustomObject]@{ Algorithms = @("KawPow");                     Fee = @(0.02);         MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 60);  ExcludePools = @(@("MiningPoolHub"), @()); ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA3");                   Arguments = " --algo=kawpow" } # Wildrig-v0.36.10is fastest on Polaris
+    [PSCustomObject]@{ Algorithms = @("KawPow");                     Fee = @(0.02);         MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 60);  ExcludePools = @(@("MiningPoolHub"), @()); ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA3");                   Arguments = " --algo=kawpow" } # Wildrig-v0.37.1is fastest on Polaris
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Fee = @(0.01);         MinMemGiB = 2.0;  MinerSet = 0; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=kas" }
 #   [PSCustomObject]@{ Algorithms = @("Lyra2Z");                     Fee = @(0.03);         MinMemGiB = 2.0;  MinerSet = 0; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=lyra2z" } # ASIC
 #   [PSCustomObject]@{ Algorithms = @("Lyra2RE3");                   Fee = @(0.025);        MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=lyra2rev3" } # ASIC

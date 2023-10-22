@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.4
-Version date:   2023/10/19
+Version:        5.0.1.5
+Version date:   2023/10/22
 #>
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
@@ -33,7 +33,7 @@ ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'aes')  { $Path = ".\Bin\$($N
 ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'sse2') { $Path = ".\Bin\$($Name)\cpuminer-Sse2.exe" }
 Else { Return }
 
-$Algorithms = [PSCustomObject[]]@(
+$Algorithms = @(
     [PSCustomObject]@{ Algorithm = "Avian";         Minerset = 2; WarmupTimes = @(30, 15);  ExcludePools = @();        Arguments = " --algo avian" }
     [PSCustomObject]@{ Algorithm = "Allium";        MinerSet = 3; WarmupTimes = @(30, 0);   ExcludePools = @();        Arguments = " --algo allium" } # FPGA
     [PSCustomObject]@{ Algorithm = "Anime";         MinerSet = 0; WarmupTimes = @(30, 15);  ExcludePools = @();        Arguments = " --algo anime" }

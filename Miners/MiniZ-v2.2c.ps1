@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.4
-Version date:   2023/10/19
+Version:        5.0.1.5
+Version date:   2023/10/22
 #>
 
 using module ..\Includes\Include.psm1
@@ -30,7 +30,7 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\miniZ.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
-$Algorithms = [PSCustomObject[]]@(
+$Algorithms = @(
     [PSCustomObject]@{ Algorithm = "BeamV3";           Type = "AMD"; Fee = @(0.02);   MinMemGiB = 4.0;  Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "GCN4", "RDNA1");          ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=beam3 --pers=Beam-Pow" } # Lots of bad shares
     [PSCustomObject]@{ Algorithm = "Equihash1254";     Type = "AMD"; Fee = @(0.02);   MinMemGiB = 3.0;  Minerset = 1; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @("RDNA1");                                          ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=125,4 --smart-pers" }
     [PSCustomObject]@{ Algorithm = "Equihash1445";     Type = "AMD"; Fee = @(0.02);   MinMemGiB = 2.0;  MinerSet = 0; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @("RDNA1");                                          ExcludePools = @(); AutoCoinPers = " --par=144,5"; Arguments = " --amd" } # FPGA

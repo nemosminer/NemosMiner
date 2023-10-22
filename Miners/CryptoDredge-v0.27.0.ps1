@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.4
-Version date:   2023/10/19
+Version:        5.0.1.5
+Version date:   2023/10/22
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" -and $_.Architecture -ne "Other" })) { Return }
@@ -31,7 +31,7 @@ $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\CryptoDredge.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
-$Algorithms = [PSCustomObject[]]@(
+$Algorithms = @(
     [PSCustomObject]@{ Algorithm = "Argon2d4096";       Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(60, 0);  ExcludePools = @();                Arguments = " --algo argon2d4096 --intensity 8" }
     [PSCustomObject]@{ Algorithm = "Argon2d500";        Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(60, 0);  ExcludePools = @();                Arguments = " --algo argon2d-dyn --intensity 6" }
     [PSCustomObject]@{ Algorithm = "Argon2dNim";        Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 0);  ExcludePools = @();                Arguments = " --algo argon2d-nim --intensity 6" }

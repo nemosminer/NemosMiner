@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\include.ps1
-Version:        5.0.1.4
-Version date:   2023/10/19
+Version:        5.0.1.5
+Version date:   2023/10/22
 #>
 
 $Global:DebugPreference = "SilentlyContinue"
@@ -309,7 +309,6 @@ Class Miner {
             $this.StatusInfo = "Dry run '$($this.Info)'"
             Write-Message -Level Info "Dry run for miner '$($this.Info)'..."
             $this.StatStart = $this.BeginTime = ([DateTime]::Now).ToUniversalTime()
-            $this.WorkersRunning = $this.Workers
         }
         Else { 
             $this.StatusInfo = "Starting '$($this.Info)'"
@@ -353,7 +352,6 @@ Class Miner {
                     $this.Status = [MinerStatus]::Running
                     $this.SubStatus = "Starting"
                     $this.StatStart = $this.BeginTime = ([DateTime]::Now).ToUniversalTime()
-                    $this.WorkersRunning = $this.Workers
                     $this.Process = Get-Process -Id $this.ProcessId -ErrorAction SilentlyContinue
                     $this.StartDataReader()
                     Break
@@ -363,6 +361,8 @@ Class Miner {
             } While ($Loops -gt 0)
             Remove-Variable Loops
         }
+        $this.WorkersRunning = $this.Workers
+
     }
 
     [Void]hidden StopMining() { 

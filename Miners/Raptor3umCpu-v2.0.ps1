@@ -17,7 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.4
+Version:        5.0.1.5
 Version date:   2023/10/06
 #>
 
@@ -27,7 +27,7 @@ $URI = "https://github.com/Raptor3um/cpuminer-opt/releases/download/v2.0/cpumine
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
 
-$Algorithms = [PSCustomObject[]]@(
+$Algorithms = @(
     [PSCustomObject]@{ Algorithm = "Ghostrider"; Minerset = 1; WarmupTimes = @(180, 60); ExcludePools = @(); Arguments = " --algo gr" }
 )
 

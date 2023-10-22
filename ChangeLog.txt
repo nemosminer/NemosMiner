@@ -9,6 +9,22 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 
+ChangeLog NemosMiner 5.0.1.5 2023/10/22
+=======================================
+
+Changes:
+- Core: Use miner name instead of device name for Benchmarking / Power usage meassuring group naming.
+
+Enhancements:
+- Miner definition files: Use arrays instead of PSCustomObjects for better performance
+
+Fixes:
+- Core: Not propertly detecting failed miners in some scenarios
+- Miners 'BzMiner' & 'WildRig': ExcludeGPUModel filter broken (Regression from v5.0.1.1)
+
+Miner changes:
+- Wildrig-v0.37.1
+
 
 ChangeLog NemosMiner 5.0.1.4 2023/10/19
 =======================================
@@ -20,7 +36,7 @@ Fixes:
 - Legacy GUI: Retain 'Switching Log' coloring when re-sorting
 
 Miner changes:
-- BzMiner-v17.0.1b1: Disable kHeavyHash as secondary algorithm (https://github.com/bzminer/bzminer/issues/281)
+- BzMiner-v17.0.1b1: Disable kHeavyHash@ProHashing as secondary algorithm (https://github.com/bzminer/bzminer/issues/281)
 - SRBMinerMulti-v2.3.9
 
 Pool changes:
