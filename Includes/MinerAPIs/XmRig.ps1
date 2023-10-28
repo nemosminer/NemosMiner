@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\XmRig.ps1
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 Class XmRig : Miner { 
@@ -53,11 +53,11 @@ Class XmRig : Miner {
                         $this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($Parameters.HwDetectArguments)*" }).ProcessId)
                         For ($WaitForThreadsConfig = 0; $WaitForThreadsConfig -le 60; $WaitForThreadsConfig ++) { 
                             If ($ThreadsConfig = @(Get-Content $ThreadsConfigFile -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore).threads) { 
-                                If ($this.DeviceNames -like "GPU#*") { 
-                                    ConvertTo-Json -InputObject @($ThreadsConfig | Sort-Object -Property Index -Unique) -Depth 10 | Out-File -FilePath $ThreadsConfigFile -Force -ErrorAction Ignore
+                                If ($this.Type -contains "CPU") { 
+                                    ConvertTo-Json -InputObject @($ThreadsConfig | Select-Object -Unique) -Depth 10 | Out-File -FilePath $ThreadsConfigFile -Force -Encoding -ErrorAction Ignore
                                 }
                                 Else { 
-                                    ConvertTo-Json -InputObject @($ThreadsConfig | Select-Object -Unique) -Depth 10 | Out-File -FilePath $ThreadsConfigFile -Force -Encoding -ErrorAction Ignore
+                                    ConvertTo-Json -InputObject @($ThreadsConfig | Sort-Object -Property Index -Unique) -Depth 10 | Out-File -FilePath $ThreadsConfigFile -Force -ErrorAction Ignore
                                 }
                                 Break
                             }
@@ -77,12 +77,12 @@ Class XmRig : Miner {
                     $ThreadsConfig = Get-Content $ThreadsConfigFile | ConvertFrom-Json
                     If ($ThreadsConfig.Count -ge 1) { 
                         #Write config files. Overwrite because we need to add thread info
-                        If ($this.DeviceNames -like "GPU#*") { 
-                            $Parameters.ConfigFile.Content | Add-Member threads ([Array](($ThreadsConfig | Where-Object { $Parameters.Devices -contains $_.index })) * $Parameters.Threads) -Force
-                        }
-                        Else { 
+                        If ($this.Type -contains "CPU") { 
                             #CPU thread config does not contain index information
                             $Parameters.ConfigFile.Content | Add-Member threads ([Array]($ThreadsConfig * $Parameters.Threads)) -Force
+                        }
+                        Else { 
+                            $Parameters.ConfigFile.Content | Add-Member threads ([Array](($ThreadsConfig | Where-Object { $Parameters.Devices -contains $_.index })) * $Parameters.Threads) -Force
                         }
                         $Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10 | Out-File -FilePath $ConfigFile -Force -ErrorAction Ignore
                     }

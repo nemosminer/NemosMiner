@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\APIServer.psm1
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 Function Start-APIServer { 
@@ -408,7 +408,7 @@ Function Start-APIServer {
                                     If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
                                         $Miners = $Miners | Sort-Object -Property Name, Algorithms -Unique
                                         $Miners | ForEach-Object { 
-                                            $Data += "$($_.Name) ($($_.Algorithms -join " & "))`n"
+                                            $Data += "$($_.Name) ($($_.Algorithms -join ' & '))`n"
                                             ForEach ($Algorithm in $_.Algorithms) { 
                                                 Disable-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
                                                 $Worker.Hashrate = [Double]::NaN
@@ -456,7 +456,7 @@ Function Start-APIServer {
                                     If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
                                         $Miners = $Miners | Sort-Object -Property Name, Algorithms -Unique
                                         $Miners | ForEach-Object { 
-                                            $Data += "$($_.Name) ($($_.Algorithms -join " & "))`n"
+                                            $Data += "$($_.Name) ($($_.Algorithms -join ' & '))`n"
                                             ForEach ($Algorithm in $_.Algorithms) {  
                                                 Enable-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
                                                 $Worker.Hashrate = [Double]::NaN
@@ -524,7 +524,7 @@ Function Start-APIServer {
                                             $_.Benchmark = $true
                                             $_.Earning_Accuracy = [Double]::NaN
                                             $_.Disabled = $false
-                                            $Data += "$($_.Name) ($($_.Algorithms -join " & "))`n"
+                                            $Data += "$($_.Name) ($($_.Algorithms -join ' & '))`n"
                                             ForEach ($Algorithm in $_.Algorithms) { 
                                                 Remove-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
                                                 $Worker.Hashrate = [Double]::NaN
@@ -596,7 +596,7 @@ Function Start-APIServer {
                                         $Miners | ForEach-Object { 
                                             $_.Data = @()
                                             If ($Parameters.Value -le 0 -and $Parameters.Type -eq "Hashrate") { $_.Available = $false; $_.Disabled = $true }
-                                            $Data += "$($_.Name) ($($_.Algorithms -join " & "))`n"
+                                            $Data += "$($_.Name) ($($_.Algorithms -join ' & '))`n"
                                             ForEach ($Algorithm in $_.Algorithms) { 
                                                 $Stat_Name = "$($_.Name)_$($Algorithm)_$($Parameters.Type)"
                                                 If ($Parameters.Value -eq 0) { # Miner failed
@@ -987,15 +987,15 @@ Function Start-APIServer {
                                 }
                                 $Workers = [System.Collections.ArrayList]@(
                                     $Variables.Workers | Select-Object @(
-                                        @{ Name = "Algorithm"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split "," -join " & " }) -join "<br>" } }, 
-                                        @{ Name = "Benchmark Hashrate"; Expression = { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { If ([Double]$_ -gt 0) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "-" } }) -join " & " }) -join "<br>" } }, 
+                                        @{ Name = "Algorithm"; Expression = { ($_.data | ForEach-Object { $_.Algorithm -split ',' -join ' & ' }) -join '<br>' } }, 
+                                        @{ Name = "Benchmark Hashrate"; Expression = { ($_.data | ForEach-Object { ($_.EstimatedSpeed | ForEach-Object { If ([Double]$_ -gt 0) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "-" } }) -join ' & ' }) -join '<br>' } }, 
                                         @{ Name = "Currency"; Expression = { $_.Data.Currency | Select-Object -Unique } }, 
                                         @{ Name = "EstimatedEarning"; Expression = { [Decimal](($_.Data.Earning | Measure-Object -Sum | Select-Object -ExpandProperty Sum) * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
                                         @{ Name = "EstimatedProfit"; Expression = { [Decimal]($_.Profit * $Variables.Rates.BTC.($_.Data.Currency | Select-Object -Unique)) } }, 
                                         @{ Name = "LastSeen"; Expression = { "$($_.date)" } }, 
-                                        @{ Name = "Live Hashrate"; Expression = { ($_.data | ForEach-Object { ($_.CurrentSpeed | ForEach-Object { If ([Double]$_ -gt 0) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { "-" } }) -join " & " }) -join "<br>" } }, 
+                                        @{ Name = "Live Hashrate"; Expression = { ($_.data | ForEach-Object { ($_.CurrentSpeed | ForEach-Object { If ([Double]$_ -gt 0) { "$($_ | ConvertTo-Hash)/s" -replace '\s+', ' ' } Else { '-' } }) -join ' & ' }) -join '<br>' } }, 
                                         @{ Name = "Miner"; Expression = { $_.data.name -join '<br/>'} }, 
-                                        @{ Name = "Pool"; Expression = { ($_.data | ForEach-Object { ($_.Pool -split "," | ForEach-Object { $_ -replace 'Internal$', ' (Internal)' -replace 'External', ' (External)' }) -join " & "}) -join "<br>" } }, 
+                                        @{ Name = "Pool"; Expression = { ($_.data | ForEach-Object { ($_.Pool -split "," | ForEach-Object { $_ -replace 'Internal$', ' (Internal)' -replace 'External', ' (External)' }) -join ' & '}) -join '<br>' } }, 
                                         @{ Name = "Status"; Expression = { $_.status } }, 
                                         @{ Name = "Version"; Expression = { $_.version } }, 
                                         @{ Name = "Worker"; Expression = { $_.worker } }

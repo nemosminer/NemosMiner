@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 using module .\Includes\Include.psm1
@@ -293,7 +293,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"5.0.1.5"
+    Version      = [System.Version]"5.0.1.6"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -884,7 +884,7 @@ Function MainLoop {
             }
 
             If ($Variables.MinersBest_Combo) { 
-                Write-Host "Running $(If ($Variables.MinersBest_Combo.Count -eq 1) { "miner:" } Else { "miners: $($Variables.MinersBest_Combo.Count)" })"
+                Write-Host "`nRunning $(If ($Variables.MinersBest_Combo.Count -eq 1) { "miner:" } Else { "miners: $($Variables.MinersBest_Combo.Count)" })"
                 [System.Collections.ArrayList]$Miner_Table = @(
                     @{ Label = "Hashrate(s)"; Expression = { (($_.Hashrates_Live | ForEach-Object { If ([Double]::IsNaN($_)) { "n/a" } Else { "$($_ | ConvertTo-Hash)/s" } }) -join ' & ') -replace '\s+', ' ' }; Align = "right" }
                     If ($Config.CalculatePowerCost -and $Variables.ShowPowerUsage) { @{ Label = "PowerUsage"; Expression = { If ([Double]::IsNaN($_.PowerUsage_Live)) { "n/a" } Else { "$($_.PowerUsage_Live.ToString("N2")) W" } }; Align = "right" } }
@@ -984,7 +984,7 @@ While ($true) {
     }
     Else { 
         [Void](MainLoop)
-        Start-Sleep -Milliseconds 100
+        Start-Sleep -Milliseconds 50
     }
 
     $Error.Clear()

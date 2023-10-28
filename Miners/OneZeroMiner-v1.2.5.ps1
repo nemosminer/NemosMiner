@@ -17,15 +17,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "NVIDIA" -and $_.OpenCL.DriverVersion -ge "450.80.02" })) { Return }
 
 $URI = "https://github.com/OneZeroMiner/onezerominer/releases/download/v1.2.5/onezerominer-win64-1.2.5.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\onezerominer.exe"
+$Path = "$PWD\Bin\$($Name)\onezerominer.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = @( 

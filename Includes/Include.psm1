@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\include.ps1
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 $Global:DebugPreference = "SilentlyContinue"
@@ -87,9 +87,9 @@ Class Device {
     [PSCustomObject]$OpenCL = [PSCustomObject]@{ }
     [Int]$PlatformId = 0
     [Int]$PlatformId_Index
-    [PSCustomObject]$PNP
+    # [PSCustomObject]$PNP
     [Boolean]$ReadPowerUsage = $false
-    [PSCustomObject]$Reg
+    # [PSCustomObject]$Reg
     [Int]$Slot = 0
     [DeviceState]$State = [DeviceState]::Enabled
     [String]$Status = "Idle"
@@ -282,7 +282,8 @@ Class Miner {
         }
 
         # Start Miner data reader
-        $this.DataReaderJob = Start-Job -Name "$($this.Name)_DataReader" -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithms, DataCollectInterval, Devices, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore)
+        $this.DataReaderJob = Start-Job -Name "$($this.Name)_DataReader" -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithms, DataCollectInterval, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore)
+        # $this.DataReaderJob = Start-Job -Name "$($this.Name)_DataReader" -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithms, DataCollectInterval, Devices, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore)
 
         Remove-Variable ScriptBlock -ErrorAction Ignore
     }
@@ -322,18 +323,18 @@ Class Miner {
             DateTime          = (Get-Date -Format o)
             Action            = If ($this.Status -eq [MinerStatus]::DryRun) { "DryRun" } Else { "Launched" }
             Name              = $this.Name
-            Accounts          = ($this.Workers.Pool.User | ForEach-Object { $_ -replace '\.*' } | Select-Object -Unique) -join "; "
-            Algorithms        = $this.Workers.Pool.Algorithm -join "; "
+            Accounts          = ($this.Workers.Pool.User | ForEach-Object { $_ -replace '\.*' } | Select-Object -Unique) -join '; '
+            Algorithms        = $this.Workers.Pool.Algorithm -join '; '
             Benchmark         = $this.Benchmark
             CommandLine       = $this.CommandLine
             Cycle             = ""
-            DeviceNames       = $this.DeviceNames -join "; "
+            DeviceNames       = $this.DeviceNames -join '; '
             Duration          = ""
             Earning           = $this.Earning
             Earning_Bias      = $this.Earning_Bias
             LastDataSample    = $null
             MeasurePowerUsage = $this.MeasurePowerUsage
-            Pools              = ($this.Workers.Pool.Name | Select-Object -Unique) -join "; "
+            Pools              = ($this.Workers.Pool.Name | Select-Object -Unique) -join '; '
             Profit            = $this.Profit
             Profit_Bias       = $this.Profit_Bias
             Reason            = ""
@@ -403,18 +404,18 @@ Class Miner {
             DateTime          = (Get-Date -Format o)
             Action            = If ($this.Status -eq [MinerStatus]::Idle) { "Stopped" } Else { "Failed" }
             Name              = $this.Name
-            Accounts          = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -replace '\.*' } | Select-Object -Unique) -join "; "
-            Algorithms        = $this.WorkersRunning.Pool.Algorithm -join "; "
+            Accounts          = ($this.WorkersRunning.Pool.User | ForEach-Object { $_ -replace '\.*' } | Select-Object -Unique) -join '; '
+            Algorithms        = $this.WorkersRunning.Pool.Algorithm -join '; '
             Benchmark         = $this.Benchmark
             CommandLine       = $this.CommandLine
             Cycle             = $this.ContinousCycle
-            DeviceNames       = $this.DeviceNames -join "; "
+            DeviceNames       = $this.DeviceNames -join '; '
             Duration          = "{0:hh\:mm\:ss}" -f ($this.EndTime - $this.BeginTime)
             Earning           = $this.Earning
             Earning_Bias      = $this.Earning_Bias
             LastDataSample    = $this.Data | Select-Object -Last 1 -ErrorAction Ignore | ConvertTo-Json -Compress
             MeasurePowerUsage = $this.MeasurePowerUsage
-            Pools             = ($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join "; "
+            Pools             = ($this.WorkersRunning.Pool.Name | Select-Object -Unique) -join '; '
             Profit            = $this.Profit
             Profit_Bias       = $this.Profit_Bias
             Reason            = If ($this.Status -eq [MinerStatus]::Failed) { $this.StatusInfo -replace "'$($this.StatusInfo)' " } Else { "" }
@@ -497,7 +498,7 @@ Class Miner {
         $RegistryData = Get-ItemProperty "HKCU:\Software\HWiNFO64\VSB"
         ForEach ($Device in $this.Devices) { 
             If ($RegistryEntry = $RegistryData.PSObject.Properties | Where-Object { ($_.Value -split " ") -contains $Device.Name }) { 
-                $TotalPowerUsage += [Double]($RegistryData.($RegistryEntry.Name -replace 'Label', 'Value') -split ' ' | Select-Object -First 1)
+                $TotalPowerUsage += [Double](($RegistryData.($RegistryEntry.Name -replace 'Label', 'Value') -split ' ')[0])
             }
             Else { 
                 $TotalPowerUsage += [Double]$Device.ConfiguredPowerUsage
@@ -616,7 +617,7 @@ Class Miner {
         $this.ReadPowerUsage = [Boolean]($this.Devices.ReadPowerUsage -notcontains $false)
 
         If ($CalculatePowerCost) { 
-            If ($Stat = Get-Stat -Name "$($this.Name)$(If ($this.Algorithms.Count -eq 1) { "_$($this.Algorithms | Select-Object -Index 0)" })_PowerUsage") { 
+            If ($Stat = Get-Stat -Name "$($this.Name)$(If ($this.Algorithms.Count -eq 1) { "_$($this.Algorithms[0])" })_PowerUsage") { 
                 $this.PowerUsage = $Stat.Week
                 $this.PowerCost = $this.PowerUsage * $PowerCostBTCperW
                 $this.Profit = $this.Earning - $this.PowerCost
@@ -1044,11 +1045,11 @@ Function Initialize-Application {
     If ($Config.Proxy -eq "") { $PSDefaultParameterValues.Remove("*:Proxy") }
     Else { $PSDefaultParameterValues["*:Proxy"] = $Config.Proxy }
 
-    # Set process priority to BelowNormal to avoid hashrate drops on systems with weak CPUs
-    (Get-Process -Id $PID).PriorityClass = "BelowNormal"
-   
+    # Load currency exchange rates
     [Void](Get-Rate)
 
+    # Set process priority to BelowNormal to avoid hashrate drops on systems with weak CPUs
+    (Get-Process -Id $PID).PriorityClass = "BelowNormal"
 }
 
 Function Get-DefaultAlgorithm { 
@@ -1085,7 +1086,7 @@ Function Get-Rate {
 
             $Rates = [PSCustomObject]@{ BTC = [PSCustomObject]@{ } }
             $TSymBatches | ForEach-Object { 
-                $Response = Invoke-RestMethod "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$($_)$(If ($Config.CryptoCompareAPIKeyParam) { "&api_key=$($Config.CryptoCompareAPIKeyParam)" })&extraParams=$($Variables.Branding.BrandWebSite) Version $($Variables.Branding.Version)" -TimeoutSec 5 -ErrorAction Ignore
+                $Response = Invoke-RestMethod -Uri "https://min-api.cryptocompare.com/data/pricemulti?fsyms=BTC&tsyms=$($_)$(If ($Config.CryptoCompareAPIKeyParam) { "&api_key=$($Config.CryptoCompareAPIKeyParam)" })&extraParams=$($Variables.Branding.BrandWebSite) Version $($Variables.Branding.Version)" -TimeoutSec 5 -ErrorAction Ignore
                 If ($Response.BTC) { 
                     $Response.BTC | ForEach-Object { 
                         $_.PSObject.Properties | Select-Object | ForEach-Object { $Rates.BTC | Add-Member @{ "$($_.Name)" = $_.Value } -Force }
@@ -1229,7 +1230,7 @@ Function Write-MonitoringData {
                 Name           = $_.Name
                 Path           = Resolve-Path -Relative $_.Path
                 Pool           = $_.WorkersRunning.Pool.Name -join ','
-                Profit         = If ($_.Profit) { $_.Profit } ElseIf ($Variables.CalculatePowerCost) { ($_.WorkersRunning.Profit | Measure-Object -Sum | Select-Object -ExpandProperty Sum) - ($_.PowerUsage_Live * $Variables.PowerCostBTCperW) } Else { [Double]::Nan }
+                Profit         = If ($_.Profit) { $_.Profit } ElseIf ($Variables.CalculatePowerCost) { ($_.WorkersRunning.Profit | Measure-Object -Sum | Select-Object -ExpandProperty Sum) - $_.PowerUsage_Live * $Variables.PowerCostBTCperW } Else { [Double]::Nan }
                 Type           = $_.Type
             }
         }
@@ -1852,8 +1853,8 @@ Function Enable-Stat {
     If ($Stat = Get-Stat -Name $Name) { 
 
         $Path = "Stats\$Name.txt"
-
         $Stat.Disabled = $false
+
         @{ 
             Live                  = [Double]$Stat.Live
             Minute                = [Double]$Stat.Minute
@@ -2055,7 +2056,7 @@ Function Set-Stat {
 Function Get-Stat { 
 
     Param(
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $true)]
         [String[]]$Name
     )
 
@@ -2065,17 +2066,6 @@ Function Get-Stat {
 
     If (-not (Test-Path -Path "Stats" -PathType Container)) { 
         New-Item "Stats" -ItemType Directory -Force | Out-Null
-    }
-
-    If (-not $Name) { 
-        $Name = [String[]]((Get-ChildItem -Path "Stats" -File).BaseName)
-        If ($Keys = [String[]]($Global:Stats.psBase.Keys)) { 
-            Compare-Object $Name $Keys -PassThru | Where-Object SideIndicator -EQ "=>" | ForEach-Object { 
-                # Remove stat if deleted on disk
-                $Global:Stats.Remove($_)
-            }
-        }
-        Remove-Variable Keys
     }
 
     $Name | Select-Object | ForEach-Object { 
@@ -2867,10 +2857,10 @@ public static class Kernel32
             Return 
         }
 
+        [PSCustomObject]@{ProcessId = $Process.Id }
+
         $ControllerProcess.Handle | Out-Null
         $Process.Handle | Out-Null
-
-        [PSCustomObject]@{ProcessId = $Process.Id; ProcessHandle = $Process.Handle }
 
         Do { 
             If ($ControllerProcess.WaitForExit(200)) { 
@@ -3210,11 +3200,10 @@ Function Start-LogReader {
 
 Function Get-ObsoleteMinerStats { 
 
-    [Void](Get-Stat)
-
+    $StatFiles = @(Get-ChildItem ".\Stats\*" -Include "*_HashRate.txt", "*_PowerUsage.txt").BaseName
     $MinerNames = @(Get-ChildItem ".\Miners\*.ps1").BaseName
 
-    Return @($Global:Stats.psBase.Keys | Where-Object { $_ -match '_Hashrate$|_PowerUsage$' } | Where-Object { (($_ -split '-' | Select-Object -First 2) -join "-") -notin $MinerNames})
+    Return @($StatFiles | Where-Object { (($_ -split '-' | Select-Object -First 2) -join '-') -notin $MinerNames})
 }
 
 Function Test-Prime { 

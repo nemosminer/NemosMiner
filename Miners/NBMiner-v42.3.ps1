@@ -17,15 +17,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.CUDAVersion -ge "10.0") } )) { Return }
 
 $URI = "https://github.com/NebuTech/NBMiner/releases/download/v42.3/NBMiner_42.3_Win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\nbminer.exe"
+$Path = "$PWD\Bin\$($Name)\nbminer.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = @(

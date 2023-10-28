@@ -17,15 +17,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
 
 $URI = "https://github.com/Minerx117/miners/releases/download/CcminerMemeHash/ccMiner-Memehash-2.5.5.9.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\ccminer.exe"
+$Path = "$PWD\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = @(

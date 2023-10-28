@@ -9,6 +9,24 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in GMT time)
 
+ChangeLog NemosMiner 5.0.1.6 2023/10/26
+=======================================
+
+Changes:
+- Delay starting brains until miners have been read
+
+Enhancements:
+- Core: Minor code optimizations
+
+Fixes: 
+- Core: Error 'Collection was modified; enumeration operation may not execute'
+
+Miner changes:
+- JayddeeCpu-v23.5
+- TeamBlackMiner-v2.06
+- Wildrig-v0.37.2
+
+
 ChangeLog NemosMiner 5.0.1.5 2023/10/22
 =======================================
 

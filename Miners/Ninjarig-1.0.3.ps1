@@ -17,15 +17,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
 
 $URI = "https://github.com/Minerx117/miner-binaries/releases/download/v1.0.3/ninjarig_v1.0.3.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\ninjarig.exe"
+$Path = "$PWD\Bin\$($Name)\ninjarig.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = @(
@@ -57,6 +57,7 @@ If ($Algorithms) {
                     API         = "XmRig"
                     Arguments   = "$($_.Arguments) --url stratum+tcp://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass) --keepalive --api-port=$MinerAPIPort --donate-level 0 -R 1 --use-gpu=CUDA -t $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
                     DeviceNames = $AvailableMiner_Devices.Name
+                    Fee         = @(0) # Dev fee
                     MinerSet    = $_.MinerSet
                     MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
                     Name        = $Miner_Name

@@ -17,15 +17,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object Type -EQ "AMD")) { Return }
 
 $URI = "https://github.com/RavenCommunity/kawpowminer/releases/download/1.2.4/kawpowminer-windows-1.2.4-opencl.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\kawpowminer.exe"
+$Path = "$PWD\Bin\$($Name)\kawpowminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = @(
@@ -66,7 +66,8 @@ If ($Algorithms) {
                         Arguments   = "$($_.Arguments) --pool $($Protocol)://$([System.Web.HttpUtility]::UrlEncode("$($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" })")):$([System.Web.HttpUtility]::UrlEncode($($Pool.Pass)))@$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --farm-recheck 10000 --farm-retries 40 --work-timeout 100000 --response-timeout 720 --api-bind 127.0.0.1:$($MinerAPIPort) --cl-devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
                         DeviceNames = $AvailableMiner_Devices.Name
                         EnvVars     = @("SSL_NOVERIFY=TRUE")
-                        MinerSet     = $_.MinerSet
+                        Fee         = @(0) # Dev fee
+                        MinerSet    = $_.MinerSet
                         Name        = $Miner_Name
                         Path        = $Path
                         Port        = $MinerAPIPort

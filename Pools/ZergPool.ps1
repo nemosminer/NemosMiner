@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\ZergPool.ps1
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 param(
@@ -40,8 +40,7 @@ $DivisorMultiplier = $PoolConfig.Variant.$PoolVariant.DivisorMultiplier
 $PayoutCurrency = $PoolConfig.Wallets.psBase.Keys | Select-Object -First 1
 $Regions = If ($Config.UseAnycast -and $PoolConfig.Region -contains "n/a (Anycast)") { "n/a (Anycast)" } Else { $PoolConfig.Region | Where-Object { $_ -ne "n/a (Anycast)" }  }
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
-
-$BrainDataFile = (Split-Path -Parent (Get-Item $MyInvocation.MyCommand.Path).Directory) + "\Data\BrainData_" + (Get-Item $MyInvocation.MyCommand.Path).BaseName + ".json"
+$BrainDataFile = "$($PWD)\Data\BrainData_$($Name).json"
 
 If ($DivisorMultiplier -and $Regions -and $Wallet) {
 

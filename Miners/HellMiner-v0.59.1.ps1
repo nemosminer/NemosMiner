@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
@@ -28,7 +28,7 @@ ElseIf ($AvailableMiner_Devices.CpuFeatures -contains "avx") { $URI = "https://g
 Else { $URI = "https://github.com/hellcatz/hminer/releases/download/v0.59.1/hellminer_win64.zip"}
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\hellminer.exe"
+$Path = "$PWD\Bin\$($Name)\hellminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = @(

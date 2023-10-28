@@ -17,15 +17,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
 
 $URI = "https://github.com/Minerx117/miner-binaries/releases/download/v1.3.7.1-GLT/CPUMiner-Multi.1.3.7.1-GLT.7z"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\cpuminer.exe" 
+$Path = "$PWD\Bin\$($Name)\cpuminer.exe" 
 
 $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "ArcticHash"; Minerset = 2; WarmupTimes = @(30, 0); ExcludePools = @(); Arguments = " --algo arctichash" }
@@ -50,6 +50,7 @@ If ($Algorithms) {
                 API         = "CcMiner"
                 Arguments   = "$($_.Arguments) --url stratum+tcp://$($Pool.Host):$($Pool.PoolPorts[0]) --user $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass) --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --retry-pause 1 --api-bind $MinerAPIPort"
                 DeviceNames = $AvailableMiner_Devices.Name
+                Fee         = @(0) # Dev fee
                 MinerSet    = $_.MinerSet
                 Name        = $Miner_Name
                 Path        = $Path

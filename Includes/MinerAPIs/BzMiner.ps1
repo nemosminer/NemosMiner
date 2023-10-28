@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\BzMiner.ps1
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 Class BzMiner : Miner {
@@ -38,7 +38,7 @@ Class BzMiner : Miner {
 
         If (-not $Data) { Return $null }
 
-        $Devices = $Data.devices | Where-Object { $_.pci_bus_id -in $this.Devices.Bus }
+        $Devices = $Data.devices | Where-Object { $_.message[0] }
 
         $HashRate = [PSCustomObject]@{ }
         $HashRate_Name = [String]$this.Algorithms[0]

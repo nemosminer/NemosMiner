@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
@@ -26,18 +26,17 @@ If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Typ
 $URI = "https://github.com/rplant8/cpuminer-opt-rplant/releases/download/5.0.34/cpuminer-opt-win.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 
-If ($AvailableMiner_Devices.CpuFeatures -match 'avx512')   { $Path = ".\Bin\$($Name)\cpuminer-Avx512.exe" }
-ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'avx2') { $Path = ".\Bin\$($Name)\cpuminer-Avx2.exe" }
-ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'avx')  { $Path = ".\Bin\$($Name)\cpuminer-Avx.exe" }
-ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'aes')  { $Path = ".\Bin\$($Name)\cpuminer-Aes-Sse42.exe" }
-ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'sse2') { $Path = ".\Bin\$($Name)\cpuminer-Sse2.exe" }
+If ($AvailableMiner_Devices.CpuFeatures -match 'avx512')   { $Path = "$PWD\Bin\$($Name)\cpuminer-Avx512.exe" }
+ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'avx2') { $Path = "$PWD\Bin\$($Name)\cpuminer-Avx2.exe" }
+ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'avx')  { $Path = "$PWD\Bin\$($Name)\cpuminer-Avx.exe" }
+ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'aes')  { $Path = "$PWD\Bin\$($Name)\cpuminer-Aes-Sse42.exe" }
+ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'sse2') { $Path = "$PWD\Bin\$($Name)\cpuminer-Sse2.exe" }
 Else { Return }
 
 $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "Avian";         Minerset = 2; WarmupTimes = @(30, 15);  ExcludePools = @();        Arguments = " --algo avian" }
     [PSCustomObject]@{ Algorithm = "Allium";        MinerSet = 3; WarmupTimes = @(30, 0);   ExcludePools = @();        Arguments = " --algo allium" } # FPGA
     [PSCustomObject]@{ Algorithm = "Anime";         MinerSet = 0; WarmupTimes = @(30, 15);  ExcludePools = @();        Arguments = " --algo anime" }
-    [PSCustomObject]@{ Algorithm = "APEPEPoW";      MinerSet = 0; WarmupTimes = @(90, 35);  ExcludePools = @();        Arguments = " --algo memehashv2" }
 #   [PSCustomObject]@{ Algorithm = "Argon2ad";      Minerset = 3; WarmupTimes = @(30, 15);  ExcludePools = @();        Arguments = " --algo argon2ad" } # ASIC
     [PSCustomObject]@{ Algorithm = "Argon2d250";    Minerset = 2; WarmupTimes = @(30, 15);  ExcludePools = @();        Arguments = " --algo argon2d250" }
     [PSCustomObject]@{ Algorithm = "Argon2d500";    Minerset = 2; WarmupTimes = @(30, 15);  ExcludePools = @();        Arguments = " --algo argon2d500" }
@@ -71,6 +70,7 @@ $Algorithms = @(
 #   [PSCustomObject]@{ Algorithm = "Lyra2RE3";      Minerset = 3; WarmupTimes = @(90, 15);  ExcludePools = @();        Arguments = " --algo lyra2rev3" } # ASIC
 #   [PSCustomObject]@{ Algorithm = "Lyra2Z";        MinerSet = 0; WarmupTimes = @(90, 0);   ExcludePools = @();        Arguments = " --algo lyra2z" } # ASIC
 #   [PSCustomObject]@{ Algorithm = "Lyra2z330";     Minerset = 3; WarmupTimes = @(90, 25);  ExcludePools = @();        Arguments = " --algo lyra2z330" } # Algorithm is dead
+    [PSCustomObject]@{ Algorithm = "MemeHash";      MinerSet = 0; WarmupTimes = @(90, 35);  ExcludePools = @();        Arguments = " --algo memehashv2" }
     [PSCustomObject]@{ Algorithm = "Mike";          MinerSet = 3; WarmupTimes = @(90, 60);  ExcludePools = @();        Arguments = " --algo mike" } # GPU
     [PSCustomObject]@{ Algorithm = "Minotaur";      Minerset = 2; WarmupTimes = @(90, 15);  ExcludePools = @();        Arguments = " --algo minotaur" }
     [PSCustomObject]@{ Algorithm = "MinotaurX";     MinerSet = 0; WarmupTimes = @(90, 0);   ExcludePools = @();        Arguments = " --algo minotaurx" }
@@ -107,7 +107,7 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "YespowerRes";   Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @();        Arguments = " --algo yespowerRes" }
     [PSCustomObject]@{ Algorithm = "YespowerSugar"; MinerSet = 1; WarmupTimes = @(45, 0);   ExcludePools = @();        Arguments = " --algo yespowerSugar" } # SRBMminerMulti is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "YespowerTIDE";  MinerSet = 0; WarmupTimes = @(45, 0);   ExcludePools = @();        Arguments = " --algo yespowerTIDE" }
-    [PSCustomObject]@{ Algorithm = "YespowerUrx";   Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @();        Arguments = " --algo yespowerURX" } # JayddeeCpu-v3.23.3 is faster, SRBMminerMulti is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "YespowerUrx";   Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @();        Arguments = " --algo yespowerURX" } # JayddeeCpu-v3.23.5 is faster, SRBMminerMulti is fastest, but has 0.85% miner fee
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
@@ -128,6 +128,7 @@ If ($Algorithms) {
                 API         = "CcMiner"
                 Arguments   = "$($_.Arguments) --url $(If ($Pool.PoolPorts[1]) { "stratum+tcps" } Else { "stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass)$(If ($Pool.WorkerName) { " --rig-id $($Pool.WorkerName)" }) --cpu-affinity AAAA --quiet --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)"
                 DeviceNames = $AvailableMiner_Devices.Name
+                Fee         = @(0) # Dev fee
                 MinerSet    = $_.MinerSet
                 Name        = $Miner_Name
                 Path        = $Path

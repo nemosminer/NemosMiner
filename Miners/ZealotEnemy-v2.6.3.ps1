@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
@@ -28,7 +28,7 @@ $URI = Switch ($Variables.DriverVersion.CUDA) {
     Default { Return }
 }
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\z-enemy.exe"
+$Path = "$PWD\Bin\$($Name)\z-enemy.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = @(
@@ -80,7 +80,7 @@ If ($Algorithms) {
                         API         = "Trex"
                         Arguments   = "$Arguments $(If ($Pool.PoolPorts[1]) { "--no-cert-verify --url stratum+ssl" } Else { "--url stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass) --api-bind 0 --api-bind-http $MinerAPIPort --retry-pause 1 --quiet --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
                         DeviceNames = $AvailableMiner_Devices.Name
-                        Fee         = @(0.01) # dev fee
+                        Fee         = @(0.01) # Dev fee
                         MinerSet    = $_.MinerSet
                         MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
                         Name        = $Miner_Name

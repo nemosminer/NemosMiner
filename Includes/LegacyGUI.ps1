@@ -18,14 +18,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\LegacyGUI.psm1
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
-# [Void] [System.Windows.Forms.Application]::EnableVisualStyles()
-[Void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
-[Void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms.DataVisualization")
-[Void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing")
+[Void] [System.Reflection.Assembly]::Load("System.Windows.Forms")
+[Void] [System.Reflection.Assembly]::Load("System.Windows.Forms.DataVisualization")
+[Void] [System.Reflection.Assembly]::Load("System.Drawing")
 
 #--- For High DPI, Call SetProcessDPIAware(need P/Invoke) and EnableVisualStyles ---
 Add-Type -TypeDefinition @'
@@ -153,7 +152,7 @@ Function Update-TabControl {
                     $LaunchedMinersDGV.BeginInit()
                     $LaunchedMinersDGV.ClearSelection()
                     $LaunchedMinersDGV.DataSource = $Variables.MinersBest_Combo | Select-Object @(
-                        @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join "; " } }
+                        @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join '; ' } }
                         @{ Name = "Miner"; Expression = { $_.Name } }
                         @{ Name = "Status"; Expression = { $_.Status } }, 
                         @{ Name = "Earning`r$($Config.MainCurrency)/day"; Expression = { If (-not [Double]::IsNaN($_.Earning)) {"{0:n$($Config.DecimalsMax)}" -f ($_.Earning * $Variables.Rates.BTC.($Config.MainCurrency)) } Else { "n/a" } } }
@@ -694,7 +693,7 @@ $MiningSummaryLabel.Tag = ""
 $MiningSummaryLabel.TextAlign = "MiddleLeft"
 $MiningSummaryLabel.Visible = $true
 $LegacyGUIControls += $MiningSummaryLabel
-$Tooltip.SetToolTip($MiningSummaryLabel, "Color legend:`rBlack: Mining is idle`rGreen: Mining is profitable`rRed: Mining NOT profitable")
+$Tooltip.SetToolTip($MiningSummaryLabel, "Color legend:`rBlack: Mining is idle`rGreen: Mining is profitable`rRed: Mining is NOT profitable")
 
 $ButtonPause = New-Object System.Windows.Forms.Button
 $ButtonPause.Enabled = $Config.Autostart

@@ -17,19 +17,19 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
 
 $URI = "https://github.com/Minerx117/miners/releases/download/CcminerVerusHash/ccminer_CPU_3.8.3.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\ccminer.exe"
+$Path = "$PWD\Bin\$($Name)\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = @(
-    [PSCustomObject]@{ Algorithm = "VerusHash"; Minerset = 1; WarmupTimes = @(75, 300); ExcludePools = @("NiceHash"); Arguments = " --algo verus" } # SRBMinerMulti-v2.3.9 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "VerusHash"; Minerset = 1; WarmupTimes = @(90, 300); ExcludePools = @("NiceHash"); Arguments = " --algo verus" } # SRBMinerMulti-v2.3.9 is fastest, but has 0.85% miner fee
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
@@ -51,6 +51,7 @@ If ($Algorithms) {
                 API         = "CcMiner"
                 Arguments   = "$($_.Arguments) --url stratum+tcp://$($Pool.Host):$($Pool.PoolPorts[0]) --user $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass) --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --statsavg 1 --retry-pause 1 --api-bind $MinerAPIPort"
                 DeviceNames = $AvailableMiner_Devices.Name
+                Fee         = @(0) # Dev fee
                 MinerSet    = $_.MinerSet
                 Name        = $Miner_Name
                 Path        = $Path

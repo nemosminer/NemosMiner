@@ -17,15 +17,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
 
-$URI = "https://github.com/andru-kun/wildrig-multi/releases/download/0.37.1/wildrig-multi-windows-0.37.1.7z"
+$URI = "https://github.com/andru-kun/wildrig-multi/releases/download/0.37.2/wildrig-multi-windows-0.37.2.7z"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\wildrig.exe"
+$Path = "$PWD\Bin\$($Name)\wildrig.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 
@@ -41,7 +41,7 @@ $Algorithms = @(
 #   [PSCustomObject]@{ Algorithm = "Bmw512";           Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @();       ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo bmw512" } # ASIC
     [PSCustomObject]@{ Algorithm = "Bitcore";          Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();       ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo bitcore" }
     [PSCustomObject]@{ Algorithm = "C11";              Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @();       ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo c11" }
-    [PSCustomObject]@{ Algorithm = "CurveHash";        Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @("GCN1"); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo curvehash" } # https://github.com/andru-kun/wildrig-multi/issues/250
+    [PSCustomObject]@{ Algorithm = "CurveHash";        Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @("GCN4"); ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo curvehash" } # https://github.com/andru-kun/wildrig-multi/issues/250
     [PSCustomObject]@{ Algorithm = "Dedal";            Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();       ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo dedal" } # CryptoDredge-v0.27.0 is fastest
     [PSCustomObject]@{ Algorithm = "EvrProgPow";       Type = "AMD"; Fee = @(0.01); MinMemGiB = 0.62; MinerSet = 0; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();       ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo evrprogpow" } 
     [PSCustomObject]@{ Algorithm = "Exosis";           Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();       ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo exosis" } 
@@ -63,7 +63,7 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "Minotaur";         Type = "AMD"; Fee = @(0.05); MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();       ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo minotaur" }
 #   [PSCustomObject]@{ Algorithm = "MTP";              Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();       ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo mtp" } # Algorithm is dead
     [PSCustomObject]@{ Algorithm = "MTPTcr";           Type = "AMD"; Fee = @(0.01); MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();       ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo mtp-tcr" }
-    [PSCustomObject]@{ Algorithm = "NexaPow";          Type = "AMD"; Fee = @(0.02); MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(45, 15);  ExcludeGPUArchitecture = @("GCN4"); ExcludeGPUModel = ""; ExcludePools = @("NiceHash"); Arguments = " --algo nexapow" } # https://github.com/andru-kun/wildrig-multi/issues/243 & https://github.com/andru-kun/wildrig-multi/issues/250
+    [PSCustomObject]@{ Algorithm = "NexaPow";          Type = "AMD"; Fee = @(0.02); MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(45, 15);  ExcludeGPUArchitecture = @("GCN4"); ExcludeGPUModel = ""; ExcludePools = @("_NiceHash"); Arguments = " --algo nexapow" } # https://github.com/andru-kun/wildrig-multi/issues/243 & https://github.com/andru-kun/wildrig-multi/issues/250
     [PSCustomObject]@{ Algorithm = "PadiHash";         Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();       ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo glt-padihash" }
     [PSCustomObject]@{ Algorithm = "PawelHash";        Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();       ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo glt-pawelhash" }
 #   [PSCustomObject]@{ Algorithm = "Phi";              Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0);   ExcludeGPUArchitecture = @();       ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo phi" } # ASIC

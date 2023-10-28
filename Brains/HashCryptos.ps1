@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Brains\MiningDutch.ps1
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 using module ..\Includes\Include.psm1
@@ -141,7 +141,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
 
     Remove-Variable AlgoData, Duration -ErrorAction Ignore
 
-    While ($CurDate -ge $Variables.PoolDataCollectedTimeStamp -or ([DateTime]::Now).ToUniversalTime().AddSeconds([Int]($Durations | Measure-Object -Average | Select-Object -ExpandProperty Average) + 3) -le $Variables.EndCycleTime) { 
+    While ($CurDate -ge $Variables.MinerDataCollectedTimeStamp -or ([DateTime]::Now).ToUniversalTime().AddSeconds([Int]($Durations | Measure-Object -Average | Select-Object -ExpandProperty Average) + 3) -le $Variables.EndCycleTime) { 
         Start-Sleep -Seconds 1
     }
 

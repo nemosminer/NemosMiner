@@ -28,8 +28,20 @@ using module .\APIServer.psm1
 
 If ($Config.Transcript) { Start-Transcript -Path ".\Debug\$((Get-Item $MyInvocation.MyCommand.Path).BaseName)-Transcript_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
 
+$Counter = 0
+"" > ".\Debug\$((Get-Item $MyInvocation.MyCommand.Path).BaseName)_MemUsage.log"
+
 Do { 
+    If ($LegacyGUIForm) { $LegacyGUIForm.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) - Runtime: {0:dd} days {0:hh} hrs {0:mm} mins - Path: $($Variables.Mainpath)" -f [TimeSpan](([DateTime]::Now).ToUniversalTime() - $Variables.ScriptStartTime) }
+
     Try { 
+        $Counter ++ 
+        # If (-not ($Counter % 100)) { 
+            $MemUsageLastCycle = $MemUsage
+            $MemUsage = [System.GC]::GetTotalMemory("forcefullcollection")
+            "$(Get-Date -Format "yyyy-MM-dd HH:mm:ss"): Core 'Loop': {0:n2} MBytes / $(If (($MemUsage - $MemUsageLastCycle) -gt 0) { "+" } ){1:n0} kBytes [Cycle $Counter / Uptime: $((([DateTime]::Now).ToUniversalTime() - $Variables.ScriptStartTime).ToString('hh\:mm\:ss'))]" -f ($MemUsage / 1MB), (($MemUsage - $MemUsageLastCycle) / 1kB) >> ".\Debug\$((Get-Item $MyInvocation.MyCommand.Path).BaseName)_MemUsage.log"
+        # }
+
         # Set master timer
         $Variables.Timer = ([DateTime]::Now).ToUniversalTime()
 
@@ -716,14 +728,26 @@ Do {
 
                 $MinersNew = [Miner[]]@()
                 $MinerDevices = @($Variables.EnabledDevices | Select-Object -Property Bus, ConfiguredPowerUsage, Name, ReadPowerUsage, Status)
-                Get-ChildItem -Path ".\Miners\*.ps1" | ForEach-Object -Parallel { 
-                    $MinerPools = $using:MinerPools
-                    $Config = $using:Config
-                    $Variables = $using:Variables
-                    Write-Message -Level Debug "Read miner '$($_.BaseName)' start"
-                    & $_.FullName
-                    Write-Message -Level Debug "Read miner '$($_.BaseName)' end"
-                } -ThrottleLimit 5 | ForEach-Object { 
+                # Get-ChildItem -Path ".\Miners\*.ps1" | ForEach-Object -Parallel { 
+                #     $MinerPools = $using:MinerPools
+                #     $Config = $using:Config
+                #     $Variables = $using:Variables
+                #     & $_
+                # } -ThrottleLimit 5 | ForEach-Object { 
+                Get-ChildItem -Path ".\Miners\*.ps1" | ForEach-Object { 
+                    $MinerFileName = $_.Name
+                    Try { 
+                        Write-Message -Level Debug "Read miner '$($_.BaseName)' start"
+                        & $_.FullName
+                        Write-Message -Level Debug "Read miner '$($_.BaseName)' end"
+                    }
+                    Catch { 
+                        Write-Message -Level Error "Error in miner file '$MinerFileName': $_."
+                        "$(Get-Date -Format "yyyy-MM-dd_HH:mm:ss")" >> "Logs\Error.txt"
+                        $_.Exception | Format-List -Force >> "Logs\Error.txt"
+                        $_.InvocationInfo | Format-List -Force >> "Logs\Error.txt"
+                    }
+                } | Select-Object | ForEach-Object { 
                     Try { 
                         $Miner = $_
                         $Miner | Add-Member MinDataSample $Config.MinDataSample
@@ -751,7 +775,7 @@ Do {
                         $_.InvocationInfo | Format-List -Force >> "Logs\Error.txt"
                     }
                 } | Out-Null
-                Remove-Variable Algorithm, Algorithm_Pool, Miner, MinerPools -ErrorAction Ignore
+                Remove-Variable Algorithm, Algorithm_Pool, Miner, MinerFileName, MinerPools -ErrorAction Ignore
             }
 
             If ($MinersNew) { # Sometimes there are no miners loaded, keep existing
@@ -1289,6 +1313,9 @@ Do {
             Start-Sleep -Milliseconds 100
             ForEach ($Miner in ($Variables.RunningMiners | Where-Object { $_.Status -ne [MinerStatus]::DryRun })) { 
                 Try { 
+                    If ($DebugMinerGetData) { 
+                        [Void]$Miner.GetMinerData()
+                    }
                     If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
                         # Miner crashed
                         $Miner.StatusInfo = "Error: '$($Miner.Info)' exited unexpectedly"

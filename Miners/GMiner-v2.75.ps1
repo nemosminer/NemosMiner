@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 using module ..\Includes\Include.psm1
@@ -27,7 +27,7 @@ If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AM
 
 $URI = "https://github.com/Minerx117/miners/releases/download/GMiner/GMiner2.75.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\miner.exe"
+$Path = "$PWD\Bin\$($Name)\miner.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = @(

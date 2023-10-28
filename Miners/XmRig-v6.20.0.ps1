@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -in @("AMD", "CPU") -or $_.OpenCL.ComputeCapability -gt "5.0" })) { Return }
@@ -42,7 +42,7 @@ $URI = Switch ($Variables.DriverVersion.CUDA) {
     Default           { "https://github.com/RainbowMiner/miner-binaries/releases/download/v6.20.0-xmrig/xmrig-6.20.0-msvc-cuda8_0-win64.7z"; Break }
 }
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\xmrig.exe"
+$Path = "$PWD\Bin\$($Name)\xmrig.exe"
 $DeviceEnumerator = "PlatformId_Index"
 
 $Algorithms = @(
@@ -172,11 +172,11 @@ If ($Algorithms) {
                         Arguments   = "$Arguments $(If ($Pool.BaseName -eq "NiceHash") { " --nicehash" } )$(If ($Pool.PoolPorts[1]) { " --tls" } ) --url=$($Pool.Host):$($Pool.PoolPorts | Where-Object  { $_ -ne $null } | Select-Object -Last 1) --user=$($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass=$($Pool.Pass)$(If ($Pool.WorkerName) { " --rig-id $($Pool.WorkerName)" }) --keepalive --http-enabled --http-host=127.0.0.1 --http-port=$($MinerAPIPort) --api-worker-id=$($Config.WorkerName) --api-id=$($Miner_Name) --retries=90 --retry-pause=1"
                         DeviceNames = $AvailableMiner_Devices.Name
                         Fee         = @(0.01) # Dev fee
-                        Path        = $Path
-                        Port        = $MinerAPIPort
                         MinerSet    = $_.MinerSet
                         MinerUri    = "http://workers.xmrig.info/worker?url=$([System.Web.HTTPUtility]::UrlEncode("http://127.0.0.1:$($MinerAPIPort)"))?Authorization=Bearer $([System.Web.HTTPUtility]::UrlEncode($Miner_Name))"
                         Name        = $Miner_Name
+                        Path        = $Path
+                        Port        = $MinerAPIPort
                         Type        = $_.Type
                         URI         = $Uri
                         WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking

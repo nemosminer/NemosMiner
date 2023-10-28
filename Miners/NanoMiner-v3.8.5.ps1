@@ -17,15 +17,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -ne "NVIDIA" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge "455.23") })) { Return }
 
 $URI = "https://github.com/nanopool/nanominer/releases/download/v3.8.5/nanominer-windows-3.8.5.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\nanominer.exe"
+$Path = "$PWD\Bin\$($Name)\nanominer.exe"
 $DeviceEnumerator = "Slot"
 
 $Algorithms = @(

@@ -17,15 +17,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.5
-Version date:   2023/10/22
+Version:        5.0.1.6
+Version date:   2023/10/28
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "CPU" -or $_.Type -eq "INTEL" -or ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0") -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge "510.00") })) { Return }
 
 $URI = "https://github.com/doktor83/SRBMiner-Multi/releases/download/2.3.9/SRBMiner-Multi-2-3-9-win64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\SRBMiner-MULTI.exe"
+$Path = "$PWD\Bin\$($Name)\SRBMiner-MULTI.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 # Algorithm parameter values are case sensitive!
@@ -98,7 +98,6 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithms = @("YescryptR16");              Type = "AMD"; Fee = @(0.0085);         MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(90, 30); ExcludeGPUArchitecture = @();       ExcludePools = @(@(), @());             Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm yescryptr16") }
     [PSCustomObject]@{ Algorithms = @("YescryptR32");              Type = "AMD"; Fee = @(0.0085);         MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(90, 0);  ExcludeGPUArchitecture = @();       ExcludePools = @(@(), @());             Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm yescryptr32") }
 
-    [PSCustomObject]@{ Algorithms = @("APEPEPoW");             Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(30, 30);  ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm memehash_apepepow") }
     [PSCustomObject]@{ Algorithms = @("Argon2d16000");         Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm argon2d_16000") }
     [PSCustomObject]@{ Algorithms = @("Argon2d500");           Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm argon2d_dynamic") }
     [PSCustomObject]@{ Algorithms = @("Argon2Chukwa");         Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(30, 15);  ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm argon2id_chukwa") }
@@ -114,6 +113,7 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithms = @("DynamoCoin");           Type = "CPU"; Fee = @(0.01);   Minerset = 2; WarmupTimes = @(30, 15);  ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm dynamo") }
     [PSCustomObject]@{ Algorithms = @("Ghostrider");           Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(180, 60); ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm ghostrider") }
     [PSCustomObject]@{ Algorithms = @("Lyra2v2Webchain");      Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(30, 0);   ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm lyra2v2_webchain") }
+    [PSCustomObject]@{ Algorithms = @("MemeHash");             Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(30, 30);  ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm memehash") }
     [PSCustomObject]@{ Algorithms = @("Mike");                 Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(30, 60);  ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm mike") }
     [PSCustomObject]@{ Algorithms = @("Minotaur");             Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(30, 0);   ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm minotaur") }
     [PSCustomObject]@{ Algorithms = @("MinotaurX");            Type = "CPU"; Fee = @(0.0085); Minerset = 2; WarmupTimes = @(40, 0);   ExcludePools = @(@(), @());           Arguments = @(" --disable-gpu --algorithm minotaurx") }

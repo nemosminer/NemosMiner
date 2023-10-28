@@ -17,7 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.5
+Version:        5.0.1.6
 Version date:   2023/10/06
 #>
 
@@ -25,7 +25,7 @@ If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Typ
 
 $URI = "https://github.com/Raptor3um/cpuminer-opt/releases/download/v2.0/cpuminer-take2-windows.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
+$Path = "$PWD\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
 
 $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "Ghostrider"; Minerset = 1; WarmupTimes = @(180, 60); ExcludePools = @(); Arguments = " --algo gr" }
@@ -38,10 +38,10 @@ $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].PoolPort
 
 If ($Algorithms) { 
 
-    If ($AvailableMiner_Devices.CpuFeatures -match 'avx2')     { $Path = ".\Bin\$($Name)\cpuminer-avx2.exe" }
-    ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'avx')  { $Path = ".\Bin\$($Name)\cpuminer-avx.exe" }
-    ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'aes')  { $Path = ".\Bin\$($Name)\cpuminer-aes-sse42.exe" }
-    ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'sse2') { $Path = ".\Bin\$($Name)\cpuminer-sse2.exe" }
+    If ($AvailableMiner_Devices.CpuFeatures -match 'avx2')     { $Path = "$PWD\Bin\$($Name)\cpuminer-avx2.exe" }
+    ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'avx')  { $Path = "$PWD\Bin\$($Name)\cpuminer-avx.exe" }
+    ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'aes')  { $Path = "$PWD\Bin\$($Name)\cpuminer-aes-sse42.exe" }
+    ElseIf ($AvailableMiner_Devices.CpuFeatures -match 'sse2') { $Path = "$PWD\Bin\$($Name)\cpuminer-sse2.exe" }
     Else { Return }
 
     $MinerAPIPort = $Config.APIPort + ($AvailableMiner_Devices.Id | Sort-Object -Top 1) + 1
@@ -56,6 +56,7 @@ If ($Algorithms) {
                 API         = "CcMiner"
                 Arguments   = "$($_.Arguments) --url stratum+tcp://$($Pool.Host):$($Pool.PoolPorts[0]) --user $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass) --hash-meter --quiet --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)"
                 DeviceNames = $AvailableMiner_Devices.Name
+                Fee         = @(0) # Dev fee
                 MinerSet    = $_.MinerSet
                 Name        = $Miner_Name
                 Path        = $Path
