@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Brains\ZPool.ps1
-Version:        5.0.1.6
+Version:        5.0.1.7
 Version date:   08 July 2023
 #>
 
@@ -191,7 +191,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
     $Durations += ($Duration, $Variables.Interval | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum)
     $Durations = @($Durations | Select-Object -Last 20)
 
-    Write-Message -Level Debug "Brain '$($BrainName)': End loop (Duration $($Duration) sec.); Found $($AlgoData.PSObject.Properties.Name.Count) pools."
+    Write-Message -Level Debug "Brain '$($BrainName)': End loop (Duration $($Duration) sec.); found $($AlgoData.PSObject.Properties.Name.Count) pools."
 
     Remove-Variable AlgoData, Duration -ErrorAction Ignore
 

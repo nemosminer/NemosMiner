@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\include.ps1
-Version:        5.0.1.6
-Version date:   2023/10/28
+Version:        5.0.1.7
+Version date:   2023/11/01
 #>
 
 $Global:DebugPreference = "SilentlyContinue"
@@ -1883,8 +1883,10 @@ Function Disable-Stat {
         [String]$Name
     )
 
-    $Path = "Stats\$Name.txt"
+    $Stat = Get-Stat -Name $Name
     If (-not $Stat) { $Stat = Set-Stat -Name $Name -Value 0 }
+
+    $Path = "Stats\$Name.txt"
     $Stat.Disabled = $true
 
     @{ 
@@ -2059,14 +2061,6 @@ Function Get-Stat {
         [Parameter(Mandatory = $true)]
         [String[]]$Name
     )
-
-    If ($Global:Stats -isnot [Hashtable] -or -not $Global:Stats.IsSynchronized) { 
-        $Global:Stats = [Hashtable]::Synchronized(@{ })
-    }
-
-    If (-not (Test-Path -Path "Stats" -PathType Container)) { 
-        New-Item "Stats" -ItemType Directory -Force | Out-Null
-    }
 
     $Name | Select-Object | ForEach-Object { 
         $Stat_Name = $_
@@ -2713,7 +2707,7 @@ Function Get-DecimalsFromValue {
         [Int]$DecimalsMax
     )
 
-    $Decimals = 1 + $DecimalsMax - [Math]::Floor([math]::Abs($Value)).ToString().Length
+    $Decimals = 1 + $DecimalsMax - [Math]::Floor([Math]::Abs($Value)).ToString().Length
     If ($Decimals -gt $DecimalsMax) { $Decimals = 0 }
 
     Return $Decimals
@@ -3270,8 +3264,8 @@ Function Update-DAGdata {
             If ($DAGdataResponse.statuscode -eq 200) {
                 $DAGdataResponse.Content -split '\n' -replace '"', "'" | Where-Object { $_ -like "<div class='block' title='Current block height of *" } | ForEach-Object { 
                     $Currency = $_ -replace "^<div class='block' title='Current block height of " -replace "'>.*$"
-                    $BlockHeight = [Int]($_ -replace "^<div class='block' title='Current block height of $Currency'>" -replace "</div>")
-                    If ($BlockHeight -ge $Variables.DAGdata.Currency.$Currency.BlockHeight -and $Currency) { 
+                    $BlockHeight = [Int][Math]::Floor(($_ -replace "^<div class='block' title='Current block height of $Currency'>" -replace "</div>"))
+                    If ($BlockHeight -ge $Variables.DAGdata.Currency.$Currency.BlockHeight -and (Get-AlgorithmFromCurrency -Currency $Currency)) { 
                         $DAGdata = Get-DAGdata -BlockHeight $BlockHeight -Currency $Currency -EpochReserve 2
                         If ($DAGdata.Algorithm -match $Variables.RegexAlgoHasDAG) { 
                             $DAGdata.Date = ([DateTime]::Now).ToUniversalTime()
@@ -3456,15 +3450,15 @@ Function Get-Epoch {
         [Parameter(Mandatory = $true)]
         [Double]$Blockheight,
         [Parameter(Mandatory = $true)]
-        [String]$Currency
+        [String]$Algorithm
     )
 
-    Switch ($Currency) { 
-        "ERG"   { $Blockheight -= 416768 } # Epoch 0 starts @ 417792
+    Switch ($Algorithm) { 
+        "Autolykos2" { $Blockheight -= 416768 } # Epoch 0 starts @ 417792
         Default { }
     }
 
-    Return [Int][Math]::Floor($Blockheight / (Get-EpochLength -Blockheight $Blockheight -Currency $Currency))
+    Return [Int][Math]::Floor($Blockheight / (Get-EpochLength -Blockheight $Blockheight -Algorithm $Algorithm))
 }
 
 Function Get-EpochLength { 
@@ -3473,35 +3467,36 @@ Function Get-EpochLength {
         [Parameter(Mandatory = $true)]
         [Double]$Blockheight,
         [Parameter(Mandatory = $true)]
-        [String]$Currency
+        [String]$Algorithm
     )
 
-    Switch ($Currency) { 
-        "CFX"   { Return 524288 }
-        "ERG"   { Return 1024 }
-        "ETC"   { If ($Blockheight -ge 11700000 ) { Return 60000 } Else { Return 30000 } }
-        "EVR"   { Return 12000 }
-        "FIRO"  { Return 1300 }
-        "RVN"   { Return 7500 }
-        Default { Return 30000 }
+    Switch ($Algorithm) { 
+        "Octopus"    { Return 524288 }
+        "Autolykos2" { Return 1024 }
+        "EtcHash"    { If ($Blockheight -ge 11700000 ) { Return 60000 } Else { Return 30000 } }
+        "EvrProgPow" { Return 12000 }
+        "FiroPow"    { Return 1300 }
+        "KawPow"     { Return 7500 }
+        Default      { Return 30000 }
     }
 }
 
 Function Get-DAGdata { 
 
     Param(
-        [Parameter(Mandatory = $false)]
-        [Double]$Blockheight = (([DateTime]::Now) - [DateTime]"07/31/2015").Days * 6400,
-        [Parameter(Mandatory = $false)]
-        [String]$Currency = "ETH",
+        [Parameter(Mandatory = $true)]
+        [Double]$Blockheight,
+        [Parameter(Mandatory = $true)]
+        [String]$Currency,
         [Parameter(Mandatory = $false)]
         [Int16]$EpochReserve = 0
     )
 
-    $Epoch = (Get-Epoch -BlockHeight $BlockHeight -Currency $Currency) + $EpochReserve
+    $Algorithm = Get-AlgorithmFromCurrency $Currency
+    $Epoch = (Get-Epoch -BlockHeight $BlockHeight -Algorithm $Algorithm) + $EpochReserve
 
     Return [Ordered]@{ 
-        Algorithm   = Get-AlgorithmFromCurrency $Currency
+        Algorithm   = $Algorithm
         BlockHeight = [Int]$BlockHeight
         CoinName    = [String]$Variables.CoinNames[$Currency]
         DAGsize     = Get-DAGSize -Epoch $Epoch -Currency $Currency

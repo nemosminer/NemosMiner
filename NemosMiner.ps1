@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        5.0.1.6
-Version date:   2023/10/28
+Version:        5.0.1.7
+Version date:   2023/11/01
 #>
 
 using module .\Includes\Include.psm1
@@ -293,7 +293,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"5.0.1.6"
+    Version      = [System.Version]"5.0.1.7"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -319,6 +319,7 @@ Else {
 If (-not (Test-Path -Path ".\Cache" -PathType Container)) { New-Item -Path . -Name "Cache" -ItemType Directory | Out-Null }
 If (-not (Test-Path -Path ".\Config" -PathType Container)) { New-Item -Path . -Name "Config" -ItemType Directory | Out-Null }
 If (-not (Test-Path -Path ".\Logs" -PathType Container)) { New-Item -Path . -Name "Logs" -ItemType Directory | Out-Null }
+If (-not (Test-Path -Path ".\Stats" -PathType Container)) { New-Item "Stats" -ItemType Directory -Force | Out-Null }
 
 # Expand paths
 $Variables.MainPath = (Split-Path $MyInvocation.MyCommand.Path)

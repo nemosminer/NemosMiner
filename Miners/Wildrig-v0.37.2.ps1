@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.6
-Version date:   2023/10/28
+Version:        5.0.1.7
+Version date:   2023/11/01
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
@@ -27,7 +27,6 @@ $URI = "https://github.com/andru-kun/wildrig-multi/releases/download/0.37.2/wild
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = "$PWD\Bin\$($Name)\wildrig.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
-
 
 $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "0x10";             Type = "AMD"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 30);  ExcludeGPUArchitecture = @();       ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo 0x10" }
@@ -102,7 +101,7 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "Aergo";            Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo aergo --watchdog" }
     [PSCustomObject]@{ Algorithm = "Anime";            Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @("Other"); ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo anime --watchdog" }
     [PSCustomObject]@{ Algorithm = "AstralHash";       Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo glt-astralhash --watchdog" }
-#   [PSCustomObject]@{ Algorithm = "BCD";              Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 3; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo bcd --watchdog" } # ASIC
+  [PSCustomObject]@{ Algorithm = "BCD";              Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 3; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo bcd --watchdog" } # ASIC
     [PSCustomObject]@{ Algorithm = "Bitcore";          Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo bitcore --watchdog" }
     [PSCustomObject]@{ Algorithm = "Blake2bBtcc";      Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo blake2b-btcc --watchdog" }
     [PSCustomObject]@{ Algorithm = "Blake2bGlt";       Type = "NVIDIA"; Fee = @(0.01); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = "";            ExcludePools = @();           Arguments = " --algo blake2b-glt --watchdog" }
@@ -178,29 +177,30 @@ If ($Algorithms) {
 
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-            $ExcludePools = $_.ExcludePools
-            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools)) { 
+            If ($AvailableMiner_Devices = If ($_.ExcludeGPUModel) { $Miner_Devices | Where-Object Model -notmatch $_.ExcludeGPUModel } Else { $Miner_Devices }) { 
+                $ExcludePools = $_.ExcludePools
+                ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools)) { 
 
-                $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
-                $AvailableMiner_Devices = If ($_.ExcludeGPUModel) { $Miner_Devices | Where-Object Model -notmatch $_.ExcludeGPUModel } Else { $Miner_Devices }
-                If ($AvailableMiner_Devices = $AvailableMiner_Devices | Where-Object MemoryGiB -GE $MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
+                    $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
+                    If ($AvailableMiner_Devices = $AvailableMiner_Devices | Where-Object MemoryGiB -GE $MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
 
-                    $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
+                        $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 
-                    [PSCustomObject]@{ 
-                        API         = "XmRig"
-                        Arguments   = "$($_.Arguments) --api-port $MinerAPIPort --url $(If ($Pool.PoolPorts[1]) { "stratum+tcps" } Else { "stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass) --multiple-instance --opencl-platforms $($AvailableMiner_Devices.PlatformId | Sort-Object -Unique) --opencl-devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
-                        DeviceNames = $AvailableMiner_Devices.Name
-                        Fee         = @($_.Fee) # Dev fee
-                        MinerSet    = $_.MinerSet
-                        MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
-                        Name        = $Miner_Name
-                        Path        = $Path
-                        Port        = $MinerAPIPort
-                        Type        = $_.Type
-                        URI         = $Uri
-                        WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
-                        Workers     = @(@{ Pool = $Pool })
+                        [PSCustomObject]@{ 
+                            API         = "XmRig"
+                            Arguments   = "$($_.Arguments) --api-port $MinerAPIPort --url $(If ($Pool.PoolPorts[1]) { "stratum+tcps" } Else { "stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass) --multiple-instance --opencl-platforms $($AvailableMiner_Devices.PlatformId | Sort-Object -Unique) --opencl-devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
+                            DeviceNames = $AvailableMiner_Devices.Name
+                            Fee         = @($_.Fee) # Dev fee
+                            MinerSet    = $_.MinerSet
+                            MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
+                            Name        = $Miner_Name
+                            Path        = $Path
+                            Port        = $MinerAPIPort
+                            Type        = $_.Type
+                            URI         = $Uri
+                            WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                            Workers     = @(@{ Pool = $Pool })
+                        }
                     }
                 }
             }

@@ -17,23 +17,24 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.6
-Version date:   2023/10/28
+Version:        5.0.1.7
+Version date:   2023/11/01
 #>
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
 
-$URI = "https://github.com/JayDDee/cpuminer-opt/releases/download/v23.5/cpuminer-opt-.23.5-windows.zip"
+$URI = "https://github.com/JayDDee/cpuminer-opt/releases/download/v23.6/cpuminer-opt-.23.6-windows.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = "$PWD\Bin\$($Name)\cpuminer-aes-sse42.exe" # Intel
 
 If     ((Compare-Object $AvailableMiner_Devices.CpuFeatures @("avx512", "sha", "vaes") -ExcludeDifferent -IncludeEqual -PassThru).Count -eq 3) { $Path = "$PWD\Bin\$($Name)\cpuminer-avx512-sha-vaes.exe" }
-ElseIf ((Compare-Object $AvailableMiner_Devices.CpuFeatures @("avx2", "sha", "vaes")   -ExcludeDifferent -IncludeEqual -PassThru).Count -eq 3) { $Path = "$PWD\Bin\$($Name)\cpuminer-avx2-sha-vaes.exe" }
 ElseIf ((Compare-Object $AvailableMiner_Devices.CpuFeatures @("avx512")                -ExcludeDifferent -IncludeEqual -PassThru).Count -eq 1) { $Path = "$PWD\Bin\$($Name)\cpuminer-avx512.exe" }
+ElseIf ((Compare-Object $AvailableMiner_Devices.CpuFeatures @("avx2", "sha", "vaes")   -ExcludeDifferent -IncludeEqual -PassThru).Count -eq 3) { $Path = "$PWD\Bin\$($Name)\cpuminer-avx2-sha-vaes.exe" }
 ElseIf ((Compare-Object $AvailableMiner_Devices.CpuFeatures @("avx2", "sha")           -ExcludeDifferent -IncludeEqual -PassThru).Count -eq 2) { $Path = "$PWD\Bin\$($Name)\cpuminer-avx2-sha.exe" }
+ElseIf ((Compare-Object $AvailableMiner_Devices.CpuFeatures @("aes", "sse42")          -ExcludeDifferent -IncludeEqual -PassThru).Count -eq 2) { $Path = "$PWD\Bin\$($Name)\cpuminer-aes-sse42.exe" }
 ElseIf ((Compare-Object $AvailableMiner_Devices.CpuFeatures @("avx2")                  -ExcludeDifferent -IncludeEqual -PassThru).Count -eq 1) { $Path = "$PWD\Bin\$($Name)\cpuminer-avx2.exe" }
 ElseIf ((Compare-Object $AvailableMiner_Devices.CpuFeatures @("avx")                   -ExcludeDifferent -IncludeEqual -PassThru).Count -eq 1) { $Path = "$PWD\Bin\$($Name)\cpuminer-avx.exe" }
-ElseIf ((Compare-Object $AvailableMiner_Devices.CpuFeatures @("aes", "sse42")          -ExcludeDifferent -IncludeEqual -PassThru).Count -eq 2) { $Path = "$PWD\Bin\$($Name)\cpuminer-aes-sse42.exe" }
+ElseIf ((Compare-Object $AvailableMiner_Devices.CpuFeatures @("sse2")                  -ExcludeDifferent -IncludeEqual -PassThru).Count -eq 1) { $Path = "$PWD\Bin\$($Name)\cpuminer-aes-sse2.exe" }
 Else { Return }
 
 $Algorithms = @(

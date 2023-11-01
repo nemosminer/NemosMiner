@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Brains\ZergPool.ps1
-Version:        5.0.1.6
-Version date:   2023/10/28
+Version:        5.0.1.7
+Version date:   2023/11/01
 #>
 
 using module ..\Includes\Include.psm1
@@ -178,7 +178,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
     $Durations += ($Duration, $Variables.Interval | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum)
     $Durations = @($Durations | Select-Object -Last 20)
 
-    Write-Message -Level Debug "Brain '$($BrainName)': End loop (Duration $($Duration) sec.); Found $($AlgoData.PSObject.Properties.Name.Count) pools."
+    Write-Message -Level Debug "Brain '$($BrainName)': End loop (Duration $($Duration) sec.); found $($AlgoData.PSObject.Properties.Name.Count) pools."
 
     Remove-Variable AlgoData, Duration -ErrorAction Ignore
 

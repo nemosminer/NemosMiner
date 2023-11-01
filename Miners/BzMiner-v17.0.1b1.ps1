@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.6
-Version date:   2023/10/28
+Version:        5.0.1.7
+Version date:   2023/11/01
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -in @("AMD", "INTEL") -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge "460.27.03" ) })) { Return }
@@ -101,65 +101,67 @@ If ($Algorithms) {
 
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
-            $ExcludePools = $_.ExcludePools
-            ForEach ($Pool0 in ($MinerPools[0][$_.Algorithms[0]] | Where-Object BaseName -notin $_.ExcludePools[0] | Where-Object { $_."Ethash".Epoch -eq $null -or $_."Ethash".Epoch -gt 0 } | Where-Object { $Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -ne $true })) { 
-                ForEach ($Pool1 in ($MinerPools[1][$_.Algorithms[1]] | Where-Object BaseName -notin $_.ExcludePools[1] | Where-Object { $Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -ne $true })) { 
+            If ($AvailableMiner_Devices = If ($_.ExcludeGPUModel) { $Miner_Devices | Where-Object Model -notmatch $_.ExcludeGPUModel } Else { $Miner_Devices }) { 
 
-                    $MinMemGiB = $_.MinMemGiB + $Pool0.DAGSizeGiB + $Pool1.DAGSizeGiB
-                    $AvailableMiner_Devices = If ($_.ExcludeGPUModel) { $Miner_Devices | Where-Object Model -notmatch $_.ExcludeGPUModel } Else { $Miner_Devices }
-                    If ($AvailableMiner_Devices = $AvailableMiner_Devices | Where-Object MemoryGiB -GE $MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
+                $ExcludePools = $_.ExcludePools
+                ForEach ($Pool0 in ($MinerPools[0][$_.Algorithms[0]] | Where-Object BaseName -notin $_.ExcludePools[0] | Where-Object { $_."Ethash".Epoch -eq $null -or $_."Ethash".Epoch -gt 0 } | Where-Object { $Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -ne $true })) { 
+                    ForEach ($Pool1 in ($MinerPools[1][$_.Algorithms[1]] | Where-Object BaseName -notin $_.ExcludePools[1] | Where-Object { $Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -ne $true })) { 
 
-                        $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })"
+                        $MinMemGiB = $_.MinMemGiB + $Pool0.DAGSizeGiB + $Pool1.DAGSizeGiB
+                        If ($AvailableMiner_Devices = $AvailableMiner_Devices | Where-Object MemoryGiB -GE $MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
 
-                        $Arguments = $_.Arguments[0]
-                        Switch ($Pool0.Protocol) { 
-                            "ethproxy"     { $Arguments += " -p ethproxy" }
-                            "ethstratum1"  { $Arguments += " -p ethstratum" }
-                            "ethstratum2"  { $Arguments += " -p ethstratum2" }
-                            "ethstratumnh" { $Arguments += " -p ethstratum" }
-                            Default        { $Arguments += " -p stratum"}
-                        }
-                        $Arguments += If ($Pool0.PoolPorts[1]) { "+ssl://" } Else { "+tcp://" }
-                        $Arguments += "$($Pool0.Host):$($Pool0.PoolPorts | Select-Object -Last 1)"
-                        $Arguments += " -w $($Pool0.User)"
-                        $Arguments += " --pool_password $($Pool0.Pass)"
-                        $Arguments += " -r $($Config.WorkerName)"
+                            $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })"
 
-                        If ($_.Algorithms[1]) {
-                            $Arguments += $_.Arguments[1]
-                            Switch ($Pool1.Protocol) { 
-                                "ethproxy"     { $Arguments += " --p2 ethproxy" }
-                                "ethstratum1"  { $Arguments += " --p2 ethstratum" }
-                                "ethstratum2"  { $Arguments += " --p2 ethstratum2" }
-                                "ethstratumnh" { $Arguments += " --p2 ethstratum" }
-                                Default        { $Arguments += " --p2 stratum" }
+                            $Arguments = $_.Arguments[0]
+                            Switch ($Pool0.Protocol) { 
+                                "ethproxy"     { $Arguments += " -p ethproxy" }
+                                "ethstratum1"  { $Arguments += " -p ethstratum" }
+                                "ethstratum2"  { $Arguments += " -p ethstratum2" }
+                                "ethstratumnh" { $Arguments += " -p ethstratum" }
+                                Default        { $Arguments += " -p stratum"}
                             }
-                            $Arguments += If ($Pool1.PoolPorts[1]) { "+ssl://" } Else { "+tcp://" }
-                            $Arguments += "$($Pool1.Host):$($Pool1.PoolPorts | Select-Object -Last 1)"
-                            $Arguments += " --w2 $($Pool1.User)"
-                            $Arguments += " --pool_password2 $($Pool1.Pass)"
-                            $Arguments += " --r2 $($Config.WorkerName)"
-                        }
+                            $Arguments += If ($Pool0.PoolPorts[1]) { "+ssl://" } Else { "+tcp://" }
+                            $Arguments += "$($Pool0.Host):$($Pool0.PoolPorts | Select-Object -Last 1)"
+                            $Arguments += " -w $($Pool0.User)"
+                            $Arguments += " --pool_password $($Pool0.Pass)"
+                            $Arguments += " -r $($Config.WorkerName)"
 
-                        # Apply tuning parameters
-                        If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
+                            If ($_.Algorithms[1]) {
+                                $Arguments += $_.Arguments[1]
+                                Switch ($Pool1.Protocol) { 
+                                    "ethproxy"     { $Arguments += " --p2 ethproxy" }
+                                    "ethstratum1"  { $Arguments += " --p2 ethstratum" }
+                                    "ethstratum2"  { $Arguments += " --p2 ethstratum2" }
+                                    "ethstratumnh" { $Arguments += " --p2 ethstratum" }
+                                    Default        { $Arguments += " --p2 stratum" }
+                                }
+                                $Arguments += If ($Pool1.PoolPorts[1]) { "+ssl://" } Else { "+tcp://" }
+                                $Arguments += "$($Pool1.Host):$($Pool1.PoolPorts | Select-Object -Last 1)"
+                                $Arguments += " --w2 $($Pool1.User)"
+                                $Arguments += " --pool_password2 $($Pool1.Pass)"
+                                $Arguments += " --r2 $($Config.WorkerName)"
+                            }
 
-                        [PSCustomObject]@{ 
-                            API              = "BzMiner"
-                            Arguments        = "$Arguments --nc 1 --no_watchdog --http_enabled 1 --http_port $MinerAPIPort --enable $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0}:0' -f $_ }) -join ' ')"
-                            DeviceNames      = $AvailableMiner_Devices.Name
-                            Fee              = $_.Fee # Dev fee
-                            MinerSet         = $_.MinerSet
-                            MinerUri         = "http://127.0.0.1:$($MinerAPIPort)"
-                            Name             = $Miner_Name
-                            Path             = $Path
-                            Port             = $MinerAPIPort
-                            PrerequisitePath = $PrerequisitePath
-                            PrerequisiteURI  = $PrerequisiteURI
-                            Type             = $_.Type
-                            URI              = $Uri
-                            WarmupTimes      = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
-                            Workers          = @($Pool0, $Pool1 | Where-Object { $_ } | ForEach-Object { @{ Pool = $_ } })
+                            # Apply tuning parameters
+                            If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
+
+                            [PSCustomObject]@{ 
+                                API              = "BzMiner"
+                                Arguments        = "$Arguments --nc 1 --no_watchdog --http_enabled 1 --http_port $MinerAPIPort --enable $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0}:0' -f $_ }) -join ' ')"
+                                DeviceNames      = $AvailableMiner_Devices.Name
+                                Fee              = $_.Fee # Dev fee
+                                MinerSet         = $_.MinerSet
+                                MinerUri         = "http://127.0.0.1:$($MinerAPIPort)"
+                                Name             = $Miner_Name
+                                Path             = $Path
+                                Port             = $MinerAPIPort
+                                PrerequisitePath = $PrerequisitePath
+                                PrerequisiteURI  = $PrerequisiteURI
+                                Type             = $_.Type
+                                URI              = $Uri
+                                WarmupTimes      = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                                Workers          = @($Pool0, $Pool1 | Where-Object { $_ } | ForEach-Object { @{ Pool = $_ } })
+                            }
                         }
                     }
                 }
