@@ -7,41 +7,21 @@ function formatMiners(data) {
   $.each(data, function(index, item) {
     try {
       // Format miner link
-      if (item.MinerUri && item.Best && item.Status == 4) item.tName = '<a href="' + item.MinerUri + '" target ="_blank">' + item.Name + '</a>';
-      else item.tName = item.Name;
+      if (item.MinerUri && item.Best && item.Status == 4) { 
+        item.tBaseName = '<a href="' + item.MinerUri + '" target ="_blank">' + item.BaseName + '</a>';
+        item.tName = '<a href="' + item.MinerUri + '" target ="_blank">' + item.Name + '</a>';
+        item.tStatusInfo = '<a href="' + item.MinerUri + '" target ="_blank">' + item.StatusInfo + '</a>';
+      } else {
+        item.tBaseName = item.BaseName;
+        item.tName = item.Name;
+        item.tStatusInfo = item.StatusInfo;
+      }
 
       // Format the device(s)
       if (item.DeviceNames) item.tDevices = formatArrayAsSortedString(item.DeviceNames);
       else item.tDevices = '';
 
       // Format the pool and algorithm data
-      if (typeof item.Workers === 'object' && item.Workers.length > 0) {
-        item.tPrimaryMinerFee = item.Workers[0].Fee;
-        item.tPrimaryHashrate = item.Workers[0].Hashrate;
-        if (item.Workers[0].Pool) {
-          item.tPrimaryAlgorithm = item.Algorithms[0];
-          item.tPrimaryCurrency = item.Workers[0].Pool.Currency;
-          item.tPrimaryCoinName = item.Workers[0].Pool.CoinName;
-          item.tPrimaryPool = item.Workers[0].Pool.BaseName;
-          item.tPrimaryPoolVariant = item.Workers[0].Pool.Name;
-          item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
-          item.tPrimaryPoolUser = item.Workers[0].Pool.User;
-        }
-        if (item.Workers.length > 1) {
-          item.tSecondaryMinerFee = item.Workers[1].Fee;
-          item.tSecondaryHashrate = item.Workers[1].Hashrate;
-          if (item.Workers[1].Pool) {
-            item.tSecondaryAlgorithm = item.Algorithms[1];
-            item.tSecondaryCurrency = item.Workers[1].Pool.Currency;
-            item.tSecondaryCoinName = item.Workers[1].Pool.CoinName;
-            item.tSecondaryPool = item.Workers[1].Pool.BaseName;
-            item.tSecondaryPoolVariant = item.Workers[1].Pool.Name;
-            item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
-            item.tSecondaryPoolUser = item.Workers[1].Pool.User;
-          }
-        }
-      }
-
       if (typeof item.WorkersRunning === 'object' && item.WorkersRunning.length > 0) {
         item.tPrimaryMinerFee = item.WorkersRunning[0].Fee;
         item.tPrimaryHashrate = item.WorkersRunning[0].Hashrate;
@@ -66,6 +46,31 @@ function formatMiners(data) {
             item.tSecondaryPoolVariant = item.Workers[1].Pool.Name;
             item.tSecondaryPoolFee = item.WorkersRunning[1].Pool.Fee;
             item.tSecondaryPoolUser = item.WorkersRunning[1].Pool.User;
+          }
+        }
+      } else if (typeof item.Workers === 'object' && item.Workers.length > 0) {
+        item.tPrimaryMinerFee = item.Workers[0].Fee;
+        item.tPrimaryHashrate = item.Workers[0].Hashrate;
+        if (item.Workers[0].Pool) {
+          item.tPrimaryAlgorithm = item.Algorithms[0];
+          item.tPrimaryCurrency = item.Workers[0].Pool.Currency;
+          item.tPrimaryCoinName = item.Workers[0].Pool.CoinName;
+          item.tPrimaryPool = item.Workers[0].Pool.BaseName;
+          item.tPrimaryPoolVariant = item.Workers[0].Pool.Name;
+          item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
+          item.tPrimaryPoolUser = item.Workers[0].Pool.User;
+        }
+        if (item.Workers.length > 1) {
+          item.tSecondaryMinerFee = item.Workers[1].Fee;
+          item.tSecondaryHashrate = item.Workers[1].Hashrate;
+          if (item.Workers[1].Pool) {
+            item.tSecondaryAlgorithm = item.Algorithms[1];
+            item.tSecondaryCurrency = item.Workers[1].Pool.Currency;
+            item.tSecondaryCoinName = item.Workers[1].Pool.CoinName;
+            item.tSecondaryPool = item.Workers[1].Pool.BaseName;
+            item.tSecondaryPoolVariant = item.Workers[1].Pool.Name;
+            item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
+            item.tSecondaryPoolUser = item.Workers[1].Pool.User;
           }
         }
       }

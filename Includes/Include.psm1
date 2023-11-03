@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\include.ps1
-Version:        5.0.1.7
-Version date:   2023/11/01
+Version:        5.0.1.8
+Version date:   2023/11/03
 #>
 
 $Global:DebugPreference = "SilentlyContinue"
@@ -281,9 +281,8 @@ Class Miner {
             }
         }
 
-        # Start Miner data reader
-        $this.DataReaderJob = Start-Job -Name "$($this.Name)_DataReader" -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithms, DataCollectInterval, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore)
-        # $this.DataReaderJob = Start-Job -Name "$($this.Name)_DataReader" -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithms, DataCollectInterval, Devices, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore)
+        # Start Miner data reader, devices property required for GetPowerUsage/ConfiguredPowerUsage
+        $this.DataReaderJob = Start-Job -Name "$($this.Name)_DataReader" -InitializationScript ([ScriptBlock]::Create("Set-Location('$(Get-Location)')")) -ScriptBlock $ScriptBlock -ArgumentList ($this.API), ($this | Select-Object -Property Algorithms, DataCollectInterval, Devices, Name, Path, Port, ReadPowerUsage, LogFile | ConvertTo-Json -WarningAction Ignore)
 
         Remove-Variable ScriptBlock -ErrorAction Ignore
     }

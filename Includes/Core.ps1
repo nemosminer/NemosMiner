@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        5.0.1.7
-Version date:   2023/11/01
+Version:        5.0.1.8
+Version date:   2023/11/03
 #>
 
 using module .\Include.psm1
@@ -640,7 +640,7 @@ Do {
                     }
 
                     # Do not save data if stat just got removed (Miner.Activated < 1, set by API)
-                    If ($Miner.Benchmark -or $Miner.MeasurePowerUsage) { 
+                    If ($Miner.Activated -ge 1) { 
                         # We don't want to store hashrates if we have less than $MinDataSample
                         If ($Miner.Data.Count -ge $Miner.MinDataSample -or $Miner.Activated -gt $Variables.WatchdogCount) { 
                             $Miner.StatEnd = ([DateTime]::Now).ToUniversalTime()

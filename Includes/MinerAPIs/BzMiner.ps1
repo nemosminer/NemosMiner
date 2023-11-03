@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\BzMiner.ps1
-Version:        5.0.1.7
-Version date:   2023/11/01
+Version:        5.0.1.8
+Version date:   2023/11/03
 #>
 
 Class BzMiner : Miner {
