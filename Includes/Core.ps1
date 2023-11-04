@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        5.0.1.8
-Version date:   2023/11/03
+Version:        5.0.1.9
+Version date:   2023/11/04
 #>
 
 using module .\Include.psm1
@@ -1386,6 +1386,8 @@ Do {
 
         If ($Variables.IdleRunspace.MiningStatus -eq "Idle") { $Variables.EndCycleMessage = " (System activity detected)" }
 
+        # Expire brains loop to collect data
+        $Variables.EndCycleTime = ([DateTime]::Now).ToUniversalTime()
     }
     Catch { 
         Write-Message -Level Error "Error in file $(($_.InvocationInfo.ScriptName -split "\\" | Select-Object -Last 2) -join "\") line $($_.InvocationInfo.ScriptLineNumber) detected. Restarting core..."

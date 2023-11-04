@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.8
-Version date:   2023/11/03
+Version:        5.0.1.9
+Version date:   2023/11/04
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -in @("AMD", "INTEL") -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge "460.27.03" ) })) { Return }
@@ -71,7 +71,7 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithms = @("Ethash3B");                 Type = "NVIDIA"; Fee = @(0.01, 0.01);   MinMemGiB = 1.08; MinerSet = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @(); ExcludeGPUModel = "";            ExcludePools = @(@(), @());             Arguments = @(" -a rethereum") }
     [PSCustomObject]@{ Algorithms = @("Ethash3B", "Blake3");       Type = "NVIDIA"; Fee = @(0.01, 0.01);   MinMemGiB = 1.24; Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludeGPUModel = "";            ExcludePools = @(@(), @());             Arguments = @(" -a rethereum", " --a2 alph") }
     [PSCustomObject]@{ Algorithms = @("IronFish");                 Type = "NVIDIA"; Fee = @(0.01, 0.01);   MinMemGiB = 2;    Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(60, 60); ExcludeGPUArchitecture = @(); ExcludeGPUModel = "";            ExcludePools = @(@("Nicehash"), @());   Arguments = @(" -a ironfish") } # https://github.com/bzminer/bzminer/issues/260
-    [PSCustomObject]@{ Algorithms = @("KawPow");                   Type = "NVIDIA"; Fee = @(0.01, 0.01);   MinMemGiB = 1.08; MinerSet = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = "^MX[1|2]\d+"; ExcludePools = @(@(), @());             Arguments = @(" -a rvn") }
+    [PSCustomObject]@{ Algorithms = @("KawPow");                   Type = "NVIDIA"; Fee = @(0.01, 0.01);   MinMemGiB = 1.08; MinerSet = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(75, 0);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = "^MX[1|2]\d+"; ExcludePools = @(@(), @());             Arguments = @(" -a rvn") }
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");               Type = "NVIDIA"; Fee = @(0.01, 0.01);   MinMemGiB = 2;    Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = "^MX[1|2]\d+"; ExcludePools = @(@("ProHashing"), @()); Arguments = @(" -a kaspa") }
     [PSCustomObject]@{ Algorithms = @("NexaPow");                  Type = "NVIDIA"; Fee = @(0.02, 0.01);   MinMemGiB = 3;    MinerSet = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = "^MX[1|2]\d+"; ExcludePools = @(@(), @());             Arguments = @(" -a nexa") }
     [PSCustomObject]@{ Algorithms = @("OctaSpace");                Type = "NVIDIA"; Fee = @(0.01, 0.01);   MinMemGiB = 3;    Minerset = 2; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = "";            ExcludePools = @(@(), @());             Arguments = @(" -a octa") }

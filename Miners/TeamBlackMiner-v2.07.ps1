@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.8
-Version date:   2023/11/03
+Version:        5.0.1.9
+Version date:   2023/11/04
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.CUDAVersion -ge "11.6") })) { Return }
@@ -86,8 +86,7 @@ If ($Algorithms) {
                             $Arguments += If (($Pool0.PoolPorts[1] -and -not $_.Algorithms[1]) -or ($Pool0.PoolPorts[1] -and $Pool1.PoolPorts[1])) { " --ssl --ssl-verify-none --ssl-port $($Pool0.PoolPorts[1])" } Else { " --port $($Pool0.PoolPorts[0])"}
                             # Temp fix for https://github.com/sp-hash/TeamBlackMiner/issues/404
                             # If ($Pool0.Pass) { $Arguments += " --server-passwd $($Pool0.Pass)" }
-                            If ($Pool0.Pass) { $Arguments += " --server-passwd $(If ($_.Algorithms[0] -match $Variables.RegexAlgoHasDAG) { $Pool0.Pass -replace ',mc=\w+' } Else { $Pool0.Pass })" }
-                            If ($Pool0.Pass) { $Arguments += " --server-passwd $(If ($_.Algorithms[0] -match $Variables.RegexAlgoHasDAG) { $Pool0.Pass -replace ',mc=\w+' } Else { $Pool0.Pass })" }
+                            If ($Pool0.Pass) { $Arguments += " --server-passwd $(If ($_.Algorithms[0] -match $Variables.RegexAlgoHasDAG) { $Pool0.Pass -replace ',mc=\w+' -replace ',zap=\w+' } Else { $Pool0.Pass })" }
 
                             $SecondAlgo = Switch ($_.Algorithms[1]) { 
                                 "Ethash3B" { "ethb3" }
@@ -98,7 +97,7 @@ If ($Algorithms) {
                             If ($SecondAlgo) { 
                                 # Temp fix for https://github.com/sp-hash/TeamBlackMiner/issues/404
                                 # $Arguments += " --$($SecondAlgo)-hostname $($Pool1.Host) --$($SecondAlgo)-wallet $($Pool1.User) --$($SecondAlgo)-passwd $($Pool1.Pass)"
-                                $Arguments += " --$($SecondAlgo)-hostname $($Pool1.Host) --$($SecondAlgo)-wallet $($Pool1.User) --$($SecondAlgo)-passwd $(If ($_.Algorithms[1] -match $Variables.RegexAlgoHasDAG) { $Pool1.Pass -replace ',mc=\w+' } Else { $Pool1.Pass })"
+                                $Arguments += " --$($SecondAlgo)-hostname $($Pool1.Host) --$($SecondAlgo)-wallet $($Pool1.User) --$($SecondAlgo)-passwd $(If ($_.Algorithms[1] -match $Variables.RegexAlgoHasDAG) { $Pool1.Pass -replace ',mc=\w+' -replace ',zap=\w+' } Else { $Pool1.Pass })"
                                 $Arguments += If ($Pool0.PoolPorts[1] -and $Pool1.PoolPorts[1]) { " --$($SecondAlgo)-port $($Pool1.PoolPorts[1])" } Else { " --$($SecondAlgo)-port $($Pool1.PoolPorts[0])" }
                             }
 

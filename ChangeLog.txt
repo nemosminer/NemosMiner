@@ -9,22 +9,28 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in UTC time)
 
-<<<<<<< Updated upstream
-ChangeLog NemosMiner 5.0.1.7 2023/11/02
-=======
-ChangeLog NemosMiner 5.0.1.7 2023/11/??
+ChangeLog NemosMiner 5.0.1.9 2023/11/04
 =======================================
 
 Fixes:
-- Core: Not saving hashrate & power usage when not benchmarking
+- Core: Warning 'No data received from pools' when all miner failed
 
-Miner updates:
+Miner changes:
+- TeamBlackMiner: Workaround for KawPow@ZPool (https://github.com/sp-hash/TeamBlackMiner/issues/404)
+- TTMiner-v2023.4.1: Set memory requirement for Ghostrider to 2GiB
 
 
+ChangeLog NemosMiner 5.0.1.8 2023/11/03
+=======================================
+
+Enhancements:
+- Web GUI: Enable MinerUri hyperlink to 'BaseName' & 'MinerStatus' columns
+
+Fixes:
+- Core: Not saving hashrate & power usage when not benchmarking (Regression from 5.0.1.6)
 
 
 ChangeLog NemosMiner 5.0.1.7 2023/11/01
->>>>>>> Stashed changes
 =======================================
 
 Enhancements:

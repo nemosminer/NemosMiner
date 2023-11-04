@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.8
-Version date:   2023/11/03
+Version:        5.0.1.9
+Version date:   2023/11/04
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
@@ -34,10 +34,10 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "KawPow";       MinMemGiB = 1.22; Minerset = 2; WarmupTimes = @(90, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -algo KAWPOW" }
 #   [PSCustomObject]@{ Algorithm = "Lyra2RE3";     MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -algo LYRA2V3" } # ASIC
     [PSCustomObject]@{ Algorithm = "MTP";          MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(30, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -algo MTP -intensity 21" } # Algorithm is dead
-    [PSCustomObject]@{ Algorithm = "ProgPowEpic";  MinMemGiB = 1.22; Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -algo PROGPOW -coin EPIC" }
-    [PSCustomObject]@{ Algorithm = "ProgPowSero";  MinMemGiB = 1.22; Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -algo PROGPOW -coin SERO" }
-    [PSCustomObject]@{ Algorithm = "ProgPowVeil";  MinMemGiB = 1.22; Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -algo PROGPOW -coin VEIL" }
-    [PSCustomObject]@{ Algorithm = "ProgPowZano";  MinMemGiB = 1.22; MinerSet = 0; WarmupTimes = @(60, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -algo PROGPOWZ -coin ZANO" }
+    [PSCustomObject]@{ Algorithm = "ProgPowEpic";  MinMemGiB = 1.22; Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -coin EPIC" }
+    [PSCustomObject]@{ Algorithm = "ProgPowSero";  MinMemGiB = 1.22; Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -coin SERO" }
+    [PSCustomObject]@{ Algorithm = "ProgPowVeil";  MinMemGiB = 1.22; Minerset = 2; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -coin VEIL" }
+    [PSCustomObject]@{ Algorithm = "ProgPowZano";  MinMemGiB = 1.22; MinerSet = 0; WarmupTimes = @(60, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -coin ZANO" }
     [PSCustomObject]@{ Algorithm = "UbqHash";      MinMemGiB = 1.22; MinerSet = 0; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " -algo UBQHASH -intensity 15" }
 )
 
@@ -45,7 +45,8 @@ $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].PoolPorts[0] }
-$Algorithms = $Algorithms | Where-Object { $_.Algorithm -ne "Ethash" -or $MinerPools[0][$_.Algorithm].Epoch -le 384 } # Miner supports Ethash up to epoch 384 #
+$Algorithms = $Algorithms | Where-Object { $_.Algorithm -ne "Ethash" -or $MinerPools[0][$_.Algorithm].Epoch -le 384 } # Miner supports Ethash up to epoch 384
+$Algorithms = $Algorithms | Where-Object { $_.Algorithm -ne "KawPow" -or $MinerPools[0][$_.Algorithm].DAGSizeGiB -lt "4" } # Miner supports Kawpow up to 4GB
 
 If ($Algorithms) { 
 
@@ -57,7 +58,7 @@ If ($Algorithms) {
         $Algorithms | ForEach-Object { 
 
             $ExcludePools = $_.ExcludePools
-            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object { $_.PoolPorts[0] } | Where-Object BaseName -notin $ExcludePools)) { 
+            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object { $_.PoolPorts[0] } | Where-Object BaseName -notin $ExcludePools | Where-Object { $_.Algorithm -notin @("Ethash", "KawPow") -or (<# Miner supports Ethash up to epoch 384 #>$_.Algorithm -eq "Ethash" -and $_.Epoch -le 384) -or (<# Miner supports Kawpow up to 4GB #>$_.Algorithm -eq "KawPow" -and $_.DAGSizeGiB -lt 4) })) { 
 
                 $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
                 If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture ) { 
@@ -65,11 +66,11 @@ If ($Algorithms) {
                     $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 
                     $Arguments = $_.Arguments
+                    If ($Pool.Currency -in @("CLO", "ETC", "ETH", "ETP", "EXP", "MUSIC", "PIRL", "RVN", "TCR", "UBQ", "VBK", "ZANO", "ZCOIN", "ZELS")) { 
+                        $Arguments = " -coin $($Pool.Currency)$($Arguments -replace ' -algo \w+')"
+                    }
                     If ($AvailableMiner_Devices | Where-Object MemoryGiB -LE 2) { $Arguments = $Arguments -replace ' -intensity [0-9\.]+' }
 
-                    If ($Pool.Currency -in @("CLO", "ETC", "ETH", "ETP", "EXP", "MUSIC", "PIRL", "RVN", "TCR", "UBQ", "VBK", "ZCOIN", "ZELS")) { 
-                        $Arguments += " -coin $($Pool.Currency)"
-                    }
                     $Arguments += If ($Pool.Protocol -like "ethproxy*" -or $_.Algorithm -eq "ProgPowZano") { " -pool stratum1+tcp://" } Else { " -pool stratum+tcp://" }
                     $Arguments += "$($Pool.Host):$($Pool.PoolPorts[0]) -user $($Pool.User)"
                     If ($Pool.WorkerName) { $Arguments += " -worker $($Pool.WorkerName)" }
