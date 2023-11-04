@@ -13,7 +13,7 @@ ChangeLog NemosMiner 5.0.1.9 2023/11/04
 =======================================
 
 Fixes:
-- Core: Warning 'No data received from pools' when all miner failed
+- Core: Warning 'No data received from pools' when all miners failed
 
 Miner changes:
 - TeamBlackMiner: Workaround for KawPow@ZPool (https://github.com/sp-hash/TeamBlackMiner/issues/404)
