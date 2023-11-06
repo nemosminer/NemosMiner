@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.9
-Version date:   2023/11/04
+Version:        5.0.1.10
+Version date:   2023/11/06
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.ComputeCapability -lt "8.6" })) { Return }
@@ -30,7 +30,7 @@ $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "CryptonightBittube2"; MinMemGiB = 4; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
-    [PSCustomObject]@{ Algorithm = "CryptonightGpu";      MinMemGiB = 3; Type = "AMD"; Minerset = 1; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" } # SRBMinerMulti-v2.3.9 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "CryptonightGpu";      MinMemGiB = 2; Type = "AMD"; Minerset = 1; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" } # SRBMinerMulti-v2.3.9 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "CryptonightLite";     MinMemGiB = 1; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";   MinMemGiB = 1; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc"; MinMemGiB = 1; Type = "AMD"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noCPU --noNVIDIA --amd" }
@@ -60,7 +60,7 @@ $Algorithms = @(
 #   [PSCustomObject]@{ Algorithm = "CryptonightXtl";      Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --noAMD --noNVIDIA --cpu" } # Not profitable with CPU
 
     [PSCustomObject]@{ Algorithm = "CryptonightBittube2"; MinMemGiB = 4; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
-    [PSCustomObject]@{ Algorithm = "CryptonightGpu";      MinMemGiB = 3; Type = "NVIDIA"; Minerset = 1; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
+    [PSCustomObject]@{ Algorithm = "CryptonightGpu";      MinMemGiB = 2; Type = "NVIDIA"; Minerset = 1; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
     [PSCustomObject]@{ Algorithm = "CryptonightLite";     MinMemGiB = 1; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteV1";   MinMemGiB = 1; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
     [PSCustomObject]@{ Algorithm = "CryptonightLiteItbc"; MinMemGiB = 1; Type = "NVIDIA"; Minerset = 2; WarmupTimes = @(90, 15); ExcludePools = @(); Arguments = " --noAMD --noCPU --openCLVendor NVIDIA --nvidia" }
@@ -103,6 +103,7 @@ If ($Algorithms) {
     $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
 
         $Miner_Devices = $Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model
+        $Miner_Platform_Devices = $Devices | Where-Object Type -EQ $_.Type
         $MinerAPIPort = $Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1
 
         $Algorithms | Where-Object Type -eq $_.Type | ForEach-Object { 
@@ -118,7 +119,7 @@ If ($Algorithms) {
                     # Note: For fine tuning directly edit the config files in the miner binary directory
                     $ConfigFileName = [System.Web.HttpUtility]::UrlEncode("$((@("Config") + @($_.Type) + @(($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($AvailableMiner_Devices | Sort-Object Name | Where-Object Model -eq $Model).Name -join ';'))" } | Select-Object) -join '-') + @($MinerAPIPort) | Select-Object) -join '-').txt")
                     $MinerThreadsConfigFileName = [System.Web.HttpUtility]::UrlEncode("$((@("ThreadsConfig") + @($_.Type) + @($_.Algorithm) + @(($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($AvailableMiner_Devices | Sort-Object Name | Where-Object Model -eq $Model).Name -join ';'))" } | Select-Object) -join '-') | Select-Object) -join '-').txt")
-                    $PlatformThreadsConfigFileName = [System.Web.HttpUtility]::UrlEncode("$((@("HwConfig") + @($_.Type) + @($_.Algorithm) + @(($AvailableMiner_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($AvailableMiner_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($AvailableMiner_Devices | Sort-Object Name | Where-Object Model -eq $Model).Name -join ';'))" } | Select-Object) -join '-') | Select-Object) -join '-').txt")
+                    $PlatformThreadsConfigFileName = [System.Web.HttpUtility]::UrlEncode("$((@($_.Type) + @($_.Algorithm) + @(($Miner_Platform_Devices.Model | Sort-Object -Unique | ForEach-Object { $Model = $_; "$(@($Miner_Platform_Devices | Where-Object Model -EQ $Model).Count)x$Model($(($Miner_Platform_Devices | Sort-Object Name | Where-Object Model -eq $Model).Name -join ';'))" } | Select-Object) -join '-') | Select-Object) -join '-').txt")
                     $PoolFileName = [System.Web.HttpUtility]::UrlEncode("$((@("PoolConf") + @($($_.Algorithm).BaseName) + @($_.Algorithm) + @($Pool.User) + @($Pool.Pass) | Select-Object) -join '-').txt")
 
                     $Arguments = [PSCustomObject]@{ 
@@ -134,10 +135,10 @@ If ($Algorithms) {
                                         use_tls         = [Boolean]$Pool.PoolPorts[1]
                                         tls_fingerprint = ""
                                         pool_weight     = 1
-                                        rig_id          = "$($Pool.WorkerName)"
+                                        rig_id          = $Pool.WorkerName
                                     }
                                 )
-                                currency = $(If ($Coins -icontains $Pool.CoinName) { $Pool.CoinName } Else { $Currency.($_.Algorithm) })
+                                currency = If ($Coins -icontains $Pool.CoinName) { $Pool.CoinName } Else { $Currency.($_.Algorithm) }
                             }
                         }
                         ConfigFile = [PSCustomObject]@{ 
@@ -161,9 +162,9 @@ If ($Algorithms) {
                                 prefer_ipv4     = $true
                             }
                         }
-                        Arguments = "--poolconf $PoolFileName --config $ConfigFileName$($_.Arguments) $MinerThreadsConfigFileName --noUAC --httpd $($MinerAPIPort)" -replace ' \s+'
+                        Arguments = " --poolconf $PoolFileName --config $ConfigFileName$($_.Arguments) $MinerThreadsConfigFileName --noUAC --httpd $($MinerAPIPort)" -replace ' \s+'
                         Devices  = @($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique)
-                        HwDetectArguments = "--poolconf $PoolFileName --config $ConfigFileName$($_.Arguments) $PlatformThreadsConfigFileName --httpd $($MinerAPIPort)" -replace ' \s+'
+                        HwDetectArguments = " --poolconf $PoolFileName --config $ConfigFileName$($_.Arguments) $PlatformThreadsConfigFileName --httpd $($MinerAPIPort)" -replace ' \s+'
                         MinerThreadsConfigFileName = $MinerThreadsConfigFileName
                         Platform = $Platform
                         PlatformThreadsConfigFileName = $PlatformThreadsConfigFileName

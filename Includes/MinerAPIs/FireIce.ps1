@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\FireIce.ps1
-Version:        5.0.1.9
-Version date:   2023/11/04
+Version:        5.0.1.10
+Version date:   2023/11/06
 #>
 
 Class Fireice : Miner { 
@@ -32,42 +32,55 @@ Class Fireice : Miner {
             $MinerThreadsConfigFile = "$(Split-Path $this.Path)\$($Parameters.MinerThreadsConfigFileName)"
             $ThreadsConfig = ""
 
-            #Write pool config file, overwrite every time
+            # Write pool config file, overwrite every time
             ($Parameters.PoolFile.Content | ConvertTo-Json -Depth 10) -replace '^{' -replace '}$', ',' | Out-File -FilePath $PoolFile -Force -ErrorAction Ignore
-            #Write config file, keep existing file to preserve user custom config
+            # Write config file, keep existing file to preserve user custom config
             If (-not (Test-Path -Path $ConfigFile -PathType Leaf)) { ($Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10) -replace '^{' -replace '}$' | Out-File -FilePath $ConfigFile -Force -ErrorAction Ignore}
 
-            #Check if we have a valid hw file for all installed hardware. If hardware / device order has changed we need to re-create the config files. 
+            # Check if we have a valid hw file for all installed hardware. If hardware / device order has changed we need to re-create the config files. 
             If (-not (Test-Path -Path $PlatformThreadsConfigFile -PathType Leaf)) { 
                 If (Test-Path -Path "$(Split-Path $this.Path)\$MinerThreadsConfigFile" -PathType Leaf) { 
-                    #Remove old config files, thread info is no longer valid
+                    # Remove old config files, thread info is no longer valid
                     Write-Message -Level Warn "Hardware change detected. Deleting existing configuration files for miner $($this.Info)'."
                     Remove-Item -Path "$(Split-Path $this.Path)\$MinerThreadsConfigFile" -Force -ErrorAction Ignore
                 }
 
-                #Temporarily start miner with empty thread conf file. The miner will then create a hw config file with default threads info for all platform hardware
-                $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $Parameters.HwDetectArguments -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.MinerWindowStyle -Priority $this.ProcessPriority -EnvBlock $this.Environment -JobName $this.Info -LogFile $this.LogFile
+                # Temporarily start miner with empty thread conf file. The miner will then create a hw config file with default threads info for all platform hardware
+                $this.ProcessJob = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $Parameters.HwDetectArguments -WorkingDirectory (Split-Path $this.Path) -WindowStyle $this.WindowStyle -EnvBlock $this.Environment -JobName $this.Info -LogFile $this.LogFile
 
-                If ($this.Process) { 
-                    For ($WaitForThreadsConfig = 0; $WaitForThreadsConfig -le 60; $WaitForThreadsConfig ++) { 
-                        $this.ProcessId = [Int32]((Get-CIMInstance CIM_Process | Where-Object { $_.ExecutablePath -eq $this.Path -and $_.CommandLine -like "*$($this.Path)*$($Parameters.HwDetectArguments)*" }).ProcessId)
-                        If ($this.ProcessId -and (Test-Path -Path $PlatformThreadsConfigFile -PathType Leaf)) { 
-                            #Read hw config created by miner
+                # Sometimes the process cannot be found instantly
+                $Loops = 100
+                Do { 
+                    If ($this.ProcessId = ($this.ProcessJob | Receive-Job | Select-Object -ExpandProperty ProcessId)) { 
+                        If (Test-Path -Path $PlatformThreadsConfigFile -PathType Leaf) { 
+                            # Read hw config created by miner
                             $ThreadsConfig = (Get-Content -Path $PlatformThreadsConfigFile) -replace '^\s*//.*' | Out-String
-                            #Set bfactor to 11 (default is 6 which makes PC unusable)
+                            # Set bfactor to 11 (default is 6 which makes PC unusable)
                             $ThreadsConfig = $ThreadsConfig -replace '"bfactor"\s*:\s*\d,', '"bfactor" : 11,'
-                            #Reformat to proper json
+                            # Reformat to proper json
                             $ThreadsConfigJson = "{$($ThreadsConfig -replace '\/\*.*' -replace '\*\/' -replace '\*.+' -replace '\s' -replace ',\},]', '}]' -replace ',\},\{', '},{' -replace '},]', '}]' -replace ',$')}" | ConvertFrom-Json
-                            #Keep one instance per gpu config
+                            # Keep one instance per gpu config
                             $ThreadsConfigJson | Add-Member gpu_threads_conf ($ThreadsConfigJson.gpu_threads_conf | Sort-Object -Property Index -Unique) -Force
-                            #Write json file
+                            # Write json file
                             $ThreadsConfigJson | ConvertTo-Json -Depth 10 | Out-File -FilePath $PlatformThreadsConfigFile -Force -ErrorAction Ignore
                             Break
                         }
-                        Start-Sleep -Milliseconds 500
                     }
-                    Stop-Process -Id $this.ProcessId -Force
-                    $this.Process = $null
+                    $Loops --
+                    Start-Sleep -Milliseconds 50
+                } While ($Loops -gt 0)
+                Remove-Variable Loops
+
+                If (Test-Path -Path $PlatformThreadsConfigFile -PathType Leaf) {
+                    If ($this.Process) { 
+                        $this.Process.CloseMainWindow()
+                        $this.Process = $null
+                    }
+
+                    If ($this.ProcessId) { 
+                        If (Get-Process -Id $this.ProcessId -ErrorAction Ignore) { Stop-Process -Id $this.ProcessId -Force -ErrorAction Ignore }
+                        $this.ProcessId = $null
+                    }
                 }
                 Else { 
                     Write-Message -Level Error "Running temporary miner failed - cannot create threads config file '$($this.Info)' [Error: '$($Error | Select-Object -First 1)']."
@@ -75,13 +88,13 @@ Class Fireice : Miner {
                 }
             }
             If (-not (Test-Path $MinerThreadsConfigFile -PathType Leaf)) { 
-                #Retrieve hw config from platform config file
+                # Retrieve hw config from platform config file
                 $ThreadsConfigJson = Get-Content -Path $PlatformThreadsConfigFile | ConvertFrom-Json -ErrorAction Ignore
-                #Filter index for current cards and apply threads
+                # Filter index for current cards and apply threads
                 $ThreadsConfigJson | Add-Member gpu_threads_conf ([Array]($ThreadsConfigJson.gpu_threads_conf | Where-Object { $Parameters.Devices -contains $_.Index }) * $Parameters.Threads) -Force
-                #Create correct numer of CPU threads
+                # Create correct numer of CPU threads
                 $ThreadsConfigJson | Add-Member cpu_threads_conf ([Array]$ThreadsConfigJson.cpu_threads_conf * $Parameters.Threads) -Force
-                #Write config file
+                # Write config file
                 ($ThreadsConfigJson | ConvertTo-Json -Depth 10) -replace '^{' -replace '}$' | Out-File -FilePath $MinerThreadsConfigFile -Force -ErrorAction Ignore
             }
         }

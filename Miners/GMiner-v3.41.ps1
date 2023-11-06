@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.9
-Version date:   2023/11/04
+Version:        5.0.1.10
+Version date:   2023/11/06
 #>
 
 using module ..\Includes\Include.psm1
@@ -47,7 +47,7 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithms = @("Cuckaroo30CTX");              Type = "NVIDIA"; Fee = @(0.05);       MinMemGiB = 8.0;  Tuning = " --mt 2"; Minerset = 2; WarmupTimes = @(30, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             AutoCoinPers = "";             Arguments = " --nvml 0 --algo cortex --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithms = @("Cuckoo29");                   Type = "NVIDIA"; Fee = @(0.02);       MinMemGiB = 6.0;  Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(30, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             AutoCoinPers = "";             Arguments = " --nvml 0 --algo aeternity --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithms = @("Equihash1254");               Type = "NVIDIA"; Fee = @(0.02);       MinMemGiB = 3.0;  Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             AutoCoinPers = "";             Arguments = " --nvml 0 --algo equihash125_4 --cuda 1 --opencl 0" } # MiniZ-v2.1c is fastest
-    [PSCustomObject]@{ Algorithms = @("Equihash1445");               Type = "NVIDIA"; Fee = @(0.02);       MinMemGiB = 2.1;  Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@("ProHashing"), @()); AutoCoinPers = " --pers auto"; Arguments = " --nvml 0 --algo equihash144_5) --cuda 1 --opencl 0" } # FPGA
+    [PSCustomObject]@{ Algorithms = @("Equihash1445");               Type = "NVIDIA"; Fee = @(0.02);       MinMemGiB = 2.1;  Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@("ProHashing"), @()); AutoCoinPers = " --pers auto"; Arguments = " --nvml 0 --algo equihash144_5 --cuda 1 --opencl 0" } # FPGA
     [PSCustomObject]@{ Algorithms = @("Equihash2109");               Type = "NVIDIA"; Fee = @(0.02);       MinMemGiB = 1.0;  Tuning = " --mt 2"; Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @();        ExcludePools = @(@(), @());             AutoCoinPers = "";             Arguments = " --nvml 0 --algo equihash210_9 --cuda 1 --opencl 0" }
     [PSCustomObject]@{ Algorithms = @("EtcHash");                    Type = "NVIDIA"; Fee = @(0.01);       MinMemGiB = 1.24; Tuning = " --mt 2"; MinerSet = 0; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @("NiceHash"));   AutoCoinPers = "";             Arguments = " --nvml 0 --algo etchash --cuda 1 --opencl 0" } # PhoenixMiner-v6.2c may be faster, but I see lower speed at the pool
     [PSCustomObject]@{ Algorithms = @("EtcHash", "IronFish");        Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 1.24; Tuning = " --mt 2"; Minerset = 1; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @("Other"); ExcludePools = @(@(), @());             AutoCoinPers = "";             Arguments = " --nvml 0 --algo etchash --dalgo ironfish --cuda 1 --opencl 0" }

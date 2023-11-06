@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Balances\ZergPool.ps1
-Version:        5.0.1.9
-Version date:   2023/11/04
+Version:        5.0.1.10
+Version date:   2023/11/06
 #>
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName

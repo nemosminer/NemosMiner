@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.9
-Version date:   2023/11/04
+Version:        5.0.1.10
+Version date:   2023/11/06
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.CUDAVersion -ge "9.1") } )) { Return }
@@ -77,7 +77,7 @@ If ($Algorithms) {
                         Arguments   = "--pool $($Protocol)://$([System.Web.HttpUtility]::UrlEncode("$($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" })")):$([System.Web.HttpUtility]::UrlEncode($Pass))@$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --exit --api-port -$MinerAPIPort $($_.Arguments) $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ' ')"
                         DeviceNames = $AvailableMiner_Devices.Name
                         Fee         = @(0) # Dev fee
-                        EnvVars     = If ($Miner_Devices.Type -eq "AMD") { @("GPU_FORCE_64BIT_PTR=0") } Else { @("") }
+                        EnvVars     = If ($Miner_Devices.Type -eq "AMD") { @("GPU_FORCE_64BIT_PTR=0") } Else { $null }
                         MinerSet    = $_.MinerSet
                         MinerUri    = "http://127.0.0.1:$($MinerAPIPort)"
                         Name        = $Miner_Name

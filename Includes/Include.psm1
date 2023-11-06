@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\include.ps1
-Version:        5.0.1.9
-Version date:   2023/11/04
+Version:        5.0.1.10
+Version date:   2023/11/06
 #>
 
 $Global:DebugPreference = "SilentlyContinue"
@@ -307,6 +307,7 @@ Class Miner {
 
         If ($this.Status -eq [MinerStatus]::DryRun) { 
             $this.StatusInfo = "Dry run '$($this.Info)'"
+            $this.SubStatus = "Idle"
             Write-Message -Level Info "Dry run for miner '$($this.Info)'..."
             $this.StatStart = $this.BeginTime = ([DateTime]::Now).ToUniversalTime()
         }
@@ -3263,7 +3264,7 @@ Function Update-DAGdata {
             If ($DAGdataResponse.statuscode -eq 200) {
                 $DAGdataResponse.Content -split '\n' -replace '"', "'" | Where-Object { $_ -like "<div class='block' title='Current block height of *" } | ForEach-Object { 
                     $Currency = $_ -replace "^<div class='block' title='Current block height of " -replace "'>.*$"
-                    $BlockHeight = [Int][Math]::Floor(($_ -replace "^<div class='block' title='Current block height of $Currency'>" -replace "</div>"))
+                    $BlockHeight = [Math]::Floor(($_ -replace "^<div class='block' title='Current block height of $Currency'>" -replace "</div>"))
                     If ($BlockHeight -ge $Variables.DAGdata.Currency.$Currency.BlockHeight -and (Get-AlgorithmFromCurrency -Currency $Currency)) { 
                         $DAGdata = Get-DAGdata -BlockHeight $BlockHeight -Currency $Currency -EpochReserve 2
                         If ($DAGdata.Algorithm -match $Variables.RegexAlgoHasDAG) { 
@@ -3457,7 +3458,7 @@ Function Get-Epoch {
         Default { }
     }
 
-    Return [Int][Math]::Floor($Blockheight / (Get-EpochLength -Blockheight $Blockheight -Algorithm $Algorithm))
+    Return [Math]::Floor($Blockheight / (Get-EpochLength -Blockheight $Blockheight -Algorithm $Algorithm))
 }
 
 Function Get-EpochLength { 

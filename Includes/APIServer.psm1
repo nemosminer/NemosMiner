@@ -18,13 +18,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\APIServer.psm1
-Version:        5.0.1.9
-Version date:   2023/11/04
+Version:        5.0.1.10
+Version date:   2023/11/06
 #>
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.5.3.6"
+    $APIVersion = "0.5.3.8"
 
     If ($Variables.APIRunspace.AsyncObject.IsCompleted -or $Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
         Stop-APIServer
@@ -406,7 +406,8 @@ Function Start-APIServer {
                                 }
                                 ElseIf ($Parameters.Miners) { 
                                     If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
-                                        $Miners = $Miners | Sort-Object -Property Name, Algorithms -Unique
+                                        $Data = @()
+                                        $Miners = $Miners | Sort-Object -Property Name, Algorithms
                                         $Miners | ForEach-Object { 
                                             $Data += "$($_.Name) ($($_.Algorithms -join ' & '))`n"
                                             ForEach ($Algorithm in $_.Algorithms) { 
@@ -419,9 +420,10 @@ Function Start-APIServer {
                                             $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Sort-Object -Unique)
                                             $_.Available = $false
                                         }
-                                        $Message = "$($Miners.Count) $(If ($Miners.Count -eq 1) { "Miner" } Else { "Miners" }) disbled."
+                                        $Data = $Data | Sort-Object -Unique
+                                        $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "Miner" } Else { "Miners" }) disbled."
                                         Write-Message -Level Verbose "Web GUI: $Message"
-                                        $Data += "`n$Message"
+                                        $Data = "$($Data -join "`n")`n`n$Message"
                                     }
                                     Else { 
                                         $Data = "No matching miner stats found."
@@ -454,9 +456,10 @@ Function Start-APIServer {
                                 }
                                 ElseIf ($Parameters.Miners) { 
                                     If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
-                                        $Miners = $Miners | Sort-Object -Property Name, Algorithms -Unique
+                                        $Data = @()
+                                        $Miners = $Miners | Sort-Object -Property Name, Algorithms
                                         $Miners | ForEach-Object { 
-                                            $Data += "$($_.Name) ($($_.Algorithms -join ' & '))`n"
+                                            $Data += "$($_.Name) ($($_.Algorithms -join ' & '))"
                                             ForEach ($Algorithm in $_.Algorithms) {  
                                                 Enable-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
                                                 $Worker.Hashrate = [Double]::NaN
@@ -466,9 +469,10 @@ Function Start-APIServer {
                                             $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Where-Object { $_ -ne "Disabled by user" } | Sort-Object -Unique)
                                             If (-not $_.Reasons) { $_.Available = $true }
                                         }
-                                        $Message = "$($Miners.Count) $(If ($Miners.Count -eq 1) { "Miner" } Else { "Miners" }) enabled."
+                                        $Data = $Data | Sort-Object -Unique
+                                        $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "Miner" } Else { "Miners" }) enabled."
                                         Write-Message -Level Verbose "Web GUI: $Message"
-                                        $Data += "`n$Message"
+                                        $Data = "$($Data -join "`n")`n`n$Message"
                                     }
                                     Else { 
                                         $Data = "No matching miner stats found."
@@ -517,14 +521,15 @@ Function Start-APIServer {
                                 }
                                 ElseIf ($Parameters.Miners -and $Parameters.Type -eq "Hashrate") { 
                                     If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
-                                        $Miners = $Miners | Sort-Object -Property Name, Algorithms -Unique
+                                        $Data = @()
+                                        $Miners = $Miners | Sort-Object -Property Name, Algorithms
                                         $Miners | ForEach-Object { 
                                             $_.Activated = 0 # To allow 3 attempts
                                             $_.Available = $true
                                             $_.Benchmark = $true
                                             $_.Earning_Accuracy = [Double]::NaN
                                             $_.Disabled = $false
-                                            $Data += "$($_.Name) ($($_.Algorithms -join ' & '))`n"
+                                            $Data += "$($_.Name) ($($_.Algorithms -join ' & '))"
                                             ForEach ($Algorithm in $_.Algorithms) { 
                                                 Remove-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
                                                 $Worker.Hashrate = [Double]::NaN
@@ -540,8 +545,9 @@ Function Start-APIServer {
                                             If (-not $_.Reasons) { $_.Available = $true }
                                             If ($_.Status -eq "Disabled") { $_.Status = "Idle" }
                                         }
-                                        Write-Message -Level Verbose "Web GUI: Re-benchmark triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })."
-                                        $Data += "`n$(If ($Miners.Count -eq 1) { "The miner" } Else { "$($Miners.Count) miners" }) will re-benchmark."
+                                        $Data = $Data | Sort-Object -Unique
+                                        Write-Message -Level Verbose "Web GUI: Re-benchmark triggered for $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
+                                        $Data = "$($Data -join "`n")`n`n$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-benchmark."
                                     }
                                     Else { 
                                         $Data = "No matching hashrate stats found."
@@ -550,7 +556,8 @@ Function Start-APIServer {
                                 }
                                 ElseIf ($Parameters.Miners -and $Parameters.Type -eq "PowerUsage") { 
                                     If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
-                                        $Miners = $Miners | Sort-Object -Property Name, Algorithms -Unique
+                                        $Data = @()
+                                        $Miners = $Miners | Sort-Object -Property Name, Algorithms
                                         $Miners | ForEach-Object { 
                                             If ($_.Earning -eq 0) { $_.Available = $true }
                                             If ($Variables.CalculatePowerCost) { 
@@ -564,8 +571,9 @@ Function Start-APIServer {
                                             $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
                                             If ($_.Status -eq "Disabled") { $_.Status = "Idle" }
                                         }
-                                        Write-Message -Level Verbose "Web GUI: Re-measure power usage triggered for $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" })."
-                                        $Data += "`n$(If ($Miners.Count -eq 1) { "The miner" } Else { "$($Miners.Count) miners" }) will re-measure power usage."
+                                        $Data = $Data | Sort-Object -Unique
+                                        Write-Message -Level Verbose "Web GUI: Re-measure power usage triggered for $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
+                                        $Data = "$($Data -join "`n")`n`n$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-measure power usage."
                                     }
                                     Else { 
                                         $Data = "No matching power usage stats found."
@@ -591,6 +599,7 @@ Function Start-APIServer {
                             }
                             "/functions/stat/set" { 
                                 If ($Parameters.Miners -and $Parameters.Type -eq "Hashrate" -and $null -ne $Parameters.Value) { 
+                                    $Data = @()
                                     If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) {
                                         $Miners = $Miners | Sort-Object -Property Name, Algorithms -Unique
                                         $Miners | ForEach-Object { 
@@ -612,8 +621,9 @@ Function Start-APIServer {
                                             }
                                             Remove-Variable Algorithm
                                         }
-                                        Write-Message -Level Verbose "Web GUI: Marked $($Miners.Count) $(If ($Miners.Count -eq 1) { "miner" } Else { "miners" }) as failed."
-                                        $Data += "`n$(If ($Miners.Count -eq 1) { "The miner is" } Else { "$($Miners.Count) miners are" }) $(If ($Parameters.Value -eq 0) { "marked as failed" } ElseIf ($Parameters.Value -eq -1) { "disabled" } Else { "set to value $($Parameters.Value)" } )." 
+                                        $Data = $Data | Sort-Object -Unique
+                                        Write-Message -Level Verbose "Web GUI: Marked $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" }) as failed."
+                                        $Data = "$($Data -join "`n")`n`n$(If ($Data.Count -eq 1) { "The miner is" } Else { "$($Data.Count) miners are" }) $(If ($Parameters.Value -eq 0) { "marked as failed" } ElseIf ($Parameters.Value -eq -1) { "disabled" } Else { "set to value $($Parameters.Value)" } )." 
                                     }
                                     Else { 
                                         $Data = "No matching miners found."
@@ -806,51 +816,51 @@ Function Start-APIServer {
                                 Break
                             }
                             "/miners" { 
-                                $Data = ConvertTo-Json -Depth 4 -Compress @($Variables.Miners | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator | ForEach-Object { If ($_.WorkersRunning) { $_.Workers = $_.WorkersRunning }; $_ } | Select-Object -ExcludeProperty WorkersRunning | Sort-Object @{ Expression = { $_.Best }; Descending = $true }, DeviceNames, Name)
+                                $Data = ConvertTo-Json -Depth 4 -Compress @($Variables.Miners | Select-Object -ExcludeProperty Arguments, Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator | ForEach-Object { If ($_.WorkersRunning) { $_.Workers = $_.WorkersRunning }; $_ } | Select-Object -ExcludeProperty WorkersRunning | Sort-Object @{ Expression = { $_.Best }; Descending = $true }, DeviceNames, Name)
                                 Break
                             }
                             "/miners/available" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, PoolNames, PoolNames, Process, ProcessJob, SideIndicator | Sort-Object -Property Name)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available | Select-Object -ExcludeProperty Arguments, Data, DataReaderJob, Devices, PoolNames, PoolNames, Process, ProcessJob, SideIndicator | Sort-Object -Property Name)
                                 Break
                             }
                             "/miners/best" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator | ForEach-Object { If ($_.WorkersRunning) { $_.Workers = $_.WorkersRunning }; $_ } | Select-Object -ExcludeProperty WorkersRunning | Sort-Object -Property DeviceName)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest | Select-Object -ExcludeProperty Arguments, Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator | ForEach-Object { If ($_.WorkersRunning) { $_.Workers = $_.WorkersRunning }; $_ } | Select-Object -ExcludeProperty WorkersRunning | Sort-Object -Property DeviceName)
                                 Break
                             }
                             "/miners/best_combo" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest_Combo | Sort-Object DeviceNames | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest_Combo | Sort-Object DeviceNames | Select-Object -ExcludeProperty Arguments, Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator)
                                 Break
                             }
                             "/miners/best_combos" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest_Combos | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest_Combos | Select-Object -ExcludeProperty Arguments, Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator)
                                 Break
                             }
                             "/miners/disabled" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object { $_.Status -EQ [MinerStatus]::Disabled } | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator | Sort-Object -Property DeviceNames, EndTime)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object { $_.Status -EQ [MinerStatus]::Disabled } | Select-Object -ExcludeProperty Arguments, Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator | Sort-Object -Property DeviceNames, EndTime)
                                 Break
                             }
                             "/miners/failed" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object { $_.Status -EQ [MinerStatus]::Failed } | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator | Sort-Object -Property DeviceNames, EndTime)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object { $_.Status -EQ [MinerStatus]::Failed } | Select-Object -ExcludeProperty Arguments, Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator | Sort-Object -Property DeviceNames, EndTime)
                                 Break
                             }
                             "/miners/launched" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest_Combo | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator | ForEach-Object { $_.Workers = $_.WorkersRunning; $_ } | Select-Object -ExcludeProperty WorkersRunning)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersBest_Combo | Select-Object -ExcludeProperty Arguments, Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator | ForEach-Object { $_.Workers = $_.WorkersRunning; $_ } | Select-Object -ExcludeProperty WorkersRunning)
                                 Break
                             }
                             "/miners/mostprofitable" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersMostProfitable | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator | Sort-Object @{ Expression = { $_.Best }; Descending = $true }, DeviceNames, @{Expression = "Earning_Bias"; Descending = $True })
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersMostProfitable | Select-Object -ExcludeProperty Arguments, Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator | Sort-Object @{ Expression = { $_.Best }; Descending = $true }, DeviceNames, @{Expression = "Earning_Bias"; Descending = $True })
                                 Break
                             }
                             "/miners/running" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object { $_.Status -EQ [MinerStatus]::Running } | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator | ForEach-Object { $_.Workers = $_.WorkersRunning; $_ } | Select-Object -ExcludeProperty WorkersRunning)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object { $_.Status -EQ [MinerStatus]::Running } | Select-Object -ExcludeProperty Arguments, Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator | ForEach-Object { $_.Workers = $_.WorkersRunning; $_ } | Select-Object -ExcludeProperty WorkersRunning)
                                 Break
                             }
                             "/miners/unavailable" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator | Sort-Object -Property DeviceNames, Name, Algorithm)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners | Where-Object Available -NE $true | Select-Object -ExcludeProperty Arguments, Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator | Sort-Object -Property DeviceNames, Name, Algorithm)
                                 Break
                             }
                             "/miners/device_combos" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners_Device_Combos | Select-Object -ExcludeProperty Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator)
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.Miners_Device_Combos | Select-Object -ExcludeProperty Arguments, Data, DataReaderJob, Devices, PoolNames, Process, ProcessJob, SideIndicator)
                                 Break
                             }
                             "/miningpowercost" { 

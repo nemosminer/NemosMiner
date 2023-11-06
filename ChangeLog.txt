@@ -9,11 +9,23 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in UTC time)
 
+ChangeLog NemosMiner 5.0.1.10 2023/11/??
+========================================
+
+Fixes:
+- Core / FireIce.api: Not building config files
+- Core: Do not save 0 stat files when miner is dry running (Regression from 5.0.1.8)
+
+Miner changes:
+- Wildrig-v0.38.1
+
+
 ChangeLog NemosMiner 5.0.1.9 2023/11/04
 =======================================
 
 Fixes:
 - Core: Warning 'No data received from pools' when all miners failed
+- Web GUI / API: Remove all miners from list when re-benchmarking / power usage / disabling
 
 Miner changes:
 - TeamBlackMiner: Workaround for KawPow@ZPool (https://github.com/sp-hash/TeamBlackMiner/issues/404)
