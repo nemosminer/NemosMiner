@@ -827,7 +827,7 @@ $ContextMenuStrip.Add_ItemClicked(
                             }
                             Remove-Variable Worker
                             # Also clear power usage
-                            Remove-Stat -Name "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms | Select-Object -Index 0)" })_PowerUsage"
+                            Remove-Stat -Name "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms[0])" })_PowerUsage"
                             $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
 
                             $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Where-Object { $_ -ne "Disabled by user" })
@@ -863,7 +863,7 @@ $ContextMenuStrip.Add_ItemClicked(
                                 $_.Activated = 0 # To allow 3 attempts
                             }
                             $_.PowerUsage = [Double]::NaN
-                            $Stat_Name = "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms | Select-Object -Index 0)" })"
+                            $Stat_Name = "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms[0])" })"
                             $Data += "$Stat_Name"
                             Remove-Stat -Name "$($Stat_Name)_PowerUsage"
                             $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN

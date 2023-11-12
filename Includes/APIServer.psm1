@@ -24,7 +24,7 @@ Version date:   2023/11/12
 
 Function Start-APIServer { 
 
-    $APIVersion = "0.5.3.8"
+    $APIVersion = "0.5.3.9"
 
     If ($Variables.APIRunspace.AsyncObject.IsCompleted -or $Config.APIPort -ne $Variables.APIRunspace.APIPort) { 
         Stop-APIServer
@@ -147,21 +147,21 @@ Function Start-APIServer {
                         Switch ($Path) { 
                             "/functions/algorithm/disable" { 
                                 # Disable algorithm@pool in poolsconfig.json
-                                $PoolBaseNames = @($Parameters.Pools | ConvertFrom-Json -ErrorAction Ignore).BaseName
+                                $PoolNames = @($Parameters.Pools | ConvertFrom-Json -ErrorAction Ignore).Name
                                 $Algorithms = @($Parameters.Pools | ConvertFrom-Json -ErrorAction Ignore).Algorithm
-                                If ($Pools = @($Variables.Pools | Where-Object { $_.BaseName -in $PoolBaseNames -and $_.Algorithm -in $Algorithms })) { 
+                                If ($Pools = @($Variables.Pools | Where-Object { $_.Name -in $PoolNames -and $_.Algorithm -in $Algorithms })) { 
                                     $PoolsConfig = Get-Content -Path $Config.PoolsConfigFile | ConvertFrom-Json
                                     ForEach ($Pool in $Pools) { 
-                                        If ($PoolsConfig.($Pool.BaseName).Algorithm -like "-*") { 
-                                            $PoolsConfig.($Pool.BaseName).Algorithm = @($PoolsConfig.($Pool.BaseName).Algorithm += "-$($Pool.Algorithm)" | Sort-Object -Unique)
-                                            $Pool.Reasons = [System.Collections.Generic.List[String]]@($Pool.Reasons.Add("Algorithm disabled (`-$($Pool.Algorithm)` in $($Pool.BaseName) pool config)") | Sort-Object -Unique)
+                                        If ($PoolsConfig.($Pool.Name).Algorithm -like "-*") { 
+                                            $PoolsConfig.($Pool.Name).Algorithm = @($PoolsConfig.($Pool.Name).Algorithm += "-$($Pool.Algorithm)" | Sort-Object -Unique)
+                                            $Pool.Reasons = [System.Collections.Generic.List[String]]@($Pool.Reasons.Add("Algorithm disabled (`-$($Pool.Algorithm)` in $($Pool.Name) pool config)") | Sort-Object -Unique)
                                         }
                                         Else { 
-                                            $PoolsConfig.($Pool.BaseName).Algorithm = @($PoolsConfig.($Pool.BaseName).Algorithm | Where-Object { $_ -ne "+$($Pool.Algorithm)" } | Sort-Object -Unique)
-                                            $Pool.Reasons = [System.Collections.Generic.List[String]]@($Pool.Reasons.Add("Algorithm not enabled in $($Pool.BaseName) pool config") | Sort-Object -Unique)
+                                            $PoolsConfig.($Pool.Name).Algorithm = @($PoolsConfig.($Pool.Name).Algorithm | Where-Object { $_ -ne "+$($Pool.Algorithm)" } | Sort-Object -Unique)
+                                            $Pool.Reasons = [System.Collections.Generic.List[String]]@($Pool.Reasons.Add("Algorithm not enabled in $($Pool.Name) pool config") | Sort-Object -Unique)
                                         }
                                         $Pool.Available = $false
-                                        $Data += "$($Pool.Algorithm)@$($Pool.BaseName)`n"
+                                        $Data += "$($Pool.Algorithm)@$($Pool.Name)`n"
                                     }
                                     Remove-Variable Pool
                                     $Message = "$($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" }) disabled."
@@ -176,21 +176,21 @@ Function Start-APIServer {
                             }
                             "/functions/algorithm/enable" { 
                                 # Enable algorithm@pool in poolsconfig.json
-                                $PoolBaseNames = @($Parameters.Pools | ConvertFrom-Json -ErrorAction Ignore).BaseName
+                                $PoolNames = @($Parameters.Pools | ConvertFrom-Json -ErrorAction Ignore).Name
                                 $Algorithms = @($Parameters.Pools | ConvertFrom-Json -ErrorAction Ignore).Algorithm
-                                If ($Pools = @($Variables.Pools | Where-Object { $_.BaseName -in $PoolBaseNames -and $_.Algorithm -in $Algorithms })) { 
+                                If ($Pools = @($Variables.Pools | Where-Object { $_.Name -in $PoolNames -and $_.Algorithm -in $Algorithms })) { 
                                     $PoolsConfig = Get-Content -Path $Config.PoolsConfigFile | ConvertFrom-Json
                                     ForEach ($Pool in $Pools) { 
-                                        If ($PoolsConfig.($Pool.BaseName).Algorithm -like "+*") { 
-                                            $PoolsConfig.($Pool.BaseName).Algorithm = @($PoolsConfig.($Pool.BaseName).Algorithm += "+$($Pool.Algorithm)" | Sort-Object -Unique)
-                                            $Pool.Reasons = [System.Collections.Generic.List[String]]@($Pool.Reasons | Where-Object { $_ -ne "Algorithm not enabled in $($Pool.BaseName) pool config" } | Sort-Object -Unique)
+                                        If ($PoolsConfig.($Pool.Name).Algorithm -like "+*") { 
+                                            $PoolsConfig.($Pool.Name).Algorithm = @($PoolsConfig.($Pool.Name).Algorithm += "+$($Pool.Algorithm)" | Sort-Object -Unique)
+                                            $Pool.Reasons = [System.Collections.Generic.List[String]]@($Pool.Reasons | Where-Object { $_ -ne "Algorithm not enabled in $($Pool.Name) pool config" } | Sort-Object -Unique)
                                         }
                                         Else { 
-                                            $PoolsConfig.($Pool.BaseName).Algorithm = @($PoolsConfig.($Pool.BaseName).Algorithm | Where-Object { $_ -ne "-$($Pool.Algorithm)" } | Sort-Object -Unique)
-                                            $Pool.Reasons = [System.Collections.Generic.List[String]]@($Pool.Reasons | Where-Object { $_ -ne "Algorithm disabled (`-$($Pool.Algorithm)` in $($Pool.BaseName) pool config)" } | Sort-Object -Unique)
+                                            $PoolsConfig.($Pool.Name).Algorithm = @($PoolsConfig.($Pool.Name).Algorithm | Where-Object { $_ -ne "-$($Pool.Algorithm)" } | Sort-Object -Unique)
+                                            $Pool.Reasons = [System.Collections.Generic.List[String]]@($Pool.Reasons | Where-Object { $_ -ne "Algorithm disabled (`-$($Pool.Algorithm)` in $($Pool.Name) pool config)" } | Sort-Object -Unique)
                                         }
                                         If (-not $Pool.Reasons) { $Pool.Available = $true }
-                                        $Data += "$($Pool.Algorithm)@$($Pool.BaseName)`n"
+                                        $Data += "$($Pool.Algorithm)@$($Pool.Name)`n"
                                     }
                                     Remove-Variable Pool
                                     $Message = "$($Pools.Count) $(If ($Pools.Count -eq 1) { "pool" } Else { "pools" }) enabled."
@@ -536,7 +536,7 @@ Function Start-APIServer {
                                             }
                                             Remove-Variable Worker
                                             # Also clear power usage
-                                            Remove-Stat -Name "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms | Select-Object -Index 0)" })_PowerUsage"
+                                            Remove-Stat -Name "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms[0])" })_PowerUsage"
                                             $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
 
                                             $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Where-Object { $_ -ne "Disabled by user" })
@@ -565,7 +565,7 @@ Function Start-APIServer {
                                                 $_.Activated = 0 # To allow 3 attempts
                                             }
                                             $_.PowerUsage = [Double]::NaN
-                                            $Stat_Name = "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms | Select-Object -Index 0)" })"
+                                            $Stat_Name = "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms[0])" })"
                                             $Data += "$Stat_Name`n"
                                             Remove-Stat -Name "$($Stat_Name)_PowerUsage"
                                             $_.PowerUsage = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
@@ -679,7 +679,7 @@ Function Start-APIServer {
                                 Remove-Variable Pool
                                 $Data = $Data | Sort-Object -Unique
                                 If ($WatchdogTimers) { 
-                                    $Message = "$($Data.Count) $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
+                                    $Message = "$($Data.Count) watchdog $(If ($Data.Count -eq 1) { "timer" } Else { "timers" }) removed."
                                     Write-Message -Level Verbose "Web GUI: $Message"
                                     $Data += "`n$Message"
                                 }

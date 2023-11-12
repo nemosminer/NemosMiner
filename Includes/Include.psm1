@@ -119,7 +119,6 @@ Class Pool {
     [Double]$Accuracy
     [String]$Algorithm
     [Boolean]$Available = $true
-    [String]$BaseName
     [Boolean]$Best = $false
     [Nullable[Int64]]$BlockHeight = $null
     [String]$CoinName
@@ -138,6 +137,7 @@ Class Pool {
     [UInt16]$PortSSL
     [Double]$Price
     [Double]$Price_Bias
+    [Boolean]$Prioritize = $false # derived from BalancesKeepAlive
     [String]$Protocol
     [System.Collections.Generic.List[String]]$Reasons = @()
     [String]$Region
@@ -146,6 +146,7 @@ Class Pool {
     [Double]$StablePrice
     [DateTime]$Updated = ([DateTime]::Now).ToUniversalTime()
     [String]$User
+    [String]$Variant
     [String]$WorkerName = ""
     [Nullable[Int]]$Workers
 }
@@ -209,14 +210,14 @@ Class Miner {
     [String]$PrerequisitePath
     [String]$PrerequisiteURI
     [UInt16]$Port
-    [Double]$PowerCost
-    [Double]$PowerUsage
+    [Double]$PowerCost = [Double]::NaN
+    [Double]$PowerUsage = [Double]::NaN
     [Double]$PowerUsage_Live = [Double]::NaN
     [Boolean]$Prioritize = $false # derived from BalancesKeepAlive
     [UInt32]$ProcessId = 0
     [Int]$ProcessPriority = -1
-    [Double]$Profit
-    [Double]$Profit_Bias
+    [Double]$Profit = [Double]::NaN
+    [Double]$Profit_Bias = [Double]::NaN
     [Boolean]$ReadPowerUsage = $false
     [System.Collections.Generic.List[String]]$Reasons # Why is a miner unavailable?
     [Boolean]$Restart = $false 
@@ -557,16 +558,7 @@ Class Miner {
         $this.Available = $true
         $this.Benchmark = $false
         $this.Best = $false
-        $this.Disabled = $false
-        $this.Earning = [Double]::NaN
-        $this.Earning_Accuracy = 0
-        $this.Earning_Bias = [Double]::NaN
-        $this.MeasurePowerUsage = $false
-        $this.PowerCost = [Double]::NaN
-        $this.PowerUsage = [Double]::NaN
         $this.Prioritize = $false
-        $this.Profit = [Double]::NaN
-        $this.Profit_Bias = [Double]::NaN
         $this.Reasons = [System.Collections.Generic.List[String]]@()
 
         $this.Workers | ForEach-Object { 
@@ -584,12 +576,10 @@ Class Miner {
                 $_.Disabled = $false
                 $_.Hashrate = [Double]::NaN
             }
-            If ($_.Pool.Reasons -contains "Prioritized by BalancesKeepAlive") { $this.Prioritize = $true }
+            If ($_.Pool.Prioritize) { $this.Prioritize = $true }
         }
 
-        $this.Earning = ($this.Workers.Earning | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
-        $this.Earning_Bias = ($this.Workers.Earning_Bias | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
-
+        $this.Earning_Accuracy = 0
         If ($this.Workers[0].Hashrate -eq 0) { # Allow 0 hashrate on secondary algorithm
             $this.Available = $false
             $this.Earning = [Double]::NaN
@@ -602,20 +592,27 @@ Class Miner {
             $this.Earning_Bias = [Double]::NaN
             $this.Earning_Accuracy = [Double]::NaN
         }
-        ElseIf ($this.Earning -eq 0) { $this.Earning_Accuracy = 0 }
-        Else { $this.Workers | ForEach-Object { $this.Earning_Accuracy += ($_.Earning_Accuracy * $_.Earning / $this.Earning) } }
+        Else { 
+            $this.Earning = $this.Workers.Earning | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+            $this.Earning_Bias = $this.Workers.Earning_Bias | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+            If ($this.Earning) { $this.Workers | ForEach-Object { $this.Earning_Accuracy += $_.Earning_Accuracy * $_.Earning / $this.Earning } }
+        }
 
         If ($this.Workers | Where-Object Disabled) { 
             $this.Status = [MinerStatus]::Disabled
-            $this.Available = $false
             $this.Disabled = $true
         }
 
-        $this.TotalMiningDuration = ($this.Workers.TotalMiningDuration | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum)
-        $this.Updated = ($this.Workers.Updated | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum)
+        $this.TotalMiningDuration = $this.Workers.TotalMiningDuration | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum
+        $this.Updated = $this.Workers.Updated | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum
 
+        $this.MeasurePowerUsage = $false
+        $this.PowerCost = [Double]::NaN
+        $this.PowerUsage = [Double]::NaN
         $this.ReadPowerUsage = [Boolean]($this.Devices.ReadPowerUsage -notcontains $false)
 
+        $this.Profit = [Double]::NaN
+        $this.Profit_Bias = [Double]::NaN
         If ($CalculatePowerCost) { 
             If ($Stat = Get-Stat -Name "$($this.Name)$(If ($this.Algorithms.Count -eq 1) { "_$($this.Algorithms[0])" })_PowerUsage") { 
                 $this.PowerUsage = $Stat.Week
@@ -2072,7 +2069,7 @@ Function Get-Stat {
             }
 
             Try { 
-                $Stat = Get-Content "Stats\$Stat_Name.txt" -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+                $Stat = [System.IO.File]::ReadAllLines("Stats\$Stat_Name.txt") | ConvertFrom-Json -ErrorAction Stop
                 $Global:Stats[$Stat_Name] = [Hashtable]::Synchronized(
                     @{ 
                         Name                  = [String]$Stat_Name
@@ -3073,7 +3070,6 @@ Function Get-EquihashCoinPers {
     Return $DefaultCommand
 }
 
-
 Function Get-PoolBaseName { 
 
     Param(
@@ -3296,7 +3292,7 @@ Function Update-DAGdata {
             $DAGdataResponse = Invoke-RestMethod -Uri $Url -TimeoutSec 5
 
             If ($DAGdataResponse.code -eq 200) { 
-                $DAGdataResponse.data.PSObject.Properties.Name | Where-Object { $DAGdataResponse.data.$_.enabled -and $DAGdataResponse.data.$_.height -and ((Get-Algorithm $DAGdataResponse.data.$_.algo) -in @("Autolykos2", "EtcHash", "Ethash", "KawPow", "Octopus", "UbqHash") -or $_ -in @($Variables.DAGdata.Currency.psBase.Keys))} | ForEach-Object { 
+                $DAGdataResponse.data.PSObject.Properties.Name | Where-Object { $DAGdataResponse.data.$_.enabled -and $DAGdataResponse.data.$_.height -and ($Variables.RegexAlgoHasDAG -match (Get-Algorithm $DAGdataResponse.data.$_.algo) -or $_ -in @($Variables.DAGdata.Currency.psBase.Keys))} | ForEach-Object { 
                     If ($DAGdataResponse.data.$_.height -gt $Variables.DAGdata.Currency.$_.BlockHeight) { 
                         $DAGdata = Get-DAGdata -BlockHeight $DAGdataResponse.data.$_.height -Currency $_ -EpochReserve 2
                         If ($DAGdata.Algorithm -match $Variables.RegexAlgoHasDAG) { 
