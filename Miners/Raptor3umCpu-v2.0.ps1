@@ -17,7 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.10
+Version:        5.0.2.0
 Version date:   2023/10/06
 #>
 
@@ -33,7 +33,7 @@ $Algorithms = @(
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools }
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].PoolPorts[0] }
 
 If ($Algorithms) { 
@@ -50,11 +50,11 @@ If ($Algorithms) {
     $Algorithms | ForEach-Object { 
 
         $ExcludePools = $_.ExcludePools
-        ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools | Select-Object -Last 1)) {  
+        ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object Name -notin $ExcludePools | Select-Object -Last 1)) {  
 
             [PSCustomObject]@{ 
                 API         = "CcMiner"
-                Arguments   = "$($_.Arguments) --url stratum+tcp://$($Pool.Host):$($Pool.PoolPorts[0]) --user $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass) --hash-meter --quiet --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)"
+                Arguments   = "$($_.Arguments) --url stratum+tcp://$($Pool.Host):$($Pool.PoolPorts[0]) --user $($Pool.User) --pass $($Pool.Pass) --hash-meter --quiet --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)"
                 DeviceNames = $AvailableMiner_Devices.Name
                 Fee         = @(0) # Dev fee
                 MinerSet    = $_.MinerSet

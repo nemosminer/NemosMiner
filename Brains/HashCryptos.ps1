@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Brains\MiningDutch.ps1
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 using module ..\Includes\Include.psm1
@@ -136,12 +136,13 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
     $Duration = ([DateTime]::Now - $StartTime).TotalSeconds
     $Durations += ($Duration, $Variables.Interval | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum)
     $Durations = @($Durations | Select-Object -Last 20)
+    $DurationsAvg = ([Int]($Durations | Measure-Object -Average | Select-Object -ExpandProperty Average) + 3)
 
-    Write-Message -Level Debug "Brain '$($BrainName)': End loop (Duration $($Duration) sec.); found $($AlgoData.PSObject.Properties.Name.Count) pools."
+    Write-Message -Level Debug "Brain '$($BrainName)': End loop (Duration $($Duration) sec.); found $($Variables.BrainData.$BrainName.PSObject.Properties.Name.Count) valid pools."
 
-    Remove-Variable AlgoData, Duration -ErrorAction Ignore
+    Remove-Variable CurrenciesData, Duration -ErrorAction Ignore
 
-    While ($CurDate -ge $Variables.MinerDataCollectedTimeStamp -or ([DateTime]::Now).ToUniversalTime().AddSeconds([Int]($Durations | Measure-Object -Average | Select-Object -ExpandProperty Average) + 3) -le $Variables.EndCycleTime) { 
+    While ($CurDate -ge $Variables.MinerDataCollectedTimeStamp -or (([DateTime]::Now).ToUniversalTime().AddSeconds($DurationsAvg) -le $Variables.EndCycleTime -and ([DateTime]::Now).ToUniversalTime() -lt $Variables.EndCycleTime)) { 
         Start-Sleep -Seconds 1
     }
 

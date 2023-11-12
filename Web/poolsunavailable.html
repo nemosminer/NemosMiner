@@ -49,8 +49,8 @@
                 <th data-field="Price_Bias" class="addm" data-align="right" data-sortable="true" data-formatter="formatPrices" data-visible="false">BTC/GH/Day<br>(Biased)</th>
                 <th data-field="StablePrice" class="addm" data-align="right" data-sortable="true" data-formatter="formatPrices" data-visible="false">BTC/GH/Day<br>(Week)</th>
                 <th data-field="Accuracy" data-align="right" data-sortable="true" data-formatter="formatPercent" data-width=2>Accuracy</th>
-                <th data-field="Name" data-sortable="true" data-filter-control="select">Pool Name (Variant)</th>
-                <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">Pool Name</th>
+                <th data-field="Variant" data-sortable="true" data-filter-control="select">Pool Name (Variant)</th>
+                <th data-field="Name" data-sortable="true" data-filter-control="select" data-visible="false">Pool Name</th>
                 <th data-field="Region" data-sortable="true" data-filter-control="select" data-visible="false">Region</th>
                 <th data-field="User" data-sortable="true" data-filter-control="select" data-visible="false">Username or Wallet</th>
                 <th data-field="WorkerName" data-sortable="true" data-filter-control="select" data-visible="false">WorkerName</th>
@@ -71,6 +71,7 @@
                 <th data-field="Disabled" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Disabled</th>
                 <th data-field="Available" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Available</th>
                 <th data-field="Best" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Best</th>
+                <th data-field="Prioritize" data-sortable="true" data-filter-control="select" data-visible="false">Prioritize</th>
               </tr>
             </thead>
           </table>
@@ -99,7 +100,7 @@
                 if ($data.length >= 1) {
                   $('body').css('cursor', 'progress');
                   $url = '/functions/algorithm/enable';
-                  $payload = {'Pools': JSON.stringify($data.map($element => ({ BaseName: $element.BaseName, Algorithm: $element.Algorithm })))};
+                  $payload = {'Pools': JSON.stringify($data.map($element => ({ Name: $element.Name, Algorithm: $element.Algorithm })))};
                   $('.modal-body').load($url, $payload, function() {
                     $('.modal-title').text($('#btn-enable').text());
                     $('body').css('cursor', 'default');
@@ -114,7 +115,7 @@
                 if ($data.length >= 1) {
                   $('body').css('cursor', 'progress');
                   $url = '/functions/algorithm/disable';
-                  $payload = {'Pools': JSON.stringify($data.map($element => ({ BaseName: $element.BaseName, Algorithm: $element.Algorithm })))};
+                  $payload = {'Pools': JSON.stringify($data.map($element => ({ Name: $element.Name, Algorithm: $element.Algorithm })))};
                   $('.modal-body').load($url, $payload, function() {
                     $('.modal-title').text($('#btn-disable').text());
                     $('body').css('cursor', 'default');

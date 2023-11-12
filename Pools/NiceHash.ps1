@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\NiceHash.ps1
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 param(
@@ -79,7 +79,6 @@ If ($Wallet) {
             [PSCustomObject]@{ 
                 Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Minute_5_Fluctuation), 1)) # Use short timespan to counter price spikes
                 Algorithm                = [String]$Algorithm_Norm
-                BaseName                 = [String]$Name
                 Currency                 = [String]$Currency
                 Disabled                 = [Boolean]$Stat.Disabled
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
@@ -99,6 +98,7 @@ If ($Wallet) {
                 Updated                  = [DateTime]$Stat.Updated
                 User                     = "$Wallet.$($PoolConfig.WorkerName)"
                 WorkerName               = ""
+                Variant                  = [String]$Name
             }
         }
     }

@@ -17,13 +17,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.Type -eq "INTEL" -or $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
 
-$URI = "https://github.com/andru-kun/wildrig-multi/releases/download/0.38.1/wildrig-multi-windows-0.38.1.7z"
+$URI = "https://github.com/andru-kun/wildrig-multi/releases/download/0.38.3/wildrig-multi-windows-0.38.3.7z"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = "$PWD\Bin\$($Name)\wildrig.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
@@ -234,7 +234,7 @@ $Algorithms = @(
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools }
 
 If ($Algorithms) { 
 
@@ -247,7 +247,7 @@ If ($Algorithms) {
 
             If ($AvailableMiner_Devices = If ($_.ExcludeGPUModel) { $Miner_Devices | Where-Object Model -notmatch $_.ExcludeGPUModel } Else { $Miner_Devices }) { 
                 $ExcludePools = $_.ExcludePools
-                ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools)) { 
+                ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object Name -notin $ExcludePools)) { 
 
                     $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
                     If ($AvailableMiner_Devices = $AvailableMiner_Devices | Where-Object MemoryGiB -GE $MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
@@ -256,7 +256,7 @@ If ($Algorithms) {
 
                         [PSCustomObject]@{ 
                             API         = "XmRig"
-                            Arguments   = "$($_.Arguments) --api-port $MinerAPIPort --url $(If ($Pool.PoolPorts[1]) { "stratum+tcps" } Else { "stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass) --multiple-instance --opencl-platforms $($AvailableMiner_Devices.PlatformId | Sort-Object -Unique) --opencl-devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
+                            Arguments   = "$($_.Arguments) --api-port $MinerAPIPort --url $(If ($Pool.PoolPorts[1]) { "stratum+tcps" } Else { "stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User) --pass $($Pool.Pass) --multiple-instance --opencl-platforms $($AvailableMiner_Devices.PlatformId | Sort-Object -Unique) --opencl-devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
                             DeviceNames = $AvailableMiner_Devices.Name
                             Fee         = @($_.Fee) # Dev fee
                             MinerSet    = $_.MinerSet

@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0" })) { Return }
@@ -51,9 +51,9 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithms = @("Ethash");                     Fee = @(0.01);         MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=ethash" } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");       Fee = @(0.01, 0.01);   MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=ethash" } # PhoenixMiner-v6.2c is fastest
 #   [PSCustomObject]@{ Algorithms = @("Ethash", "IronFish");         Fee = @(0.01, 0.01);   MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=ethash" } # Pools with support at this time are Herominers, Flexpool and Kryptex
-    [PSCustomObject]@{ Algorithms = @("FiroPow");                    Fee = @(0.02);         MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA3");                   Arguments = " --algo=firopow" } # Wildrig-v0.38.0is fastest on Polaris
-    [PSCustomObject]@{ Algorithms = @("IronFish");                   Fee = @(0.025);        MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "_RDNA1");                  Arguments = " --algo=ironfish" } # Pools with support at this time are Herominers, Flexpool and Kryptex
-    [PSCustomObject]@{ Algorithms = @("KawPow");                     Fee = @(0.02);         MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 60);  ExcludePools = @(@("MiningPoolHub"), @()); ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA3");                   Arguments = " --algo=kawpow" } # Wildrig-v0.38.0is fastest on Polaris
+    [PSCustomObject]@{ Algorithms = @("FiroPow");                    Fee = @(0.02);         MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA3");                   Arguments = " --algo=firopow" } # Wildrig-v0.38.3 is fastest on Polaris
+    [PSCustomObject]@{ Algorithms = @("IronFish");                   Fee = @(0.025);        MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=ironfish" } # Pools with support at this time are Herominers, Flexpool and Kryptex
+    [PSCustomObject]@{ Algorithms = @("KawPow");                     Fee = @(0.02);         MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 60);  ExcludePools = @(@("MiningPoolHub"), @()); ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA3");                   Arguments = " --algo=kawpow" } # Wildrig-v0.38.3 is fastest on Polaris
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");                 Fee = @(0.01);         MinMemGiB = 2.0;  MinerSet = 0; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2");                            Arguments = " --algo=kas" }
 #   [PSCustomObject]@{ Algorithms = @("Lyra2Z");                     Fee = @(0.03);         MinMemGiB = 2.0;  MinerSet = 0; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=lyra2z" } # ASIC
 #   [PSCustomObject]@{ Algorithms = @("Lyra2RE3");                   Fee = @(0.025);        MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());                ExcludeGPUArchitecture = @("GCN1", "GCN2", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=lyra2rev3" } # ASIC
@@ -71,8 +71,8 @@ $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms | Where-Object { -not $_.Algorithms[1] } | ForEach-Object { $_.Algorithms += "" }
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithms[0]] } | Where-Object { $_.Algorithms[1] -eq "" -or $MinerPools[1][$_.Algorithms[1]] }
 $Algorithms = $Algorithms | Where-Object { $Config.SSL -ne "Always" -or ($MinerPools[0][$_.Algorithms[0]].SSLSelfSignedCertificate -eq $false -and (-not $_.Algorithms[1] -or $MinerPools[1][$_.Algorithms[1]].SSLSelfSignedCertificate -ne $true)) }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithms[0]].BaseName -notin $_.ExcludePools[0] }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[1][$_.Algorithms[1]].BaseName -notin $_.ExcludePools[1] }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithms[0]].Name -notin $_.ExcludePools[0] }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[1][$_.Algorithms[1]].Name -notin $_.ExcludePools[1] }
 
 If ($Algorithms) { 
 
@@ -84,8 +84,8 @@ If ($Algorithms) {
         $Algorithms | ForEach-Object { 
 
             $ExcludePools = $_.ExcludePools
-            ForEach ($Pool0 in ($MinerPools[0][$_.Algorithms[0]] | Where-Object BaseName -notin $ExcludePools[0] | Where-Object { $Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -ne $true })) { 
-                ForEach ($Pool1 in ($MinerPools[1][$_.Algorithms[1]] | Where-Object BaseName -notin $ExcludePools[1] | Where-Object { $Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -ne $true })) { 
+            ForEach ($Pool0 in ($MinerPools[0][$_.Algorithms[0]] | Where-Object Name -notin $ExcludePools[0] | Where-Object { $Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -ne $true })) { 
+                ForEach ($Pool1 in ($MinerPools[1][$_.Algorithms[1]] | Where-Object Name -notin $ExcludePools[1] | Where-Object { $Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -ne $true })) { 
 
                     # Temp fix: SSL is broken @ ZergPool
                     If ($Pool0.BaseName -eq "ZergPool") { 

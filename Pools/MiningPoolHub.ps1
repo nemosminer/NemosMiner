@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\MiningPoolHub.ps1
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 param(
@@ -87,12 +87,11 @@ If ($PoolConfig.UserName) {
                 [PSCustomObject]@{ 
                     Accuracy                 = [Double](1 - $Stat.Week_Fluctuation)
                     Algorithm                = [String]$Algorithm_Norm
-                    BaseName                 = [String]$Name
                     Currency                 = [String]$Currency
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                     Fee                      = $Fee
                     Host                     = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
-                    Name                     = [String]$PoolVariant
+                    Name                     = [String]$Name
                     Pass                     = "x"
                     Port                     = [UInt16]$Port
                     PortSSL                  = 0
@@ -105,8 +104,9 @@ If ($PoolConfig.UserName) {
                     StablePrice              = [Double]$Stat.Week
                     User                     = "$($PoolConfig.UserName).$($PoolConfig.WorkerName)"
                     Updated                  = [DateTime]$Stat.Updated
-                    WorkerName               = ""
+                    WorkerName               = [String]$PoolConfig.WorkerName
                     Workers                  = [Int]$_.workers
+                    Variant                  = [String]$PoolVariant
                 }
                 Break
             }

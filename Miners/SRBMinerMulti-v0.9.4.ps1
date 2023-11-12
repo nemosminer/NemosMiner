@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $_.Architecture -eq "Other" })) { Return }
@@ -68,7 +68,7 @@ $Algorithms = @(
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools }
 
 If ($Algorithms) { 
 
@@ -84,7 +84,7 @@ If ($Algorithms) {
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
             $ExcludePools = $_.ExcludePools
-            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools)) { 
+            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object Name -notin $ExcludePools)) { 
 
                 If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -gt $_.MinMemGiB) { 
 

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\ZPool.ps1
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 param(
@@ -66,7 +66,7 @@ If ($PriceField -and $Wallet) {
         # If ($Request.$_.error) { $Reasons.Add($Request.$_.error) }
         If ($Request.$_.hashrate_last24h -eq 0) { $Reasons.Add("No hashrate at pool") }
 
-        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
+        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$Currency" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
         ForEach ($Region_Norm in $Variables.Regions[$Config.Region]) { 
             If ($Region = $PoolConfig.Region | Where-Object { (Get-Region $_) -eq $Region_Norm }) { 
@@ -74,14 +74,13 @@ If ($PriceField -and $Wallet) {
                 [PSCustomObject]@{ 
                     Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
                     Algorithm                = [String]$Algorithm_Norm
-                    BaseName                 = [String]$Name
                     CoinName                 = [String]$CoinName
                     Currency                 = [String]$Currency
                     Disabled                 = [Boolean]$Stat.Disabled
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                     Fee                      = [Decimal]$Fee
                     Host                     = "$($Algorithm).$($Region).$($HostSuffix)"
-                    Name                     = [String]$PoolVariant
+                    Name                     = [String]$Name
                     Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency$(If ($Currency -and -not $PoolConfig.ProfitSwitching) { ",zap=$Currency" })"
                     Port                     = [UInt16]$Request.$_.port
                     PortSSL                  = [UInt16]("5$([String]$Request.$_.port)")
@@ -96,6 +95,7 @@ If ($PriceField -and $Wallet) {
                     User                     = [String]$Wallet
                     WorkerName               = ""
                     Workers                  = [Int]$Request.$_.workers
+                    Variant                  = [String]$PoolVariant
                 }
                 Break
             }

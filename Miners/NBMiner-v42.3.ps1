@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.CUDAVersion -ge "10.0") } )) { Return }
@@ -45,7 +45,7 @@ $Algorithms = @(
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools }
 
 If ($Algorithms) { 
 
@@ -57,7 +57,7 @@ If ($Algorithms) {
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
             $ExcludePools = $_.ExcludePools
-            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools)) { 
+            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object Name -notin $ExcludePools)) { 
 
                 $MinComputeCapability = $_.MinComputeCapability
                 $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
@@ -75,7 +75,7 @@ If ($Algorithms) {
                         Default        { " --url stratum" }
                     }
                     $Arguments += If ($Pool.PoolPorts[1]) { "+ssl://" } Else  { "+tcp://" }
-                    $Arguments += "$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" })"
+                    $Arguments += "$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User)"
                     $Arguments += " --password $($Pool.Pass)"
 
                     # Optionally disable dev fee mining

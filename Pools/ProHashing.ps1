@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\ProHashing.ps1
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 param(
@@ -59,14 +59,14 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
         $Currency = $Request.$_.currency
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
         $Fee = If ($Currency) { $Request.$_."$($PoolConfig.MiningMode)_fee" } Else { $Request.$_."pps_fee" }
-        $Pass = "a=$($Algorithm.ToLower()),e=off,n=$($PoolConfig.WorkerName),o=$($PoolConfig.UserName)$(If ($Algorithm_Norm -ne "Ethash" -and $Config.ProHashingMiningMode -eq "PPLNS" -and $Request.$_.CoinName) { ",m=pplns,c=$($Request.$_.CoinName.ToLower())" })"
+        $Pass = "a=$($Algorithm.ToLower()),n=$($PoolConfig.WorkerName)$(If ($Config.ProHashingMiningMode -eq "PPLNS" -and $Request.$_.CoinName) { ",c=$($Request.$_.CoinName.ToLower()),m=pplns" })"
 
         # Add coin name
         If ($Request.$_.CoinName -and $Currency) { 
             [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName)
         }
 
-        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
+        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$Currency" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
         $Reasons = [System.Collections.Generic.List[String]]@()
         If ($Request.$_.hashrate -eq 0) { $Reasons.Add("No hashrate at pool") }
@@ -77,13 +77,12 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
                 [PSCustomObject]@{ 
                     Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
                     Algorithm                = [String]$Algorithm_Norm
-                    BaseName                 = [String]$Name
                     Currency                 = [String]$Currency
                     Disabled                 = [Boolean]$Stat.Disabled
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                     Fee                      = [Decimal]$Fee
                     Host                     = "$($Region.ToLower()).$HostSuffix"
-                    Name                     = [String]$PoolVariant
+                    Name                     = [String]$Name
                     Pass                     = [String]$Pass
                     Port                     = [UInt16]$Request.$_.port
                     PortSSL                  = 0
@@ -96,7 +95,8 @@ If ($DivisorMultiplier -and $PriceField -and $PoolConfig.UserName) {
                     StablePrice              = [Double]$Stat.Week
                     Updated                  = [DateTime]$Stat.Updated
                     User                     = [String]$PoolConfig.UserName
-                    WorkerName               = ""
+                    Variant                  = [String]$PoolVariant
+                    WorkerName               = [String]$PoolConfig.WorkerName
                 }
                 Break
             }

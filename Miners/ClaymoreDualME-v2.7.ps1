@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { ($_.Type -eq "AMD" -and $Variables.DriverVersion.CIM.AMD -le "20.45.01.28") -or $_.OpenCL.ComputeCapability -ge "5.0" })) { Return } # Only supports AMD drivers until 20.12.1
@@ -36,7 +36,7 @@ $Algorithms = @(
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools }
 
 If ($Algorithms) { 
 
@@ -48,7 +48,7 @@ If ($Algorithms) {
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
             $ExcludePools = $_.ExcludePools
-            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools)) { 
+            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object Name -notin $ExcludePools)) { 
 
                 $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
                 If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $MinMemGiB) { 

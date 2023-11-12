@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\Rigel.ps1
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 Class Rigel : Miner { 
@@ -47,7 +47,7 @@ Class Rigel : Miner {
         $Shares_Accepted = $Shares_Rejected = $Shares_Invalid = [Int64]0
 
         ForEach ($Algorithm in $Algorithms) { 
-            $HashRate_Name = $this.Algorithms | Select-Object -Index $Algorithms.IndexOf($Algorithm)
+            $HashRate_Name = $this.Algorithms[$Algorithms.IndexOf($Algorithm)]
             $HashRate_Value = [Double]$Data.hashrate.$Algorithm
             $HashRate | Add-Member @{ $HashRate_Name = [Double]$HashRate_Value }
 

@@ -9,6 +9,37 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in UTC time)
 
+
+ChangeLog NemosMiner 5.0.2.0 2023/11/12
+=======================================
+
+Brains:
+- Fix warning 'No data received from pools' when all miners failed
+
+Changes:
+- Core & Pools: Change pool properties 'Name' -> 'Variant' & 'BaseName' -> 'Name'
+- Core: Change evaluation criteria for unreal pool price to use average  price of all pools
+
+Enhancements:
+- Include.psm1: Minor code optimizations
+- Core: Rework unreal pool price detection. Compare prices for pools with same algorithm AND currency
+
+Fixes:
+- TTMiner: Created broken miner objects with orrupt miner command line (Regression from v5.0.1.9)
+
+Miner changes:
+- JayddeeCpu-v23.7
+- lolMiner-v1.77b
+- Rigel-v1.9.2
+- TeamBlackMiner-v2.08
+- Wildrig-v0.38.3
+
+Pool changes:
+- HiveOn: Add kHeavyHash to list of supported algorithms
+- MiningDutch: Workaround for API data inconsistency (workers & hashrate = 0)
+- ZergPool: Create a pool object for each currency
+
+
 ChangeLog NemosMiner 5.0.1.10 2023/11/06
 ========================================
 
@@ -82,7 +113,7 @@ ChangeLog NemosMiner 5.0.1.5 2023/10/22
 =======================================
 
 Changes:
-- Core: Use miner name instead of device name for Benchmarking / Power usage meassuring group naming.
+- Core: Use miner name instead of device name for Benchmarking / Power usage measuring group naming.
 
 Enhancements:
 - Miner definition files: Use arrays instead of PSCustomObjects for better performance
@@ -137,7 +168,7 @@ ChangeLog NemosMiner 5.0.1.2 2023/10/11
 =======================================
 
 Changes:
-- Core: Replace function calls to 'Start-TreadJob' with 'Start-Job' (hopefully this reduces memory leaks)
+- Core: Replace function calls to 'Start-ThreadJob' with 'Start-Job' (hopefully this reduces memory leaks)
 
 Enhancements:
 - Core: Minor code optimizations
@@ -187,7 +218,7 @@ Fixes:
 - Web GUI: Dashboard / Active miners: href to API data broken
 
 Improvements:
-- Core: Extend DAG creation time by 90 seconds  when computer is on battery
+- Core: Extend DAG creation time by 90 seconds when computer is on battery
 
 Miner changes:
 - BzMiner-v17.0.1b1

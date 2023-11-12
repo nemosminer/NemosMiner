@@ -29,8 +29,8 @@ function formatMiners(data) {
           item.tPrimaryAlgorithm = item.Algorithms[0];
           item.tPrimaryCurrency = item.WorkersRunning[0].Pool.Currency;
           item.tPrimaryCoinName = item.WorkersRunning[0].Pool.CoinName;
-          item.tPrimaryPool = item.WorkersRunning[0].Pool.BaseName;
-          item.tPrimaryPoolVariant = item.Workers[0].Pool.Name;
+          item.tPrimaryPool = item.WorkersRunning[0].Pool.Name;
+          item.tPrimaryPoolVariant = item.Workers[0].Pool.Variant;
           item.tPrimaryPoolFee = item.WorkersRunning[0].Pool.Fee;
           item.tPrimaryPoolUser = item.WorkersRunning[0].Pool.User;
         }
@@ -42,8 +42,8 @@ function formatMiners(data) {
             item.tSecondaryAlgorithm = item.Algorithms[1];
             item.tSecondaryCurrency = item.WorkersRunning[1].Pool.Currency;
             item.tSecondaryCoinName = item.WorkersRunning[1].Pool.CoinName;
-            item.tSecondaryPool = item.WorkersRunning[1].Pool.BaseName;
-            item.tSecondaryPoolVariant = item.Workers[1].Pool.Name;
+            item.tSecondaryPool = item.WorkersRunning[1].Pool.Name;
+            item.tSecondaryPoolVariant = item.Workers[1].Pool.Variant;
             item.tSecondaryPoolFee = item.WorkersRunning[1].Pool.Fee;
             item.tSecondaryPoolUser = item.WorkersRunning[1].Pool.User;
           }
@@ -55,8 +55,8 @@ function formatMiners(data) {
           item.tPrimaryAlgorithm = item.Algorithms[0];
           item.tPrimaryCurrency = item.Workers[0].Pool.Currency;
           item.tPrimaryCoinName = item.Workers[0].Pool.CoinName;
-          item.tPrimaryPool = item.Workers[0].Pool.BaseName;
-          item.tPrimaryPoolVariant = item.Workers[0].Pool.Name;
+          item.tPrimaryPool = item.Workers[0].Pool.Name;
+          item.tPrimaryPoolVariant = item.Workers[0].Pool.Variant;
           item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
           item.tPrimaryPoolUser = item.Workers[0].Pool.User;
         }
@@ -67,8 +67,8 @@ function formatMiners(data) {
             item.tSecondaryAlgorithm = item.Algorithms[1];
             item.tSecondaryCurrency = item.Workers[1].Pool.Currency;
             item.tSecondaryCoinName = item.Workers[1].Pool.CoinName;
-            item.tSecondaryPool = item.Workers[1].Pool.BaseName;
-            item.tSecondaryPoolVariant = item.Workers[1].Pool.Name;
+            item.tSecondaryPool = item.Workers[1].Pool.Name;
+            item.tSecondaryPoolVariant = item.Workers[1].Pool.Variant;
             item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
             item.tSecondaryPoolUser = item.Workers[1].Pool.User;
           }

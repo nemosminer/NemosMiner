@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.CUDAVersion -ge "9.1") } )) { Return }
@@ -43,7 +43,7 @@ $Algorithms = @(
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools }
 
 If ($Algorithms) { 
 
@@ -55,7 +55,7 @@ If ($Algorithms) {
         $Algorithms | Where-Object Type -eq $_.Type | ForEach-Object { 
 
             $ExcludePools = $_.ExcludePools
-            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools)) { 
+            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object Name -notin $ExcludePools)) { 
 
                 $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
                 If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -ge $MinMemGiB) { 
@@ -74,7 +74,7 @@ If ($Algorithms) {
 
                     [PSCustomObject]@{ 
                         API         = "EthMiner"
-                        Arguments   = " --pool $($Protocol)://$([System.Web.HttpUtility]::UrlEncode("$($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" })")):$([System.Web.HttpUtility]::UrlEncode($Pass))@$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --exit --api-port -$MinerAPIPort $($_.Arguments) $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ' ')"
+                        Arguments   = " --pool $($Protocol)://$([System.Web.HttpUtility]::UrlEncode("$($Pool.User)")):$([System.Web.HttpUtility]::UrlEncode($Pass))@$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --exit --api-port -$MinerAPIPort $($_.Arguments) $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ' ')"
                         DeviceNames = $AvailableMiner_Devices.Name
                         EnvVars     = @("SSL_NOVERIFY=TRUE")
                         Fee         = @(0) # Dev fee

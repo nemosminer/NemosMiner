@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "NVIDIA" -and $_.OpenCL.DriverVersion -ge "450.80.02" })) { Return }
@@ -34,7 +34,7 @@ $Algorithms = @(
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools }
 
 If ($Algorithms) { 
 
@@ -46,7 +46,7 @@ If ($Algorithms) {
         $Algorithms | ForEach-Object { 
 
             $ExcludePools = $_.ExcludePools
-            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools)) { 
+            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object Name -notin $ExcludePools)) { 
 
                 If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB) { 
 
@@ -54,7 +54,7 @@ If ($Algorithms) {
 
                     [PSCustomObject]@{ 
                         API         = "OneZero"
-                        Arguments   = "$($_.Arguments) --pool $(If ($Pool.PoolPorts[1]) { "ssl://"} )$($Pool.Host):$($AllMinerPools.$Algorithm.PoolPorts | Select-Object -Last 1)) --wallet $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass)$(If ($Pool.PoolPorts[1] -and $Config.SSLAllowSelfSignedCertificate) { " --no-cert-validation" } ) --api-port $MinerAPIPort --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
+                        Arguments   = "$($_.Arguments) --pool $(If ($Pool.PoolPorts[1]) { "ssl://"} )$($Pool.Host):$($AllMinerPools.$Algorithm.PoolPorts | Select-Object -Last 1)) --wallet $($Pool.User) --pass $($Pool.Pass)$(If ($Pool.PoolPorts[1] -and $Config.SSLAllowSelfSignedCertificate) { " --no-cert-validation" } ) --api-port $MinerAPIPort --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
                         DeviceNames = $AvailableMiner_Devices.Name
                         Fee         = $_.Fee # Dev fee
                         MinerSet    = $_.MinerSet

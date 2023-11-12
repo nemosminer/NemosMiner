@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\ZergPool.ps1
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 param(
@@ -63,11 +63,11 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
     $Request.PSObject.Properties.Name | Where-Object { $Request.$_.Updated -ge $Variables.Brains.$Name."Updated" } | ForEach-Object { 
         $Algorithm = $Request.$_.algo
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $Currency = "$($Request.$_.currency)" -replace ' \s+' -replace '-.+$'
+        $Currency = $_
         $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
         $Fee = $Request.$_.Fees / 100
 
-        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
+        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$Currency" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
         $Reasons = [System.Collections.Generic.List[String]]@()
         If ($Request.$_.noautotrade -eq 1 -and $Request.$_.Currency -ne $PayoutCurrency) { $Reasons.Add("Conversion disabled at pool") }
@@ -87,13 +87,12 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
                 [PSCustomObject]@{ 
                     Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
                     Algorithm                = [String]$Algorithm_Norm
-                    BaseName                 = [String]$Name
                     Currency                 = [String]$Currency
                     Disabled                 = [Boolean]$Stat.Disabled
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                     Fee                      = [Decimal]$Fee
                     Host                     = [String]$PoolHost
-                    Name                     = [String]$PoolVariant
+                    Name                     = [String]$Name
                     Pass                     = "c=$PayoutCurrency$(If ($Currency -and -not $PoolConfig.ProfitSwitching) { ",mc=$Currency" }),ID=$($PoolConfig.WorkerName -replace '^ID=')$PayoutThresholdParameter" # Pool profit swiching breaks Option 2 (static coin), instead it will still send DAG data for any coin
                     Port                     = [UInt16]$Request.$_.port
                     PortSSL                  = [UInt16]$Request.$_.tls_port
@@ -108,6 +107,7 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
                     User                     = [String]$Wallet
                     Workers                  = [Int]$Request.$_.workers_shared
                     WorkerName               = ""
+                    Variant                  = [String]$PoolVariant
                 }
                 Break
             }

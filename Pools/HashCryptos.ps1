@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\HashCryptos.ps1
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 param(
@@ -67,7 +67,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
             [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName)
         }
 
-        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
+        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$Currency" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
         $Reasons = [System.Collections.Generic.List[String]]@()
         If ($Request.$_.hashrate -eq 0 -or $Request.$_.hashrate_last24h -eq 0) { $Reasons.Add("No hashrate at pool") }
@@ -75,14 +75,13 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
         [PSCustomObject]@{ 
             Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
             Algorithm                = [String]$Algorithm_Norm
-            BaseName                 = [String]$Name
             Currency                 = [String]$Currency
             Disabled                 = [Boolean]$Stat.Disabled
             EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
             Fee                      = [Decimal]$Fee
             Host                     = [String]$HostSuffix
-            Name                     = [String]$PoolVariant
-            Pass                     = [String]$PoolConfig.WorkerName
+            Name                     = [String]$Name
+            Pass                     = "x"
             Port                     = [UInt16]($Request.$_.port -split ' ')[0]
             PortSSL                  = If (($Request.$_.port -split ' ')[2]) { ($Request.$_.port -split ' ')[2] } Else { $null }
             Price                    = [Double]$Stat.Live
@@ -93,9 +92,10 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
             SSLSelfSignedCertificate = $true
             StablePrice              = [Double]$Stat.Week
             Updated                  = [DateTime]$Request.$_.Updated
-            User                     = [String]"$($Wallet).$($PoolConfig.WorkerName)"
-            WorkerName               = ""
+            User                     = [String]$Wallet
+            WorkerName               = [String]$PoolConfig.WorkerName
             Workers                  = [Int]$Request.$_.workers
+            Variant                  = [String]$PoolVariant
         }
     }
 }

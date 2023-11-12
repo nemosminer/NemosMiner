@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\Hiveon.ps1
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 param(
@@ -52,7 +52,7 @@ If ($PoolConfig.Wallets) {
     If (-not $Request) { Return }
 
     $Request.cryptoCurrencies | Where-Object { $Variables.Rates.($_.name).BTC } | ForEach-Object { 
-        $Currency = "$($_.name)" -replace ' \s+'
+        $Currency = $_.name -replace ' \s+'
         If ($Algorithm_Norm = Get-AlgorithmFromCurrency $Currency) { 
             $Divisor = [Double]$_.profitPerPower
 
@@ -61,7 +61,7 @@ If ($PoolConfig.Wallets) {
                 [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $_.title.Trim().ToLower())
             }
 
-            $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
+            $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$Currency" })_Profit" -Value ($Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
 
             $Reasons = [System.Collections.Generic.List[String]]@()
             If ($Request.stats.($_.name).hashrate -eq 0) { $Reasons.Add("No hashrate at pool") }
@@ -69,13 +69,12 @@ If ($PoolConfig.Wallets) {
             [PSCustomObject]@{ 
                 Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
                 Algorithm                = [String]$Algorithm_Norm
-                BaseName                 = [String]$Name
                 Currency                 = [String]$Currency
                 Disabled                 = [Boolean]$Stat.Disabled
                 EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                 Fee                      = 0
                 Host                     = [String]$_.servers[0].host
-                Name                     = [String]$PoolVariant
+                Name                     = [String]$Name
                 Pass                     = "x"
                 Port                     = [UInt16]$_.servers[0].ports[0]
                 PortSSL                  = [UInt16]$_.servers[0].ssl_ports[0]
@@ -87,9 +86,10 @@ If ($PoolConfig.Wallets) {
                 SSLSelfSignedCertificate = $false
                 StablePrice              = [Double]$Stat.Week
                 Updated                  = [DateTime]$Stat.Updated
-                User                     = If ($PoolConfig.Wallets.$Currency) { "$($PoolConfig.Wallets.$Currency).$($PoolConfig.WorkerName)" } Else { "" }
+                User                     = If ($PoolConfig.Wallets.$Currency) { [String]$PoolConfig.Wallets.$Currency } Else { "" }
                 Workers                  = [Int]$Request.stats.($_.name).workers
-                WorkerName               = ""
+                WorkerName               = [String]$PoolConfig.WorkerName
+                Variant                  = [String]$PoolVariant
             }
         }
     }

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Brains\ZPool.ps1
-Version:        5.0.1.10
+Version:        5.0.2.0
 Version date:   08 July 2023
 #>
 
@@ -108,7 +108,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
             $BasePrice = If ($AlgoData.$Algo.actual_last24h) { $AlgoData.$Algo.actual_last24h } Else { $AlgoData.$Algo.estimate_last24h }
 
             If ($Currency = $AlgoData.$Algo.Currency) { 
-                If ($Variables.DAGdata.Algorithm.$Algo -and $AlgoData.$Algo.height -gt ($Variables.DAGdata.Currency.$Currency.BlockHeight)) { 
+                If ($Currency -match $Variables.RegexAlgoHasDAG -and $AlgoData.$Algo.height -gt ($Variables.DAGdata.Currency.$Currency.BlockHeight)) { 
                     # Keep DAG data data up to date
                     $Variables.DAGdata.Currency[$Currency] = (Get-DAGData -Blockheight $AlgoData.$Algo.height -Currency $Currency -EpochReserve 2)
                     $Variables.DAGdata.Updated["$BrainName Brain"] = ([DateTime]::Now).ToUniversalTime()
@@ -191,7 +191,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
     $Durations += ($Duration, $Variables.Interval | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum)
     $Durations = @($Durations | Select-Object -Last 20)
 
-    Write-Message -Level Debug "Brain '$($BrainName)': End loop (Duration $($Duration) sec.); found $($AlgoData.PSObject.Properties.Name.Count) pools."
+    Write-Message -Level Debug "Brain '$($BrainName)': End loop (Duration $($Duration) sec.); found $($AlgoData.PSObject.Properties.Name.Count) valid pools."
 
     Remove-Variable AlgoData, Duration -ErrorAction Ignore
 

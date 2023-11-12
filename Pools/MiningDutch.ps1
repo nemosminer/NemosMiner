@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\MiningDutch.ps1
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 param(
@@ -69,10 +69,13 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
             [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName)
         }
 
-        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
+        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$Currency" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
 
         $Reasons = [System.Collections.Generic.List[String]]@()
-        If ($Request.$_.hashrate -eq 0 -and $Request.$_.hashrate_last24h -ne $null) { $Reasons.Add("No hashrate at pool") } # Temp Fix: Sometimes pool retuns $null hashrate for all algorithms
+        # Temp Fix: Sometimes pool returns $null hashrate for all algorithms
+        If ($Request.$_.hashrate -eq 0 -and $Request.$_.hashrate_last24h -ne $null) { 
+            $Reasons.Add("No hashrate at pool") 
+        }
         # If ($Request.$_.hashrate -eq 0 ) { $Reasons.Add("No hashrate at pool") }
 
         ForEach ($Region_Norm in $Variables.Regions[$Config.Region]) { 
@@ -81,13 +84,12 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
                 [PSCustomObject]@{ 
                     Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
                     Algorithm                = [String]$Algorithm_Norm
-                    BaseName                 = [String]$Name
                     Currency                 = [String]$Currency
                     Disabled                 = [Boolean]$Stat.Disabled
                     EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
                     Fee                      = [Decimal]$Fee
                     Host                     = "$($Region).$($HostSuffix)"
-                    Name                     = [String]$PoolVariant
+                    Name                     = [String]$Name
                     Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
                     Port                     = [UInt16]$Request.$_.port
                     PortSSL                  = 0
@@ -102,6 +104,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
                     User                     = "$($PoolConfig.UserName).$($PoolConfig.WorkerName)"
                     Workers                  = [Int]$Request.$_.workers
                     WorkerName               = ""
+                    Variant                  = [String]$PoolVariant
                 }
                 Break
             }

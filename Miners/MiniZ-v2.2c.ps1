@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 using module ..\Includes\Include.psm1
@@ -72,7 +72,7 @@ $Algorithms = @(
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm) }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools }
 
 If ($Algorithms) { 
 
@@ -88,7 +88,7 @@ If ($Algorithms) {
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
             $ExcludePools = $_.ExcludePools
-            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools)) { 
+            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object Name -notin $ExcludePools)) { 
 
                 $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
                 If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -ge $MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
@@ -96,7 +96,7 @@ If ($Algorithms) {
                     $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 
                     $Arguments = $_.Arguments
-                    $Arguments += " --url=$(If ($Pool.PoolPorts[1]) { "ssl://" } )$($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" })@$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1)"
+                    $Arguments += " --url=$(If ($Pool.PoolPorts[1]) { "ssl://" } )$($Pool.User)@$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1)"
                     $Arguments += " --pass=$($Pool.Pass)"
                     If ($Pool.WorkerName) { $Arguments += " --worker=$($Pool.WorkerName)" }
                     If ($_.AutoCoinPers) {$Arguments += $(Get-EquihashCoinPers -Command " --pers " -Currency $Pool.Currency -DefaultCommand $_.AutoCoinPers) }

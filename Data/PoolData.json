@@ -67,16 +67,19 @@
     "GuaranteedPayoutCurrencies": [
       "ETC",
       "ETH",
+      "KAS",
       "RVN"
     ],
     "PayoutCurrencies": [
       "ETC",
       "ETH",
+      "KAS",
       "RVN"
     ],
     "PayoutThreshold": {
       "ETC": 1,
       "ETH": 0.2,
+      "KAS": 50,
       "RVN": 10
     },
     "Region": [

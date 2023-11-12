@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 using module .\Includes\Include.psm1
@@ -293,7 +293,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"5.0.1.10"
+    Version      = [System.Version]"5.0.2.0"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -409,7 +409,6 @@ $Variables.VerthashDatPath = ".\Cache\VertHash.dat"
 If (Test-Path -Path $Variables.VerthashDatPath -PathType Leaf) { 
     Write-Message -Level Verbose "Verifying integrity of VertHash data file '$($Variables.VerthashDatPath)'..."
     $VertHashDatCheckJob = Start-Job -ScriptBlock { (Get-FileHash -Path ".\Cache\VertHash.dat").Hash -eq "A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48" }
-    # $VertHashDatCheckJob = Start-ThreadJob -StreamingHost $Null -ThrottleLimit 30 -ScriptBlock { (Get-FileHash -Path ".\Cache\VertHash.dat").Hash -eq "A55531E843CD56B010114AAF6325B0D529ECF88F8AD47639B6EDEDAFD721AA48" }
 }
 
 # Unblock files
@@ -485,7 +484,7 @@ $Variables.DriverVersion.OpenCL | Add-Member "AMD" ((($Variables.Devices | Where
 $Variables.DriverVersion.OpenCL | Add-Member "NVIDIA" ((($Variables.Devices | Where-Object { $_.Type -eq "GPU" -and $_.Vendor -eq "NVIDIA" }).OpenCL.DriverVersion | Select-Object -First 1) -split ' ' | Select-Object -First 1)
 
 If ($Variables.DriverVersion.OpenCL.NVIDIA) { 
-    $Variables.DriverVersion | Add-Member "CUDA" $($Variables.CUDAVersionTable.($Variables.CUDAVersionTable.Keys | Sort-Object | Where-Object { $_ -le ([System.Version]$Variables.DriverVersion.OpenCL.NVIDIA).Major } | Select-Object -Last 1))
+    $Variables.DriverVersion | Add-Member "CUDA" $($Variables.CUDAVersionTable.($Variables.CUDAVersionTable.Keys | Where-Object { $_ -le ([System.Version]$Variables.DriverVersion.OpenCL.NVIDIA).Major } | Sort-Object -Bottom 1))
     $Variables.Devices | Where-Object { $_.Type -EQ "GPU" -and $_.Vendor -eq "NVIDIA" } | ForEach-Object { $_.CUDAVersion = [Version]$Variables.DriverVersion.CUDA }
 }
 

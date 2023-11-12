@@ -232,7 +232,10 @@
                       <input type="text" id="Algorithm" name="Algorithm" size=30>
                       <button type="button" class="btn btn-light btn-sm" id="DefaultAlgorithm" name="DefaultAlgorithm" title="Load the default algorithm list&#10;for the selected pools">Load default algorithms</button>
                     </div>
-                    <div style="padding-top: 0.2rem" title="NemosMiner will disable all miners which sometimes mine to a miner developer wallet (a.k.a. comission or donation)">
+                    <div style="padding-top: 0.2rem" title="'+[Currency]' to enable currency&#10;'-[Currency]' to disable currency&#10;Values must be sparated by commas&#10;e.g. '-SATOX,-PAPRY'&#10;&#10;Leave empty to use ALL available currencies&#10;If '+' is used, then only the explicitly enabled currencies are used&#10;If '-' is used, then all currencies are used except the disabled ones&#10;You can either use '+' or '-'; you cannot combine both&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')"> Include / exclude currencies
+                      <input type="text" id="Currency" name="Currency" size=30>
+                    </div>
+                    <div style="padding-top: 0.3rem" title="NemosMiner will disable all miners which sometimes mine to a miner developer wallet (a.k.a. comission or donation)">
                       <input type="checkbox" class="toggle-switch" id="DisableMinersWithFee" name="DisableMinersWithFee"> Disable miners with dev fees
                     </div>
                     <div style="padding-top: 0.6rem" title="NemosMiner will disable all dual algorithm miners&#10;(Note: This will enable single algorithm mining)">
@@ -240,9 +243,6 @@
                     </div>
                     <div style="padding-top: 0.6rem" title="NemosMiner will disable all single algorithm miners&#10;(Note: This will enable dual algorithm mining)">
                       <input type="checkbox" class="toggle-switch" id="DisableSingleAlgoMining" name="DisableSingleAlgoMining"> Disable single algorithm miners
-                    </div>
-                    <div style="padding-top: 0.3rem" title="'+[Currency]' to enable currency&#10;'-[Currency]' to disable currency&#10;Values must be sparated by commas&#10;e.g. '-SATOX,-PAPRY'&#10;&#10;Leave empty to use ALL available currencies&#10;If '+' is used, then only the explicitly enabled currencies are used&#10;If '-' is used, then all currencies are used except the disabled ones&#10;You can either use '+' or '-'; you cannot combine both&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')"> Include / exclude currencies
-                      <input type="text" id="Currency" name="Currency" size=30>
                     </div>
                     <br>
 
@@ -310,7 +310,7 @@
 
                     <!-- Calculation Settings -->
                     <legend title="These settings are used to calculate the best miners" class=h6><b>Calculation Settings</b></legend>
-                    <div style="padding-top: 0.3rem" title="Mark a pool as unavailable if price is x times higher than&#10;the second highest price of all other pools with same algorithm&#10;(min=1, max=10, default=1.5; 1 disables this check)&#10;&#10;Note: This applies only to algorithms that have at two least pools"> Unreal pool price factor
+                    <div style="padding-top: 0.3rem" title="Mark a pool as unavailable if price is x times higher than&#10;the average price of all pools with same algorithm&#10;(min=1, max=10, default=1.5; 1 disables this check)&#10;&#10;Note: This applies only to algorithms that have at two least pools"> Unreal pool price factor
                       <input type="number" step=0.1 min=1 max=10 value=1.5 size=3 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor">
                     </div>
                     <div style="padding-top: 0.3rem" title="Mark pool as unavailable if accuracy is below this value&#10;(min: 0%, max 100%, default=50%"> Minimum accuracy
@@ -364,7 +364,7 @@
                       <div style="padding-top: 0.6rem" title="Pool balances will be shown in extra currencies &#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
                         <input type="checkbox" class="toggle-switch" id="BalancesShowInAllCurrencies" name="BalancesShowInAllCurrencies" style="margin-left:20px"> Show pool balances all currencies
                       </div>
-                      <div style="padding-top: 0.6rem" title="Most pools clear pending balances after a longer period of inactivity.&#10;To avoid forfeiting pool balances NemosMiner will enforce mining&#10;at the pool the day before it would clear the balance.&#10;(one cycle only, even if it is not the most profitable pool).&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
+                      <div style="padding-top: 0.6rem" title="Most pools clear pending balances after a longer period of inactivity.&#10;To avoid forfeiting pool balances NemosMiner will enforce mining&#10;at the pool 10 days before it would clear the balance.&#10;(one cycle only, even if it is not the most profitable pool).&#10;(requires 'Poll pools for balances & earnings every n minutes' to be > 0)">
                         <input type="checkbox" class="toggle-switch" id="BalancesKeepAlive" name="BalancesKeepAlive" style="margin-left:20px"> Keep pool balances alive
                       </div>
                       <div style="padding-top: 0.6rem" title="NemosMiner will store all balances tracker data in '.\Logs\BalancesTrackerLog.csv'">

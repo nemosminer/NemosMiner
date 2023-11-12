@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices | Where-Object Type -EQ "CPU")) { Return }
@@ -107,12 +107,12 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "YespowerRes";   Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @();        Arguments = " --algo yespowerRes" }
     [PSCustomObject]@{ Algorithm = "YespowerSugar"; MinerSet = 1; WarmupTimes = @(45, 0);   ExcludePools = @();        Arguments = " --algo yespowerSugar" } # SRBMminerMulti is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "YespowerTIDE";  MinerSet = 0; WarmupTimes = @(45, 0);   ExcludePools = @();        Arguments = " --algo yespowerTIDE" }
-    [PSCustomObject]@{ Algorithm = "YespowerUrx";   Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @();        Arguments = " --algo yespowerURX" } # JayddeeCpu-v3.23.5 is faster, SRBMminerMulti is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "YespowerUrx";   Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @();        Arguments = " --algo yespowerURX" } # JayddeeCpu-v23.7 is faster, SRBMminerMulti is fastest, but has 0.85% miner fee
 )
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools }
 
 If ($Algorithms) { 
 
@@ -122,11 +122,11 @@ If ($Algorithms) {
     $Algorithms | ForEach-Object { 
 
         $ExcludePools = $_.ExcludePools
-        ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools | Select-Object -Last 1)) { 
+        ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object Name -notin $ExcludePools | Select-Object -Last 1)) { 
 
             [PSCustomObject]@{ 
                 API         = "CcMiner"
-                Arguments   = "$($_.Arguments) --url $(If ($Pool.PoolPorts[1]) { "stratum+tcps" } Else { "stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass $($Pool.Pass)$(If ($Pool.WorkerName) { " --rig-id $($Pool.WorkerName)" }) --cpu-affinity AAAA --quiet --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)"
+                Arguments   = "$($_.Arguments) --url $(If ($Pool.PoolPorts[1]) { "stratum+tcps" } Else { "stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User) --pass $($Pool.Pass)$(If ($Pool.WorkerName) { " --rig-id $($Pool.WorkerName)" }) --cpu-affinity AAAA --quiet --threads $($AvailableMiner_Devices.CIM.NumberOfLogicalProcessors -1) --api-bind=$($MinerAPIPort)"
                 DeviceNames = $AvailableMiner_Devices.Name
                 Fee         = @(0) # Dev fee
                 MinerSet    = $_.MinerSet

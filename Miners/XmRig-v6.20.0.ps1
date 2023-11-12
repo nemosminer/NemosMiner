@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.1.10
-Version date:   2023/11/06
+Version:        5.0.2.0
+Version date:   2023/11/12
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -in @("AMD", "CPU") -or $_.OpenCL.ComputeCapability -gt "5.0" })) { Return }
@@ -138,7 +138,7 @@ $Algorithms = @(
 
 $Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
 $Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].BaseName -notin $_.ExcludePools }
+$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools }
 
 If ($Algorithms) { 
 
@@ -150,7 +150,7 @@ If ($Algorithms) {
         $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
 
             $ExcludePools = $_.ExcludePools
-            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object BaseName -notin $ExcludePools | Select-Object -Last $(If ($_.Type -eq "CPU") { 1 } Else { $MinerPools[0][$_.Algorithm].Count }))) { 
+            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object Name -notin $ExcludePools | Select-Object -Last $(If ($_.Type -eq "CPU") { 1 } Else { $MinerPools[0][$_.Algorithm].Count }))) { 
 
                 $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
                 If ($AvailableMiner_Devices = $Miner_Devices | Where-Object { $_.Type -eq "CPU" -or $MemoryGiB -gt $MinMemGiB }) { 
@@ -169,7 +169,7 @@ If ($Algorithms) {
 
                     [PSCustomObject]@{ 
                         API         = "XmRig"
-                        Arguments   = "$Arguments $(If ($Pool.BaseName -eq "NiceHash") { " --nicehash" } )$(If ($Pool.PoolPorts[1]) { " --tls" } ) --url=$($Pool.Host):$($Pool.PoolPorts | Where-Object  { $_ -ne $null } | Select-Object -Last 1) --user=$($Pool.User)$(If ($Pool.WorkerName) { ".$($Pool.WorkerName)" }) --pass=$($Pool.Pass)$(If ($Pool.WorkerName) { " --rig-id $($Pool.WorkerName)" }) --keepalive --http-enabled --http-host=127.0.0.1 --http-port=$($MinerAPIPort) --api-worker-id=$($Config.WorkerName) --api-id=$($Miner_Name) --retries=90 --retry-pause=1"
+                        Arguments   = "$Arguments $(If ($Pool.BaseName -eq "NiceHash") { " --nicehash" } )$(If ($Pool.PoolPorts[1]) { " --tls" } ) --url=$($Pool.Host):$($Pool.PoolPorts | Where-Object  { $_ -ne $null } | Select-Object -Last 1) --user=$($Pool.User) --pass=$($Pool.Pass)$(If ($Pool.WorkerName) { " --rig-id $($Pool.WorkerName)" }) --keepalive --http-enabled --http-host=127.0.0.1 --http-port=$($MinerAPIPort) --api-worker-id=$($Config.WorkerName) --api-id=$($Miner_Name) --retries=90 --retry-pause=1"
                         DeviceNames = $AvailableMiner_Devices.Name
                         Fee         = @(0.01) # Dev fee
                         MinerSet    = $_.MinerSet
