@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\ZergPool.ps1
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
 param(
@@ -37,16 +37,10 @@ $HostSuffix = "mine.zergpool.com"
 $PoolConfig = $Variables.PoolsConfig.$Name
 $PriceField = $PoolConfig.Variant.$PoolVariant.PriceField
 $DivisorMultiplier = $PoolConfig.Variant.$PoolVariant.DivisorMultiplier
-$PayoutCurrency = $PoolConfig.Wallets.psBase.Keys | Select-Object -First 1
-$Regions = If ($Config.UseAnycast -and $PoolConfig.Region -contains "n/a (Anycast)") { "n/a (Anycast)" } Else { $PoolConfig.Region | Where-Object { $_ -ne "n/a (Anycast)" }  }
-$Wallet = $PoolConfig.Wallets.$PayoutCurrency
-$BrainDataFile = "$($PWD)\Data\BrainData_$($Name).json"
+$Regions = If ($Config.UseAnycast -and $PoolConfig.Region -contains "n/a (Anycast)") { "n/a (Anycast)" } Else { $PoolConfig.Region | Where-Object { $_ -ne "n/a (Anycast)" } }
+$BrainDataFile = "$PWD\Data\BrainData_$Name.json"
 
-If ($DivisorMultiplier -and $Regions -and $Wallet) {
-
-    $PayoutThreshold = $PoolConfig.PayoutThreshold.$PayoutCurrency
-    If (-not $PayoutThreshold -and $PoolConfig.PayoutThreshold.mBTC) { $PayoutThreshold = $PoolConfig.PayoutThreshold.mBTC / 1000 }
-    $PayoutThresholdParameter = ",pl=$([Double]$PayoutThreshold)"
+If ($DivisorMultiplier -and $Regions) {
 
     Try { 
         If ($Variables.BrainData.$Name.PSObject.Properties) { 
@@ -60,21 +54,28 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
 
     If (-not $Request.PSObject.Properties.Name) { Return }
 
-    $Request.PSObject.Properties.Name | Where-Object { $Request.$_.Updated -ge $Variables.Brains.$Name."Updated" } | ForEach-Object { 
-        $Algorithm = $Request.$_.algo
+    ForEach ($Pool in $Request.PSObject.Properties.Name.Where({ $Request.$_.Updated -ge $Variables.Brains.$Name."Updated" })) { 
+        $Algorithm = $Request.$Pool.algo
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $Currency = $_
-        $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
-        $Fee = $Request.$_.Fees / 100
+        $Currency = $Request.$Pool.Currency
+        $Divisor = $DivisorMultiplier * [Double]$Request.$Pool.mbtc_mh_factor
 
-        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$Currency" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
+        $PayoutCurrency = If ($Currency -and $PoolConfig.Wallets.$Pool -and -not $PoolConfig.ProfitSwitching) { $Currency } Else { $PoolConfig.PayoutCurrency }
+
+        $Key = "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$($Currency)" })"
+        $Stat = Set-Stat -Name "$($Key)_Profit" -Value ($Request.$Pool.$PriceField / $Divisor) -FaultDetection $false
+
+        $PayoutThreshold = $PoolConfig.PayoutThreshold.$PayoutCurrency
+        If ($PayoutThreshold -gt $Request.$Pool.minpay) { $PayoutThreshold = $Request.$Pool.minpay }
+        If (-not $PayoutThreshold -and $PayoutCurrency -eq "BTC" -and $PoolConfig.PayoutThreshold.mBTC) { $PayoutThreshold = $PoolConfig.PayoutThreshold.mBTC / 1000 }
+        If ($PayoutThreshold) { $PayoutThresholdParameter = ",pl=$([Double]$PayoutThreshold)" }
 
         $Reasons = [System.Collections.Generic.List[String]]@()
-        If ($Request.$_.noautotrade -eq 1 -and $Request.$_.Currency -ne $PayoutCurrency) { $Reasons.Add("Conversion disabled at pool") }
-        If ($Request.$_.hashrate_shared -eq 0) { $Reasons.Add("No hashrate at pool") }
+        If ($Request.$Pool.noautotrade -eq 1 -and $Pool -ne $PayoutCurrency) { $Reasons.Add("Conversion disabled at pool, no wallet address for '$Pool' configured") }
+        If ($Request.$Pool.hashrate_shared -eq 0) { $Reasons.Add("No hashrate at pool") }
 
         ForEach ($Region_Norm in $Variables.Regions[$Config.Region]) { 
-            If ($Region = $Regions | Where-Object { $_ -eq "n/a (Anycast)" -or (Get-Region $_) -eq $Region_Norm }) { 
+            If ($Region = $Regions.Where({ $_ -eq "n/a (Anycast)" -or (Get-Region $_) -eq $Region_Norm })) { 
 
                 If ($Region -eq "n/a (Anycast)") { 
                     $PoolHost = "$Algorithm.$HostSuffix"
@@ -85,27 +86,29 @@ If ($DivisorMultiplier -and $Regions -and $Wallet) {
                 }
 
                 [PSCustomObject]@{ 
-                    Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
+                    Accuracy                 = 1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1)
                     Algorithm                = [String]$Algorithm_Norm
                     Currency                 = [String]$Currency
-                    Disabled                 = [Boolean]$Stat.Disabled
-                    EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                    Fee                      = [Decimal]$Fee
+                    Disabled                 = $Stat.Disabled
+                    EarningsAdjustmentFactor = $PoolConfig.EarningsAdjustmentFactor
+                    Fee                      = $Request.$Pool.Fees / 100
                     Host                     = [String]$PoolHost
+                    Key                      = [String]$Key
+                    MiningCurrency           = If ($Currency) { $Currency } Else { "" }
                     Name                     = [String]$Name
-                    Pass                     = "c=$PayoutCurrency$(If ($Currency -and -not $PoolConfig.ProfitSwitching) { ",mc=$Currency" }),ID=$($PoolConfig.WorkerName -replace '^ID=')$PayoutThresholdParameter" # Pool profit swiching breaks Option 2 (static coin), instead it will still send DAG data for any coin
-                    Port                     = [UInt16]$Request.$_.port
-                    PortSSL                  = [UInt16]$Request.$_.tls_port
-                    Price                    = [Double]$Stat.Live
+                    Pass                     = "c=$PayoutCurrency$(If ($Currency) { ",mc=$Currency" }),ID=$($PoolConfig.WorkerName -replace '^ID=')$PayoutThresholdParameter" # Pool profit swiching breaks Option 2 (static coin), instead it will still send DAG data for any coin
+                    Port                     = [UInt16]$Request.$Pool.port
+                    PortSSL                  = [UInt16]$Request.$Pool.tls_port
+                    Price                    = $Stat.Live
                     Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratum2" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                     Reasons                  = $Reasons
                     Region                   = [String]$Region_Norm
                     SendHashrate             = $false
                     SSLSelfSignedCertificate = $false
-                    StablePrice              = [Double]$Stat.Week
-                    Updated                  = [DateTime]$Request.$_.Updated
-                    User                     = [String]$Wallet
-                    Workers                  = [Int]$Request.$_.workers_shared
+                    StablePrice              = $Stat.Week
+                    Updated                  = [DateTime]$Request.$Pool.Updated
+                    User                     = [String]$PoolConfig.Wallets.$PayoutCurrency
+                    Workers                  = [Int]$Request.$Pool.workers_shared
                     WorkerName               = ""
                     Variant                  = [String]$PoolVariant
                 }

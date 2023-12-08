@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\Trex.ps1
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
 Class OneZero : Miner { 
@@ -48,21 +48,21 @@ Class OneZero : Miner {
         $Shares_Invalid = [Int64]0
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
 
-        $PowerUsage = [Double]0
+        $PowerConsumption = [Double]0
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 
-            If ($this.ReadPowerUsage) { 
-                $PowerUsage = [Double]($Data.Devices | Measure-Object power -Sum | Select-Object -ExpandProperty Sum)
-                If (-not $PowerUsage) { 
-                    $PowerUsage = $this.GetPowerUsage()
+            If ($this.ReadPowerConsumption) { 
+                $PowerConsumption = [Double]($Data.Devices | Measure-Object power -Sum | Select-Object -ExpandProperty Sum)
+                If (-not $PowerConsumption) { 
+                    $PowerConsumption = $this.GetPowerConsumption()
                 }
             }
 
             Return [PSCustomObject]@{ 
-                Date       = ([DateTime]::Now).ToUniversalTime()
-                HashRate   = $HashRate
-                PowerUsage = $PowerUsage
-                Shares     = $Shares
+                Date             = ([DateTime]::Now).ToUniversalTime()
+                HashRate         = $HashRate
+                PowerConsumption = $PowerConsumption
+                Shares           = $Shares
             }
         }
         Return $null

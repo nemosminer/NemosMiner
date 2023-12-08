@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\HashCryptos.ps1
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
 param(
@@ -37,9 +37,9 @@ $Hostsuffix = "stratum1.hashcryptos.com"
 $PoolConfig = $Variables.PoolsConfig.$Name
 $PriceField = $PoolConfig.Variant.$PoolVariant.PriceField
 $DivisorMultiplier = $PoolConfig.Variant.$PoolVariant.DivisorMultiplier
-$PayoutCurrency = $PoolConfig.Wallets.psBase.Keys | Select-Object -First 1
+$PayoutCurrency = $PoolConfig.PayoutCurrency
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
-$BrainDataFile = "$($PWD)\Data\BrainData_$($Name).json"
+$BrainDataFile = "$PWD\Data\BrainData_$Name.json"
 
 If ($DivisorMultiplier -and $PriceField -and $Wallet) { 
 
@@ -55,46 +55,47 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
 
     If (-not $Request.PSObject.Properties.Name) { Return }
 
-    $Request.PSObject.Properties.Name | Where-Object { $Request.$_.Updated -ge $Variables.Brains.$Name."Updated" } | ForEach-Object { 
-        $Algorithm = $_
+    ForEach ($Algorithm in $Request.PSObject.Properties.Name.Where({ $Request.$_.Updated -ge $Variables.Brains.$Name."Updated" })) { 
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $Currency = "$($Request.$_.currency)" -replace ' \s+'
-        $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
-        $Fee = $Request.$_.Fees / 100
+        $Currency = "$($Request.$Algorithm.currency)" -replace ' \s+'
+        $Divisor = $DivisorMultiplier * [Double]$Request.$Algorithm.mbtc_mh_factor
 
         # Add coin name
-        If ($Request.$_.CoinName -and $Currency) { 
-            [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName)
+        If ($Request.$Algorithm.CoinName -and $Currency) { 
+            [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$Algorithm.CoinName)
         }
 
-        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$Currency" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
+        $Key = "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$Currency" })"
+        $Stat = Set-Stat -Name "$($Key)_Profit" -Value ($Request.$Algorithm.$PriceField / $Divisor) -FaultDetection $false
 
         $Reasons = [System.Collections.Generic.List[String]]@()
-        If ($Request.$_.hashrate -eq 0 -or $Request.$_.hashrate_last24h -eq 0) { $Reasons.Add("No hashrate at pool") }
+        If ($Request.$Algorithm.hashrate -eq 0 -or $Request.$Algorithm.hashrate_last24h -eq 0) { $Reasons.Add("No hashrate at pool") }
 
         [PSCustomObject]@{ 
-            Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
+            Accuracy                 = 1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1)
             Algorithm                = [String]$Algorithm_Norm
             Currency                 = [String]$Currency
-            Disabled                 = [Boolean]$Stat.Disabled
-            EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-            Fee                      = [Decimal]$Fee
+            Disabled                 = $Stat.Disabled
+            EarningsAdjustmentFactor = $PoolConfig.EarningsAdjustmentFactor
+            Fee                      = $Request.$Algorithm.Fees / 100
             Host                     = [String]$HostSuffix
+            Key                      = [String]$Key
+            MiningCurrency           = ""
             Name                     = [String]$Name
             Pass                     = "x"
-            Port                     = [UInt16]($Request.$_.port -split ' ')[0]
-            PortSSL                  = If (($Request.$_.port -split ' ')[2]) { ($Request.$_.port -split ' ')[2] } Else { $null }
-            Price                    = [Double]$Stat.Live
+            Port                     = [UInt16]($Request.$Algorithm.port -split ' ')[0]
+            PortSSL                  = If (($Request.$Algorithm.port -split ' ')[2]) { ($Request.$Algorithm.port -split ' ')[2] } Else { $null }
+            Price                    = $Stat.Live
             Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratum1" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
             Reasons                  = $Reasons
             Region                   = [String]$PoolConfig.Region
             SendHashrate             = $false
             SSLSelfSignedCertificate = $true
-            StablePrice              = [Double]$Stat.Week
-            Updated                  = [DateTime]$Request.$_.Updated
+            StablePrice              = $Stat.Week
+            Updated                  = [DateTime]$Request.$Algorithm.Updated
             User                     = [String]$Wallet
             WorkerName               = [String]$PoolConfig.WorkerName
-            Workers                  = [Int]$Request.$_.workers
+            Workers                  = [Int]$Request.$Algorithm.workers
             Variant                  = [String]$PoolVariant
         }
     }

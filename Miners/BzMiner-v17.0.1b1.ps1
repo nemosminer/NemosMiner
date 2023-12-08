@@ -17,15 +17,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
-If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -in @("AMD", "INTEL") -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge "460.27.03" ) })) { Return }
+If (-not ($Devices = $Variables.EnabledDevices.Where({ $_.Type -in @("AMD", "INTEL") -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge [Version]"460.27.03") }))) { Return }
 
 $URI = "https://bzminer.com/downloads/bzminer_v17.0.1b1_windows.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = "$PWD\Bin\$($Name)\bzminer.exe"
+$Path = "$PWD\Bin\$Name\bzminer.exe"
 $DeviceEnumerator = "Bus"
 
 $Algorithms = @(
@@ -79,87 +79,90 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithms = @("Skein2");                   Type = "NVIDIA"; Fee = @(0.01, 0.01);   MinMemGiB = 2;    Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = "";            ExcludePools = @(@(), @());             Arguments = @(" -a woodcoin") }
 )
 
-$Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
-$Algorithms | Where-Object { -not $_.Algorithms[1] } | ForEach-Object { $_.Algorithms += "" }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithms[0]] } | Where-Object { $_.Algorithms[1] -eq "" -or $MinerPools[1][$_.Algorithms[1]] }
-$Algorithms = $Algorithms | Where-Object { $Config.SSL -ne "Always" -or ($MinerPools[0][$_.Algorithms[0]].SSLSelfSignedCertificate -eq $false -and (-not $_.Algorithms[1] -or $MinerPools[1][$_.Algorithms[1]].SSLSelfSignedCertificate -ne $true)) }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithms[0]].Name -notin $_.ExcludePools[0] }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[1][$_.Algorithms[1]].Name -notin $_.ExcludePools[1] }
+$Algorithms = $Algorithms.Where({ $_.MinerSet -LE $Config.MinerSet })
+$Algorithms.Where({ -not $_.Algorithms[1] }) | ForEach-Object { $_.Algorithms += "" }
+$Algorithms = $Algorithms.Where({ $MinerPools[0][$_.Algorithms[0]] -and $_.Algorithms[1] -eq "" -or $MinerPools[1][$_.Algorithms[1]] })
+$Algorithms = $Algorithms.Where({ $Config.SSL -ne "Always" -or ($MinerPools[0][$_.Algorithms[0]].SSLSelfSignedCertificate -ne $true -and (-not $_.Algorithms[1] -or $MinerPools[1][$_.Algorithms[1]].SSLSelfSignedCertificate -ne $true)) })
+$Algorithms = $Algorithms.Where({ $MinerPools[0][$_.Algorithms[0]].Name -notin $_.ExcludePools[0] })
+$Algorithms = $Algorithms.Where({ $MinerPools[1][$_.Algorithms[1]].Name -notin $_.ExcludePools[1] })
 
 If ($Algorithms) { 
 
-    $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
+    ($Devices | Select-Object Type, Model -Unique).ForEach(
+        { 
+            $Miner_Devices = $Devices | Where-Object Model -EQ $_.Model
+            $MinerAPIPort = $Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1
 
-        $Miner_Devices = $Devices | Where-Object Model -EQ $_.Model
-        $MinerAPIPort = $Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1
+            ($Algorithms | Where-Object Type -EQ $_.Type).ForEach(
+                { 
 
-        $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
+                    $ExcludeGPUModel = $_.ExcludeGPUModel
+                    If ($AvailableMiner_Devices = If ($_.ExcludeGPUModel) { $Miner_Devices.Where({ $_.Model -notmatch $ExcludeGPUModel }) } Else { $Miner_Devices }) { 
 
-            If ($AvailableMiner_Devices = If ($_.ExcludeGPUModel) { $Miner_Devices | Where-Object Model -notmatch $_.ExcludeGPUModel } Else { $Miner_Devices }) { 
+                        $ExcludePools = $_.ExcludePools
+                        ForEach ($Pool0 in ($MinerPools[0][$_.Algorithms[0]].Where({ $_.Name -notin $ExcludePools[0] -and ($_."Ethash".Epoch -eq $null -or $_."Ethash".Epoch -gt 0) -and ($Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -ne $true) }))) { 
+                            ForEach ($Pool1 in ($MinerPools[1][$_.Algorithms[1]].Where({ $_.Name -notin $ExcludePools[1] -and ($Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -ne $true) }))) { 
 
-                $ExcludePools = $_.ExcludePools
-                ForEach ($Pool0 in ($MinerPools[0][$_.Algorithms[0]] | Where-Object Name -notin $ExcludePools[0] | Where-Object { $_."Ethash".Epoch -eq $null -or $_."Ethash".Epoch -gt 0 } | Where-Object { $Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -ne $true })) { 
-                    ForEach ($Pool1 in ($MinerPools[1][$_.Algorithms[1]] | Where-Object Name -notin $ExcludePools[1] | Where-Object { $Config.SSL -ne "Always" -or $_.SSLSelfSignedCertificate -ne $true })) { 
+                                $ExcludeGPUArchitecture = $_.ExcludeGPUArchitecture
+                                $MinMemGiB = $_.MinMemGiB + $Pool0.DAGSizeGiB + $Pool1.DAGSizeGiB
+                                If ($AvailableMiner_Devices = $AvailableMiner_Devices.Where({ $_.MemoryGiB -ge $MinMemGiB -and $_.Architecture -notin $ExcludeGPUArchitecture })) { 
 
-                        $MinMemGiB = $_.MinMemGiB + $Pool0.DAGSizeGiB + $Pool1.DAGSizeGiB
-                        If ($AvailableMiner_Devices = $AvailableMiner_Devices | Where-Object MemoryGiB -GE $MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
+                                    $Miner_Name = "$Name-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })"
 
-                            $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)$(If ($_.Algorithms[1]) { "-$($_.Algorithms[0])&$($_.Algorithms[1])" })"
+                                    $Arguments = $_.Arguments[0]
+                                    Switch ($Pool0.Protocol) { 
+                                        "ethproxy"     { $Arguments += " -p ethproxy" }
+                                        "ethstratum1"  { $Arguments += " -p ethstratum" }
+                                        "ethstratum2"  { $Arguments += " -p ethstratum2" }
+                                        "ethstratumnh" { $Arguments += " -p ethstratum" }
+                                        Default        { $Arguments += " -p stratum"}
+                                    }
+                                    $Arguments += If ($Pool0.PoolPorts[1]) { "+ssl://" } Else { "+tcp://" }
+                                    $Arguments += "$($Pool0.Host):$($Pool0.PoolPorts | Select-Object -Last 1)"
+                                    $Arguments += " -w $($Pool0.User)"
+                                    $Arguments += " --pool_password $($Pool0.Pass)"
+                                    $Arguments += " -r $($Config.WorkerName)"
 
-                            $Arguments = $_.Arguments[0]
-                            Switch ($Pool0.Protocol) { 
-                                "ethproxy"     { $Arguments += " -p ethproxy" }
-                                "ethstratum1"  { $Arguments += " -p ethstratum" }
-                                "ethstratum2"  { $Arguments += " -p ethstratum2" }
-                                "ethstratumnh" { $Arguments += " -p ethstratum" }
-                                Default        { $Arguments += " -p stratum"}
-                            }
-                            $Arguments += If ($Pool0.PoolPorts[1]) { "+ssl://" } Else { "+tcp://" }
-                            $Arguments += "$($Pool0.Host):$($Pool0.PoolPorts | Select-Object -Last 1)"
-                            $Arguments += " -w $($Pool0.User)"
-                            $Arguments += " --pool_password $($Pool0.Pass)"
-                            $Arguments += " -r $($Config.WorkerName)"
+                                    If ($_.Algorithms[1]) {
+                                        $Arguments += $_.Arguments[1]
+                                        Switch ($Pool1.Protocol) { 
+                                            "ethproxy"     { $Arguments += " --p2 ethproxy" }
+                                            "ethstratum1"  { $Arguments += " --p2 ethstratum" }
+                                            "ethstratum2"  { $Arguments += " --p2 ethstratum2" }
+                                            "ethstratumnh" { $Arguments += " --p2 ethstratum" }
+                                            Default        { $Arguments += " --p2 stratum" }
+                                        }
+                                        $Arguments += If ($Pool1.PoolPorts[1]) { "+ssl://" } Else { "+tcp://" }
+                                        $Arguments += "$($Pool1.Host):$($Pool1.PoolPorts | Select-Object -Last 1)"
+                                        $Arguments += " --w2 $($Pool1.User)"
+                                        $Arguments += " --pool_password2 $($Pool1.Pass)"
+                                        $Arguments += " --r2 $($Config.WorkerName)"
+                                    }
 
-                            If ($_.Algorithms[1]) {
-                                $Arguments += $_.Arguments[1]
-                                Switch ($Pool1.Protocol) { 
-                                    "ethproxy"     { $Arguments += " --p2 ethproxy" }
-                                    "ethstratum1"  { $Arguments += " --p2 ethstratum" }
-                                    "ethstratum2"  { $Arguments += " --p2 ethstratum2" }
-                                    "ethstratumnh" { $Arguments += " --p2 ethstratum" }
-                                    Default        { $Arguments += " --p2 stratum" }
+                                    # Apply tuning parameters
+                                    If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
+
+                                    [PSCustomObject]@{ 
+                                        API              = "BzMiner"
+                                        Arguments        = "$Arguments --nc 1 --no_watchdog --http_enabled 1 --http_port $MinerAPIPort --enable $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique).ForEach({ '{0}:0' -f $_ }) -join ' ')"
+                                        DeviceNames      = $AvailableMiner_Devices.Name
+                                        Fee              = $_.Fee # Dev fee
+                                        MinerSet         = $_.MinerSet
+                                        MinerUri         = "http://127.0.0.1:$($MinerAPIPort)"
+                                        Name             = $Miner_Name
+                                        Path             = $Path
+                                        Port             = $MinerAPIPort
+                                        Type             = $_.Type
+                                        URI              = $Uri
+                                        WarmupTimes      = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                                        Workers          = @(($Pool0, $Pool1).Where({ $_ } ) | ForEach-Object { @{ Pool = $_ } })
+                                    }
                                 }
-                                $Arguments += If ($Pool1.PoolPorts[1]) { "+ssl://" } Else { "+tcp://" }
-                                $Arguments += "$($Pool1.Host):$($Pool1.PoolPorts | Select-Object -Last 1)"
-                                $Arguments += " --w2 $($Pool1.User)"
-                                $Arguments += " --pool_password2 $($Pool1.Pass)"
-                                $Arguments += " --r2 $($Config.WorkerName)"
-                            }
-
-                            # Apply tuning parameters
-                            If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
-
-                            [PSCustomObject]@{ 
-                                API              = "BzMiner"
-                                Arguments        = "$Arguments --nc 1 --no_watchdog --http_enabled 1 --http_port $MinerAPIPort --enable $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0}:0' -f $_ }) -join ' ')"
-                                DeviceNames      = $AvailableMiner_Devices.Name
-                                Fee              = $_.Fee # Dev fee
-                                MinerSet         = $_.MinerSet
-                                MinerUri         = "http://127.0.0.1:$($MinerAPIPort)"
-                                Name             = $Miner_Name
-                                Path             = $Path
-                                Port             = $MinerAPIPort
-                                PrerequisitePath = $PrerequisitePath
-                                PrerequisiteURI  = $PrerequisiteURI
-                                Type             = $_.Type
-                                URI              = $Uri
-                                WarmupTimes      = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
-                                Workers          = @($Pool0, $Pool1 | Where-Object { $_ } | ForEach-Object { @{ Pool = $_ } })
                             }
                         }
                     }
                 }
-            }
+            )
         }
-    }
+    )
 }

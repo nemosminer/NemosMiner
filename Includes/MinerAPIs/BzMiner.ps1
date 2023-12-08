@@ -18,15 +18,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\BzMiner.ps1
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
 Class BzMiner : Miner {
     [Object]GetMinerData () { 
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
-
         $Request = "http://127.0.0.1:$($this.Port)/status"
 
         Try { 
@@ -67,21 +66,21 @@ Class BzMiner : Miner {
             }
         }
 
-        $PowerUsage = [Double]0
+        $PowerConsumption = [Double]0
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 
-            If ($this.ReadPowerUsage) { 
-                $PowerUsage = [Double]($Devices | Measure-Object power -Sum | Select-Object -ExpandProperty Sum)
-                If (-not $PowerUsage) { 
-                    $PowerUsage = $this.GetPowerUsage()
+            If ($this.ReadPowerConsumption) { 
+                $PowerConsumption = [Double]($Devices | Measure-Object power -Sum | Select-Object -ExpandProperty Sum)
+                If (-not $PowerConsumption) { 
+                    $PowerConsumption = $this.GetPowerConsumption()
                 }
             }
 
             Return [PSCustomObject]@{ 
-                Date       = ([DateTime]::Now).ToUniversalTime()
-                HashRate   = $HashRate
-                PowerUsage = $PowerUsage
-                Shares     = $Shares
+                Date             = ([DateTime]::Now).ToUniversalTime()
+                HashRate         = $HashRate
+                PowerConsumption = $PowerConsumption
+                Shares           = $Shares
             }
         }
         Return $null

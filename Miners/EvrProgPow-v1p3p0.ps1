@@ -17,66 +17,70 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
-If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -ge "5.0" })) { Return }
+If (-not ($Devices = $Variables.EnabledDevices.Where({ $_.OpenCL.ComputeCapability -ge "5.0" }))) { Return }
 
 $URI = "https://github.com/EvrmoreOrg/evrprogpowminer/releases/download/v1.3.0-a66d921b/evrprogpowminer-windows64-v1p3p0-a66d921b.7z"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = "$PWD\Bin\$($Name)\evrprogpowminer.exe"
+$Path = "$PWD\Bin\$Name\evrprogpowminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = @(
-    [PSCustomObject]@{ Algorithm = "EvrProgPow"; MinMemGiB = $MinerPools[0].EvrProgPow.DAGSizeGiB + 0.77; Minerset = 2; WarmupTimes = @(75, 10); ExcludePools = @("ZergPool"); Arguments = "" }
+    [PSCustomObject]@{ Algorithm = "EvrProgPow"; MinMemGiB = $MinerPools[0].EvrProgPow.DAGSizeGiB + 0.77; Minerset = 2; WarmupTimes = @(75, 10); ExcludePools = @(); Arguments = "" }
 )
 
-$Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools }
+$Algorithms = $Algorithms.Where({ $_.MinerSet -LE $Config.MinerSet })
+$Algorithms = $Algorithms.Where({ $MinerPools[0][$_.Algorithm] })
+$Algorithms = $Algorithms.Where({ $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools })
 
 If ($Algorithms) { 
 
-    $Devices | Select-Object Model -Unique | ForEach-Object { 
+    ($Devices | Select-Object Model -Unique).ForEach(
+        { 
+            $Miner_Devices = @($Devices | Where-Object Model -EQ $_.Model)
+            $MinerAPIPort = $Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1
 
-        $Miner_Devices = @($Devices | Where-Object Model -EQ $_.Model)
-        $MinerAPIPort = $Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1
+            $Algorithms.ForEach(
+                { 
+                    $ExcludePools = $_.ExcludePools
+                    ForEach ($Pool in ($MinerPools[0][$_.Algorithm].Where({ $_.Name -notin $ExcludePools }))) { 
 
-        $Algorithms | ForEach-Object { 
+                        $ExcludeGPUArchitecture = $_.ExcludeGPUArchitecture
+                        $MinMemGiB  = $_.MinMemGiB 
+                        If ($AvailableMiner_Devices = $Miner_Devices.Where({ $_.MemoryGiB -ge $MinMemGiB -and $_.Architecture -notin $ExcludeGPUArchitecture })) { 
 
-            $ExcludePools = $_.ExcludePools
-            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object Name -notin $ExcludePools)) { 
+                            $Miner_Name = "$Name-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 
-                If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
+                            $Protocol = Switch ($Pool.Protocol) { 
+                                "ethproxy"     { "stratum1"; Break }
+                                "ethstratum1"  { "stratum2"; Break }
+                                "ethstratum2"  { "stratum2"; Break }
+                                Default        { "stratum" }
+                            }
+                            $Protocol += If ($Pool.PoolPorts[1]) { "+tls" } Else { "+tcp" }
 
-                    $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
-
-                    $Protocol = Switch ($Pool.Protocol) { 
-                        "ethproxy"     { "stratum1"; Break }
-                        "ethstratum1"  { "stratum2"; Break }
-                        "ethstratum2"  { "stratum2"; Break }
-                        Default        { "stratum" }
-                    }
-                    $Protocol += If ($Pool.PoolPorts[1]) { "+tls" } Else { "+tcp" }
-
-                    [PSCustomObject]@{ 
-                        API         = "EthMiner"
-                        Arguments   = "$($_.Arguments) --pool $($Protocol)://$([System.Web.HttpUtility]::UrlEncode("$($Pool.User)")):$([System.Web.HttpUtility]::UrlEncode($($Pool.Pass)))@$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --farm-recheck 10000 --farm-retries 40 --work-timeout 100000 --response-timeout 720 --api-port -$($MinerAPIPort) --cuda --cuda-devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
-                        DeviceNames = $AvailableMiner_Devices.Name
-                        EnvVars     = @("SSL_NOVERIFY=TRUE")
-                        Fee         = @(0) # Dev fee
-                        MinerSet    = $_.MinerSet
-                        Name        = $Miner_Name
-                        Path        = $Path
-                        Port        = $MinerAPIPort
-                        Type        = "NVIDIA"
-                        URI         = $Uri
-                        WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
-                        Workers     = @(@{ Pool = $Pool })
+                            [PSCustomObject]@{ 
+                                API         = "EthMiner"
+                                Arguments   = "$($_.Arguments) --pool $($Protocol)://$([System.Web.HttpUtility]::UrlEncode("$($Pool.User)")):$([System.Web.HttpUtility]::UrlEncode($($Pool.Pass)))@$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --farm-recheck 10000 --farm-retries 40 --work-timeout 100000 --response-timeout 720 --api-port -$($MinerAPIPort) --cuda --cuda-devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique).ForEach({ '{0:x}' -f $_ }) -join ',')"
+                                DeviceNames = $AvailableMiner_Devices.Name
+                                EnvVars     = @("SSL_NOVERIFY=TRUE")
+                                Fee         = @(0) # Dev fee
+                                MinerSet    = $_.MinerSet
+                                Name        = $Miner_Name
+                                Path        = $Path
+                                Port        = $MinerAPIPort
+                                Type        = "NVIDIA"
+                                URI         = $Uri
+                                WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                                Workers     = @(@{ Pool = $Pool })
+                            }
+                        }
                     }
                 }
-            }
+            )
         }
-    }
+    )
 }

@@ -2,32 +2,32 @@
           <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h2 id="title" data-navbaractive="navminerstats">Manage Miner and Pool Stats</h2>
           </div>
-          <div class="alert alert-info" role="alert">NemosMiner stores all profit, hashrate and power usage data in stat files.</div>
+          <div class="alert alert-info" role="alert">NemosMiner stores all profit, hashrate and power consumption data in stat files.</div>
           <div class="card-group mt-2">
             <div class="card rounded mr-2 bg-light">
               <div class="card-header">
-                <h5>Reset Benchmarks for 0H/s Miners</h5>
+                <h5>Reset Benchmarks for 0 H/s Miners</h5>
               </div>
               <div class="card-body">
                 <p>Reset the stats for miners that have a benchmarked hashrate of 0H/s.</p>
                 <p>These miners may have failed to benchmark properly.<br>Resetting their stats allows them to attempt benchmarking again.</p>
                 <p>You should watch closely for failed miners after doing this.</p>
-                <a href="#" id="showzerohashrateminers" class="btn btn-info">Show Miners with 0H/s</a>
+                <a href="#" id="showzerohashrateminers" class="btn btn-info">Show miners with 0 h/s</a>
                 <p></p>
-                <a href="#" id="resetzerohashrateminers" class="btn btn-primary">Reset Miners with 0H/s</a>
+                <a href="#" id="resetzerohashrateminers" class="btn btn-primary">Reset miners with 0 h/s</a>
               </div>
             </div>
             <div class="card mx-2 rounded bg-light">
               <div class="card-header">
-                <h5>Reset Power Usage for 0W Miners</h5>
+                <h5>Reset Power consumption for 0 W miners</h5>
               </div>
               <div class="card-body">
-                <p>Reset the stats for miners that have a measured power usage of 0W.</p>
-                <p>These miners may have failed to measure power usage properly.<br>Resetting their recorded value allows them to attempt measuring again.</p>
+                <p>Reset the stats for miners that have a measured power consumption of 0 W.</p>
+                <p>These miners may have failed to measure power consumption properly.<br>Resetting their recorded value allows them to attempt measuring again.</p>
                 <p>You should watch closely for failed miners after doing this.</p>
-                <a href="#" id="showzeropowerusageminers" class="btn btn-info">Show Miners with 0W Power Usage</a>
+                <a href="#" id="showzeropowerconsumptionminers" class="btn btn-info">Show miners with 0 W power consumption</a>
                 <p></p>
-                <a href="#" id="resetzeropowerusageminers" class="btn btn-primary">Reset Miners with 0W Power Usage</a>
+                <a href="#" id="resetzeropowerconsumptionminers" class="btn btn-primary">Reset miners with 0 W power consumption</a>
               </div>
             </div>
             <div class="card mx-2 rounded bg-light">
@@ -35,9 +35,8 @@
                 <h5>Reset Pool Stats</h5>
               </div>
               <div class="card-body">
-                <p>Reset pool stats.</p>
                 <p>To ensure your pool data is accurate you should do this after hardware changes, changing overclock settings and driver updates.</p>
-                <a href="#" id="resetallpooldata" class="btn btn-primary">Reset Pool Stats</a>
+                <a href="#" id="resetallpooldata" class="btn btn-primary">Reset pool stats</a>
               </div>
             </div>
             <div class="card mx-2 rounded bg-warning">
@@ -45,23 +44,23 @@
                 <h5>Reset All Benchmarks</h5>
               </div>
               <div class="card-body">
-                <p>Reset the stats for all miners.</p>
                 <p>To ensure your benchmarks are accurate you should do this after hardware changes, changing overclock settings and driver updates.</p>
                 <p></p>
-                <p>This will force all miners to benchmark again.<br>You should watch closely for failed miners after doing this.</p>
-                <a href="#" id="resetallbenchmarks" class="btn btn-danger">Reset all Miner Stats</a>
+                <p>This will force all miners to benchmark again.</p>
+                <p>You should watch closely for failed miners after doing this.</p>
+                <a href="#" id="resetallbenchmarks" class="btn btn-danger">Reset all miner stats</a>
               </div>
             </div>
             <div class="card ml-2 rounded bg-warning">
               <div class="card-header">
-                <h5>Reset All Power Usage</h5>
+                <h5>Reset All Power Consumption Data</h5>
               </div>
               <div class="card-body">
-                <p>Reset the power usage recordings for all miners.</p>
-                <p>To ensure your power usage recordings are accurate you should do this after hardware changes, changing overclock settings and driver updates.</p>
+                <p>To ensure your power consumption recordings are accurate you should do this after hardware changes, changing overclock settings and driver updates.</p>
                 <p></p>
-                <p>This will force all miners to measure power usage again.<br>You should watch closely for failed miners after doing this.</p>
-                <a href="#" id="resetallpowerusage" class="btn btn-danger">Reset all Power Usage Data</a>
+                <p>This will force all miners to measure power consumption again.</p>
+                <p>You should watch closely for failed miners after doing this.</p>
+                <a href="#" id="resetallpowerconsumption" class="btn btn-danger">Reset all power consumption data</a>
               </div>
             </div>
           </div>
@@ -86,19 +85,19 @@
                 });
               });
 
-              $('#showzeropowerusageminers').on('click',function() {
+              $('#showzeropowerconsumptionminers').on('click',function() {
                 document.body.style.cursor = 'wait';
-                $('.modal-body').load('functions/stat/get?Type=PowerUsage&Value=0', function() {
-                  $('.modal-title').text($('#showzeropowerusageminers').text());
+                $('.modal-body').load('functions/stat/get?Type=PowerConsumption&Value=0', function() {
+                  $('.modal-title').text($('#showzeropowerconsumptionminers').text());
                   document.body.style.cursor = 'default';
                   $('#myModal').modal({show:true});
                 });
               });
 
-              $('#resetzeropowerusageminers').on('click',function() {
+              $('#resetzeropowerconsumptionminers').on('click',function() {
                 document.body.style.cursor = 'wait';
-                $('.modal-body').load('functions/stat/remove?Type=PowerUsage&Value=0', function() {
-                  $('.modal-title').text($('#resetzeropowerusageminers').text());
+                $('.modal-body').load('functions/stat/remove?Type=PowerConsumption&Value=0', function() {
+                  $('.modal-title').text($('#resetzeropowerconsumptionminers').text());
                   document.body.style.cursor = 'default';
                   $('#myModal').modal({show:true});
                 });
@@ -122,10 +121,10 @@
                 });
               });
 
-              $('#resetallpowerusage').on('click',function() {
+              $('#resetallpowerconsumption').on('click',function() {
                 document.body.style.cursor = 'wait';
-                $('.modal-body').load('functions/stat/remove?Type=PowerUsage', function() {
-                  $('.modal-title').text($('#resetallpowerusage').text());
+                $('.modal-body').load('functions/stat/remove?Type=PowerConsumption', function() {
+                  $('.modal-title').text($('#resetallpowerconsumption').text());
                   document.body.style.cursor = 'default';
                   $('#myModal').modal({show:true});
                 });

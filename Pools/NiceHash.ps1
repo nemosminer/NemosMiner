@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\NiceHash.ps1
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
 param(
@@ -38,7 +38,6 @@ $PoolVariant = If ($Variables.NiceHashWalletIsInternal) { "NiceHash Internal" } 
 $Fee = $PoolConfig.Variant.$PoolVariant.Fee
 $PayoutCurrency = $PoolConfig.Variant.$PoolVariant.PayoutCurrency
 $Wallet = $PoolConfig.Variant.$PoolVariant.Wallets.$PayoutCurrency
-$User = "$Wallet.$($PoolConfig.WorkerName -replace '^ID=')"
 
 If ($Wallet) { 
 
@@ -52,7 +51,7 @@ If ($Wallet) {
             If (-not $RequestAlgodetails) { 
                 $RequestAlgodetails = Invoke-RestMethod -Uri "https://api2.nicehash.com/main/api/v2/mining/algorithms/" -Headers @{ "Cache-Control" = "no-cache" } -SkipCertificateCheck -TimeoutSec $PoolConfig.PoolAPITimeout
             }
-            $Request.miningAlgorithms | ForEach-Object { $Algorithm = $_.Algorithm; $_ | Add-Member -Force @{ algodetails = $RequestAlgodetails.miningAlgorithms | Where-Object { $_.Algorithm -eq $Algorithm } } }
+            $Request.miningAlgorithms.ForEach({ $Algorithm = $_.Algorithm; $_ | Add-Member -Force @{ algodetails = $RequestAlgodetails.miningAlgorithms.Where({ $_.Algorithm -eq $Algorithm }) } })
         }
         Catch { 
             $APICallFails ++
@@ -62,45 +61,50 @@ If ($Wallet) {
 
     If ($Request.miningAlgorithms) { 
 
-        $Request.miningAlgorithms | ForEach-Object { 
-            $Algorithm = $_.Algorithm
-            $Algorithm_Norm = Get-Algorithm $Algorithm
-            $Currencies = Get-CurrencyFromAlgorithm $Algorithm_Norm
-            $Currency = If ($Currencies.Count -eq 1) { $Currencies } Else { "" }
+        $Request.miningAlgorithms.ForEach(
+            { 
+                $Algorithm = $_.Algorithm
+                $Algorithm_Norm = Get-Algorithm $Algorithm
+                $Currencies = Get-CurrencyFromAlgorithm $Algorithm_Norm
+                $Currency = If ($Currencies.Count -eq 1) { $Currencies } Else { "" }
 
-            $Divisor = 100000000
+                $Divisor = 100000000
 
-            $Stat = Set-Stat -Name "$($Name)_$($Algorithm_Norm)_Profit" -Value ([Double]$_.paying / $Divisor) -FaultDetection $false
+                $Key = "$($Name)_$($Algorithm_Norm)"
+                $Stat = Set-Stat -Name "$($Key)_Profit" -Value ([Double]$_.paying / $Divisor) -FaultDetection $false
 
-            $Reasons = [System.Collections.Generic.List[String]]@()
-            If ($_.algodetails.order -eq 0) { $Reasons.Add("No orders at pool") }
-            If ($_.speed -eq 0) { $Reasons.Add("No hashrate at pool") }
+                $Reasons = [System.Collections.Generic.List[String]]@()
+                If ($_.algodetails.order -eq 0) { $Reasons.Add("No orders at pool") }
+                If ($_.speed -eq 0) { $Reasons.Add("No hashrate at pool") }
 
-            [PSCustomObject]@{ 
-                Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Minute_5_Fluctuation), 1)) # Use short timespan to counter price spikes
-                Algorithm                = [String]$Algorithm_Norm
-                Currency                 = [String]$Currency
-                Disabled                 = [Boolean]$Stat.Disabled
-                EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                Fee                      = [Decimal]$Fee
-                Host                     = "$Algorithm.$PoolHost".ToLower()
-                Name                     = [String]$Name
-                Pass                     = "x"
-                Port                     = 9200
-                PortSSL                  = 443
-                Price                    = [Double]$Stat.Live
-                Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratumnh" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
-                Region                   = [String]$PoolConfig.Region
-                Reasons                  = $Reasons
-                SendHashrate             = $false
-                SSLSelfSignedCertificate = $false
-                StablePrice              = [Double]$Stat.Week
-                Updated                  = [DateTime]$Stat.Updated
-                User                     = "$Wallet.$($PoolConfig.WorkerName)"
-                WorkerName               = ""
-                Variant                  = [String]$Name
+                [PSCustomObject]@{ 
+                    Accuracy                 = 1 - [Math]::Min([Math]::Abs($Stat.Minute_5_Fluctuation), 1) # Use short timespan to counter price spikes
+                    Algorithm                = [String]$Algorithm_Norm
+                    Currency                 = [String]$Currency
+                    Disabled                 = $Stat.Disabled
+                    EarningsAdjustmentFactor = $PoolConfig.EarningsAdjustmentFactor
+                    Fee                      = $Fee
+                    Host                     = "$Algorithm.$PoolHost".ToLower()
+                    Key                      = [String]$Key
+                    MiningCurrency           = ""
+                    Name                     = [String]$Name
+                    Pass                     = "x"
+                    Port                     = 9200
+                    PortSSL                  = 443
+                    Price                    = $Stat.Live
+                    Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratumnh" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
+                    Region                   = [String]$PoolConfig.Region
+                    Reasons                  = $Reasons
+                    SendHashrate             = $false
+                    SSLSelfSignedCertificate = $false
+                    StablePrice              = $Stat.Week
+                    Updated                  = [DateTime]$Stat.Updated
+                    User                     = "$Wallet.$($PoolConfig.WorkerName)"
+                    WorkerName               = ""
+                    Variant                  = [String]$Name
+                }
             }
-        }
+        )
     }
 }
 

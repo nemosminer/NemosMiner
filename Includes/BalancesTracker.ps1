@@ -19,8 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\BalancesTracker.ps1
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
 using module .\Include.psm1
@@ -35,7 +35,7 @@ Do {
     $Earnings = @()
 
     # Get pools last earnings
-    $Variables.PoolsLastEarnings = If (Test-Path -Path ".\Data\PoolsLastEarnings.json" -PathType Leaf) { Get-Content ".\Data\PoolsLastEarnings.json" -ErrorAction Ignore | ConvertFrom-Json | Get-SortedObject }
+    $Variables.PoolsLastEarnings = If (Test-Path -LiteralPath ".\Data\PoolsLastEarnings.json" -PathType Leaf) { Get-Content ".\Data\PoolsLastEarnings.json" -ErrorAction Ignore | ConvertFrom-Json | Get-SortedObject }
     If (-not $Variables.PoolsLastEarnings.Keys) { $Variables.PoolsLastEarnings = @{ } }
 
     # Read existing earning data, use data from last file
@@ -45,7 +45,7 @@ Do {
     }
 
     If ($Variables.BalancesData -isnot [Array]) { $Variables.BalancesData = @() }
-    $Variables.BalancesData | ForEach-Object { $_.DateTime = [DateTime]$_.DateTime }
+    $Variables.BalancesData.ForEach({ $_.DateTime = [DateTime]$_.DateTime })
 
     # Read existing earning data, use data from last file
     ForEach($Filename in (Get-ChildItem ".\Data\DailyEarnings*.csv" | Sort-Object -Descending)) { 
@@ -63,8 +63,8 @@ Do {
 
         If ($Now.Date -ne [DateTime]::Today) { 
             # Keep a copy on start & at date change
-            If (Test-Path -Path ".\Data\BalancesTrackerData.json" -PathType Leaf) { Copy-Item -Path ".\Data\BalancesTrackerData.json" -Destination ".\Data\BalancesTrackerData_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").json" -ErrorAction Ignore }
-            If (Test-Path -Path ".\Data\DailyEarnings.csv" -PathType Leaf) { Copy-Item -Path ".\Data\DailyEarnings.csv" -Destination ".\Data\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").csv" -ErrorAction Ignore }
+            If (Test-Path -LiteralPath ".\Data\BalancesTrackerData.json" -PathType Leaf) { Copy-Item -Path ".\Data\BalancesTrackerData.json" -Destination ".\Data\BalancesTrackerData_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").json" -ErrorAction Ignore }
+            If (Test-Path -LiteralPath ".\Data\DailyEarnings.csv" -PathType Leaf) { Copy-Item -Path ".\Data\DailyEarnings.csv" -Destination ".\Data\DailyEarnings_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").csv" -ErrorAction Ignore }
             # Keep only the last 3 logs
             Get-ChildItem ".\Data\BalancesTrackerData_*.json" | Sort-Object | Select-Object -Skiplast 3 | Remove-Item -Force -Recurse -ErrorAction Ignore
             Get-ChildItem ".\Data\DailyEarnings_*.csv" | Sort-Object | Select-Object -Skiplast 3 | Remove-Item -Force -Recurse -ErrorAction Ignore
@@ -73,27 +73,31 @@ Do {
         $Now = [DateTime]::Now
 
         # Get pools to track
-        $PoolsToTrack = @(Get-ChildItem -File ".\Balances\*.ps1" -ErrorAction Ignore | Select-Object -ExpandProperty BaseName | Where-Object { (Get-PoolBaseName $_) -notin $Config.BalancesTrackerExcludePools })
+        $PoolsToTrack = @((Get-ChildItem -File ".\Balances\*.ps1" -ErrorAction Ignore | Select-Object -ExpandProperty BaseName).Where({ (Get-PoolBaseName $_) -notin $Config.BalancesTrackerExcludePools }))
 
         # Fetch balances data from pools
         If ($PoolsToTrack) { 
             Write-Message -Level Info "Balances Tracker is requesting data from pool$(If ($PoolsToTrack.Count -gt 1) { "s" }) '$($PoolsToTrack -join ', ')'..."
-            $PoolsToTrack | ForEach-Object { $BalanceObjects += @(& ".\Balances\$($_).ps1") }
+            $PoolsToTrack | ForEach-Object { 
+                $BalanceObjects += @(
+                    & ".\Balances\$($_).ps1"
+                )
+            }
 
             # Keep most recent balance objects, keep empty balances for 7 days
-            $BalanceObjects = @(@($BalanceObjects + $BalancesData) | Where-Object Pool -notin @($Config.BalancesTrackerExcludePool) | Where-Object { $_.Unpaid -gt 0 -or $_.DateTime -gt $Now.AddDays(-7) } | Where-Object { $_.Wallet } | Group-Object Pool, Currency, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime -Bottom 1 })
+            $BalanceObjects = @(@($BalanceObjects + $BalancesData).Where({ $_.Pool -notin @($Config.BalancesTrackerExcludePool) }).Where({ $_.Unpaid -gt 0 -or $_.DateTime -gt $Now.AddDays(-7) -and $_.Wallet }) | Group-Object Pool, Currency, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime -Bottom 1 })
 
             # Fix for pool reporting incorrect currency, e.g ZergPool ZER instead of BTC
-            $BalanceObjects = @($BalanceObjects | Where-Object { $_.Pool -match '^MiningDutch.*|^MiningPoolHub.*|$|^ProHashing.*$' }) + @($BalanceObjects | Where-Object { $_.Pool -notmatch "^MiningDutch.*|^MiningPoolHub.*|$|^ProHashing.*$" } | Group-Object Pool, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime -Bottom 1 })
+            # $BalanceObjects = @($BalanceObjects.Where({ $_.Pool -in @("MiningDutch", "MiningPoolHub", "ProHashing") })) + @($BalanceObjects.Where({ $_.Pool -notin @("MiningDutch", "MiningPoolHub", "ProHashing") }) | Group-Object Pool, Wallet | ForEach-Object { $_.Group | Sort-Object DateTime -Bottom 1 })
 
             # Do not keep balances with 0
-            $BalanceObjects = $BalanceObjects | Where-Object { $_.Balance -gt 0 }
+            $BalanceObjects = $BalanceObjects.Where({ $_.Balance -gt 0 })
 
             # Read exchange rates
             [Void](Get-Rate)
 
             ForEach ($PoolBalanceObject in $BalanceObjects) { 
-                $PoolBalanceObjects = @($Variables.BalancesData | Where-Object Pool -EQ $PoolBalanceObject.Pool | Where-Object Currency -EQ $PoolBalanceObject.Currency | Where-Object Wallet -EQ $PoolBalanceObject.Wallet | Sort-Object -Property DateTime)
+                $PoolBalanceObjects = @($Variables.BalancesData.Where({ $_.Pool -eq $PoolBalanceObject.Pool -and $_.Currency -eq $PoolBalanceObject.Currency -and $_.Wallet -eq $PoolBalanceObject.Wallet }) | Sort-Object -Property DateTime)
 
                 # Get threshold currency and value
                 $PayoutThreshold = $PoolBalanceObject.PayoutThreshold
@@ -240,20 +244,20 @@ Do {
                     }
                     Else { 
                         # Only calculate if current balance data
-                        If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-1) })   { $Growth1 =   [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-1) }   | Sort-Object -Property DateTime -Top 1).Earnings) }
-                        If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-6) })   { $Growth6 =   [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-6) }   | Sort-Object -Property DateTime -Top 1).Earnings) }
-                        If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-24) })  { $Growth24 =  [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-24) }  | Sort-Object -Property DateTime -Top 1).Earnings) }
-                        If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-168) }) { $Growth168 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-168) } | Sort-Object -Property DateTime -Top 1).Earnings) }
-                        If ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-720) }) { $Growth720 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime -ge $Now.AddHours(-720) } | Sort-Object -Property DateTime -Top 1).Earnings) }
+                        If ($PoolBalanceObjects.Where({ $_.DateTime -ge $Now.AddHours(-1) }))   { $Growth1 =   [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects.Where({ $_.DateTime -ge $Now.AddHours(-1) })   | Sort-Object -Property DateTime -Top 1).Earnings) }
+                        If ($PoolBalanceObjects.Where({ $_.DateTime -ge $Now.AddHours(-6) }))   { $Growth6 =   [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects.Where({ $_.DateTime -ge $Now.AddHours(-6) })   | Sort-Object -Property DateTime -Top 1).Earnings) }
+                        If ($PoolBalanceObjects.Where({ $_.DateTime -ge $Now.AddHours(-24) }))  { $Growth24 =  [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects.Where({ $_.DateTime -ge $Now.AddHours(-24) })  | Sort-Object -Property DateTime -Top 1).Earnings) }
+                        If ($PoolBalanceObjects.Where({ $_.DateTime -ge $Now.AddHours(-168) })) { $Growth168 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects.Where({ $_.DateTime -ge $Now.AddHours(-168) }) | Sort-Object -Property DateTime -Top 1).Earnings) }
+                        If ($PoolBalanceObjects.Where({ $_.DateTime -ge $Now.AddHours(-720) })) { $Growth720 = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects.Where({ $_.DateTime -ge $Now.AddHours(-720) }) | Sort-Object -Property DateTime -Top 1).Earnings) }
                     }
 
 
-                    $AvgHourlyGrowth = If ($PoolBalanceObjects | Where-Object { $_.DateTime -lt $Now.AddHours(-1) }) { [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalHours) }    Else { $Growth1 }
-                    $AvgDailyGrowth =  If ($PoolBalanceObjects | Where-Object { $_.DateTime -lt $Now.AddDays(-1) })  { [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalDays) }     Else { $Growth24 }
-                    $AvgWeeklyGrowth = If ($PoolBalanceObjects | Where-Object { $_.DateTime -lt $Now.AddDays(-7) })  { [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalDays * 7) } Else { $Growth168 }
+                    $AvgHourlyGrowth = If ($PoolBalanceObjects.Where({ $_.DateTime -lt $Now.AddHours(-1) })) { [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalHours) }    Else { $Growth1 }
+                    $AvgDailyGrowth =  If ($PoolBalanceObjects.Where({ $_.DateTime -lt $Now.AddDays(-1) }))  { [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalDays) }     Else { $Growth24 }
+                    $AvgWeeklyGrowth = If ($PoolBalanceObjects.Where({ $_.DateTime -lt $Now.AddDays(-7) }))  { [Double](($PoolBalanceObject.Earnings - $PoolBalanceObjects[0].Earnings) / ($Now - $PoolBalanceObjects[0].DateTime).TotalDays * 7) } Else { $Growth168 }
 
-                    If ($PoolBalanceObjects | Where-Object { $_.DateTime.Date -eq $Now.Date }) { 
-                        $GrowthToday = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects | Where-Object { $_.DateTime.Date -eq $Now.Date } | Sort-Object -Property DateTime -Top 1).Earnings)
+                    If ($PoolBalanceObjects.Where({ $_.DateTime.Date -eq $Now.Date })) { 
+                        $GrowthToday = [Double]($PoolBalanceObject.Earnings - ($PoolBalanceObjects.Where({ $_.DateTime.Date -eq $Now.Date }) | Sort-Object -Property DateTime -Top 1).Earnings)
                         If ($GrowthToday -lt 0) { $GrowthToday = 0 } # to avoid negative numbers
                     }
 
@@ -301,7 +305,7 @@ Do {
                     $EarningsObject | Export-Csv -NoTypeInformation -Append ".\Logs\BalancesTrackerLog.csv" -Force -ErrorAction Ignore
                 }
 
-                $PoolTodaysEarning = $Earnings | Where-Object Pool -EQ $PoolBalanceObject.Pool | Where-Object Currency -EQ $PoolBalanceObject.Currency | Where-Object Wallet -EQ $PoolBalanceObject.Wallet | Select-Object -Last 1
+                $PoolTodaysEarning = $Earnings.Where({ $_.Pool -eq $PoolBalanceObject.Pool -and $_.Currency -eq $PoolBalanceObject.Currency -and $_.Wallet -eq $PoolBalanceObject.Wallet }) | Select-Object -Last 1
 
                 If ([String]$PoolTodaysEarning.Date -eq $Now.ToString("yyyy-MM-dd")) { 
                     $PoolTodaysEarning.DailyEarnings = [Double]$GrowthToday
@@ -333,7 +337,7 @@ Do {
 
         # Always keep pools sorted, even when new pools were added
         $Variables.Balances = [Ordered]@{ }
-        $Balances.psbase.Keys | Where-Object { $Balances.$_.Pool -notin @($Config.BalancesTrackerExcludePool) } | Sort-Object | ForEach-Object { 
+        $Balances.psbase.Keys.Where({ $Balances.$_.Pool -notin @($Config.BalancesTrackerExcludePool) }) | Sort-Object | ForEach-Object { 
             $Variables.Balances.Remove($_)
             $Variables.Balances.$_ = $Balances.$_
             $Variables.PoolsLastEarnings.($_ -replace ' \(.+') = ($Balances.$_.LastEarnings | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum)
@@ -341,21 +345,21 @@ Do {
         $Variables.BalancesCurrencies = @($Variables.Balances.psBase.Keys | ForEach-Object { $Variables.Balances.$_.Currency } | Sort-Object -Unique)
 
         $Variables.PoolsLastEarnings = $Variables.PoolsLastEarnings | Get-SortedObject
-        $Variables.PoolsLastEarnings | ConvertTo-Json | Out-File -FilePath ".\Data\PoolsLastEarnings.json" -Force -ErrorAction Ignore
+        $Variables.PoolsLastEarnings | ConvertTo-Json | Out-File -LiteralPath ".\Data\PoolsLastEarnings.json" -Force -ErrorAction Ignore
 
         # Build chart data (used in GUI) for last 30 days
         $PoolChartData = [PSCustomObject]@{ }
-        $ChartData = $Earnings | Where-Object Pool -in $PoolsToTrack | Sort-Object -Property Date | Group-Object -Property Date | Select-Object -Last 30 # days
+        $ChartData = $Earnings.Where({ $_.Pool -in $PoolsToTrack }) | Sort-Object -Property Date | Group-Object -Property Date | Select-Object -Last 30 # days
 
         # One dataset per pool
-        ($ChartData.Group | Where-Object { $_.DailyEarnings -gt 0 }).Pool | Sort-Object -Unique | ForEach-Object { 
+        ($ChartData.Group.Where({ $_.DailyEarnings -gt 0 })).Pool | Sort-Object -Unique | ForEach-Object { 
             $PoolChartData | Add-Member @{ $_ = [Double[]]@() }
         }
 
         # Fill dataset
         ForEach ($PoolEarnings in $ChartData) { 
             $PoolChartData.PSObject.Properties.Name | ForEach-Object { 
-                $PoolChartData.$_ += ($PoolEarnings.Group | Where-Object Pool -EQ $_ | ForEach-Object { [Double]$_.DailyEarnings * $Variables.Rates.($_.Currency).BTC } | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
+                $PoolChartData.$_ += (($PoolEarnings.Group | Where-Object Pool -EQ $_).ForEach({ [Double]$_.DailyEarnings * $Variables.Rates.($_.Currency).BTC }) | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
             }
         }
         Remove-Variable PoolEarnings, PoolTodaysEarning -ErrorAction Ignore
@@ -372,22 +376,24 @@ Do {
 
         $Variables.Remove("EarningsChartData")
         $Variables.EarningsChartData = $EarningsChartData.PSObject.Copy()
-        $Variables.EarningsChartData | ConvertTo-Json | Out-File -FilePath ".\Data\EarningsChartData.json" -Force -ErrorAction Ignore
+        $Variables.EarningsChartData | ConvertTo-Json | Out-File -LiteralPath ".\Data\EarningsChartData.json" -Force -ErrorAction Ignore
 
         # Keep earnings for max. 1 year
         $OldestEarningsDate = ([DateTime]::Now).AddYears(-1).ToString("yyyy-MM-dd")
-        $Earnings = $Earnings | Where-Object Date -GE $OldestEarningsDate
+        $Earnings = $Earnings.Where({ $_.Date -ge $OldestEarningsDate })
 
         # At least 31 days are needed for Growth720
         If ($Variables.BalancesData.Count -gt 1) { 
             $Variables.BalancesData = @(
-                $Variables.BalancesData | Where-Object DateTime -GE $Now.AddDays(-31) | Group-Object Pool, Currency | ForEach-Object { 
+                $Variables.BalancesData.Where({ $_.DateTime -ge $Now.AddDays(-31) }) | Group-Object Pool, Currency | ForEach-Object { 
                     $Record = $null
-                    $_.Group | Sort-Object -Property DateTime | ForEach-Object { 
-                        If ($_.DateTime -ge $Now.AddDays(-1)) { $_ } # Keep all records for 1 day
-                        ElseIf ($_.DateTime -ge $Now.AddDays(-7) -and $_.Delta -gt 0) { $_ } # Keep all records of the last 7 days with delta
-                        ElseIf ($_.DateTime.Date -ne $Record.DateTime.Date) { $Record = $_; $_ } # Keep the newest one per day
-                    }
+                    ($_.Group | Sort-Object -Property DateTime).ForEach(
+                        { 
+                            If ($_.DateTime -ge $Now.AddDays(-1)) { $_ } # Keep all records for 1 day
+                            ElseIf ($_.DateTime -ge $Now.AddDays(-7) -and $_.Delta -gt 0) { $_ } # Keep all records of the last 7 days with delta
+                            ElseIf ($_.DateTime.Date -ne $Record.DateTime.Date) { $Record = $_; $_ } # Keep the newest one per day
+                        }
+                    )
                 }
             ) | Sort-Object -Property DateTime -Descending
         }
@@ -399,8 +405,8 @@ Do {
             Write-Message -Level Warn "Balances Tracker failed to save earnings data to '.\Data\DailyEarnings.csv' (should have $($Earnings.count) entries)."
         }
 
-        If ($Variables.BalancesData.Count -ge 1) { $Variables.BalancesData | ConvertTo-Json | Out-File -FilePath ".\Data\BalancesTrackerData.json" -Force -ErrorAction Ignore }
-        If ($Variables.Balances.Count -ge 1) { $Variables.Balances | ConvertTo-Json | Out-File -FilePath ".\Data\Balances.json" -Force -ErrorAction Ignore }
+        If ($Variables.BalancesData.Count -ge 1) { $Variables.BalancesData | ConvertTo-Json | Out-File -LiteralPath ".\Data\BalancesTrackerData.json" -Force -ErrorAction Ignore }
+        If ($Variables.Balances.Count -ge 1) { $Variables.Balances | ConvertTo-Json | Out-File -LiteralPath ".\Data\Balances.json" -Force -ErrorAction Ignore }
 
         $Error.Clear()
 

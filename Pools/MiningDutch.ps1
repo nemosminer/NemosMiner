@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\MiningDutch.ps1
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
 param(
@@ -39,7 +39,7 @@ $PriceField = $PoolConfig.Variant.$PoolVariant.PriceField
 $DivisorMultiplier = $PoolConfig.Variant.$PoolVariant.DivisorMultiplier
 $PayoutCurrency = $PoolConfig.Wallets.psBase.Keys | Select-Object -First 1
 $Wallet = $PoolConfig.Wallets.$PayoutCurrency
-$BrainDataFile = "$($PWD)\Data\BrainData_$($Name).json"
+$BrainDataFile = "$PWD\Data\BrainData_$Name.json"
 
 If ($DivisorMultiplier -and $PriceField -and $Wallet) { 
 
@@ -55,54 +55,55 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
 
     If (-not $Request.PSObject.Properties.Name) { Return }
 
-    $PoolConfig.Region_Norm = ($PoolConfig.Region | ForEach-Object { Get-Region $_ })
+    $PoolConfig.Region_Norm = ($PoolConfig.Region.ForEach({ Get-Region $_ }))
 
-    $Request.PSObject.Properties.Name | Where-Object { $Request.$_.Updated -ge $Variables.Brains.$Name."Updated" } | ForEach-Object { 
-        $Algorithm = $Request.$_.name
+    ForEach ($Algorithm in $Request.PSObject.Properties.Name.Where({ $Request.$_.Updated -ge $Variables.Brains.$Name."Updated" })) { 
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $Currency = "$($Request.$_.currency)" -replace ' \s+'
-        $Divisor = $DivisorMultiplier * [Double]$Request.$_.mbtc_mh_factor
-        $Fee = $Request.$_.Fees / 100
+        $Currency = "$($Request.$Algorithm.currency)" -replace ' \s+'
+        $Divisor = $DivisorMultiplier * [Double]$Request.$Algorithm.mbtc_mh_factor
 
         # Add coin name
-        If ($Request.$_.CoinName -and $Currency) { 
-            [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$_.CoinName)
+        If ($Request.$Algorithm.CoinName -and $Currency) { 
+            [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Request.$Algorithm.CoinName)
         }
 
-        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$Currency" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
+        $Key = "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$Currency" })"
+        $Stat = Set-Stat -Name "$($Key)_Profit" -Value ($Request.$Algorithm.$PriceField / $Divisor) -FaultDetection $false
 
         $Reasons = [System.Collections.Generic.List[String]]@()
         # Temp Fix: Sometimes pool returns $null hashrate for all algorithms
-        If ($Request.$_.hashrate -eq 0 -and $Request.$_.hashrate_last24h -ne $null) { 
+        If ($Request.$Algorithm.hashrate -eq 0 -and $Algorithm.hashrate_last24h -ne $null) { 
             $Reasons.Add("No hashrate at pool") 
         }
-        # If ($Request.$_.hashrate -eq 0 ) { $Reasons.Add("No hashrate at pool") }
+        # If ($Algorithm.hashrate -eq 0 ) { $Reasons.Add("No hashrate at pool") }
 
         ForEach ($Region_Norm in $Variables.Regions[$Config.Region]) { 
-            If ($Region = $PoolConfig.Region | Where-Object { (Get-Region $_) -eq $Region_Norm }) { 
+            If ($Region = $PoolConfig.Region.Where({ (Get-Region $_) -eq $Region_Norm })) { 
 
                 [PSCustomObject]@{ 
-                    Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
+                    Accuracy                 = 1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1)
                     Algorithm                = [String]$Algorithm_Norm
                     Currency                 = [String]$Currency
-                    Disabled                 = [Boolean]$Stat.Disabled
-                    EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                    Fee                      = [Decimal]$Fee
+                    Disabled                 = $Stat.Disabled
+                    EarningsAdjustmentFactor = $PoolConfig.EarningsAdjustmentFactor
+                    Fee                      = $Request.$Algorithm.Fees / 100
                     Host                     = "$($Region).$($HostSuffix)"
+                    Key                      = [String]$Key
+                    MiningCurrency           = ""
                     Name                     = [String]$Name
                     Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
-                    Port                     = [UInt16]$Request.$_.port
+                    Port                     = [UInt16]$Request.$Algorithm.port
                     PortSSL                  = 0
-                    Price                    = [Double]$Stat.Live
+                    Price                    = $Stat.Live
                     Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratum1" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                     Reasons                  = $Reasons
                     Region                   = [String]$Region_Norm
                     SendHashrate             = $false
                     SSLSelfSignedCertificate = $true
-                    StablePrice              = [Double]$Stat.Week
-                    Updated                  = [DateTime]$Request.$_.Updated
+                    StablePrice              = $Stat.Week
+                    Updated                  = [DateTime]$Request.$Algorithm.Updated
                     User                     = "$($PoolConfig.UserName).$($PoolConfig.WorkerName)"
-                    Workers                  = [Int]$Request.$_.workers
+                    Workers                  = [Int]$Algorithm.workers
                     WorkerName               = ""
                     Variant                  = [String]$PoolVariant
                 }

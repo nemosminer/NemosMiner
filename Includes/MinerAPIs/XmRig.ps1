@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\XmRig.ps1
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
 Class XmRig : Miner { 
@@ -34,19 +34,19 @@ Class XmRig : Miner {
 
             If ($Parameters.ConfigFile.Content.threads) { 
                 #Write full config file, ignore possible hw change
-                $Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10 | Out-File -FilePath $ConfigFile -Force -ErrorAction Ignore
+                $Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10 | Out-File -LiteralPath $ConfigFile -Force -ErrorAction Ignore
             }
             else { 
                 #Check if we have a valid hw file for all installed hardware. If hardware / device order has changed we need to re-create the config files. 
                 $ThreadsConfig = Get-Content $ThreadsConfigFile -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore
                 If ($ThreadsConfig.Count -lt 1) { 
-                    If (Test-Path -Path "$(Split-Path $this.Path)\$($this.Algorithms[0] | Select-Object -First 1)-*.json" -PathType Leaf) { 
+                    If (Test-Path -LiteralPath "$(Split-Path $this.Path)\$($this.Algorithms[0] | Select-Object -First 1)-*.json" -PathType Leaf) { 
                         #Remove old config files, thread info is no longer valid
                         Write-Message -Level Warn "Hardware change detected. Deleting existing configuration files for miner '$($this.Info)'."
                         Remove-Item "$(Split-Path $this.Path)\ThreadsConfig-$($this.Algorithms[0] | Select-Object -First 1)-*.json" -Force -ErrorAction Ignore
                     }
                     #Temporarily start miner with pre-config file (without threads config). Miner will then update hw config file with threads info
-                    $Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10 | Out-File -FilePath $ThreadsConfigFile -Force -ErrorAction Ignore
+                    $Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10 | Out-File -LiteralPath $ThreadsConfigFile -Force -ErrorAction Ignore
                     $this.Process = Invoke-CreateProcess -BinaryPath $this.Path -ArgumentList $Parameters.HwDetectArguments -WorkingDirectory (Split-Path $this.Path) -MinerWindowStyle $this.MinerWindowStyle -Priority $this.ProcessPriority -EnvBlock $this.Environment -JobName $this.Info -LogFile $this.LogFile
 
                     If ($this.Process) { 
@@ -54,10 +54,10 @@ Class XmRig : Miner {
                         For ($WaitForThreadsConfig = 0; $WaitForThreadsConfig -le 60; $WaitForThreadsConfig ++) { 
                             If ($ThreadsConfig = @(Get-Content $ThreadsConfigFile -ErrorAction Ignore | ConvertFrom-Json -ErrorAction Ignore).threads) { 
                                 If ($this.Type -contains "CPU") { 
-                                    ConvertTo-Json -InputObject @($ThreadsConfig | Select-Object -Unique) -Depth 10 | Out-File -FilePath $ThreadsConfigFile -Force -Encoding -ErrorAction Ignore
+                                    ConvertTo-Json -InputObject @($ThreadsConfig | Select-Object -Unique) -Depth 10 | Out-File -LiteralPath $ThreadsConfigFile -Force -Encoding -ErrorAction Ignore
                                 }
                                 Else { 
-                                    ConvertTo-Json -InputObject @($ThreadsConfig | Sort-Object -Property Index -Unique) -Depth 10 | Out-File -FilePath $ThreadsConfigFile -Force -ErrorAction Ignore
+                                    ConvertTo-Json -InputObject @($ThreadsConfig | Sort-Object -Property Index -Unique) -Depth 10 | Out-File -LiteralPath $ThreadsConfigFile -Force -ErrorAction Ignore
                                 }
                                 Break
                             }
@@ -84,7 +84,7 @@ Class XmRig : Miner {
                         Else { 
                             $Parameters.ConfigFile.Content | Add-Member threads ([Array](($ThreadsConfig | Where-Object { $Parameters.Devices -contains $_.index })) * $Parameters.Threads) -Force
                         }
-                        $Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10 | Out-File -FilePath $ConfigFile -Force -ErrorAction Ignore
+                        $Parameters.ConfigFile.Content | ConvertTo-Json -Depth 10 | Out-File -LiteralPath $ConfigFile -Force -ErrorAction Ignore
                     }
                     Else { 
                         Write-Message -Level Error "Error parsing threads config file - cannot create miner config files for '$($this.Info)' [Error: '$($Error | Select-Object -First 1)']."
@@ -102,6 +102,7 @@ Class XmRig : Miner {
     [Object]GetMinerData () { 
         $Timeout = 5 #seconds
         $Data = [PSCustomObject]@{ }
+
         $Request = "http://127.0.0.1:$($this.Port)/api.json"
 
         Try { 
@@ -126,21 +127,21 @@ Class XmRig : Miner {
         $Shares_Invalid = [Int64]0
         $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
 
-        $PowerUsage = [Double]0
+        $PowerConsumption = [Double]0
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 
-            If ($this.ReadPowerUsage) { 
-                $PowerUsage = [Double]($Data.hwmon.power | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
-                If (-not $PowerUsage) { 
-                    $PowerUsage = $this.GetPowerUsage()
+            If ($this.ReadPowerConsumption) { 
+                $PowerConsumption = [Double]($Data.hwmon.power | Measure-Object -Sum | Select-Object -ExpandProperty Sum)
+                If (-not $PowerConsumption) { 
+                    $PowerConsumption = $this.GetPowerConsumption()
                 }
             }
 
             Return [PSCustomObject]@{ 
-                Date       = ([DateTime]::Now).ToUniversalTime()
-                HashRate   = $HashRate
-                PowerUsage = $PowerUsage
-                Shares     = $Shares
+                Date             = ([DateTime]::Now).ToUniversalTime()
+                HashRate         = $HashRate
+                PowerConsumption = $PowerConsumption
+                Shares           = $Shares
             }
         }
         Return $null

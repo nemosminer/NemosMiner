@@ -5,7 +5,7 @@
     "BalancesKeepAlive": 90, // Inactive accounts are purged after 90 days
     "BrainConfig": {
       "SampleHalfPower": 0,
-      "SampleSizeMinutes": 5,
+      "SampleSizeMinutes": 45,
       "UseTransferFile": false
     },
     "ExcludeAlgorithm": [],
@@ -100,7 +100,7 @@
     "BalancesKeepAlive": 180, // https://www.mining-dutch.nl/index.php?page=wallets
     "BrainConfig": {
       "SampleHalfPower": 0,
-      "SampleSizeMinutes": 5,
+      "SampleSizeMinutes": 45,
       "UseTransferFile": false
     },
     "ExcludeAlgorithm": [],
@@ -237,7 +237,7 @@
     "BalancesKeepAlive": 90, // The customer has not mined with the pool for 90 days (https://prohashing.com/help/prohashing-legal-information#terms)
     "BrainConfig": {
       "SampleHalfPower": 0,
-      "SampleSizeMinutes": 5,
+      "SampleSizeMinutes": 45,
       "UseTransferFile": false
     },
     "ExcludeAlgorithm": [],
@@ -277,7 +277,7 @@
     "BalancesKeepAlive": 90, // Accounts with no mining activity for 3 months are purged 
     "BrainConfig": {
       "SampleHalfPower": 0,
-      "SampleSizeMinutes": 5,
+      "SampleSizeMinutes": 45,
       "UseTransferFile": false
     },
     "Currency": [],
@@ -328,15 +328,27 @@
     "SSL": "false",
     "Variant": {
       "ZergPool": {
-        "DivisorMultiplier": 1000000,
+        "DivisorMultiplier": 1000000000,
         "PriceField": "estimate_current"
       },
       "ZergPool24hr": {
-        "DivisorMultiplier": 1000000,
+        "DivisorMultiplier": 1000000000,
         "PriceField": "estimate_last24h"
       },
+      "ZergPoolCoins": {
+        "DivisorMultiplier": 1000000000,
+        "PriceField": "estimate_current"
+      },
+      "ZergPoolCoins24hr": {
+        "DivisorMultiplier": 1000000000,
+        "PriceField": "estimate_last24h"
+      },
+      "ZergPoolCoinsPlus": {
+        "DivisorMultiplier": 1000000000,
+        "PriceField": "Plus_Price"
+      },
       "ZergPoolPlus": {
-        "DivisorMultiplier": 1000000,
+        "DivisorMultiplier": 1000000000,
         "PriceField": "Plus_Price"
       }
     }
@@ -347,7 +359,7 @@
     "BalancesKeepAlive": 90, // Inactive accounts are purged after 90 days
     "BrainConfig": {
       "SampleHalfPower": 0,
-      "SampleSizeMinutes": 5,
+      "SampleSizeMinutes": 45,
       "UseTransferFile": false
     },
     "ExcludeAlgorithm": [],

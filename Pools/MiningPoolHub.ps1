@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\MiningPoolHub.ps1
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
 param(
@@ -56,56 +56,56 @@ If ($PoolConfig.UserName) {
 
     $Divisor = 1000000000
 
-    $Request.return | ForEach-Object { 
-        $Current = $_
-
-        $Algorithm_Norm = Get-Algorithm $_.algo
-        $Currency = "$($Current.symbol)" -replace ' \s+'
-        $Fee = [Decimal]($_.Fee / 100)
-        $Port = $Current.port
+    ForEach ($Pool in $Request.return) { 
+        $Algorithm_Norm = Get-Algorithm $Pool.algo
+        $Currency = "$($Pool.symbol)" -replace ' \s+'
 
         # Add coin name
-        If ($Current.coin_name -and $Currency) { 
-            [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Current.coin_name)
+        If ($Pool.coin_name -and $Currency) { 
+            [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Pool.coin_name)
         }
 
         # Temp fix
-        $Regions = If ($Current.host_list.split(";").count -eq 1) { @("n/a") } Else { $PoolConfig.Region }
+        $Regions = If ($Pool.host_list.split(";").count -eq 1) { @("n/a") } Else { $PoolConfig.Region }
 
-        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)_Profit" -Value ($_.profit / $Divisor) -FaultDetection $false
+        $Key = "$($PoolVariant)_$($Algorithm_Norm)-$($Currency)"
+        $Stat = Set-Stat -Name "$($Key)_Profit" -Value ($Pool.profit / $Divisor) -FaultDetection $false
 
         $Reasons = [System.Collections.Generic.List[String]]@()
-        If ($_.pool_hash -eq "-" -or $_.pool_hash -eq "0") { $Reasons.Add("No hashrate at pool") }
+        If ($Pool.pool_hash -eq "-" -or $_.pool_hash -eq "0") { $Reasons.Add("No hashrate at pool") }
 
-        If ($Current.host -eq "hub.miningpoolhub.com") { $Current.host_list = "hub.miningpoolhub.com" }
+        If ($Pool.host -eq "hub.miningpoolhub.com") { $Pool.host_list = "hub.miningpoolhub.com" }
 
         ForEach ($Region_Norm in $Variables.Regions[$Config.Region]) { 
-            If ($Region = $Regions | Where-Object { $_ -eq "n/a" -or (Get-Region $_) -eq $Region_Norm }) { 
+            If ($Region = $Regions.Where({ $_ -eq "n/a" -or (Get-Region $_) -eq $Region_Norm })) { 
 
                 If ($Region -eq "n/a") { $Region_Norm = $Region }
 
                 [PSCustomObject]@{ 
-                    Accuracy                 = [Double](1 - $Stat.Week_Fluctuation)
+                    Accuracy                 = 1 - $Stat.Week_Fluctuation
                     Algorithm                = [String]$Algorithm_Norm
                     Currency                 = [String]$Currency
-                    EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                    Fee                      = $Fee
-                    Host                     = [String]($Current.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
+                    Disabled                 = $Stat.Disabled
+                    EarningsAdjustmentFactor = $PoolConfig.EarningsAdjustmentFactor
+                    Fee                      = $Pool.Fee / 100
+                    Host                     = [String]($Pool.host_list.split(";") | Sort-Object -Descending { $_ -ilike "$Region*" } | Select-Object -First 1)
+                    Key                      = [String]$Key
+                    MiningCurrency           = ""
                     Name                     = [String]$Name
                     Pass                     = "x"
-                    Port                     = [UInt16]$Port
+                    Port                     = [UInt16]$Pool.port
                     PortSSL                  = 0
-                    Price                    = [Double]$Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * [Math]::Min($Stat.Day_Fluctuation, 1)
+                    Price                    = $Stat.Live * (1 - [Math]::Min($Stat.Day_Fluctuation, 1)) + $Stat.Day * [Math]::Min($Stat.Day_Fluctuation, 1)
                     Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratumnh" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                     Reasons                  = $Reasons
                     Region                   = [String]$Region_Norm
                     SendHashrate             = $false
                     SSLSelfSignedCertificate = $true
-                    StablePrice              = [Double]$Stat.Week
-                    User                     = "$($PoolConfig.UserName).$($PoolConfig.WorkerName)"
+                    StablePrice              = $Stat.Week
                     Updated                  = [DateTime]$Stat.Updated
+                    User                     = "$($PoolConfig.UserName).$($PoolConfig.WorkerName)"
                     WorkerName               = [String]$PoolConfig.WorkerName
-                    Workers                  = [Int]$_.workers
+                    Workers                  = [Int]$Pool.workers
                     Variant                  = [String]$PoolVariant
                 }
                 Break

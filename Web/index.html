@@ -4,7 +4,7 @@
           </div>
           <div id="toolbar">
             <button id="btn-re-benchmark" class="btn btn-primary" disabled title="The marked miners will re-benchmark&#10;Use this if the recorded hashrate is unreal or to re-enable disabled miners">Re-benchmark</button>
-            <button id="btn-re-measure" class="btn btn-primary" disabled title="The marked miners will re-measure power usage&#10;Use this if the recorded power usage is unreal">Re-measure Power Usage</button>
+            <button id="btn-re-measure" class="btn btn-primary" disabled title="The marked miners will re-measure power consumption&#10;Use this if the recorded power consumption is unreal">Re-measure Power Consumption</button>
             <button id="btn-failed" class="btn btn-warning" disabled title="The marked miners will be marked as failed&#10;Use this if the miners fail benchmarking or produce unpredictable results">Mark as failed</button>
             <button id="btn-disable" class="btn btn-danger" disabled title="The marked miners will be marked as disabled&#10;To re-enable trigger re-benchmarking">Disable</button>
           </div>
@@ -52,12 +52,13 @@
                 <th data-field="PowerCost" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Power Cost</th>
                 <th data-field="Profit" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)" data-visible="false">Profit</th>
                 <th data-field="Profit_Bias" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Profit Bias</th>
-                <th data-field="PowerUsage_Live" data-align="right" data-sortable="true" data-formatter="formatWatt">Power Usage<br>Live</bt></th>
-                <th data-field="PowerUsage" data-align="right" data-sortable="true" data-formatter="formatWatt" data-visible="false">Power Usage</th>
+                <th data-field="PowerConsumption_Live" data-align="right" data-sortable="true" data-formatter="formatWatt">Power<br>Live</bt></th>
+                <th data-field="PowerConsumption" data-align="right" data-sortable="true" data-formatter="formatWatt" data-visible="false">Power</th>
                 <th data-field="BeginTime" data-sortable="true" data-visible="false" data-formatter="formatDate">BeginTime</th>
                 <th data-field="ContinousCycle" data-sortable="true" data-visible="false">Continous Cycles</th>
                 <th data-field="tMiningDuration" data-sortable="true">Running Time</th>
                 <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select">Primary Algorithm</th>
+                <th data-field="tPrimaryAlgorithmVariant" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Primary Algorithm (Variant)</th>
                 <th data-field="tPrimaryCurrency" data-sortable="true" data-filter-control="select" data-visible="false">Primary Currency</th>
                 <th data-field="tPrimaryCoinName" data-sortable="true" data-filter-control="select" data-visible="false">Primary CoinName</th>
                 <th data-field="tPrimaryPool" data-sortable="true" data-filter-control="select" >Primary Pool</th>
@@ -68,6 +69,7 @@
                 <th data-field="tPrimaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Primary Pool Fee</th>
                 <th data-field="tPrimaryMinerFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Primary Algorithm Miner Fee</th>
                 <th data-field="tSecondaryAlgorithm" data-sortable="true" data-filter-control="select">Secondary Algorithm</th>
+                <th data-field="tSecondaryAlgorithmVariant" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Secondary Algorithm (Variant)</th>
                 <th data-field="tSecondaryCurrency" data-sortable="true" data-filter-control="select" data-visible="false">Secondary Currency</th>
                 <th data-field="tSecondaryCoinName" data-sortable="true" data-filter-control="select" data-visible="false">Secondary CoinName</th>
                 <th data-field="tSecondaryPool" data-align="right" data-sortable="true" data-filter-control="select">Secondary Pool</th>
@@ -131,8 +133,8 @@
                 $('body').css('cursor', 'progress');
                 $url = '/functions/stat/remove';
                 $payload = {
-                  'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms}))),
-                  'Type' : 'PowerUsage'
+                  'Miners': JSON.stringify($data.map($element => ({Info: $element.Info}))),
+                  'Type' : 'PowerConsumption'
                 };
                 $('.modal-body').load($url, $payload, function() {
                   $('.modal-title').text($('#btn-re-measure').text());
@@ -149,7 +151,7 @@
                 $('body').css('cursor', 'progress');
                 $url = '/functions/stat/set';
                 $payload = {
-                  'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms}))),
+                  'Miners': JSON.stringify($data.map($element => ({Info: $element.Info}))),
                   'Type': 'Hashrate',
                   'Value': 0 
                 };
@@ -168,7 +170,7 @@
                 $('body').css('cursor', 'progress');
                 $url = '/functions/stat/disable'
                 $payload = {
-                  'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})))
+                  'Miners': JSON.stringify($data.map($element => ({Info: $element.Info})))
                 };
                 $('.modal-body').load($url, $payload, function() {
                   $('.modal-title').text($('#btn-disable').text());
@@ -184,11 +186,11 @@
               onLoadSuccess: function() {
                 if (config.CalculatePowerCost == true) {
                   $table.bootstrapTable('showColumn', 'Profit_Bias');
-                  $table.bootstrapTable('showColumn', 'PowerUsage');
+                  $table.bootstrapTable('showColumn', 'PowerConsumption');
                   $table.bootstrapTable('showColumn', 'PowerCost');
                 } else {
                   $table.bootstrapTable('hideColumn', 'Profit_Bias');
-                  $table.bootstrapTable('hideColumn', 'PowerUsage');
+                  $table.bootstrapTable('hideColumn', 'PowerConsumption');
                   $table.bootstrapTable('hideColumn', 'PowerCost');
                 }
                 if (config.DisableDualAlgoMining == true) {

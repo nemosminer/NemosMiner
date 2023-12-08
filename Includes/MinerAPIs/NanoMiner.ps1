@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\NanoMiner.ps1
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
 Class NanoMiner : Miner { 
@@ -29,8 +29,8 @@ Class NanoMiner : Miner {
         Try { 
             $ConfigFile = "$(Split-Path $this.Path)\$($Parameters.ConfigFile.FileName)"
             #Write config files. Do not overwrite existing files to preserve optional manual customization
-            If (-not (Test-Path -Path $ConfigFile -PathType Leaf)) { 
-                $Parameters.ConfigFile.Content | Out-File -FilePath $ConfigFile -Force -ErrorAction Ignore
+            If (-not (Test-Path -LiteralPath $ConfigFile -PathType Leaf)) { 
+                $Parameters.ConfigFile.Content | Out-File -LiteralPath $ConfigFile -Force -ErrorAction Ignore
             }
         }
         Catch { 
@@ -74,21 +74,21 @@ Class NanoMiner : Miner {
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
         }
 
-        $PowerUsage = [Double]0
+        $PowerConsumption = [Double]0
 
         If ($HashRate.PSObject.Properties.Value -gt 0) { 
-            If ($this.ReadPowerUsage) { 
-                ForEach ($Device in $Data.Devices) { [Double]$PowerUsage += $Device.PSObject.Members.Value.Power }
-                If (-not $PowerUsage) { 
-                    $PowerUsage = $this.GetPowerUsage()
+            If ($this.ReadPowerConsumption) { 
+                ForEach ($Device in $Data.Devices) { $PowerConsumption += [Double]$Device.PSObject.Members.Value.Power }
+                If (-not $PowerConsumption) { 
+                    $PowerConsumption = $this.GetPowerConsumption()
                 }
             }
 
             Return [PSCustomObject]@{ 
-                Date       = ([DateTime]::Now).ToUniversalTime()
-                HashRate   = $HashRate
-                PowerUsage = $PowerUsage
-                Shares     = $Shares
+                Date             = ([DateTime]::Now).ToUniversalTime()
+                HashRate         = $HashRate
+                PowerConsumption = $PowerConsumption
+                Shares           = $Shares
             }
         }
         Return $null

@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\Hiveon.ps1
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
 param(
@@ -51,43 +51,47 @@ If ($PoolConfig.Wallets) {
 
     If (-not $Request) { Return }
 
-    $Request.cryptoCurrencies | Where-Object { $Variables.Rates.($_.name).BTC } | ForEach-Object { 
-        $Currency = $_.name -replace ' \s+'
+    ForEach ($Pool in $Request.cryptoCurrencies.Where({ $Variables.Rates.($_.name).BTC })) { 
+        $Currency = $Pool.name -replace ' \s+'
         If ($Algorithm_Norm = Get-AlgorithmFromCurrency $Currency) { 
-            $Divisor = [Double]$_.profitPerPower
+            $Divisor = [Double]$Pool.profitPerPower
 
             # Add coin name
             If ($_.title -and $Currency) { 
-                [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $_.title.Trim().ToLower())
+                [Void](Add-CoinName -Algorithm $Algorithm_Norm -Currency $Currency -CoinName $Pool.title.Trim().ToLower())
             }
 
-            $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$Currency" })_Profit" -Value ($Request.stats.($_.name).expectedReward24H * $Variables.Rates.($_.name).BTC / $Divisor) -FaultDetection $false
+            $Key = "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$Currency" })"
+            $Stat = Set-Stat -Name "$($Key)_Profit" -Value ($Request.stats.($Pool.name).expectedReward24H * $Variables.Rates.($Pool.name).BTC / $Divisor) -FaultDetection $false
 
             $Reasons = [System.Collections.Generic.List[String]]@()
             If ($Request.stats.($_.name).hashrate -eq 0) { $Reasons.Add("No hashrate at pool") }
+            If (-not $PoolConfig.Wallets.$Currency) { $Reasons.Add("No wallet address for '$Currency' configured") }
 
             [PSCustomObject]@{ 
-                Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
+                Accuracy                 = 1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1)
                 Algorithm                = [String]$Algorithm_Norm
                 Currency                 = [String]$Currency
-                Disabled                 = [Boolean]$Stat.Disabled
-                EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                Fee                      = 0
-                Host                     = [String]$_.servers[0].host
+                Disabled                 = $Stat.Disabled
+                EarningsAdjustmentFactor = $PoolConfig.EarningsAdjustmentFactor
+                Fee                      = 0.03
+                Host                     = [String]$Pool.servers[0].host
+                Key                      = [String]$Key
+                MiningCurrency           = ""
                 Name                     = [String]$Name
                 Pass                     = "x"
-                Port                     = [UInt16]$_.servers[0].ports[0]
-                PortSSL                  = [UInt16]$_.servers[0].ssl_ports[0]
-                Price                    = [Double]$Stat.Live
+                Port                     = [UInt16]$Pool.servers[0].ports[0]
+                PortSSL                  = [UInt16]$Pool.servers[0].ssl_ports[0]
+                Price                    = $Stat.Live
                 Protocol                 = "ethproxy"
                 Reasons                  = $Reasons
                 Region                   = [String]$PoolConfig.Region
                 SendHashrate             = $false
                 SSLSelfSignedCertificate = $false
-                StablePrice              = [Double]$Stat.Week
+                StablePrice              = $Stat.Week
                 Updated                  = [DateTime]$Stat.Updated
                 User                     = If ($PoolConfig.Wallets.$Currency) { [String]$PoolConfig.Wallets.$Currency } Else { "" }
-                Workers                  = [Int]$Request.stats.($_.name).workers
+                Workers                  = [Int]$Request.stats.($Pool.name).workers
                 WorkerName               = [String]$PoolConfig.WorkerName
                 Variant                  = [String]$PoolVariant
             }

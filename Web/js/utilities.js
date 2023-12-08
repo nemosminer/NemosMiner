@@ -18,61 +18,30 @@ function formatMiners(data) {
       }
 
       // Format the device(s)
-      if (item.DeviceNames) item.tDevices = formatArrayAsSortedString(item.DeviceNames);
-      else item.tDevices = '';
+      item.tDevices = formatArrayAsSortedString(item.DeviceNames);
 
       // Format the pool and algorithm data
-      if (typeof item.WorkersRunning === 'object' && item.WorkersRunning.length > 0) {
-        item.tPrimaryMinerFee = item.WorkersRunning[0].Fee;
-        item.tPrimaryHashrate = item.WorkersRunning[0].Hashrate;
-        if (item.WorkersRunning[0].Pool) {
-          item.tPrimaryAlgorithm = item.Algorithms[0];
-          item.tPrimaryCurrency = item.WorkersRunning[0].Pool.Currency;
-          item.tPrimaryCoinName = item.WorkersRunning[0].Pool.CoinName;
-          item.tPrimaryPool = item.WorkersRunning[0].Pool.Name;
-          item.tPrimaryPoolVariant = item.Workers[0].Pool.Variant;
-          item.tPrimaryPoolFee = item.WorkersRunning[0].Pool.Fee;
-          item.tPrimaryPoolUser = item.WorkersRunning[0].Pool.User;
-        }
-
-        if (item.WorkersRunning.length > 1) {
-          item.tSecondaryMinerFee = item.WorkersRunning[1].Fee;
-          item.tSecondaryHashrate = item.WorkersRunning[1].Hashrate;
-          if (item.WorkersRunning[1].Pool) {
-            item.tSecondaryAlgorithm = item.Algorithms[1];
-            item.tSecondaryCurrency = item.WorkersRunning[1].Pool.Currency;
-            item.tSecondaryCoinName = item.WorkersRunning[1].Pool.CoinName;
-            item.tSecondaryPool = item.WorkersRunning[1].Pool.Name;
-            item.tSecondaryPoolVariant = item.Workers[1].Pool.Variant;
-            item.tSecondaryPoolFee = item.WorkersRunning[1].Pool.Fee;
-            item.tSecondaryPoolUser = item.WorkersRunning[1].Pool.User;
-          }
-        }
-      } else if (typeof item.Workers === 'object' && item.Workers.length > 0) {
-        item.tPrimaryMinerFee = item.Workers[0].Fee;
-        item.tPrimaryHashrate = item.Workers[0].Hashrate;
-        if (item.Workers[0].Pool) {
-          item.tPrimaryAlgorithm = item.Algorithms[0];
-          item.tPrimaryCurrency = item.Workers[0].Pool.Currency;
-          item.tPrimaryCoinName = item.Workers[0].Pool.CoinName;
-          item.tPrimaryPool = item.Workers[0].Pool.Name;
-          item.tPrimaryPoolVariant = item.Workers[0].Pool.Variant;
-          item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
-          item.tPrimaryPoolUser = item.Workers[0].Pool.User;
-        }
-        if (item.Workers.length > 1) {
-          item.tSecondaryMinerFee = item.Workers[1].Fee;
-          item.tSecondaryHashrate = item.Workers[1].Hashrate;
-          if (item.Workers[1].Pool) {
-            item.tSecondaryAlgorithm = item.Algorithms[1];
-            item.tSecondaryCurrency = item.Workers[1].Pool.Currency;
-            item.tSecondaryCoinName = item.Workers[1].Pool.CoinName;
-            item.tSecondaryPool = item.Workers[1].Pool.Name;
-            item.tSecondaryPoolVariant = item.Workers[1].Pool.Variant;
-            item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
-            item.tSecondaryPoolUser = item.Workers[1].Pool.User;
-          }
-        }
+      item.tPrimaryMinerFee = item.Workers[0].Fee;
+      item.tPrimaryHashrate = item.Workers[0].Hashrate;
+      item.tPrimaryAlgorithm = item.Workers[0].Pool.Algorithm;
+      item.tPrimaryAlgorithmVariant = item.Workers[0].Pool.AlgorithmVariant;
+      item.tPrimaryCurrency = item.Workers[0].Pool.Currency;
+      item.tPrimaryCoinName = item.Workers[0].Pool.CoinName;
+      item.tPrimaryPool = item.Workers[0].Pool.Name;
+      item.tPrimaryPoolVariant = item.Workers[0].Pool.Variant;
+      item.tPrimaryPoolFee = item.Workers[0].Pool.Fee;
+      item.tPrimaryPoolUser = item.Workers[0].Pool.User;
+      if (item.Workers.length > 1) {
+        item.tSecondaryMinerFee = item.Workers[1].Fee;
+        item.tSecondaryHashrate = item.Workers[1].Hashrate;
+        item.tSecondaryAlgorithm = item.Workers[1].Pool.Algorithm;
+        item.tSecondaryAlgorithmVariant = item.Workers[1].Pool.AlgorithmVariant;
+        item.tSecondaryCurrency = item.Workers[1].Pool.Currency;
+        item.tSecondaryCoinName = item.Workers[1].Pool.CoinName;
+        item.tSecondaryPool = item.Workers[1].Pool.Name;
+        item.tSecondaryPoolVariant = item.Workers[1].Pool.Variant;
+        item.tSecondaryPoolFee = item.Workers[1].Pool.Fee;
+        item.tSecondaryPoolUser = item.Workers[1].Pool.User;
       }
 
       // Format margin of error
@@ -80,11 +49,9 @@ function formatMiners(data) {
       else item.tEarningAccuracy = formatPercent(item.Earning_Accuracy);
 
       // Format the live speed(s)
-      if (item.Hashrates_Live) {
-        if (item.Hashrates_Live.length > 0) item.tPrimaryHashrateLive = item.Hashrates_Live[0];
-        if (item.Hashrates_Live.length > 1) item.tSecondaryHashrateLive = item.Hashrates_Live[1];
-      }
-
+      item.tPrimaryHashrateLive = item.Hashrates_Live[0];
+      item.tSecondaryHashrateLive = item.Hashrates_Live[1];
+ 
       // Format Total Mining Duration (TimeSpan)
       if (item.TotalMiningDuration.Ticks > 0) item.tTotalMiningDuration = formatTimeSpan(item.TotalMiningDuration);
       else item.tTotalMiningDuration = "n/a";
@@ -96,11 +63,9 @@ function formatMiners(data) {
       // Format status
       item.tStatus = enumminerstatus[item.Status];
 
-      //Format warmup times
-      if (item.WarmupTimes.length > 1) {
-        item.tWarmupTimes0 = item.WarmupTimes[0];
-        item.tWarmupTimes1 = item.WarmupTimes[1];
-      }
+      // Format warmup times
+      item.tWarmupTimes0 = item.WarmupTimes[0];
+      item.tWarmupTimes1 = item.WarmupTimes[1];
     }
     catch (error) { 
       console.error(item);
@@ -182,8 +147,8 @@ function formatHashrateValue(value) {
     var i = Math.floor(Math.log(value) / Math.log(1000));
     unitvalue = value / Math.pow(1000, i);
     if (i <= 0) i = 1;
-    if (unitvalue < 10) return unitvalue.toLocaleString(navigator.language, { maximumFractionDigits: 3, minimumFractionDigits: 3 }) + ' ' + sizes[i];;
-    return unitvalue.toLocaleString(navigator.language, { maximumFractionDigits: 2, minimumFractionDigits: 2 }) + ' ' + sizes[i];
+    if (unitvalue < 10) return unitvalue.toLocaleString(navigator.language, { maximumFractionDigits: 3, minimumFractionDigits: 3 }) + '&nbsp;' + sizes[i];;
+    return unitvalue.toLocaleString(navigator.language, { maximumFractionDigits: 2, minimumFractionDigits: 2 }) + '&nbsp;' + sizes[i];
   }
   return 'n/a';
 };
@@ -222,13 +187,13 @@ function formatDate(value) {
 };
 
 function formatWatt(value) {
-  if (parseFloat(value)) return parseFloat(value).toFixed(2) + ' W';
+  if (parseFloat(value)) return parseFloat(value).toFixed(2) + '&nbsp;W';
   return 'n/a';
 };
 
 function formatPercent(value) {
   if (value == 0) return "0.00 %";
-  if (parseFloat(value)) return parseFloat(value * 100).toFixed(2) + ' %';
+  if (parseFloat(value)) return parseFloat(value * 100).toFixed(2) + '&nbsp;%';
   return '';
 };
 
@@ -373,7 +338,7 @@ function formatBytes(bytes) {
     dm = decimals || 2;
     sizes = ['Bytes', 'kiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
     i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + '&nbsp;' + sizes[i];
   }
   return '-';
 }

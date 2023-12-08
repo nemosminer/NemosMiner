@@ -17,11 +17,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
-If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.OpenCL.ComputeCapability -gt "5.0" })) { Return }
+If (-not ($Devices = $Variables.EnabledDevices.Where({ $_.OpenCL.ComputeCapability -gt "5.0" }))) { Return }
 
 $URI = Switch ($Variables.DriverVersion.CUDA) { 
     { $_ -ge "11.1" } { Return } # Use 2.6.3
@@ -32,7 +32,7 @@ $URI = Switch ($Variables.DriverVersion.CUDA) {
     Default { Return }
 }
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = "$PWD\Bin\$($Name)\z-enemy.exe"
+$Path = "$PWD\Bin\$Name\z-enemy.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = @(
@@ -56,47 +56,50 @@ $Algorithms = @(
 #   [PSCustomObject]@{ Algorithm = "Xevan";      MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(90, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo xevan --intensity 26 --diff-factor 1 --statsavg 1" } # No hashrate in time
 )
 
-$Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools }
+$Algorithms = $Algorithms.Where({ $_.MinerSet -le $Config.MinerSet })
+$Algorithms = $Algorithms.Where({ $MinerPools[0][$_.Algorithm] })
+$Algorithms = $Algorithms.Where({ $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools })
 
 If ($Algorithms) { 
 
-    $Devices | Select-Object Model -Unique | ForEach-Object { 
+    ($Devices | Select-Object Model -Unique).ForEach(
+        { 
+            $Miner_Devices = $Devices | Where-Object Model -EQ $_.Model
+            $MinerAPIPort = $Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1
 
-        $Miner_Devices = $Devices | Where-Object Model -EQ $_.Model
-        $MinerAPIPort = $Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1
+            $Algorithms.ForEach(
+                { 
+                    $ExcludePools = $_.ExcludePools
+                    ForEach ($Pool in ($MinerPools[0][$_.Algorithm].Where({ $_.Name -notin $ExcludePools }))) { 
 
-        $Algorithms | ForEach-Object { 
+                        $ExcludeGPUArchitecture = $_.ExcludeGPUArchitecture
+                        $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
+                        If ($AvailableMiner_Devices = $Miner_Devices.Where({ $_.MemoryGiB -ge $MinMemGiB -and $_.Architecture -notin $ExcludeGPUArchitecture })) { 
 
-            $ExcludePools = $_.ExcludePools
-            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object Name -notin $ExcludePools)) { 
+                            $Miner_Name = "$Name-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 
-                $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
-                If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
+                            $Arguments = $_.Arguments
+                            If ($AvailableMiner_Devices.Where({ $_.MemoryGiB -le 2 })) { $Arguments = $Arguments -replace ' --intensity [0-9\.]+' }
 
-                    $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
-
-                    $Arguments = $_.Arguments
-                    If ($AvailableMiner_Devices | Where-Object MemoryGiB -LE 2) { $Arguments = $Arguments -replace ' --intensity [0-9\.]+' }
-
-                    [PSCustomObject]@{ 
-                        API         = "Trex"
-                        Arguments   = "$Arguments $(If ($Pool.PoolPorts[1]) { "--no-cert-verify --url stratum+ssl" } Else { "--url stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User) --pass $($Pool.Pass) --api-bind 0 --api-bind-http $MinerAPIPort --retry-pause 1 --quiet --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
-                        DeviceNames = $AvailableMiner_Devices.Name
-                        Fee         = @(0.01) # Dev fee
-                        MinerSet    = $_.MinerSet
-                        MinerUri    = "" # "http://127.0.0.1:$($MinerAPIPort)" # Always offline
-                        Name        = $Miner_Name
-                        Path        = $Path
-                        Port        = $MinerAPIPort
-                        Type        = "NVIDIA"
-                        URI         = $Uri
-                        WarmupTimes = @($_.WarmupTimes) # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
-                        Workers     = @(@{ Pool = $Pool })
+                            [PSCustomObject]@{ 
+                                API         = "Trex"
+                                Arguments   = "$Arguments $(If ($Pool.PoolPorts[1]) { "--no-cert-verify --url stratum+ssl" } Else { "--url stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User) --pass $($Pool.Pass) --api-bind 0 --api-bind-http $MinerAPIPort --retry-pause 1 --quiet --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique).ForEach({ '{0:x}' -f $_ }) -join ',')"
+                                DeviceNames = $AvailableMiner_Devices.Name
+                                Fee         = @(0.01) # Dev fee
+                                MinerSet    = $_.MinerSet
+                                MinerUri    = "" # "http://127.0.0.1:$($MinerAPIPort)" # Always offline
+                                Name        = $Miner_Name
+                                Path        = $Path
+                                Port        = $MinerAPIPort
+                                Type        = "NVIDIA"
+                                URI         = $Uri
+                                WarmupTimes = @($_.WarmupTimes) # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                                Workers     = @(@{ Pool = $Pool })
+                            }
+                        }
                     }
                 }
-            }
+            )
         }
-    }
+    )
 }

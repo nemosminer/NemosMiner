@@ -17,17 +17,17 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
 using module ..\Includes\Include.psm1
 
-If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -or $_.OpenCL.ComputeCapability -ge "5.0" } )) { Return }
+If (-not ($Devices = $Variables.EnabledDevices.Where({ $_.Type -eq "AMD" -or $_.OpenCL.ComputeCapability -ge "5.0" } ))) { Return }
 
 $URI = "https://github.com/Minerx117/miners/releases/download/MiniZ/miniZ_v2.2c_win-x64.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = "$PWD\Bin\$($Name)\miniZ.exe"
+$Path = "$PWD\Bin\$Name\miniZ.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = @(
@@ -48,7 +48,7 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "ProgPowSero";      Type = "AMD"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=progpow --pers=sero" }
     [PSCustomObject]@{ Algorithm = "ProgPowVeil";      Type = "AMD"; Fee = @(0.01);   MinMemGiB = 8.0;  Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=progpow --pers=veil" }
     [PSCustomObject]@{ Algorithm = "ProgPowVeriblock"; Type = "AMD"; Fee = @(0.01);   MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=progpow --pers=VeriBlock" }
-    [PSCustomObject]@{ Algorithm = "ProgPowZano";      Type = "AMD"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=progpow --pers=zano" }
+    [PSCustomObject]@{ Algorithm = "ProgPowZ";         Type = "AMD"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @("GCN1", "GCN2", "GCN3", "RDNA1");                  ExcludePools = @(); AutoCoinPers = "";             Arguments = " --amd --par=progpow --pers=zano" }
 
     [PSCustomObject]@{ Algorithm = "BeamV3";           Type = "NVIDIA"; Fee = @(0.02);   MinMemGiB = 4.0;  Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --par=beam3 --pers=Beam-Pow" } # Lots of bad shares
     [PSCustomObject]@{ Algorithm = "Equihash1254";     Type = "NVIDIA"; Fee = @(0.02);   MinMemGiB = 3.0;  MinerSet = 0; Tuning = " --ocX"; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --par=125,4 --smart-pers" }
@@ -67,60 +67,62 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "ProgPowSero";      Type = "NVIDIA"; Fee = @(0.01);   MinMemGiB = 1.08; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --pers=sero" }
     [PSCustomObject]@{ Algorithm = "ProgPowVeil";      Type = "NVIDIA"; Fee = @(0.01);   MinMemGiB = 8.0;  Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --pers=veil" }
     [PSCustomObject]@{ Algorithm = "ProgPowVeriblock"; Type = "NVIDIA"; Fee = @(0.01);   MinMemGiB = 2.0;  Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(30, 15); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --pers=VeriBlock" }
-    [PSCustomObject]@{ Algorithm = "ProgPowZano";      Type = "NVIDIA"; Fee = @(0.01);   MinMemGiB = 0.80; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --pers=zano" }
+    [PSCustomObject]@{ Algorithm = "ProgPowZ";         Type = "NVIDIA"; Fee = @(0.01);   MinMemGiB = 0.80; Minerset = 2; Tuning = " --ocX"; WarmupTimes = @(45, 30); ExcludeGPUArchitecture = @();        ExcludePools = @(); AutoCoinPers = "";             Arguments = " --nvidia --pers=zano" }
 )       
 
-$Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0].($_.Algorithm) }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools }
+$Algorithms = $Algorithms.Where({ $_.MinerSet -le $Config.MinerSet })
+$Algorithms = $Algorithms.Where({ $MinerPools[0].($_.Algorithm) })
+$Algorithms = $Algorithms.Where({ $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools })
 
 If ($Algorithms) { 
 
-    $Algorithms | ForEach-Object { 
-        $_.MinMemGiB += $Pool.DAGSizeGiB
-    }
+    $Algorithms.ForEach({ $_.MinMemGiB += $Pool.DAGSizeGiB })
 
-    $Devices | Select-Object Type, Model -Unique | ForEach-Object { 
+    ($Devices | Select-Object Type, Model -Unique).ForEach(
+        { 
 
-        $Miner_Devices = $Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model
-        $MinerAPIPort = $Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1
+            $Miner_Devices = $Devices | Where-Object Type -EQ $_.Type | Where-Object Model -EQ $_.Model
+            $MinerAPIPort = $Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1
 
-        $Algorithms | Where-Object Type -EQ $_.Type | ForEach-Object { 
+            ($Algorithms | Where-Object Type -EQ $_.Type).ForEach(
+                { 
+                    $ExcludePools = $_.ExcludePools
+                    ForEach ($Pool in ($MinerPools[0][$_.Algorithm].Where({ $_.Name -notin $ExcludePools }))) { 
 
-            $ExcludePools = $_.ExcludePools
-            ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object Name -notin $ExcludePools)) { 
+                        $ExcludeGPUArchitecture = $_.ExcludeGPUArchitecture
+                        $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
+                        If ($AvailableMiner_Devices = $Miner_Devices.Where({ $_.MemoryGiB -ge $MinMemGiB -and $_.Architecture -notin $ExcludeGPUArchitecture })) { 
 
-                $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
-                If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -ge $MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
+                            $Miner_Name = "$Name-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 
-                    $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
+                            $Arguments = $_.Arguments
+                            $Arguments += " --url=$(If ($Pool.PoolPorts[1]) { "ssl://" } )$($Pool.User)@$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1)"
+                            $Arguments += " --pass=$($Pool.Pass)"
+                            If ($Pool.WorkerName -and $Pool.User -notmatch "\.$($Pool.WorkerName)$") { $Arguments += " --worker=$($Pool.WorkerName)" }
+                            If ($_.AutoCoinPers) {$Arguments += $(Get-EquihashCoinPers -Command " --pers " -Currency $Pool.Currency -DefaultCommand $_.AutoCoinPers) }
 
-                    $Arguments = $_.Arguments
-                    $Arguments += " --url=$(If ($Pool.PoolPorts[1]) { "ssl://" } )$($Pool.User)@$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1)"
-                    $Arguments += " --pass=$($Pool.Pass)"
-                    If ($Pool.WorkerName) { $Arguments += " --worker=$($Pool.WorkerName)" }
-                    If ($_.AutoCoinPers) {$Arguments += $(Get-EquihashCoinPers -Command " --pers " -Currency $Pool.Currency -DefaultCommand $_.AutoCoinPers) }
+                            # Apply tuning parameters
+                            If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
 
-                    # Apply tuning parameters
-                    If ($Variables.UseMinerTweaks) { $Arguments += $_.Tuning }
-
-                    [PSCustomObject]@{ 
-                        API          = "MiniZ"
-                        Arguments    = "$Arguments --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int=10 --nohttpheaders --latency --all-shares --extra --tempunits=C --show-pers --fee-time=60 --telemetry $MinerAPIPort -cd $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:d2}' -f $_ }) -join ' ')"
-                        DeviceNames  = $AvailableMiner_Devices.Name
-                        Fee          = $_.Fee # Dev fee
-                        MinerSet     = $_.MinerSet
-                        MinerUri     = "http://127.0.0.1:$($MinerAPIPort)"
-                        Name         = $Miner_Name
-                        Path         = $Path
-                        Port         = $MinerAPIPort
-                        Type         = $_.Type
-                        URI          = $Uri
-                        WarmupTimes  = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
-                        Workers     = @(@{ Pool = $Pool })
+                            [PSCustomObject]@{ 
+                                API          = "MiniZ"
+                                Arguments    = "$Arguments --jobtimeout=900 --retries=99 --retrydelay=1 --stat-int=10 --nohttpheaders --latency --all-shares --extra --tempunits=C --show-pers --fee-time=60 --telemetry $MinerAPIPort -cd $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique).ForEach({ '{0:d2}' -f $_ }) -join ' ')"
+                                DeviceNames  = $AvailableMiner_Devices.Name
+                                Fee          = $_.Fee # Dev fee
+                                MinerSet     = $_.MinerSet
+                                MinerUri     = "http://127.0.0.1:$($MinerAPIPort)"
+                                Name         = $Miner_Name
+                                Path         = $Path
+                                Port         = $MinerAPIPort
+                                Type         = $_.Type
+                                URI          = $Uri
+                                WarmupTimes  = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                                Workers     = @(@{ Pool = $Pool })
+                            }
+                        }
                     }
                 }
-            }
+            )
         }
-    }
+    )
 }

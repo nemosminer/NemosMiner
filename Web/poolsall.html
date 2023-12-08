@@ -42,9 +42,10 @@
               <tr>
                 <th data-field="state" data-checkbox="true"></th>
                 <th data-field="Algorithm" data-sortable="true" data-filter-control="select">Algorithm</th>
+                <th data-field="AlgorithmVariant" data-sortable="true" data-filter-control="select" data-visible="false">Algorithm (Variant)</th>
                 <th data-field="CoinName" data-sortable="true" data-filter-control="select">Coin Name</th>
                 <th data-field="Currency" data-sortable="true" data-filter-control="select">Currency</th>
-                <th data-field="Reasons" data-sortable="true" data-filter-control="select" data-visible="false">Reasons</th>
+                <th data-field="Reasons" data-sortable="true" data-filter-control="select">Reasons</th>
                 <th data-field="tPrice" class="addm" data-align="right" data-sortable="true" data-formatter="formatPrices" data-visible="false">BTC/GH/Day</th>
                 <th data-field="tPrice_Bias" class="addm" data-align="right" data-sortable="true" data-formatter="formatPrices" data-visible="false">BTC/GH/Day<br>(Biased)</th>
                 <th data-field="tStablePrice" class="addm" data-align="right" data-sortable="true" data-formatter="formatPrices" data-visible="false">BTC/GH/Day<br>(Week)</th>
@@ -56,11 +57,11 @@
                 <th data-field="WorkerName" data-sortable="true" data-filter-control="select" data-visible="false">WorkerName</th>
                 <th data-field="Pass" data-sortable="true" data-filter-control="select" data-visible="false">Password</th>
                 <th data-field="Host" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Host</th>
-                <th data-field="Port" data-align="right" data-sortable="true" data-formatter="formatPorts" data-filter-control="input" data-filter-strict-search="false" data-width=1>Port&nbsp;</th>
-                <th data-field="PortSSL" data-align="right" data-sortable="true" data-formatter="formatPorts" data-filter-control="input" data-filter-strict-search="false" data-width=1>SSL Port&nbsp;</th>
-                <th data-field="PoolPorts" data-align="right" data-sortable="true" data-formatter="formatPorts" data-filter-control="input" data-filter-strict-search="false" data-width=1 data-visible="false"> Available Ports&nbsp;</th>
+                <th data-field="Port" data-align="right" data-sortable="true" data-formatter="formatPorts" data-filter-control="input" data-filter-strict-search="false" data-width=1>Port</th>
+                <th data-field="PortSSL" data-align="right" data-sortable="true" data-formatter="formatPorts" data-filter-control="input" data-filter-strict-search="false" data-width=1>SSL Port</th>
+                <th data-field="PoolPorts" data-align="right" data-sortable="true" data-formatter="formatPorts" data-filter-control="input" data-filter-strict-search="false" data-width=1 data-visible="false">Available Ports</th>
                 <th data-field="EarningsAdjustmentFactor" data-align="right" data-sortable="true" data-formatter="format3DecimalDigits" data-width=1>Earnings<br>Adjustment<br>Factor</th>
-                <th data-field="Fee" data-align="right" data-sortable="true" data-formatter="formatPercent" data-width=1>Fee&nbsp;&nbsp;</th>
+                <th data-field="Fee" data-align="right" data-sortable="true" data-formatter="formatPercent" data-width=1>Fee</th>
                 <th data-field="Protocol" data-align="right" data-sortable="true" data-filter-control="select" data-visible="false">Protocol</th>
                 <th data-field="SendHashrate" data-align="right" data-sortable="true" data-visible="false">Send<br>Hashrate</th>
                 <th data-field="Workers" data-align="right" data-sortable="true" data-visible="false">Workers</th>
@@ -68,6 +69,7 @@
                 <th data-field="Epoch" data-align="right" data-sortable="true" data-visible="false">Epoch</th>
                 <th data-field="BlockHeight" data-align="right" data-sortable="true" data-visible="false">Block Height</th>
                 <th data-field="Updated" data-sortable="true" data-formatter="formatTimeSince" data-width=250>Last Updated</th>
+                <th data-field="Key" data-sortable="true" data-filter-control="select" data-visible="false">Key</th>
                 <th data-field="Disabled" data-sortable="true" data-filter-control="select" data-visible="false">Disabled</th>
                 <th data-field="Available" data-sortable="true" data-filter-control="select" data-visible="false">Available</th>
                 <th data-field="Best" data-sortable="true" data-filter-control="select" data-visible="false">Best</th>
@@ -95,36 +97,6 @@
             });
 
             $(document).ready(function () {
-              $('#btn-enable').click(function () {
-                var $data = $table.bootstrapTable('getSelections');
-                if ($data.length >= 1) {
-                  $('body').css('cursor', 'progress');
-                  $url = '/functions/algorithm/enable';
-                  $payload = {'Pools': JSON.stringify($data.map($element => ({ Name: $element.Name, Algorithm: $element.Algorithm })))};
-                  $('.modal-body').load($url, $payload, function() {
-                    $('.modal-title').text($('#btn-enable').text());
-                    $('body').css('cursor', 'default');
-                    $('#myModal').modal({show:true});
-                  });
-                  $table.bootstrapTable('refresh');
-                }
-              });
-
-              $('#btn-disable').click(function () {
-                var $data = $table.bootstrapTable('getSelections');
-                if ($data.length >= 1) {
-                  $('body').css('cursor', 'progress');
-                  $url = '/functions/algorithm/disable';
-                  $payload = {'Pools': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithm: $element.Algorithm })))};
-                  $('.modal-body').load($url, $payload, function() {
-                    $('.modal-title').text($('#btn-disable').text());
-                    $('body').css('cursor', 'default');
-                    $('#myModal').modal({show:true});
-                  });
-                  $table.bootstrapTable('refresh');
-                }
-              });
-
               $('#btn-reset-data').click(function () {
                 var $data = $table.bootstrapTable('getSelections');
                 if ($data.length >= 1) {

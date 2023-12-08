@@ -17,68 +17,72 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
-If (-not ($Devices = $Variables.EnabledDevices | Where-Object { $_.Type -eq "AMD" -and $Variables.DriverVersion.CIM.AMD -lt "26.20.15011.10003" })) { Return }
+If (-not ($Devices = $Variables.EnabledDevices.Where({ $_.Type -eq "AMD" -and $Variables.DriverVersion.CIM.AMD -lt [Version]"26.20.15011.10003" }))) { Return }
 
 $URI = "https://github.com/Minerx117/miners/releases/download/ClaymoreNeoscrypt/claymore_neoscrypt_1.2.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
-$Path = "$PWD\Bin\$($Name)\NeoScryptMiner.exe"
+$Path = "$PWD\Bin\$Name\NeoScryptMiner.exe"
 $DeviceEnumerator = "Type_Vendor_Slot"
 
 $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "Neoscrypt"; MinMemGiB = 2; Minerset = 2; WarmupTimes = @(45, 0); ExcludeGPUArchitecture = @("RDNA1", "RDNA2", "RDNA3"); ExcludePools = @(); Arguments = "" } # FPGA
 )
 
-$Algorithms = $Algorithms | Where-Object MinerSet -LE $Config.MinerSet
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm] }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools }
-$Algorithms = $Algorithms | Where-Object { $MinerPools[0][$_.Algorithm].PoolPorts[0] }
+$Algorithms = $Algorithms.Where({ $_.MinerSet -le $Config.MinerSet })
+$Algorithms = $Algorithms.Where({ $MinerPools[0][$_.Algorithm] })
+$Algorithms = $Algorithms.Where({ $MinerPools[0][$_.Algorithm].Name -notin $_.ExcludePools })
+$Algorithms = $Algorithms.Where({ $MinerPools[0][$_.Algorithm].PoolPorts[0] })
 
 If ($Algorithms) { 
 
-    $Devices | Select-Object Model -Unique | ForEach-Object { 
+    ($Devices | Select-Object Model -Unique).ForEach(
+        { 
+            If ($Miner_Devices = $Devices | Where-Object Model -EQ $_.Model) { 
 
-        If ($Miner_Devices = $Devices | Where-Object Model -EQ $_.Model) { 
+                $MinerAPIPort = $Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1
 
-            $MinerAPIPort = $Config.APIPort + ($Miner_Devices.Id | Sort-Object -Top 1) + 1
+                $Algorithms.ForEach(
+                    { 
+                        $ExcludePools = $_.ExcludePools
+                        ForEach ($Pool in ($MinerPools[0][$_.Algorithm].Where({ $_.PoolPorts[0] -and $_.Name -notin $ExcludePools }))) { 
 
-            $Algorithms | ForEach-Object { 
+                            $ExcludeGPUArchitecture = $_.ExcludeGPUArchitecture
+                            $MinMemGiB  = $_.MinMemGiB 
+                            If ($AvailableMiner_Devices = $Miner_Devices.Where({ $_.MemoryGiB -ge $MinMemGiB -and $_.Architecture -notin $ExcludeGPUArchitecture })) { 
 
-                $ExcludePools = $_.ExcludePools
-                ForEach ($Pool in ($MinerPools[0][$_.Algorithm] | Where-Object { $_.PoolPorts[0] } | Where-Object Name -notin $ExcludePools)) { 
+                                $Miner_Name = "$Name-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
 
-                    If ($AvailableMiner_Devices = $Miner_Devices | Where-Object MemoryGiB -GE $_.MinMemGiB | Where-Object Architecture -notin $_.ExcludeGPUArchitecture) { 
+                                $Fee = If ($Pool.PoolPorts[1]) { @(2.5) } Else { @(2) }
 
-                        $Miner_Name = "$($Name)-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
+                                # Disable dev fee mining
+                                If ($Config.DisableMinerFee) { 
+                                    $Arguments += " --nofee 1"
+                                    $Fee = @(0)
+                                }
 
-                        $Fee = If ($Pool.PoolPorts[1]) { @(2.5) } Else { @(2) }
-
-                        # Disable dev fee mining
-                        If ($Config.DisableMinerFee) { 
-                            $Arguments += " --nofee 1"
-                            $Fee = @(0)
-                        }
-
-                        [PSCustomObject]@{ 
-                            API         = "EthMiner"
-                            Arguments   = "$($_.Arguments) -pool $(If ($Pool.PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) -wal $($Pool.User)$(If ($Pool.Pass) { " -psw $($Pool.Pass)" }) -mport -$MinerAPIPort -di $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique | ForEach-Object { '{0:x}' -f $_ }) -join ',')"
-                            DeviceNames = $AvailableMiner_Devices.Name
-                            Fee         = $Fee # Dev fee
-                            MinerSet    = $_.MinerSet
-                            Name        = $Miner_Name
-                            Path        = $Path
-                            Port        = $MinerAPIPort
-                            Type        = "AMD"
-                            URI         = $Uri
-                            WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
-                            Workers     = @(@{ Pool = $Pool })
+                                [PSCustomObject]@{ 
+                                    API         = "EthMiner"
+                                    Arguments   = "$($_.Arguments) -pool $(If ($Pool.PoolPorts[1]) { "stratum+ssl" } Else { "stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) -wal $($Pool.User)$(If ($Pool.Pass) { " -psw $($Pool.Pass)" }) -mport -$MinerAPIPort -di $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique).ForEach({ '{0:x}' -f $_ }) -join ',')"
+                                    DeviceNames = $AvailableMiner_Devices.Name
+                                    Fee         = $Fee # Dev fee
+                                    MinerSet    = $_.MinerSet
+                                    Name        = $Miner_Name
+                                    Path        = $Path
+                                    Port        = $MinerAPIPort
+                                    Type        = "AMD"
+                                    URI         = $Uri
+                                    WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
+                                    Workers     = @(@{ Pool = $Pool })
+                                }
+                            }
                         }
                     }
-                }
+                )
             }
         }
-    }
+    )
 }

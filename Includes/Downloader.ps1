@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\Downloader.ps1
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
 using module .\Includes\Include.psm1
@@ -35,7 +35,7 @@ $DownloadList | Select-Object | ForEach-Object {
     $Path = $_.Path
     $Searchable = $_.Searchable
 
-    If (-not (Test-Path -Path $Path -PathType Leaf)) { 
+    If (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { 
         Try { 
             Write-Message -Level Info "Downloader:<br>Initiated download of '$URI'."
 
@@ -62,7 +62,7 @@ $DownloadList | Select-Object | ForEach-Object {
             }
 
             If ($Path_Old) { 
-                If (Test-Path -Path (Split-Path $Path_New) -PathType Container) { (Split-Path $Path_New) | Remove-Item -Recurse -Force }
+                If (Test-Path -LiteralPath (Split-Path $Path_New) -PathType Container) { (Split-Path $Path_New) | Remove-Item -Recurse -Force }
                 (Split-Path $Path_Old) | Copy-Item -Destination (Split-Path $Path_New) -Recurse -Force
                 Write-Message -Level Info "Downloader:<br>Copied '$($Path.Replace("$($Variables.MainPath)\", ''))' from local repository '$PathOld'."
             }

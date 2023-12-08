@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\ZPool.ps1
-Version:        5.0.2.0
-Version date:   2023/11/12
+Version:        5.0.2.1
+Version date:   2023/12/09
 #>
 
 param(
@@ -36,11 +36,9 @@ $HostSuffix = "mine.zpool.ca"
 
 $PoolConfig = $Variables.PoolsConfig.$Name
 $PriceField = $PoolConfig.Variant.$PoolVariant.PriceField
-$PayoutCurrency = $PoolConfig.Wallets.psBase.Keys | Select-Object -First 1
-$Wallet = $PoolConfig.Wallets.$PayoutCurrency
-$BrainDataFile = "$($PWD)\Data\BrainData_$($Name).json"
+$BrainDataFile = "$PWD\Data\BrainData_$Name.json"
 
-If ($PriceField -and $Wallet) { 
+If ($PriceField) { 
 
     Try { 
         If ($Variables.Brains.$Name) { 
@@ -54,47 +52,49 @@ If ($PriceField -and $Wallet) {
 
     If (-not $Request.PSObject.Properties.Name) { Return }
 
-    $Request.PSObject.Properties.Name | Where-Object { $Request.$_.Updated -ge $Variables.Brains.$Name."Updated" } | ForEach-Object { 
-        $Algorithm = $_
+    ForEach ($Algorithm in $Request.PSObject.Properties.Name.Where({ $Request.$_.Updated -ge $Variables.Brains.$Name."Updated" })) { 
         $Algorithm_Norm = Get-Algorithm $Algorithm
-        $Currency = "$($Request.$_.currency)" -replace ' \s+'
+        $Currency = $Request.$Algorithm.currency
+        $Divisor = 1000000 * ($Request.$Algorithm.mbtc_mh_factor -as [Double])
+        $PayoutCurrency = If ($Currency -and $PoolConfig.Wallets.$Currency -and -not $PoolConfig.ProfitSwitching) { $Currency } Else { $PoolConfig.PayoutCurrency }
 
-        $Divisor = 1000000 * ($Request.$_.mbtc_mh_factor -as [Double])
-        $Fee = $Request.$_.Fees / 100
+        $Key = "$($PoolVariant)_$($Algorithm_Norm)"
+        $Stat = Set-Stat -Name "$($Key)_Profit" -Value ($Request.$Algorithm.$PriceField / $Divisor) -FaultDetection $false
 
         $Reasons = [System.Collections.Generic.List[String]]@()
-        # If ($Request.$_.error) { $Reasons.Add($Request.$_.error) }
-        If ($Request.$_.hashrate_last24h -eq 0) { $Reasons.Add("No hashrate at pool") }
-
-        $Stat = Set-Stat -Name "$($PoolVariant)_$($Algorithm_Norm)$(If ($Currency) { "-$Currency" })_Profit" -Value ($Request.$_.$PriceField / $Divisor) -FaultDetection $false
+        If ($Request.$Algorithm.conversion_disabled -eq 1 -and $Currency -ne $PayoutCurrency) { $Reasons.Add("Conversion disabled at pool, no wallet address for '$Currency' configured") }
+        # If ($Request.$Algorithm.error) { $Reasons.Add($Request.$Algorithm.error) }
+        If ($Request.$Algorithm.hashrate_last24h -eq 0) { $Reasons.Add("No hashrate at pool") }
 
         ForEach ($Region_Norm in $Variables.Regions[$Config.Region]) { 
-            If ($Region = $PoolConfig.Region | Where-Object { (Get-Region $_) -eq $Region_Norm }) { 
+            If ($Region = $PoolConfig.Region.Where({ (Get-Region $_) -eq $Region_Norm })) { 
 
                 [PSCustomObject]@{ 
-                    Accuracy                 = [Double](1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1))
+                    Accuracy                 = 1 - [Math]::Min([Math]::Abs($Stat.Week_Fluctuation), 1)
                     Algorithm                = [String]$Algorithm_Norm
                     CoinName                 = [String]$CoinName
                     Currency                 = [String]$Currency
-                    Disabled                 = [Boolean]$Stat.Disabled
-                    EarningsAdjustmentFactor = [Double]$PoolConfig.EarningsAdjustmentFactor
-                    Fee                      = [Decimal]$Fee
+                    Disabled                 = $Stat.Disabled
+                    EarningsAdjustmentFactor = $PoolConfig.EarningsAdjustmentFactor
+                    Fee                      = $Request.$Algorithm.Fees / 100
                     Host                     = "$($Algorithm).$($Region).$($HostSuffix)"
+                    Key                      = [String]$Key
+                    MiningCurrency           = If ($Currency -eq $PayoutCurrency) { $Currency } Else { "" }
                     Name                     = [String]$Name
-                    Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency$(If ($Currency -and -not $PoolConfig.ProfitSwitching) { ",zap=$Currency" })"
-                    Port                     = [UInt16]$Request.$_.port
-                    PortSSL                  = [UInt16]("5$([String]$Request.$_.port)")
-                    Price                    = [Double]$Stat.Live
+                    Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency$(If ($Currency -eq $PayoutCurrency) { ",zap=$Currency" })"
+                    Port                     = [UInt16]$Request.$Algorithm.port
+                    PortSSL                  = [UInt16]("5$([String]$Request.$Algorithm.port)")
+                    Price                    = $Stat.Live
                     Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethproxy" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                     Reasons                  = $Reasons
                     Region                   = [String]$Region_Norm
                     SendHashrate             = $false
                     SSLSelfSignedCertificate = $true
-                    StablePrice              = [Double]$Stat.Week
-                    Updated                  = [DateTime]$Request.$_.Updated
-                    User                     = [String]$Wallet
+                    StablePrice              = $Stat.Week
+                    Updated                  = [DateTime]$Request.$Algorithm.Updated
+                    User                     = [String]$PoolConfig.Wallets.$PayoutCurrency
                     WorkerName               = ""
-                    Workers                  = [Int]$Request.$_.workers
+                    Workers                  = [Int]$Request.$Algorithm.workers
                     Variant                  = [String]$PoolVariant
                 }
                 Break
