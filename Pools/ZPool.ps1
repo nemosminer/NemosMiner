@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Pools\ZPool.ps1
-Version:        5.0.2.1
-Version date:   2023/12/09
+Version:        5.0.2.2
+Version date:   2023/12/11
 #>
 
 param(
@@ -55,7 +55,7 @@ If ($PriceField) {
     ForEach ($Algorithm in $Request.PSObject.Properties.Name.Where({ $Request.$_.Updated -ge $Variables.Brains.$Name."Updated" })) { 
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $Currency = $Request.$Algorithm.currency
-        $Divisor = 1000000 * ($Request.$Algorithm.mbtc_mh_factor -as [Double])
+        $Divisor = 1000000 * [Double]$Request.$Algorithm.mbtc_mh_factor
         $PayoutCurrency = If ($Currency -and $PoolConfig.Wallets.$Currency -and -not $PoolConfig.ProfitSwitching) { $Currency } Else { $PoolConfig.PayoutCurrency }
 
         $Key = "$($PoolVariant)_$($Algorithm_Norm)"

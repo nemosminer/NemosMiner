@@ -9,7 +9,21 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in UTC time)
 
-ChangeLog NemosMiner 5.0.2.1 2023/11/08
+ChangeLog NemosMiner 5.0.2.2 2023/12/11
+=======================================
+
+Fixes:
+- Core: Keep only best coin per algorithm (Regression from 5.0.2.1)
+
+Miner updates:
+- BzMiner-v19.0.0
+- GMiner-v3.43
+- lolMiner-v1.80a
+- TeamBlackMiner-v2.13
+- Wildrig-v0.39.9b
+
+
+ChangeLog NemosMiner 5.0.2.1 2023/12/08
 =======================================
 
 Changes:
@@ -24,8 +38,8 @@ Enhancements:
 
 Fixes:
 - Core / Include.psm1: 'Update-ConfigFile' error (Regression from 5.0.1.3)
-- Core: Do not remove stats that exist on disk (Regression from 5.0.1.6)
-- Core: Would not detect when MinerDataReader job has failed
+- Core: failed to remove stats that no longer exist on disk (Regression from 5.0.1.6)
+- Core: Did not detect when MinerDataReader job had failed
 - XMRig-v6.20.0: Miner did not create miner objects
 
 Miner changes:

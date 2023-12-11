@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           NemosMiner.ps1
-Version:        5.0.2.1
-Version date:   2023/12/09
+Version:        5.0.2.2
+Version date:   2023/12/11
 #>
 
 using module .\Includes\Include.psm1
@@ -293,7 +293,7 @@ $Variables.Branding = [PSCustomObject]@{
     BrandName    = "NemosMiner"
     BrandWebSite = "https://nemosminer.com"
     ProductLabel = "NemosMiner"
-    Version      = [System.Version]"5.0.2.1"
+    Version      = [System.Version]"5.0.2.2"
 }
 
 $WscriptShell = New-Object -ComObject Wscript.Shell
@@ -895,7 +895,7 @@ Function MainLoop {
                 Write-Host "`nRunning $(If ($Variables.MinersBestPerDevice_Combo.Count -eq 1) { "miner:" } Else { "miners: $($Variables.MinersBestPerDevice_Combo.Count)" })"
                 [System.Collections.ArrayList]$Miner_Table = @(
                     @{ Label = "Hashrate(s)"; Expression = { (($_.Hashrates_Live.ForEach({ If ([Double]::IsNaN($_)) { "n/a" } Else { "$($_ | ConvertTo-Hash)/s" } })) -join ' & ') -replace '\s+', ' ' }; Align = "right" }
-                    If ($Config.CalculatePowerCost -and $Variables.ShowPowerConsumption) { @{ Label = "PowerConsumption"; Expression = { If ([Double]::IsNaN($_.PowerConsumption_Live)) { "n/a" } Else { "$($_.PowerConsumption_Live.ToString("N2")) W" } }; Align = "right" } }
+                    If ($Config.CalculatePowerCost -and $Variables.ShowPowerConsumption) { @{ Label = "Power Consumption"; Expression = { If ([Double]::IsNaN($_.PowerConsumption_Live)) { "n/a" } Else { "$($_.PowerConsumption_Live.ToString("N2")) W" } }; Align = "right" } }
                     @{ Label = "Active (this run)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f (([DateTime]::Now).ToUniversalTime() - $_.BeginTime) } }
                     @{ Label = "Active (total)"; Expression = { "{0:dd}d {0:hh}h {0:mm}m {0:ss}s" -f ($_.TotalMiningDuration) } }
                     @{ Label = "Cnt"; Expression = { Switch ($_.Activated) { 0 { "Never" } 1 { "Once" } Default { "$_" } } } }

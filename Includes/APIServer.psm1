@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\APIServer.psm1
-Version:        5.0.2.1
-Version date:   2023/12/09
+Version:        5.0.2.2
+Version date:   2023/12/11
 #>
 
 Function Start-APIServer { 
@@ -556,7 +556,8 @@ Function Start-APIServer {
                                 }
                                 If ($Parameters.Value) { $TempStats = @($Stats.psBase.Keys.Where({ $_ -like "*_$($Parameters.Type)" -and  $Stats[$_].Live -eq $Parameters.Value }).ForEach({ $Stats[$_] })) }
                                 Else { $TempStats = @( (Get-ChildItem -Path ".\Stats\*_$($Parameters.Type).txt").BaseName | ForEach-Object { $Stats[$_] }) }
-                                If ($TempStats) {
+                                If ($TempStats) { 
+                                    $Data = @()
                                     $TempStats | Sort-Object -Property Name | ForEach-Object { 
                                         Remove-Stat -Name $_.Name
                                         $Data += "$($_.Name -replace "_$($Parameters.Type)")"
@@ -579,7 +580,6 @@ Function Start-APIServer {
                                     If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) {
                                         $Miners = $Miners | Sort-Object -Property Name, Algorithms -Unique
                                         $Miners | ForEach-Object { 
-                                            $_.Data = @()
                                             If ($Parameters.Value -le 0 -and $Parameters.Type -eq "Hashrate") { $_.Available = $false; $_.Disabled = $true }
                                             $Data += "$($_.Name) ($($_.Algorithms -join ' & '))"
                                             ForEach ($Algorithm in $_.Algorithms) { 

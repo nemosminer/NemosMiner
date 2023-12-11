@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Brains\ZergPool.ps1
-Version:        5.0.2.1
-Version date:   2023/12/09
+Version:        5.0.2.2
+Version date:   2023/12/11
 #>
 
 using module ..\Includes\Include.psm1
@@ -92,6 +92,7 @@ While ($PoolConfig = $Config.PoolsConfig.$BrainName) {
         ForEach ($PoolName in $APIdata.PSObject.Properties.Name) { 
             $Algorithm_Norm = Get-Algorithm $APIdata.$PoolName.algo
             $Currency = [String]$APIdata.$PoolName.Currency
+            If ($AlgoData.$Algo.actual_last24h_shared) { $AlgoData.$Algo.actual_last24h_shared /= 1000 }
             $BasePrice = If ($APIdata.$PoolName.actual_last24h_shared) { $APIdata.$PoolName.actual_last24h_shared } Else { $APIdata.$PoolName.estimate_last24h }
 
             # Add currency and coin name do database

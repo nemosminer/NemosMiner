@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        5.0.2.1
-Version date:   2023/12/09
+Version:        5.0.2.2
+Version date:   2023/12/11
 #>
 
 using module .\Include.psm1
@@ -360,7 +360,7 @@ Do {
                     $PoolsDeconfigured = @($Variables.Pools.Where({ $_.Variant -notin $Variables.PoolName }))
                     $Pools = @($Variables.Pools.Where({ $_.Variant -in $Variables.PoolName }))
 
-                    If ($ComparePools = @(Compare-Object @($Variables.PoolsNew | Select-Object) @($Pools | Select-Object) -Property Algorithm, Currency, Variant -IncludeEqual -PassThru)) { 
+                    If ($ComparePools = @(Compare-Object @($Variables.PoolsNew | Select-Object) @($Pools | Select-Object) -Property Algorithm, MiningCurrency, Variant -IncludeEqual -PassThru)) { 
                         # Find added & updated pools
                         $Variables.PoolsAdded = @($ComparePools.Where({ $_.SideIndicator -eq "<=" }))
                         $Variables.PoolsUpdated = @($ComparePools.Where({ $_.SideIndicator -eq "==" }))
@@ -1282,8 +1282,11 @@ Do {
                 }
             }
 
-            $Message = (Get-Culture).TextInfo.ToTitleCase("$(If ($Miner.Benchmark) { "Benchmark" })$(If ($Miner.Benchmark -and $Miner.MeasurePowerConsumption) { " and " })$(If($Miner.MeasurePowerConsumption) { "Power consumption measurement" })")
-            If ($Message) { Write-Message -Level Verbose "$Message for miner '$($Miner.Info)' in progress [Attempt $($Miner.Activated) of $($Variables.WatchdogCount + 1); min. $($Miner.MinDataSample) samples]..." }
+            $Message = "$(If ($Miner.Benchmark) { "Benchmark" })$(If ($Miner.Benchmark -and $Miner.MeasurePowerConsumption) { " and " })$(If($Miner.MeasurePowerConsumption) { "Power consumption measurement" })"
+            If ($Message) { 
+                $Message = $Message.Substring(0, 1).toUpper() + $Message.Substring(1).toLower()
+                Write-Message -Level Verbose "$Message for miner '$($Miner.Info)' in progress [Attempt $($Miner.Activated) of $($Variables.WatchdogCount + 1); min. $($Miner.MinDataSample) samples]..."
+            }
         }
         Remove-Variable Miner, Message -ErrorAction Ignore
 

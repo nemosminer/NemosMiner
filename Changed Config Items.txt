@@ -43,7 +43,7 @@ New Configuration Items
 # Interval duration (in munutes) to trigger background task to collect pool balances & earnings data; set to 0 to disable
   "BalancesTrackerPollInterval": 5, 
 
-# If true, power usage will be read from miners and calculate power cost, required for true profit calculation
+# If true, power consumption will be read from miners and calculate power cost, required for true profit calculation
   "CalculatePowerCost": true,
 
 # Process priority for CPU miners
@@ -178,8 +178,8 @@ New Configuration Items
 # If true, NemosMiner will open firewall ports for all miners (requires admin rights!)
   "OpenFirewallPorts": true,
 
-# Powerusage of idle system in Watt. Part of profit calculation
-  "PowerUsageIdleSystemW": 60,
+# Power consumption of idle system in Watt. Part of profit calculation
+  "PowerConsumptionIdleSystemW": 60,
 
 # NemosMiner will poll rig monitoring server every n minutes. Allowed values 0 - 60 minutes. 0 will disable polling
   "RigMonitorPollInterval": 5,
@@ -193,11 +193,11 @@ New Configuration Items
     "12:00": 0.3
   },
 
-# Minimum profit threshold, if profit is less than the configured value (in $MainCurrency, e.g. CHF) mining will stop (except for benchmarking & power usage measuring)
+# Minimum profit threshold, if profit is less than the configured value (in $MainCurrency, e.g. CHF) mining will stop (except for benchmarking & power consumption measuring)
   "ProfitabilityThreshold": 0,
 
-# Static power usage per device in W, e.g. @{ "GPU#03" = 25, "GPU#04 = 55" } (in case HWiNFO cannot read power usage)
-  "PowerUsage": { 
+# Static power consumption per device in W, e.g. @{ "GPU#03" = 25, "GPU#04 = 55" } (in case HWiNFO cannot read power consumption)
+  "PowerConsumption": { 
   },
 
 # ProHashing API Key (required to retrieve balance information)
@@ -215,7 +215,7 @@ New Configuration Items
 # Show pool data accuracy column in miner overview
   "ShowAccuracy": true,
 
-# Always show all miners in miner overview (if $false, only the best miners will be shown except when in benchmark / powerusage measurement)
+# Always show all miners in miner overview (if $false, only the best miners will be shown except when in benchmark / power consumption measurement)
   "ShowAllMiner": false,
 
 # If true NemosMiner will show the changelog when an update is available
@@ -251,8 +251,8 @@ New Configuration Items
 # Show miner profit bias column in miner overview (if power price is available, see PowerPricekWh)
   "ShowProfitBias": true,
 
-# Show Power usage column in miner overview (if power price is available, see PowerPricekWh)
-  "ShowPowerUsage": true,
+# Show Power consumption column in miner overview (if power price is available, see PowerPricekWh)
+  "ShowPowerConsumption": true,
 
 # Show pool user name column in miner overview
   "ShowUser": $true,
@@ -350,7 +350,10 @@ Renamed configuration items (same functionality)
   "BalancesTrackerIgnorePool" renamed to "BalancesTrackerExcludePool"
   "Donate" renamed to "Donation"
   "MineWhenIdle" renamed to "IdleDetection"
-  "RunningMinerGainPct" renamed to "MinerSwitchingThreshold" 
+  "PowerUsage"IdleSystemW"" renamed to "PowerConsumption"
+  "PowerUsageIdleSystemW" renamed to "PowerConsumptionIdleSystemW"
+  "RunningMinerGainPct" renamed to "MinerSwitchingThreshold"
+  "ShowPowerUsage" renamed to "ShowPowerConsumption"
 
 NiceHash pool configuration:
 ============================

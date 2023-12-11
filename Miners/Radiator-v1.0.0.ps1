@@ -17,7 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.2.1
+Version:        5.0.2.2
 Version date:   2023/10/06
 #>
 

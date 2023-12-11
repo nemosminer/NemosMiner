@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\include.ps1
-Version:        5.0.2.1
-Version date:   2023/12/09
+Version:        5.0.2.2
+Version date:   2023/12/11
 #>
 
 $Global:DebugPreference = "SilentlyContinue"
@@ -1142,8 +1142,8 @@ Function Write-Message {
                 If ($SelectionLength = $Variables.TextBoxSystemLog.SelectionLength) { 
                     $SelectionStart = $Variables.TextBoxSystemLog.SelectionStart
                     $Variables.TextBoxSystemLog.Lines += $Message
-                    # $Variables.TextBoxSystemLog.Select($SelectionStart, $SelectionLength)
-                    # $Variables.TextBoxSystemLog.ScrollToCaret()
+                    $Variables.TextBoxSystemLog.Select($SelectionStart, $SelectionLength)
+                    $Variables.TextBoxSystemLog.ScrollToCaret()
                 }
                 Else { 
                     $Variables.TextBoxSystemLog.AppendText("`r`n$Message")
@@ -2671,7 +2671,7 @@ Filter ConvertTo-Hash {
     $Base1000 = [Math]::Max([Double]0, [Math]::Min($Base1000, $Units.Length - 1))
     $UnitValue = $_ / [Math]::Pow(1000, $Base1000)
     $Digits = If ($UnitValue -lt 10 ) { 3 } Else { 2 }
-    "{0:n$($Digits)} $($Units[$Base1000])H" -f $UnitValue
+    "{0:n$($Digits)} $($Units[$Base1000])H/s" -f $UnitValue
 }
 
 Function Get-DecimalsFromValue { 
