@@ -564,7 +564,7 @@ Do {
                         }
 
                         # Mark best pools, allow all DAG pools (optimal pool might not fit in GPU memory)
-                        ($Pools.Where({ $_.Available }) | Group-Object Algorithm).ForEach({ ($_.Group | Sort-Object { $_.Prioritize }, { $_.Price_Bias } -Bottom $(If ($_.Group.Algorithm -match $Variables.RegexAlgoHasDAG) { $_.Group.Count } Else { 1 })).ForEach({ $_.Best = $true }) })
+                        ($Pools.Where({ $_.Available }) | Group-Object Algorithm).ForEach({ ($_.Group | Sort-Object { $_.Prioritize }, { $_.Price_Bias } -Bottom $(If ($Config.MinerUseBestPoolsOnly -or $_.Group.Algorithm -notmatch $Variables.RegexAlgoHasDAG) { 1 } Else { $_.Group.Count })).ForEach({ $_.Best = $true }) })
                     }
 
                     # Update data in API
@@ -745,17 +745,23 @@ Do {
                 ($AvailableMinerPools.Where({ $_.Reasons -notcontains "Unprofitable secondary algorithm" }) | Group-Object Algorithm).ForEach({ $MinerPools[1][$_.Name] = @($_.Group) })
 
                 Write-Message -Level Info "Loading miners...$(If (-not $Variables.Miners) { "<br>This may take a while." })"
-                $MinersNew = (
-                    Get-ChildItem -Path ".\Miners\*.ps1" | ForEach-Object -Parallel { 
-                        $MinerPools = $using:MinerPools
-                        $Config = $using:Config
-                        $Variables = $using:Variables
-                        & $_.FullName
-                    } -ThrottleLimit 5
-                ).ForEach(
+                $MinersNew = (Get-ChildItem -Path ".\Miners\*.ps1").ForEach(
+                    { 
+                        $MinerFileName = $_.Name
+                        Try { 
+                            & $_.FullName
+                        }
+                        Catch { 
+                            Write-Message -Level Error "Error in miner file '$MinerFileName': $_."
+                            "$(Get-Date -Format "yyyy-MM-dd_HH:mm:ss")" >> "Logs\Error_Dev.txt"
+                            $_.Exception | Format-List -Force >> "Logs\Error_Dev.txt"
+                            $_.InvocationInfo | Format-List -Force >> "Logs\Error_Dev.txt"
+                        }
+                    }
+                 ).ForEach(
                     { 
                         Try { 
-                            $Miner = $_ 
+                            $Miner = $_
                             $Miner | Add-Member MinDataSample $Config.MinDataSample
                             $Miner | Add-Member ProcessPriority $(If ($_.Type -eq "CPU") { $Config.CPUMinerProcessPriority } Else { $Config.GPUMinerProcessPriority })
                             ForEach ($Worker in $Miner.Workers) { 
@@ -763,15 +769,15 @@ Do {
                             }
                             $Miner.PSObject.Properties.Remove("Fee")
                             $Miner | Add-Member Algorithms $Miner.Workers.Pool.AlgorithmVariant
-                            $Miner | Add-Member Info "$(($Miner.Name -split '-')[0..2] -join '-') {$(($Miner.Workers | ForEach-Object { "$($_.Pool.AlgorithmVariant)$(If ($_.Pool.MiningCurrency) { "[$($_.Pool.MiningCurrency)]" })", $_.Pool.Name -join '@' }) -join ' & ')}"
+                            $Miner | Add-Member Info "$(($Miner.Name -split '-')[0..2] -join '-') {$($Miner.Workers.ForEach({ "$($_.Pool.AlgorithmVariant)$(If ($_.Pool.MiningCurrency) { "[$($_.Pool.MiningCurrency)]" })", $_.Pool.Name -join '@' }) -join ' & ')}"
                             If ($Config.UseAllPoolAlgoCombos) { $Miner.Name = $Miner.Info -replace "\{", "(" -replace "\}", ")" -replace " " }
                             $Miner -as $_.API
                         }
                         Catch { 
                             Write-Message -Level Error "Failed to add Miner '$($Miner.Name)' as '$($Miner.API)' ($($Miner | ConvertTo-Json -Compress))"
-                            "$(Get-Date -Format "yyyy-MM-dd_HH:mm:ss")" >> "Logs\Error.txt"
-                            $_.Exception | Format-List -Force >> "Logs\Error.txt"
-                            $_.InvocationInfo | Format-List -Force >> "Logs\Error.txt"
+                            "$(Get-Date -Format "yyyy-MM-dd_HH:mm:ss")" >> "Logs\Error_Dev.txt"
+                            $_.Exception | Format-List -Force >> "Logs\Error_Dev.txt"
+                            $_.InvocationInfo | Format-List -Force >> "Logs\Error_Dev.txt"
                         }
                     }
                 )

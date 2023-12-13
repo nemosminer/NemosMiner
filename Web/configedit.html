@@ -315,7 +315,7 @@
           <div style="padding-top: 0.3rem" title="Mark a pool as unavailable if price is x times higher than&#10;the average price of all pools with same algorithm&#10;(min=1, max=10, default=1.5; 1 disables this check)&#10;&#10;Note: This applies only to algorithms that have at two least pools"> Unreal pool price factor
             <input type="number" step=0.1 min=1 max=10 value=1.5 size=3 id="UnrealPoolPriceFactor" name="UnrealPoolPriceFactor">
           </div>
-          <div style="padding-top: 0.3rem" title="Mark pool as unavailable if accuracy is below this value&#10;(min: 0%, max 100%, default=50%"> Minimum accuracy
+          <div style="padding-top: 0.3rem" title="Mark pool as unavailable if accuracy is below this value&#10;(min: 0%, max 100%, default=50%)"> Minimum accuracy
             <input type="number" step=1 min=0 max=100 value=10 size=3 id="MinAccuracy" name="MinAccuracy"> %
           </div>
           <div style="padding-top: 0.5rem" title="NemosMiner will ignore the pool fee for earning & profit calculation">
@@ -572,7 +572,7 @@
     // Add wallet address
     $('.addwalletbutton').click(function () {
       $('<div>', { id: 'newwallet' }).appendTo(walletscontainer);
-        $('<input type="text" title="Enter currency" id="newwalletcurrency" size=2 minlength=1 maxlength=10>').appendTo(newwallet);
+        $('<input type="text" title="Enter crypto currency" id="newwalletcurrency" size=2 minlength=1 maxlength=10>').appendTo(newwallet);
         $('<input type="text" title="Enter wallet address" id="newwalletaddress" size=64 minlength=2 maxlength=100 style=margin-left:6px>').appendTo(newwallet);
         $('<button/>', { text: 'Done', title: 'Add currency to wallet list', type: 'button', class: 'btn btn-light btn-sm addnewwalletbutton', id: 'btn-addnewwallet', style: 'margin-left:6px; height:28px; ' }).appendTo(newwallet);
         $('<button/>', { text: 'Cancel', title: '', type: 'button', class: 'btn btn-light btn-sm cancelnewwalletbutton', id: 'btn-cancelnewwallet', style: 'margin-left:6px; height:28px; ' }).appendTo(newwallet);
@@ -908,14 +908,14 @@
     });
 
     // ProfitabilityThreshold
-    $(document.getElementById('Currency')).change(function (event) {
-      document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('Currency').value.split(',')[0];
-      document.getElementById('PowerPricekWhCurrency').innerHTML = '(time: ' + document.getElementById('Currency').value.split(',')[0] + ' per kW/h)';
-      document.getElementById('PowerPricekWhTitle').title = 'Price of power in ' + document.getElementById('Currency').value.split(',')[0] + ' per kW⋅h, valid from HH:mm (24hr format)\nData must be in compressed JSON format\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom 00:00h to 11:59h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.26 per kW/h\nfrom 12:00h to 23:59h: ' + document.getElementById('Currency').value.split(',')[0] + ' 0.30 per kW/h'
-      if (document.getElementById('CalculatePowerCost').checked) document.getElementById('ProfitabilityThresholdTitle').title = 'Mining will stop when profit (earnings - power cost) is less than the configured value\n(e.g. ' + document.getElementById('Currency').value.split(',')[0] + ' 1.00). Use negative numbers to allow mining at loss.\n\nNote: This does not apply when benchmarking or measuring power cost'
-      else document.getElementById('ProfitabilityThresholdTitle').title = 'Mining will stop when earning is less than the configured value\n(e.g. ' + document.getElementById('Currency').value.split(',')[0] + ' 1.00). Use negative numbers to allow mining at loss.\n\nNote: This does not apply when benchmarking'
+    $(document.getElementById('MainCurrency')).change(function (event) {
+      document.getElementById('ProfitabilityThresholdCurrency').innerHTML = document.getElementById('MainCurrency').value.split(',')[0];
+      document.getElementById('PowerPricekWhCurrency').innerHTML = '(time: ' + document.getElementById('MainCurrency').value.split(',')[0] + ' per kW/h)';
+      document.getElementById('PowerPricekWhTitle').title = 'Price of power in ' + document.getElementById('MainCurrency').value.split(',')[0] + ' per kW⋅h, valid from HH:mm (24hr format)\nData must be in compressed JSON format\n\ne.g. {"00:00":0.26; "12:00":0.3} means\nfrom 00:00h to 11:59h: ' + document.getElementById('MainCurrency').value.split(',')[0] + ' 0.26 per kW/h\nfrom 12:00h to 23:59h: ' + document.getElementById('MainCurrency').value.split(',')[0] + ' 0.30 per kW/h'
+      if (document.getElementById('CalculatePowerCost').checked) document.getElementById('ProfitabilityThresholdTitle').title = 'Mining will stop when profit (earnings - power cost) is less than the configured value\n(e.g. ' + document.getElementById('MainCurrency').value.split(',')[0] + ' 1.00). Use negative numbers to allow mining at loss.\n\nNote: This does not apply when benchmarking or measuring power consumption'
+      else document.getElementById('ProfitabilityThresholdTitle').title = 'Mining will stop when earning is less than the configured value\n(e.g. ' + document.getElementById('MainCurrency').value.split(',')[0] + ' 1.00). Use negative numbers to allow mining at loss.\n\nNote: This does not apply when benchmarking'
     });
-    $(document.getElementById('Currency')).trigger('change');
+    $(document.getElementById('MainCurrency')).trigger('change');
 
     // Calculation Settings
     document.getElementById('UnrealPoolPriceFactor').value = parseFloat(config.UnrealPoolPriceFactor);
