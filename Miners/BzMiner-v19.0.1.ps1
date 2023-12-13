@@ -17,13 +17,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.2.2
-Version date:   2023/12/11
+Version:        5.0.2.3
+Version date:   2023/12/13
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices.Where({ $_.Type -in @("AMD", "INTEL") -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge [Version]"460.27.03") }))) { Return }
 
-$URI = "https://github.com/bzminer/bzminer/releases/download/v19.0.0/bzminer_v19.0.0_windows.zip"
+$URI = "https://github.com/bzminer/bzminer/releases/download/v19.0.1/bzminer_v19.0.1_windows.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = "$PWD\Bin\$Name\bzminer.exe"
 $DeviceEnumerator = "Bus"
@@ -46,13 +46,14 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithms = @("SHA3d");              Type = "AMD"; Fee = @(0.01);       MinMemGiB = 1;    Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();       ExcludeGPUModel = ""; ExcludePools = @(@(), @());             Arguments = @(" -a kylacoin") }
     [PSCustomObject]@{ Algorithms = @("Skein2");             Type = "AMD"; Fee = @(0.01);       MinMemGiB = 2;    Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @();       ExcludeGPUModel = ""; ExcludePools = @(@(), @());             Arguments = @(" -a woodcoin") }
 
-    [PSCustomObject]@{ Algorithms = @("Blake3");     Type = "INTEL"; Fee = @(0.005); MinMemGiB = 2;    Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @(@(), @());           Arguments = @(" -a alph") }
-    [PSCustomObject]@{ Algorithms = @("EtcHash");    Type = "INTEL"; Fee = @(0.005); MinMemGiB = 1.08; Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 25); ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @(@(), @());           Arguments = @(" -a etchash") }
-    [PSCustomObject]@{ Algorithms = @("Ethash");     Type = "INTEL"; Fee = @(0.005); MinMemGiB = 1.08; Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @(@(), @());           Arguments = @(" -a ethash") }
-    [PSCustomObject]@{ Algorithms = @("Ethash3B");   Type = "INTEL"; Fee = @(0.01);  MinMemGiB = 1.08; MinerSet = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @(@(), @());           Arguments = @(" -a rethereum") }
-    [PSCustomObject]@{ Algorithms = @("IronFish");   Type = "INTEL"; Fee = @(0.01);  MinMemGiB = 2;    Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(60, 60); ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @(@("Nicehash"), @()); Arguments = @(" -a ironfish") } # https://github.com/bzminer/bzminer/issues/260
-    [PSCustomObject]@{ Algorithms = @("KawPow");     Type = "INTEL"; Fee = @(0.01);  MinMemGiB = 1.08; MinerSet = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @(@(), @());           Arguments = @(" -a rvn") }
-    [PSCustomObject]@{ Algorithms = @("SHA512256d"); Type = "INTEL"; Fee = @(0.01);  MinMemGiB = 1;    Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @(@(), @());           Arguments = @(" -a radiant") }
+    [PSCustomObject]@{ Algorithms = @("Blake3");      Type = "INTEL"; Fee = @(0.005); MinMemGiB = 2;    Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @(@(), @());           Arguments = @(" -a alph") }
+    [PSCustomObject]@{ Algorithms = @("EtcHash");     Type = "INTEL"; Fee = @(0.005); MinMemGiB = 1.08; Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 25); ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @(@(), @());           Arguments = @(" -a etchash") }
+    [PSCustomObject]@{ Algorithms = @("Ethash");      Type = "INTEL"; Fee = @(0.005); MinMemGiB = 1.08; Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @(@(), @());           Arguments = @(" -a ethash") }
+    [PSCustomObject]@{ Algorithms = @("Ethash3B");    Type = "INTEL"; Fee = @(0.01);  MinMemGiB = 1.08; MinerSet = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 20); ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @(@(), @());           Arguments = @(" -a rethereum") }
+    [PSCustomObject]@{ Algorithms = @("IronFish");    Type = "INTEL"; Fee = @(0.01);  MinMemGiB = 2;    Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(60, 60); ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @(@("Nicehash"), @()); Arguments = @(" -a ironfish") } # https://github.com/bzminer/bzminer/issues/260
+    [PSCustomObject]@{ Algorithms = @("KarlsenHash"); Type = "INTEL"; Fee = @(0.01);  MinMemGiB = 1.08; MinerSet = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @(@(), @());           Arguments = @(" -a karlsen") }
+    [PSCustomObject]@{ Algorithms = @("KawPow");      Type = "INTEL"; Fee = @(0.01);  MinMemGiB = 1.08; MinerSet = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @(@(), @());           Arguments = @(" -a rvn") }
+    [PSCustomObject]@{ Algorithms = @("SHA512256d");  Type = "INTEL"; Fee = @(0.01);  MinMemGiB = 1;    Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludeGPUModel = ""; ExcludePools = @(@(), @());           Arguments = @(" -a radiant") }
 
     [PSCustomObject]@{ Algorithms = @("Autolykos2");               Type = "NVIDIA"; Fee = @(0.01);       MinMemGiB = 1.08; Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 15); ExcludeGPUArchitecture = @(); ExcludeGPUModel = "";            ExcludePools = @(@(), @());             Arguments = @(" -a ergo") }
     [PSCustomObject]@{ Algorithms = @("Autolykos2", "kHeavyHash"); Type = "NVIDIA"; Fee = @(0.01, 0.01); MinMemGiB = 1.24; Minerset = 1; Tuning = " --oc_mem_tweak 2"; WarmupTimes = @(45, 60); ExcludeGPUArchitecture = @(); ExcludeGPUModel = "^MX[1|2]\d+"; ExcludePools = @(@(), @("ProHashing")); Arguments = @(" -a ergo", " --a2 kaspa") }

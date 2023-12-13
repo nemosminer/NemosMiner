@@ -1,0 +1,287 @@
+{
+  "Autolykos2": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xRX5700XT8GB",
+    "Updated": "2023-12-12T17:02:12.7798352Z"
+  },
+  "BeamV3": {
+    "Benchmark": true,
+    "MinerName": "GMiner-v3.43-1xGTX1660SUPER6GB",
+    "Updated": "2023-12-11T09:23:37.6035784Z"
+  },
+  "Blake2s": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xRX5700XT8GB",
+    "Updated": "2023-12-12T17:03:34.2967156Z"
+  },
+  "CpuPower": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xCorei58600K3.60GHz",
+    "Updated": "2023-12-12T16:51:11.9830313Z"
+  },
+  "CryptonightUpx": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xRX5808GB",
+    "Updated": "2023-12-12T16:40:12.3838551Z"
+  },
+  "Cuckoo29": {
+    "Benchmark": true,
+    "MinerName": "GMiner-v3.43-1xGTX1660SUPER6GB",
+    "Updated": "2023-12-11T09:24:13.6077197Z"
+  },
+  "CurveHash": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xRX5808GB",
+    "Updated": "2023-12-12T16:42:15.8371031Z"
+  },
+  "Equihash1254": {
+    "Benchmark": true,
+    "MinerName": "GMiner-v3.43-1xGTX1660SUPER6GB",
+    "Updated": "2023-12-11T09:24:45.8218839Z"
+  },
+  "Equihash1445": {
+    "Benchmark": true,
+    "MinerName": "GMiner-v3.43-1xRX5700XT8GB",
+    "Updated": "2023-12-11T09:26:02.5304956Z"
+  },
+  "Equihash1927": {
+    "Benchmark": true,
+    "MinerName": "lolMiner-v1.80a-1xRX5808GB",
+    "Updated": "2023-12-10T16:39:07.5572926Z"
+  },
+  "EtcHash": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xRX5700XT8GB",
+    "Updated": "2023-12-12T17:05:10.9169343Z"
+  },
+  "Ethash": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xGTX1660SUPER6GB",
+    "Updated": "2023-12-12T17:10:20.5430257Z"
+  },
+  "EthashB3": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xRX5700XT8GB",
+    "Updated": "2023-12-12T17:09:04.5280796Z"
+  },
+  "EvrProgPow": {
+    "Benchmark": true,
+    "MinerName": "NanoMiner-v3.8.6-1xRX5808GB",
+    "Updated": "2023-12-04T08:43:39.9874932Z"
+  },
+  "FiroPow": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xRX5700XT8GB",
+    "Updated": "2023-12-12T17:10:20.561777Z"
+  },
+  "Ghostrider": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xCorei58600K3.60GHz",
+    "Updated": "2023-12-12T16:19:49.7785929Z"
+  },
+  "HeavyHash": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xGTX1660SUPER6GB",
+    "Updated": "2023-12-12T16:46:54.1227597Z"
+  },
+  "HMQ1725": {
+    "Benchmark": true,
+    "MinerName": "Wildrig-v0.39.9c-1xGTX1660SUPER6GB",
+    "Updated": "2023-12-11T22:57:38.6318599Z"
+  },
+  "Ironfish": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xGTX1660SUPER6GB-EtcHash&IronFish",
+    "Updated": "2023-12-12T16:31:48.7583522Z"
+  },
+  "KawPow": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xRX5808GB",
+    "Updated": "2023-12-12T17:24:03.4088733Z"
+  },
+  "kHeavyHash": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xRX5700XT8GB",
+    "Updated": "2023-12-12T17:12:21.2060921Z"
+  },
+  "MegaBtx": {
+    "Benchmark": true,
+    "MinerName": "Wildrig-v0.39.9c-1xGTX1660SUPER6GB",
+    "Updated": "2023-12-11T22:59:47.3402401Z"
+  },
+  "MemeHash": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xGTX1660SUPER6GB",
+    "Updated": "2023-12-12T16:51:12.0209647Z"
+  },
+  "Mike": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xCorei58600K3.60GHz",
+    "Updated": "2023-12-12T16:22:15.8829208Z"
+  },
+  "MinotaurX": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xCorei58600K3.60GHz",
+    "Updated": "2023-12-12T16:56:14.9885402Z"
+  },
+  "NeoscryptXaya": {
+    "Benchmark": true,
+    "MinerName": "CcminerNeoscryptXaya-v0.2-1xGTX1660SUPER6GB",
+    "Updated": "2023-12-08T11:57:29.5037723Z"
+  },
+  "NexaPow": {
+    "Benchmark": true,
+    "MinerName": "BzMiner-v19.0.1-1xGTX1660SUPER6GB",
+    "Updated": "2023-12-12T17:00:33.0368198Z"
+  },
+  "Panthera": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xCorei58600K3.60GHz",
+    "Updated": "2023-12-12T16:53:07.8374509Z"
+  },
+  "ProgPowZ": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xRX5700XT8GB",
+    "Updated": "2023-12-12T17:13:22.1258672Z"
+  },
+  "ScryptN2": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xCorei58600K3.60GHz",
+    "Updated": "2023-12-12T16:48:25.8296499Z"
+  },
+  "SHA256csm": {
+    "Benchmark": true,
+    "MinerName": "Wildrig-v0.39.9c-1xGTX1660SUPER6GB",
+    "Updated": "2023-12-11T23:03:52.734516Z"
+  },
+  "SHA256dt": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xGTX1660SUPER6GB",
+    "Updated": "2023-12-12T17:09:04.501846Z"
+  },
+  "Sha256t": {
+    "Benchmark": true,
+    "MinerName": "Wildrig-v0.39.9c-1xGTX1660SUPER6GB",
+    "Updated": "2023-12-11T23:04:54.8637737Z"
+  },
+  "SHA3d": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xRX5700XT8GB",
+    "Updated": "2023-12-12T17:14:01.7043189Z"
+  },
+  "SHA512256d": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xRX5700XT8GB",
+    "Updated": "2023-12-12T17:14:40.1210677Z"
+  },
+  "UbqHash": {
+    "Benchmark": true,
+    "MinerName": "lolMiner-v1.80-1xRX5808GB-UbqHash&kHeavyHash-15",
+    "Updated": "2023-12-09T19:49:45.4722338Z"
+  },
+  "VertHash": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xRX5808GB",
+    "Updated": "2023-12-12T16:46:54.1711991Z"
+  },
+  "VerusHash": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xRX5700XT8GB",
+    "Updated": "2023-12-12T17:15:18.6990116Z"
+  },
+  "X16rt": {
+    "Benchmark": true,
+    "MinerName": "Wildrig-v0.39.9c-1xGTX1660SUPER6GB",
+    "Updated": "2023-12-11T23:25:55.2954939Z"
+  },
+  "X16rv2": {
+    "Benchmark": true,
+    "MinerName": "Wildrig-v0.39.9c-1xGTX1660SUPER6GB",
+    "Updated": "2023-12-11T23:07:52.3437709Z"
+  },
+  "X20r": {
+    "Benchmark": true,
+    "MinerName": "Wildrig-v0.39.9c-1xGTX1660SUPER6GB",
+    "Updated": "2023-12-11T23:09:03.6982793Z"
+  },
+  "X21s": {
+    "Benchmark": true,
+    "MinerName": "Wildrig-v0.39.9c-1xRX5700XT8GB",
+    "Updated": "2023-12-11T22:46:32.7503248Z"
+  },
+  "X25x": {
+    "Benchmark": true,
+    "MinerName": "Wildrig-v0.39.9c-1xRX5700XT8GB",
+    "Updated": "2023-12-11T23:06:26.3941676Z"
+  },
+  "Xevan": {
+    "Benchmark": true,
+    "MinerName": "Wildrig-v0.39.9c-1xRX5700XT8GB",
+    "Updated": "2023-12-12T06:18:06.6679126Z"
+  },
+  "Yescrypt": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xCorei58600K3.60GHz",
+    "Updated": "2023-12-12T16:49:38.6549349Z"
+  },
+  "YescryptR16": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xRX5808GB",
+    "Updated": "2023-12-12T16:51:12.0927116Z"
+  },
+  "YescryptR32": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xRX5700XT8GB",
+    "Updated": "2023-12-12T17:16:20.2309274Z"
+  },
+  "YescryptR8": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xRX5808GB",
+    "Updated": "2023-12-12T16:49:38.7284929Z"
+  },
+  "Yespower": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xCorei58600K3.60GHz",
+    "Updated": "2023-12-12T16:27:12.0885792Z"
+  },
+  "Yespower2b": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xCorei58600K3.60GHz",
+    "Updated": "2023-12-12T16:36:01.660974Z"
+  },
+  "YespowerIc": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xCorei58600K3.60GHz",
+    "Updated": "2023-12-12T16:38:08.3619773Z"
+  },
+  "YespowerLtncg": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xCorei58600K3.60GHz",
+    "Updated": "2023-12-12T16:40:12.272048Z"
+  },
+  "YespowerMgpc": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xCorei58600K3.60GHz",
+    "Updated": "2023-12-12T16:42:15.7141927Z"
+  },
+  "YespowerR16": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xCorei58600K3.60GHz",
+    "Updated": "2023-12-12T16:43:49.0993334Z"
+  },
+  "YespowerSugar": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xCorei58600K3.60GHz",
+    "Updated": "2023-12-12T16:45:21.2306566Z"
+  },
+  "YespowerTide": {
+    "Benchmark": true,
+    "MinerName": "SRBMinerMulti-v2.4.3-1xCorei58600K3.60GHz",
+    "Updated": "2023-12-12T16:46:54.0904119Z"
+  },
+  "YespowerUrx": {
+    "Benchmark": true,
+    "MinerName": "JayddeeCpu-v23.15-1xCorei58600K3.60GHz",
+    "Updated": "2023-12-04T08:23:13.7476921Z"
+  }
+}

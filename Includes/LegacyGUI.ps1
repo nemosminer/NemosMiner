@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\LegacyGUI.psm1
-Version:        5.0.2.2
-Version date:   2023/12/11
+Version:        5.0.2.3
+Version date:   2023/12/13
 #>
 
 [Void] [System.Reflection.Assembly]::Load("System.Windows.Forms")
@@ -848,8 +848,9 @@ $ContextMenuStrip.Add_ItemClicked(
                     $ContextMenuStrip.Visible = $false
                     If ($Data) { 
                         $Data = $Data | Sort-Object -Unique
-                        Write-Message -Level Verbose "GUI: Re-benchmark triggered for $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
-                        $Data += "`r`r$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-benchmark."
+                        $Message = "Re-benchmark triggered for $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
+                        Write-Message -Level Verbose "GUI: $Message"
+                        $Data += "`r$Message"
                         Update-TabControl
                     }
                     Break
@@ -885,8 +886,9 @@ $ContextMenuStrip.Add_ItemClicked(
                     $ContextMenuStrip.Visible = $false
                     If ($Data) { 
                         $Data = $Data | Sort-Object -Unique
-                        Write-Message -Level Verbose "GUI: Re-measure power consumption triggered for $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
-                        $Data += "`r`r$(If ($Data.Count -eq 1) { "The miner" } Else { "$($Data.Count) miners" }) will re-measure power consumption."
+                        $Message = "Re-measure power consumption triggered for $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
+                        Write-Message -Level Verbose "GUI: $Message"
+                        $Data += "`r$Message"
                         Update-TabControl
                     }
                     Break
@@ -927,8 +929,9 @@ $ContextMenuStrip.Add_ItemClicked(
                     $ContextMenuStrip.Visible = $false
                     If ($Data) { 
                         $Data = $Data | Sort-Object -Unique
-                        Write-Message -Level Verbose "GUI: Marked $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" }) as failed."
-                        $Data += "`r`r$(If ($Data.Count -eq 1) { "The miner is" } Else { "$($Data.Count) miners are " }) marked as failed."
+                        $Message = "Marked $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" }) as failed."
+                        Write-Message -Level Verbose "GUI: $Message"
+                        $Data += "`r$Message"
                         Update-TabControl
                     }
                     Break
@@ -963,8 +966,9 @@ $ContextMenuStrip.Add_ItemClicked(
                     $ContextMenuStrip.Visible = $false
                     If ($Data) { 
                         $Data = $Data | Sort-Object -Unique
-                        Write-Message -Level Verbose "GUI: Disabled $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
-                        $Data += "`r`r$(If ($Data.Count -eq 1) { "The miner is" } Else { "$($Data.Count) miners are " }) disabled."
+                        $Message = "Disabled $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
+                        Write-Message -Level Verbose "GUI: $Message"
+                        $Data += "`r$Message"
                         Update-TabControl
                     }
                     Break
@@ -998,7 +1002,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "$($Data.Count) miner $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`r`r$Message"
+                        $Data += "`r$Message"
                     }
                     Else { 
                         $Data = "No matching watchdog timers found."
@@ -1032,7 +1036,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "Pool stats for $($Data.Count) $(If ($Data.Count -eq 1) { "pool" } Else { "pools" }) reset."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`r`r$Message"
+                        $Data += "`r$Message"
                         Update-TabControl
                     }
                     Break
@@ -1065,7 +1069,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "$($Data.Count) miner $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`r`r$Message"
+                        $Data += "`r$Message"
                     }
                     Else { 
                         $Data = "No matching watchdog timers found."

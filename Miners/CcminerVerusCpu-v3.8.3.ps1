@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.2.2
-Version date:   2023/12/11
+Version:        5.0.2.3
+Version date:   2023/12/13
 #>
 
 If (-not ($AvailableMiner_Devices = $Variables.EnabledDevices.Where({ $_.Type -eq "CPU" }))) { Return }
@@ -29,7 +29,7 @@ $Path = "$PWD\Bin\$Name\ccminer.exe"
 $DeviceEnumerator = "Type_Vendor_Index"
 
 $Algorithms = @(
-    [PSCustomObject]@{ Algorithm = "VerusHash"; Minerset = 1; WarmupTimes = @(90, 300); ExcludePools = @("NiceHash"); Arguments = " --algo verus" } # SRBMinerMulti-v2.4.2 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "VerusHash"; Minerset = 1; WarmupTimes = @(90, 300); ExcludePools = @("NiceHash"); Arguments = " --algo verus" } # SRBMinerMulti-v2.4.3 is fastest, but has 0.85% miner fee
 )
 
 $Algorithms = $Algorithms.Where({ $_.MinerSet -le $Config.MinerSet })

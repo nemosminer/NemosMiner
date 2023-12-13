@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.2.2
-Version date:   2023/12/11
+Version:        5.0.2.3
+Version date:   2023/12/13
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices.Where({ $_.Type -in @("AMD", "CPU") -or $_.OpenCL.ComputeCapability -gt "5.0" }))) { Return }
@@ -47,7 +47,7 @@ $DeviceEnumerator = "PlatformId_Index"
 
 $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "Cryptonight";          Type = "AMD"; MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/0" }
-    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "AMD"; MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/ccx" } # SRBMinerMulti-v2.4.2 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "CryptonightCcx";       Type = "AMD"; MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/ccx" } # SRBMinerMulti-v2.4.3 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "CryptonightDouble";    Type = "AMD"; MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/double" }
     [PSCustomObject]@{ Algorithm = "CryptonightFast";      Type = "AMD"; MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn/fast" }
     [PSCustomObject]@{ Algorithm = "CryptonightLite";      Type = "AMD"; MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludePools = @(); Arguments = " --algo cn-lite/0" }
@@ -103,7 +103,7 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "RandomxArq";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo rx/arq" } # FPGA
     [PSCustomObject]@{ Algorithm = "RandomxKeva";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo rx/keva" }
     [PSCustomObject]@{ Algorithm = "RandomxLoki";          Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo rx/loki" }
-    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo rx/sfx" } # SRBMinerMulti-v2.4.2 is fastest, but has 0.85% miner fee
+    [PSCustomObject]@{ Algorithm = "RandomxSfx";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo rx/sfx" } # SRBMinerMulti-v2.4.3 is fastest, but has 0.85% miner fee
     [PSCustomObject]@{ Algorithm = "RandomxWow";           Type = "CPU"; Minerset = 2; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo rx/wow" }
     [PSCustomObject]@{ Algorithm = "Uplexa";               Type = "CPU"; Minerset = 0; WarmupTimes = @(45, 0);   ExcludePools = @(); Arguments = " --algo rx/upx2" }
 

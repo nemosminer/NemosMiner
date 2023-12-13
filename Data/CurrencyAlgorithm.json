@@ -226,6 +226,7 @@
   "PPC": "SHA256",
   "PPCN": "Bmw512",
   "PRCO": "KawPow",
+  "PRIV": "Yespower",
   "PXC": "Neoscrypt",
   "PYRK": "Lyra2z330",
   "QKC": "Ethash",

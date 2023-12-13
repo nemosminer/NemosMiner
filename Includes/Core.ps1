@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        5.0.2.2
-Version date:   2023/12/11
+Version:        5.0.2.3
+Version date:   2023/12/13
 #>
 
 using module .\Include.psm1
@@ -1378,7 +1378,7 @@ Do {
                                 }
                             }
                         }
-                        Else { 
+                        ElseIf ($Variables.NewMiningStatus -eq "Running") { 
                             # Stop miner, it has not provided hash rate on time
                             If ($Miner.ValidDataSampleTimestamp -eq [DateTime]0 -and ([DateTime]::Now).ToUniversalTime() -gt $Miner.BeginTime.AddSeconds($Miner.WarmupTimes[0])) { 
                                 $Miner.StatusInfo = "Error: '$($Miner.Info)' has not provided first data sample in $($Miner.WarmupTimes[0]) seconds"
