@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           \Includes\APIServer.psm1
 Version:        5.0.2.3
-Version date:   2023/12/13
+Version date:   2023/12/20
 #>
 
 Function Start-APIServer { 
@@ -398,18 +398,17 @@ Function Start-APIServer {
                             }
                             "/functions/stat/disable" { 
                                 If ($Parameters.Miners) { 
-                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
+                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Info)) { 
                                         $Data = @()
                                         $Miners | ForEach-Object { 
                                             $Data += "$($_.Name) ($($_.Algorithms -join ' & '))"
-                                            ForEach ($Algorithm in $_.Algorithms) { 
-                                                Disable-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
+                                            ForEach ($Worker in $_.Workers) { 
+                                                Remove-Stat -Name "$($_.Name)_$($Worker.Pool.AlgorithmVariant)_Hashrate"
                                                 $Worker.Hashrate = [Double]::NaN
                                             }
                                             Remove-Variable Worker
                                             $_.Disabled = $true
-                                            $_.Reasons.Add("Disabled by user")
-                                            $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Sort-Object -Unique)
+                                            $_.Reasons = [System.Collections.Generic.List[String]]@("Disabled by user")
                                             $_.Available = $false
                                         }
                                         $Data = $Data | Sort-Object -Unique
@@ -425,12 +424,12 @@ Function Start-APIServer {
                             }
                             "/functions/stat/enable" { 
                                 If ($Parameters.Miners) { 
-                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
+                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Info)) { 
                                         $Data = @()
                                         $Miners | ForEach-Object { 
                                             $Data += "$($_.Name) ($($_.Algorithms -join ' & '))"
-                                            ForEach ($Algorithm in $_.Algorithms) {  
-                                                Enable-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
+                                            ForEach ($Worker in $_.Workers) { 
+                                                Remove-Stat -Name "$($_.Name)_$($Worker.Pool.AlgorithmVariant)_Hashrate"
                                                 $Worker.Hashrate = [Double]::NaN
                                             }
                                             Remove-Variable Worker
@@ -490,7 +489,7 @@ Function Start-APIServer {
                                     Break
                                 }
                                 ElseIf ($Parameters.Miners -and $Parameters.Type -eq "Hashrate") { 
-                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
+                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Info)) { 
                                         $Data = @()
                                         $Miners | ForEach-Object { 
                                             $_.Activated = 0 # To allow 3 attempts
@@ -525,7 +524,7 @@ Function Start-APIServer {
                                     Break
                                 }
                                 ElseIf ($Parameters.Miners -and $Parameters.Type -eq "PowerConsumption") { 
-                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) { 
+                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Info)) { 
                                         $Data = @()
                                         $Miners | ForEach-Object { 
                                             If ($_.Earning -eq 0) { $_.Available = $true }
@@ -573,7 +572,7 @@ Function Start-APIServer {
                             "/functions/stat/set" { 
                                 If ($Parameters.Miners -and $Parameters.Type -eq "Hashrate" -and $null -ne $Parameters.Value) { 
                                     $Data = @()
-                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Name, Algorithms)) {
+                                    If ($Miners = @(Compare-Object -PassThru -IncludeEqual -ExcludeDifferent @($Variables.Miners | Select-Object) @($Parameters.Miners | ConvertFrom-Json -ErrorAction Ignore | Select-Object) -Property Info)) {
                                         $Miners | ForEach-Object { 
                                             If ($Parameters.Value -le 0 -and $Parameters.Type -eq "Hashrate") { $_.Available = $false; $_.Disabled = $true }
                                             $Data += "$($_.Name) ($($_.Algorithms -join ' & '))"
@@ -831,7 +830,7 @@ Function Start-APIServer {
                                 Break
                             }
                             "/miners/mostprofitable" { 
-                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersMostProfitable | Select-Object -ExcludeProperty Arguments, Data, DataReaderJob, DataSampleTimestamp, Devices, EnvVars, PoolNames, Process, ProcessJob, SideIndicator, StatEnd, StatStart, ValidDataSampleTimestamp | Sort-Object @{ Expression = { $_.Best }; Descending = $true }, DeviceNames, @{Expression = "Earning_Bias"; Descending = $True })
+                                $Data = ConvertTo-Json -Depth 4 @($Variables.MinersMostProfitable | Select-Object -ExcludeProperty Arguments, Data, DataReaderJob, DataSampleTimestamp, Devices, EnvVars, PoolNames, Process, ProcessJob, SideIndicator, StatEnd, StatStart, ValidDataSampleTimestamp | Sort-Object @{ Expression = { $_.Best }; Descending = $true }, DeviceNames, @{Expression = "Earning_Bias"; Descending = $true })
                                 Break
                             }
                             "/miners/running" { 

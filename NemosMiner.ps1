@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           NemosMiner.ps1
 Version:        5.0.2.3
-Version date:   2023/12/13
+Version date:   2023/12/20
 #>
 
 using module .\Includes\Include.psm1
@@ -258,6 +258,8 @@ param(
     [Double]$UnrealPoolPriceFactor = 1.5, # Ignore pool if price is more than $Config.UnrealPoolPriceFactor higher than average price of all other pools with same algorithm & currency
     [Parameter(Mandatory = $false)]
     [Double]$UnrealMinerEarningFactor = 5, # Ignore miner if resulting profit is more than $Config.UnrealPoolPriceFactor higher than average price of all other miners with same algo
+    [Parameter(Mandatory = $false)]
+    [Switch]$UseAllPoolAlgoCombos,
     [Parameter(Mandatory = $false)]
     [Switch]$UseAnycast = $true, # If true pools (currently ZergPool only) will use anycast for best network performance and ping times
     [Parameter(Mandatory = $false)]

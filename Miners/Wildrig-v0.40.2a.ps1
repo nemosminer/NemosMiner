@@ -18,12 +18,12 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 Version:        5.0.2.3
-Version date:   2023/12/13
+Version date:   2023/12/20
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices.Where({ ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.Type -eq "INTEL" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge [Version]"452.39.00") }))) { Return }
 
-$URI = "https://github.com/andru-kun/wildrig-multi/releases/download/0.39.9c/wildrig-multi-windows-0.39.9c.zip"
+$URI = "https://github.com/andru-kun/wildrig-multi/releases/download/0.40.2a/wildrig-multi-windows-0.40.2a.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = "$PWD\Bin\$Name\wildrig.exe"
 $DeviceEnumerator = "Type_Slot"

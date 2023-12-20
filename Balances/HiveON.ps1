@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           \Balances\Hiveon.ps1
 Version:        5.0.2.3
-Version date:   2023/12/13
+Version date:   2023/12/20
 #>
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName

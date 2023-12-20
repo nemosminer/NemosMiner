@@ -8,15 +8,16 @@
             <button id="btn-re-measure" class="btn btn-primary" disabled title="The marked miners will re-measure power consumption&#10;Use this if the recorded power consumption is unreal">Re-measure Power Consumption</button>
             <button id="btn-failed" class="btn btn-warning" disabled title="The marked miners will be marked as failed&#10;Use this if the miners fail benchmarking or produce unpredictable results">Mark as failed</button>
             <button id="btn-disable" class="btn btn-danger" disabled title="The marked miners will be marked as disabled&#10;To re-enable trigger re-benchmarking">Disable</button>
+            <button id="btn-remove-watchdog" class="btn btn-info" disabled title="Remove the watchdog timers for the marked miners">Remove Watchdog</button>
           </div>
           <table id="miners" class="table"
             data-ajax-options="ajaxOptions"
             data-auto-refresh="true"
             data-auto-refresh-status="false"
-            data-cache="false"
+            data-cache="true"
             data-click-to-select="true"
             data-cookie="true"
-            data-cookie-id-table="minersbest"
+            data-cookie-id-table="minersmostprofitable"
             data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
             data-detail-formatter="detailFormatter"
             data-detail-view="true"
@@ -56,7 +57,6 @@
                 <th data-field="Profit_Bias" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Profit Bias</th>
                 <th data-field="Profit" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Profit</th>
                 <th data-field="PowerConsumption" data-align="right" data-sortable="true" data-formatter="formatWatt" class="text-nowrap" data-title-tooltip="per 24hrs (estimated)">Power</th>
-                <th data-field="PowerConsumption_Live" data-align="right" data-sortable="true" data-formatter="formatWatt">Power<br>Live</th>
                 <th data-field="tTotalMiningDuration" data-sortable="true" data-visible="false">Total Mining Duration</th>
                 <th data-field="tEarningAccuracy" data-align="right" data-sortable="true">Accuracy</th>
                 <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Primary Algorithm</th>
@@ -123,27 +123,23 @@
                 }
               },
 
-              onExpandRow: function(index, row, $detail) {
-                $.ajax({
-                  async: false,
-                  timeout: 10,
-                  url: '/functions/getminerdetail?' + row.Info,
-                  success: function(result) {
-                    var html = [];
-                    $.each(result, function (key, value) {
-                      if (typeof value === 'string') html.push(`<p class="mb-0"><b>${key}:</b> ${JSON.stringify(value).replaceAll('\\\\', '\\')}</p>`);
-                      else html.push(`<p class="mb-0"><b>${key}:</b> ${JSON.stringify(value)}</p>`);
-                    });
-                    $detail.html(html);
-                  },
-                });
-              },
+              // onExpandRow: function(index, row, $detail) {
+              //   $.ajax({
+              //     async: false,
+              //     timeout: 10,
+              //     url: '/functions/getminerdetail?' + row.Info,
+              //     success: function(result) {
+              //       var html = [];
+              //       $.each(result, function (key, value) {
+              //         if (typeof value === 'string') html.push(`<p class="mb-0"><b>${key}:</b> ${JSON.stringify(value).replaceAll('\\\\', '\\')}</p>`);
+              //         else html.push(`<p class="mb-0"><b>${key}:</b> ${JSON.stringify(value)}</p>`);
+              //       });
+              //       $detail.html(html);
+              //     },
+              //   });
+              // },
 
               onPostBody: function () {
-                $("td.bs-checkbox").each(function () {
-                  this.disabled = 'true';
-                  this.style.opacity = 0;
-                });
                 if (config.UseColorForMinerStatus == true) {
                   $(".statuscolor").each(function () {
                     if (this.innerText) $(this).parent('tr').addClass('color-' + this.innerText.toLowerCase());
@@ -177,7 +173,7 @@
                   $('body').css('cursor', 'progress');
                   $url = '/functions/stat/remove';
                   $payload = {
-                    'Miners': JSON.stringify($data.map($element => ({ Name: $element.Name, Algorithms: $element.Algorithms }))),
+                    'Miners': JSON.stringify($data.map($element => ({Info: $element.Info}))),
                     'Type' : 'Hashrate'
                   };
                   $('.modal-body').load($url, $payload, function() {
@@ -195,7 +191,7 @@
                   $('body').css('cursor', 'progress');
                   $url = '/functions/stat/remove';
                   $payload = {
-                    'Miners': JSON.stringify($data.map($element => ({ Name: $element.Name, Algorithms: $element.Algorithms }))),
+                    'Miners': JSON.stringify($data.map($element => ({Info: $element.Info}))),
                     'Type' : 'PowerConsumption'
                   };
                   $('.modal-body').load($url, $payload, function() {
@@ -213,7 +209,7 @@
                   $('body').css('cursor', 'progress');
                   $url = '/functions/stat/set';
                   $payload = {
-                    'Miners': JSON.stringify($data.map($element => ({ Name: $element.Name, Algorithms: $element.Algorithms }))),
+                    'Miners': JSON.stringify($data.map($element => ({Info: $element.Info}))),
                     'Type': 'Hashrate',
                     'Value': 0 
                   };
@@ -232,10 +228,27 @@
                   $('body').css('cursor', 'progress');
                   $url = '/functions/stat/disable';
                   $payload = {
-                    'Miners': JSON.stringify($data.map($element => ({ Name: $element.Name, Algorithms: $element.Algorithms })))
+                    'Miners': JSON.stringify($data.map($element => ({Info: $element.Info})))
                   };
                   $('.modal-body').load($url, $payload, function() {
                     $('.modal-title').text($('#btn-disable').text());
+                    $('body').css('cursor', 'default');
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
+                }
+              });
+
+              $('#btn-remove-watchdog').click(function () {
+                var $data = $table.bootstrapTable('getSelections');
+                if ($data.length >= 1) {
+                  $('body').css('cursor', 'progress');
+                  $url = '/functions/watchdogtimers/remove';
+                  $payload = {
+                    'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})))
+                  };
+                  $('.modal-body').load($url, $payload, function() {
+                    $('.modal-title').text($('#btn-remove-watchdog').text());
                     $('body').css('cursor', 'default');
                     $('#myModal').modal({show:true});
                   });

@@ -212,7 +212,7 @@
         <td>
           <!-- Miner Selection -->
           <legend class=h6><b>Miner Selection</b></legend>
-          <div style="padding-top: 0.3rem" title="NemosMiner will run separate miner instances per GPU device model.&#10;Recommended for rigs with mixed GPU device models of the same vendor installed, e.g. GTX 1060 & GTX 1070&#10;This will increase profitability&#10;&#10;Note: AMD, INTEL & NVIDIA GPU miners will always run as separate instances.">
+          <div style="padding-top: 0.3rem" title="NemosMiner will run separate miner instances per GPU device model.&#10;Recommended for rigs with mixed GPU device models of the same vendor installed, e.g. GTX 1060 & GTX 1070&#10;This will increase profitability&#10;&#10;Note: Miners of different device types (AMD, CPU, INTEL & NVIDIA) will always run as separate instances.">
             <input type="checkbox" class="toggle-switch" id="MinerInstancePerDeviceModel" name="MinerInstancePerDeviceModel"> Run separate miner instance per GPU device model
           </div>
           <div style="padding-top: 0.6rem" title="Some miners / algorithms are incompatible with some pools.&#10;&#10;If a miner is not compatible with the only pool in the best pool list then the miner will not be available.&#10;This can impact profitability, but is less CPU heavy.&#10;&#10;This was the default algorithm for versions older than 5.x">
@@ -227,7 +227,7 @@
               <option title="This will prolongue benchmarking, but will not improve profitability&#10;(Minerset 3) - not recommended" value=3>all miners (incl. those in UnprofitableAlgorithms.json)</option>
             </select>
           </div>
-          <div style="padding-top: 0.3rem" title="List of miners to be excluded&#10;Values must be sparated by commas&#10;&#10;To exclude all version of a miner specify the short miner name, e.g. 'PhoenixMiner' (without '-v...')&#10;To exclude a specific miner version use the full miner name (incl. version information)&#10;"> Exclude miners
+          <div style="padding-top: 0.3rem" title="List of miners to be excluded&#10;Values must be sparated by commas&#10;&#10;To exclude all versions of a miner specify the short miner name, e.g. 'PhoenixMiner' (without '-v...')&#10;To exclude a specific miner version use the full miner name (incl. version information)&#10;"> Exclude miners
             <input type="text" id="ExcludeMinerName" name="ExcludeMinerName" size=47>
           </div>
           <div style="padding-top: 0.2rem" title="'+[Algorithm]' to enable algorithm&#10;'-[Algorithm]' to disable algorithm&#10;Values must be sparated by commas&#10;e.g. '-Ethash,-EtcHash'&#10;&#10;Leave empty to use ALL available algorithms (not recommended as it may cause more switching)&#10;If '+' is used, then only the explicitly enabled algorithms are used&#10;If '-' is used, then all algorithms are used except the disabled ones&#10;You can either use '+' or '-'; you cannot combine both&#10;&#10;Note: This is also a per pool configuration item (edit .'\Config\PoolsConfig.json')"> Include / exclude algorithms

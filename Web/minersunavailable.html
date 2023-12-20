@@ -14,7 +14,7 @@
             data-ajax-options="ajaxOptions"
             data-auto-refresh="true"
             data-auto-refresh-status="false"
-            data-cache="false"
+            data-cache="true"
             data-click-to-select="true"
             data-cookie="true"
             data-cookie-id-table="minersunavailable"
@@ -49,7 +49,7 @@
                 <th data-switchable="false" data-field="SubStatus" data-class="hidden statuscolor"></th>
                 <th data-field="state" data-checkbox="true" data-checkbox-enabled="true"></th>
                 <th data-field="tName" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
-                <th data-field="BaseName" data-sortable="true" data-filter-control="select" data-visible="false">Miner</th>
+                <th data-field="tBaseName" data-sortable="true" data-filter-control="select" data-visible="false">Miner</th>
                 <th data-field="Version" data-sortable="true" data-filter-control="select" data-visible="false">Version</th>
                 <th data-field="CommandLine" data-sortable="true" data-filter-control="input" data-visible="false">CommandLine</th>
                 <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
@@ -154,6 +154,7 @@
                   });
                 };
               },
+
               onReorderColumn: function() {
                 $(".addlocalcurrency").each(function () {
                   this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.MainCurrency + ')';
@@ -181,7 +182,7 @@
                   $('body').css('cursor', 'progress');
                   $url = '/functions/stat/remove';
                   $payload = {
-                    'Miners': JSON.stringify($data.map($element => ({ Name: $element.Name, Algorithms: $element.Algorithms }))),
+                    'Miners': JSON.stringify($data.map($element => ({Info: $element.Info}))),
                     'Type' : 'Hashrate'
                   };
                   $('.modal-body').load($url, $payload, function() {
@@ -199,7 +200,7 @@
                   $('body').css('cursor', 'progress');
                   $url = '/functions/stat/remove';
                   $payload = {
-                    'Miners': JSON.stringify($data.map($element => ({ Name: $element.Name, Algorithms: $element.Algorithms }))),
+                    'Miners': JSON.stringify($data.map($element => ({Info: $element.Info}))),
                     'Type' : 'PowerConsumption'
                   };
                   $('.modal-body').load($url, $payload, function() {
@@ -217,7 +218,7 @@
                   $('body').css('cursor', 'progress');
                   $url = '/functions/stat/set';
                   $payload = {
-                    'Miners': JSON.stringify($data.map($element => ({ Name: $element.Name, Algorithms: $element.Algorithms }))),
+                    'Miners': JSON.stringify($data.map($element => ({Info: $element.Info}))),
                     'Type': 'Hashrate',
                     'Value': 0 
                   };
@@ -236,7 +237,7 @@
                   $('body').css('cursor', 'progress');
                   $url = '/functions/stat/disable';
                   $payload = {
-                    'Miners': JSON.stringify($data.map($element => ({ Name: $element.Name, Algorithms: $element.Algorithms })))
+                    'Miners': JSON.stringify($data.map($element => ({Info: $element.Info})))
                   };
                   $('.modal-body').load($url, $payload, function() {
                     $('.modal-title').text($('#btn-disable').text());

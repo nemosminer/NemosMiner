@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           \Pools\NiceHash.ps1
 Version:        5.0.2.3
-Version date:   2023/12/13
+Version date:   2023/12/20
 #>
 
 param(
@@ -91,6 +91,7 @@ If ($Wallet) {
                     Pass                     = "x"
                     Port                     = 9200
                     PortSSL                  = 443
+                    PoolUri                  = "https://www.nicehash.com/algorithm/$($_.Algorithm.ToLower())"
                     Price                    = $Stat.Live
                     Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratumnh" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                     Region                   = [String]$PoolConfig.Region

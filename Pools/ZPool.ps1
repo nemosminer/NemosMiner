@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           \Pools\ZPool.ps1
 Version:        5.0.2.3
-Version date:   2023/12/13
+Version date:   2023/12/20
 #>
 
 param(
@@ -36,6 +36,7 @@ $HostSuffix = "mine.zpool.ca"
 
 $PoolConfig = $Variables.PoolsConfig.$Name
 $PriceField = $PoolConfig.Variant.$PoolVariant.PriceField
+$DivisorMultiplier = $PoolConfig.Variant.$PoolVariant.DivisorMultiplier
 $BrainDataFile = "$PWD\Data\BrainData_$Name.json"
 
 If ($PriceField) { 
@@ -55,7 +56,7 @@ If ($PriceField) {
     ForEach ($Algorithm in $Request.PSObject.Properties.Name.Where({ $Request.$_.Updated -ge $Variables.Brains.$Name."Updated" })) { 
         $Algorithm_Norm = Get-Algorithm $Algorithm
         $Currency = $Request.$Algorithm.currency
-        $Divisor = 1000000 * [Double]$Request.$Algorithm.mbtc_mh_factor
+        $Divisor = $DivisorMultiplier * [Double]$Request.$Algorithm.mbtc_mh_factor
         $PayoutCurrency = If ($Currency -and $PoolConfig.Wallets.$Currency -and -not $PoolConfig.ProfitSwitching) { $Currency } Else { $PoolConfig.PayoutCurrency }
 
         $Key = "$($PoolVariant)_$($Algorithm_Norm)"
@@ -84,6 +85,7 @@ If ($PriceField) {
                     Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency$(If ($Currency -eq $PayoutCurrency) { ",zap=$Currency" })"
                     Port                     = [UInt16]$Request.$Algorithm.port
                     PortSSL                  = [UInt16]("5$([String]$Request.$Algorithm.port)")
+                    PoolUri                  = "https://zpool.ca/algo/$($Algorithm)"
                     Price                    = $Stat.Live
                     Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethproxy" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                     Reasons                  = $Reasons

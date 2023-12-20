@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           \Pools\MiningDutch.ps1
 Version:        5.0.2.3
-Version date:   2023/12/13
+Version date:   2023/12/20
 #>
 
 param(
@@ -54,8 +54,6 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
     Catch { Return }
 
     If (-not $Request.PSObject.Properties.Name) { Return }
-
-    $PoolConfig.Region_Norm = ($PoolConfig.Region.ForEach({ Get-Region $_ }))
 
     ForEach ($Algorithm in $Request.PSObject.Properties.Name.Where({ $Request.$_.Updated -ge $Variables.Brains.$Name."Updated" })) { 
         $Algorithm_Norm = Get-Algorithm $Algorithm
@@ -94,6 +92,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
                     Pass                     = "$($PoolConfig.WorkerName),c=$PayoutCurrency"
                     Port                     = [UInt16]$Request.$Algorithm.port
                     PortSSL                  = 0
+                    PoolUri                  = "https://www.mining-dutch.nl/?page=pools"
                     Price                    = $Stat.Live
                     Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratum1" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                     Reasons                  = $Reasons

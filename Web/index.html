@@ -115,7 +115,7 @@
                 $('body').css('cursor', 'progress');
                 $url = '/functions/stat/remove';
                 $payload = {
-                  'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms}))),
+                  'Miners': JSON.stringify($data.map($element => ({Info: $element.Info}))),
                   'Type' : 'Hashrate'
                 };
                 $('.modal-body').load($url, $payload, function() {

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           \Includes\include.ps1
 Version:        5.0.2.3
-Version date:   2023/12/13
+Version date:   2023/12/20
 #>
 
 $Global:DebugPreference = "SilentlyContinue"
@@ -138,6 +138,7 @@ Class Pool {
     $PoolPorts = @() # Cannot define nullable array
     [UInt16]$Port
     [UInt16]$PortSSL
+    [String]$PoolUri # Link to pool algorithm web page
     [Double]$Price
     [Double]$Price_Bias
     [Boolean]$Prioritize = $false # derived from BalancesKeepAlive
@@ -635,10 +636,12 @@ Class Miner {
         $this.Profit_Bias = [Double]::NaN
         If ($CalculatePowerCost) { 
             If ($Stat = Get-Stat -Name "$($this.Name)$(If ($this.Workers.Count -eq 1) { "_$($this.Workers[0].Pool.AlgorithmVariant)" })_PowerConsumption") { 
-                $this.PowerConsumption = $Stat.Week
-                $this.PowerCost = $this.PowerConsumption * $PowerCostBTCperW
-                $this.Profit = $this.Earning - $this.PowerCost
-                $this.Profit_Bias = $this.Earning_Bias - $this.PowerCost
+                If ($Stat.Week) { 
+                    $this.PowerConsumption = $Stat.Week
+                    $this.PowerCost = $this.PowerConsumption * $PowerCostBTCperW
+                    $this.Profit = $this.Earning - $this.PowerCost
+                    $this.Profit_Bias = $this.Earning_Bias - $this.PowerCost
+                }
             }
             Else { 
                 $this.MeasurePowerConsumption = $true

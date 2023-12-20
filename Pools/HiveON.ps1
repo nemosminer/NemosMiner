@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           \Pools\Hiveon.ps1
 Version:        5.0.2.3
-Version date:   2023/12/13
+Version date:   2023/12/20
 #>
 
 param(
@@ -82,6 +82,7 @@ If ($PoolConfig.Wallets) {
                 Pass                     = "x"
                 Port                     = [UInt16]$Pool.servers[0].ports[0]
                 PortSSL                  = [UInt16]$Pool.servers[0].ssl_ports[0]
+                PoolUri                  = "https://hiveon.net/$($Currency.ToLower())"
                 Price                    = $Stat.Live
                 Protocol                 = "ethproxy"
                 Reasons                  = $Reasons

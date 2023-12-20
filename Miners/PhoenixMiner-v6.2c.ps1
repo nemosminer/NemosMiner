@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 Version:        5.0.2.3
-Version date:   2023/12/13
+Version date:   2023/12/20
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices.Where({ $_.Type -eq "AMD" -or $_.OpenCL.ComputeCapability -ge "5.0" }))) { Return }
@@ -58,17 +58,19 @@ If ($Algorithms) {
     }
 
     # Build command sets for intensities
-    $Algorithms = ($Algorithms.Where({ $_.Algorithms[1] })).ForEach(
+    $Algorithms = $Algorithms.ForEach(
         { 
-            $Intensity = $_.Intensity
-            $WarmupTimes = $_.WarmupTimes.PsObject.Copy()
-            If ($_.Type -eq "NVIDIA" -and $Intensity) { $Intensity *= 5 } # Nvidia allows much higher intensity
             $_.PsObject.Copy()
-            ForEach ($Intensity in ($IntensityValues.($_.Algorithms[1]) | Select-Object)) { 
-                $_ | Add-Member Intensity $Intensity -Force
-                # Allow extra time for auto tuning
-                $_.WarmupTimes[1] = $WarmupTimes[1] + 45
-                $_.PsObject.Copy()
+            If ($_.Algorithms[1]) { 
+                $Intensity = $_.Intensity
+                $WarmupTimes = $_.WarmupTimes.PsObject.Copy()
+                If ($_.Type -eq "NVIDIA" -and $Intensity) { $Intensity *= 5 } # Nvidia allows much higher intensity
+                ForEach ($Intensity in ($IntensityValues.($_.Algorithms[1]) | Select-Object)) { 
+                    $_ | Add-Member Intensity $Intensity -Force
+                    # Allow extra time for auto tuning
+                    $_.WarmupTimes[1] = $WarmupTimes[1] + 45
+                    $_.PsObject.Copy()
+                }
             }
         }
     )
@@ -146,7 +148,7 @@ If ($Algorithms) {
                                         Type        = $_.Type
                                         URI         = $Uri
                                         WarmupTimes = $WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
-                                        Workers     = @(($Pool0, $Pool1).Where({ $_ } ) | ForEach-Object { @{ Pool = $_ } })
+                                        Workers     = @(($Pool0, $Pool1).Where({ $_ }) | ForEach-Object { @{ Pool = $_ } })
                                     }
                                 }
                             }

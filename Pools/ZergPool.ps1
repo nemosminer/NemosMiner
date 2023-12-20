@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           \Pools\ZergPool.ps1
 Version:        5.0.2.3
-Version date:   2023/12/13
+Version date:   2023/12/20
 #>
 
 param(
@@ -96,9 +96,10 @@ If ($DivisorMultiplier -and $Regions) {
                     Key                      = [String]$Key
                     MiningCurrency           = If ($Currency) { $Currency } Else { "" }
                     Name                     = [String]$Name
-                    Pass                     = "c=$PayoutCurrency$(If ($Currency) { ",mc=$Currency" }),ID=$($PoolConfig.WorkerName -replace '^ID=')$PayoutThresholdParameter" # Pool profit swiching breaks Option 2 (static coin), instead it will still send DAG data for any coin
+                    Pass                     = "c=$PayoutCurrency$(If ($Currency) { ",mc=$Currency" }),ID=$($PoolConfig.WorkerName -replace '^ID=')$PayoutThresholdParameter" # Pool profit switching breaks Option 2 (static coin), instead it will still send DAG data for any coin
                     Port                     = [UInt16]$Request.$Pool.port
                     PortSSL                  = [UInt16]$Request.$Pool.tls_port
+                    PoolUri                  = "https://zergpool.com/site/mining?algo=$($Algorithm)"
                     Price                    = $Stat.Live
                     Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratum2" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
                     Reasons                  = $Reasons

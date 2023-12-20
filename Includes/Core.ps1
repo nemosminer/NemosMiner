@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           Core.ps1
 Version:        5.0.2.3
-Version date:   2023/12/13
+Version date:   2023/12/20
 #>
 
 using module .\Include.psm1
@@ -393,6 +393,7 @@ Do {
                                             $_.Pass                     = $Pool[0].Pass
                                             $_.Port                     = $Pool[0].Port
                                             $_.PortSSL                  = $Pool[0].PortSSL
+                                            $_.PoolUri                  = $Pool[0].PoolUri
                                             $_.Price                    = $Pool[0].Price
                                             $_.Price_Bias               = $Pool[0].Price_Bias
                                             $_.Protocol                 = $Pool[0].Protocol
@@ -741,8 +742,8 @@ Do {
             If ($AvailableMinerPools = If ($Config.MinerUseBestPoolsOnly) { $Variables.Pools.Where({ $_.Available -and ($_.Best -or $_.Prioritize) }) } Else { $Variables.Pools.Where({ $_.Available }) }) { 
                 # $AvailableMinerPools = ($AvailableMinerPools | Group-Object Variant, AlgorithmVariant, MiningCurrency).ForEach({ $_.Group | Sort-Object -Property Updated -Bottom 1 })
                 $MinerPools = @([Ordered]@{ "" = "" }, [Ordered]@{ "" = "" } )
-                ($AvailableMinerPools.Where({ $_.Reasons -notcontains "Unprofitable primary algorithm" }) | Group-Object Algorithm).ForEach({ $MinerPools[0][$_.Name] = @($_.Group) })
-                ($AvailableMinerPools.Where({ $_.Reasons -notcontains "Unprofitable secondary algorithm" }) | Group-Object Algorithm).ForEach({ $MinerPools[1][$_.Name] = @($_.Group) })
+                ($AvailableMinerPools.Where({ $_.Reasons -notcontains "Unprofitable primary algorithm" }) | Group-Object Algorithm).ForEach({ $MinerPools[0][$_.Name] = @($_.Group | Sort-Object -Property Price_Bias -Descending) })
+                ($AvailableMinerPools.Where({ $_.Reasons -notcontains "Unprofitable secondary algorithm" }) | Group-Object Algorithm).ForEach({ $MinerPools[1][$_.Name] = @($_.Group | Sort-Object -Property Price_Bias -Descending) })
 
                 Write-Message -Level Info "Loading miners...$(If (-not $Variables.Miners) { "<br>This may take a while." })"
                 $MinersNew = (Get-ChildItem -Path ".\Miners\*.ps1").ForEach(
@@ -769,7 +770,7 @@ Do {
                             }
                             $Miner.PSObject.Properties.Remove("Fee")
                             $Miner | Add-Member Algorithms $Miner.Workers.Pool.AlgorithmVariant
-                            $Miner | Add-Member Info "$(($Miner.Name -split '-')[0..2] -join '-') {$($Miner.Workers.ForEach({ "$($_.Pool.AlgorithmVariant)$(If ($_.Pool.MiningCurrency) { "[$($_.Pool.MiningCurrency)]" })", $_.Pool.Name -join '@' }) -join ' & ')}"
+                            $Miner | Add-Member Info "$(($Miner.Name -split '-')[0..2] -join '-') {$($Miner.Workers.ForEach({ "$($_.Pool.AlgorithmVariant)$(If ($_.Pool.MiningCurrency) { "[$($_.Pool.MiningCurrency)]" })", $_.Pool.Name -join '@' }) -join ' & ')}$(If (($Miner.Name -split '-')[4]) { " (Dual Intensity $(($Miner.Name -split '-')[4]))"})"
                             If ($Config.UseAllPoolAlgoCombos) { $Miner.Name = $Miner.Info -replace "\{", "(" -replace "\}", ")" -replace " " }
                             $Miner -as $_.API
                         }
@@ -847,7 +848,6 @@ Do {
             If ($Miners) { 
                 # Filter miners
                 $Miners.Where({ $_.Disabled }).ForEach({ $_.Reasons.Add("Disabled by user"); $_.Status = [MinerStatus]::Disabled })
-                $Miners.Where({ $_.Workers[0].Hashrate -eq 0 }).ForEach({ $_.Reasons.Add("0 H/s Stat file") }) # Allow 0 hashrate for secondary algorithm
                 If ($Config.ExcludeMinerName.Count) { $Miners.Where({ (Compare-Object @($Config.ExcludeMinerName | Select-Object) @($_.BaseName, "$($_.BaseName)-$($_.Version)", $_.Name | Select-Object -Unique) -IncludeEqual -ExcludeDifferent | Measure-Object).Count -gt 0 }).ForEach({ $_.Reasons.Add("ExcludeMinerName ($($Config.ExcludeMinerName -join ', '))") }) }
                 $Miners.Where({ $_.Earning -eq 0 }).ForEach({ $_.Reasons.Add("Earning -eq 0") })
                 If ($Config.DisableMinersWithFee) { $Miners.Where({ $_.Workers.Fee }).ForEach({ $_.Reasons.Add("Config.DisableMinersWithFee") }) }
@@ -869,6 +869,18 @@ Do {
                         }
                     )
                 }
+
+                $Bias = If ($Variables.CalculatePowerCost -and -not $Config.IgnorePowerCost) { "Profit_Bias" } Else { "Earning_Bias" }
+                If ($Config.UseAllPoolAlgoCombos) { 
+                    # Use best miner per algorithm family
+                    $Miners.Where({ -not $_.Reasons }) | Group-Object { [String]$_.DeviceNames }, { [String]$_.Workers.Pool.Name }, { [String]$_.Workers.Pool.Algorithm } | ForEach-Object {
+                        $_.Group | Select-Object -Skip 1 | ForEach-Object { 
+                            $_.Reasons.Add("Not best miner in algorithm family")
+                        }
+                    }
+                }
+
+                $Miners.Where({ $_.Workers[0].Hashrate -eq 0 }).ForEach({ $_.Reasons.Add("0 H/s Stat file") })
 
                 $Variables.MinersMissingBinary = @()
                 $Miners.Where({ -not $_.Reasons -and -not (Test-Path -LiteralPath $_.Path -Type Leaf) }).ForEach(
@@ -958,8 +970,6 @@ Do {
                     $Variables.MinersBestPerDevice_Combo = $Variables.MinersBestPerDevice = $Variables.MinersMostProfitable = $Miners
                 }
                 Else { 
-                    $Bias = If ($Variables.CalculatePowerCost -and -not $Config.IgnorePowerCost) { "Profit_Bias" } Else { "Earning_Bias" }
-
                     # Add running miner bonus
                     $RunningMinerBonusFactor = 1 + $Config.MinerSwitchingThreshold / 100
                     $Miners.Where({ $_.Status -eq [MinerStatus]::Running }).ForEach({ $_.$Bias *= $RunningMinerBonusFactor })
@@ -1303,15 +1313,18 @@ Do {
 
                 # Display benchmarking progress
                 If ($MinersDeviceGroupNeedingBenchmark) { 
-                    Write-Message -Level Info "Benchmarking for '$($_.Name)' in progress. $(($MinersDeviceGroupNeedingBenchmark | Select-Object -Property { [String]$_.Algorithms, $_.Name } -Unique).Count) miner$(If (($MinersDeviceGroupNeedingBenchmark | Select-Object -Property { [String]$_.Algorithms, $_.Name } -Unique).Count -gt 1) { 's' }) left to complete benchmark."
+                    $Count = ($MinersDeviceGroupNeedingBenchmark | Select-Object -Property { $_.Algorithms, $_.Name } -Unique).Count
+                    Write-Message -Level Info "Benchmarking for '$($_.Name)' in progress. $Count miner$(If ($Count -gt 1) { 's' }) left to complete benchmark."
                 }
+                    $Count = ($MinersDeviceGroupNeedingBenchmark | Select-Object -Property { $_.Algorithms, $_.Name } -Unique).Count
                 # Display power consumption measurement progress
+                $Count = ($MinersDeviceGroupNeedingPowerConsumptionMeasurement | Select-Object -Property { $_.Algorithms, $_.Name } -Unique).Count
                 If ($MinersDeviceGroupNeedingPowerConsumptionMeasurement) { 
-                    Write-Message -Level Info "Power consumption measurement for '$($_.Name)' in progress. $(($MinersDeviceGroupNeedingPowerConsumptionMeasurement | Select-Object -Property { [String]$_.Algorithms, $_.Name } -Unique).Count) miner$(If (($MinersDeviceGroupNeedingPowerConsumptionMeasurement | Select-Object -Property { [String]$_.Algorithms, $_.Name } -Unique).Count -gt 1) { 's' }) left to complete measuring."
+                    Write-Message -Level Info "Power consumption measurement for '$($_.Name)' in progress. $Count miner$(If ($Count -gt 1) { 's' }) left to complete measuring."
                 }
             }
         )
-        Remove-Variable MinersDeviceGroupNeedingBenchmark, MinersDeviceGroupNeedingPowerConsumptionMeasurement -ErrorAction Ignore
+        Remove-Variable Count, MinersDeviceGroupNeedingBenchmark, MinersDeviceGroupNeedingPowerConsumptionMeasurement -ErrorAction Ignore
 
         Get-Job -State "Completed" | Receive-Job | Out-Null
         Get-Job -State "Completed" | Remove-Job -Force -ErrorAction Ignore | Out-Null
@@ -1387,7 +1400,7 @@ Do {
                         ElseIf ($Variables.NewMiningStatus -eq "Running") { 
                             # Stop miner, it has not provided hash rate on time
                             If ($Miner.ValidDataSampleTimestamp -eq [DateTime]0 -and ([DateTime]::Now).ToUniversalTime() -gt $Miner.BeginTime.AddSeconds($Miner.WarmupTimes[0])) { 
-                                $Miner.StatusInfo = "Error: '$($Miner.Info)' has not provided first data sample in $($Miner.WarmupTimes[0]) seconds"
+                                $Miner.StatusInfo = "Error: '$($Miner.Info)' has not provided first valid data sample in $($Miner.WarmupTimes[0]) seconds"
                                 $Miner.SetStatus([MinerStatus]::Failed)
                                 $Variables.FailedMiners += $Miner
                             }

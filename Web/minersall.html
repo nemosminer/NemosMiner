@@ -72,7 +72,7 @@
                 <th data-field="tPrimaryPoolVariant" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Primary Pool (Variant)</th>
                 <th data-field="tPrimaryPoolUser" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Primary User</th>
                 <th data-field="tPrimaryHashrate" data-align="right" data-sortable="true" data-formatter="formatHashrateValue" class="text-nowrap">Primary<br>Hashrate</th>
-                <th data-field="tPrimaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Primary Algorithm Pool Fee</th>
+                <th data-field="tPrimaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Primary Pool Fee</th>
                 <th data-field="tPrimaryMinerFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Primary Algorithm Miner Fee</th>
                 <th data-field="tSecondaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Secondary Algorithm</th>
                 <th data-field="tSecondaryAlgorithmVariant" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Secondary Algorithm (Variant)</th>
@@ -82,7 +82,7 @@
                 <th data-field="tSecondaryPoolVariant" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Secondary Pool (Variant)</th>
                 <th data-field="tSecondaryPoolUser" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Secondary User</th>
                 <th data-field="tSecondaryHashrate" data-align="right" data-sortable="true" data-formatter="formatHashrateValue" class="text-nowrap">Secondary<br>Hashrate</th>
-                <th data-field="tSecondaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Secondary Algorithm Pool Fee</th>
+                <th data-field="tSecondaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Secondary Pool Fee</th>
                 <th data-field="tSecondaryMinerFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Secondary Algorithm Miner Fee</th>
                 <th data-field="API" data-sortable="true" data-filter-control="select" data-visible="false">Miner API</th>
                 <th data-field="Port" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">API Port</th>
@@ -113,7 +113,7 @@
             var $table = $('#miners');
 
             $table.bootstrapTable({
-              async: 'false',
+              async: 'true',
               onLoadSuccess: function() {
                 if (config.CalculatePowerCost == true) {
                   $table.bootstrapTable('showColumn', 'Profit_Bias');
@@ -167,7 +167,7 @@
                   $('body').css('cursor', 'progress');
                   $url = '/functions/stat/remove';
                   $payload = {
-                    'Miners': JSON.stringify($data.map($element => ({ Name: $element.Name, Algorithms: $element.Algorithms }))),
+                    'Miners': JSON.stringify($data.map($element => ({Info: $element.Info}))),
                     'Type' : 'Hashrate'
                   };
                   $('.modal-body').load($url, $payload, function() {
@@ -185,7 +185,7 @@
                   $('body').css('cursor', 'progress');
                   $url = '/functions/stat/remove';
                   $payload = {
-                    'Miners': JSON.stringify($data.map($element => ({ Name: $element.Name, Algorithms: $element.Algorithms }))),
+                    'Miners': JSON.stringify($data.map($element => ({Info: $element.Info}))),
                     'Type' : 'PowerConsumption'
                   };
                   $('.modal-body').load($url, $payload, function() {
@@ -239,7 +239,7 @@
                   $('body').css('cursor', 'progress');
                   $url = '/functions/watchdogtimers/remove';
                   $payload = {
-                    'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})))
+                    'Miners': JSON.stringify($data.map($element => ({Info: $element.Info})))
                   };
                   $('.modal-body').load($url, $payload, function() {
                     $('.modal-title').text($('#btn-remove-watchdog').text());

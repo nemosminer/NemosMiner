@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 Version:        5.0.2.3
-Version date:   2023/12/13
+Version date:   2023/12/20
 #>
 
 using module ..\Includes\Include.psm1
@@ -134,7 +134,7 @@ If ($Algorithms) {
                                     Type        = $_.Type
                                     URI         = $Uri
                                     WarmupTimes = $_.WarmupTimes # First value: Seconds until miner must send first sample, if no sample is received miner will be marked as failed; Second value: Seconds from first sample until miner sends stable hashrates that will count for benchmarking
-                                    Workers     = @(($Pool0, $Pool1).Where({ $_ } ) | ForEach-Object { @{ Pool = $_ } })
+                                    Workers     = @(($Pool0, $Pool1).Where({ $_ }) | ForEach-Object { @{ Pool = $_ } })
                                 }
                             }
                         }

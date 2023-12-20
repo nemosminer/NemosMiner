@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           \Includes\LegacyGUI.psm1
 Version:        5.0.2.3
-Version date:   2023/12/13
+Version date:   2023/12/20
 #>
 
 [Void] [System.Reflection.Assembly]::Load("System.Windows.Forms")
@@ -138,18 +138,19 @@ Function Update-TabControl {
             $ContextMenuStripItem2.Visible = $true
             $ContextMenuStripItem3.Text = "Mark as failed"
             $ContextMenuStripItem3.Visible = $true
+            $ContextMenuStripItem4.Enable = $true
             $ContextMenuStripItem4.Text = "Disable"
             $ContextMenuStripItem4.Visible = $true
             $ContextMenuStripItem5.Visible = $false
 
-            If ($Variables.MinersBest_Combo) { 
+            If ($Variables.MinersBestPerDevice_Combo) { 
 
                 If (-not ($ContextMenuStrip.Visible -and $ContextMenuStrip.Enabled)) { 
                     $LaunchedMinersLabel.Text = "Launched Miners - Updated $(([DateTime]::Now).ToString())"
 
                     $LaunchedMinersDGV.BeginInit()
                     $LaunchedMinersDGV.ClearSelection()
-                    $LaunchedMinersDGV.DataSource = $Variables.MinersBest_Combo | Select-Object @(
+                    $LaunchedMinersDGV.DataSource = $Variables.MinersBestPerDevice_Combo | Select-Object @(
                         @{ Name = "Device(s)"; Expression = { $_.DeviceNames -join '; ' } }
                         @{ Name = "Miner"; Expression = { $_.Name } }
                         @{ Name = "Status"; Expression = { $_.Status } }, 
@@ -165,16 +166,16 @@ Function Update-TabControl {
                         If ($RadioButtonPoolsUnavailable.checked) { @{ Name = "Reason"; Expression = { $_.Reasons -join ', ' } } }
                     ) | Sort-Object -Property "Device(s)" | Out-DataTable
                     If ($LaunchedMinersDGV.Columns) { 
-                        $LaunchedMinersDGV.Columns[0].FillWeight = 30 + ($Variables.MinersBest_Combo.ForEach({ $_.DeviceNames.Count }) | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) * 20
+                        $LaunchedMinersDGV.Columns[0].FillWeight = 30 + ($Variables.MinersBestPerDevice_Combo.ForEach({ $_.DeviceNames.Count }) | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) * 20
                         $LaunchedMinersDGV.Columns[1].FillWeight = 160
                         $LaunchedMinersDGV.Columns[2].FillWeight = 60
                         $LaunchedMinersDGV.Columns[3].FillWeight = 55; $LaunchedMinersDGV.Columns[3].DefaultCellStyle.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[3].HeaderCell.Style.Alignment = "MiddleRight"
                         $LaunchedMinersDGV.Columns[4].FillWeight = 55; $LaunchedMinersDGV.Columns[4].DefaultCellStyle.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[4].HeaderCell.Style.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[4].Visible = $Variables.CalculatePowerCost
                         $LaunchedMinersDGV.Columns[5].FillWeight = 55; $LaunchedMinersDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[5].Visible = $Variables.CalculatePowerCost
                         $LaunchedMinersDGV.Columns[6].FillWeight = 55; $LaunchedMinersDGV.Columns[6].DefaultCellStyle.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[6].HeaderCell.Style.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[6].Visible = $Variables.CalculatePowerCost
-                        $LaunchedMinersDGV.Columns[7].FillWeight = 70 + ($Variables.MinersBest_Combo.({ $_.Workers.Count })| Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) * 35
-                        $LaunchedMinersDGV.Columns[8].FillWeight = 50 + ($Variables.MinersBest_Combo.({ $_.Workers.Count }) | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) * 25
-                        $LaunchedMinersDGV.Columns[9].FillWeight = 50 + ($Variables.MinersBest_Combo.({ $_.Workers.Count }) | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) * 25; $LaunchedMinersDGV.Columns[9].DefaultCellStyle.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[9].HeaderCell.Style.Alignment = "MiddleRight"
+                        $LaunchedMinersDGV.Columns[7].FillWeight = 70 + ($Variables.MinersBestPerDevice_Combo.({ $_.Workers.Count })| Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) * 35
+                        $LaunchedMinersDGV.Columns[8].FillWeight = 50 + ($Variables.MinersBestPerDevice_Combo.({ $_.Workers.Count }) | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) * 25
+                        $LaunchedMinersDGV.Columns[9].FillWeight = 50 + ($Variables.MinersBestPerDevice_Combo.({ $_.Workers.Count }) | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum) * 25; $LaunchedMinersDGV.Columns[9].DefaultCellStyle.Alignment = "MiddleRight"; $LaunchedMinersDGV.Columns[9].HeaderCell.Style.Alignment = "MiddleRight"
                         $LaunchedMinersDGV.Columns[10].FillWeight = 65; $LaunchedMinersDGV.Columns[10].DefaultCellStyle.Alignment = "MiddleRight";  $LaunchedMinersDGV.Columns[10].HeaderCell.Style.Alignment = "MiddleRight"
                         $LaunchedMinersDGV.Columns[11].FillWeight = 65; $LaunchedMinersDGV.Columns[11].DefaultCellStyle.Alignment = "MiddleRight";  $LaunchedMinersDGV.Columns[11].HeaderCell.Style.Alignment = "MiddleRight"
                     }
@@ -338,21 +339,22 @@ Function Update-TabControl {
         "Miners" { 
             $ContextMenuStripItem1.Text = "Re-Benchmark"
             $ContextMenuStripItem1.Visible = $true
+            $ContextMenuStripItem2.Enabled = $Config.CalculatePowerCost
             $ContextMenuStripItem2.Text = "Re-Measure Power Consumption"
             $ContextMenuStripItem2.Visible = $true
             $ContextMenuStripItem3.Text = "Mark as failed"
-            $ContextMenuStripItem4.Visible = (-not $RadioButtonMinersUnavailable.Checked)
+            $ContextMenuStripItem3.Enabled = $true
             $ContextMenuStripItem4.Text = "Disable"
-            $ContextMenuStripItem4.Visible = (-not $RadioButtonMinersUnavailable.Checked)
             $ContextMenuStripItem5.Text = "Remove Watchdog Timer"
-            $ContextMenuStripItem5.Visible = (-not $RadioButtonMinersBest.Checked)
+            $ContextMenuStripItem5.Enabled = $Variables.WatchdogTimers
+            $ContextMenuStripItem5.Visible = $true
 
             If ($Variables.Miners) { 
                 $MinersLabel.Text = "Miner data read from stats - Updated $(([DateTime]::Now).ToString())"
 
                 If (-not ($ContextMenuStrip.Visible -and $ContextMenuStrip.Enabled)) { 
 
-                    If ($RadioButtonMinersBest.checked) { $DataSource = $Variables.MinersMostProfitable }
+                    If ($RadioButtonMostProfitable.checked) { $DataSource = $Variables.MinersMostProfitable }
                     ElseIf ($RadioButtonMinersUnavailable.checked) { $DataSource = $Variables.Miners.Where({ -not $_.Available }) }
                     Else { $DataSource = $Variables.Miners }
 
@@ -397,8 +399,8 @@ Function Update-TabControl {
             $ContextMenuStripItem2.Visible = $false
             $ContextMenuStripItem3.Text = "Reset Pool Stat Data"
             $ContextMenuStripItem3.Visible = $true
+            $ContextMenuStripItem4.Enabled = $Variables.WatchdogTimers
             $ContextMenuStripItem4.Text = "Remove Watchdog Timer"
-            $ContextMenuStripItem4.Visible = (-not $RadioButtonPoolsBest.Checked)
             $ContextMenuStripItem5.Visible = $false
 
             If ($Variables.Pools) { 
@@ -576,7 +578,7 @@ Function Form_Resize {
 
         $MiningSummaryLabel.Width = $Variables.TextBoxSystemLog.Width = $LaunchedMinersDGV.Width = $EarningsChart.Width = $BalancesDGV.Width = $MinersPanel.Width = $MinersDGV.Width = $PoolsPanel.Width = $PoolsDGV.Width = $WorkersDGV.Width = $SwitchingDGV.Width = $WatchdogTimersDGV.Width = $TabControl.Width - 26
 
-        If ($Config.BalancesTrackerPollInterval -gt 0 -and $BalancesDGV.Rows.Count -gt 0) { 
+        If ($Config.BalancesTrackerPollInterval -gt 0 -and $BalancesDGV.RowCount -gt 0) { 
             $BalancesDGVHeight = ($BalancesDGV.Rows.Height | Measure-Object -Sum | Select-Object -ExpandProperty Sum) + $BalancesDGV.ColumnHeadersHeight
             If ($BalancesDGVHeight -gt $TabControl.Height / 2) { 
                 $EarningsChart.Height = $TabControl.Height / 2
@@ -597,7 +599,7 @@ Function Form_Resize {
         $BalancesDGV.Location = [System.Drawing.Point]::new(10, $BalancesLabel.Bottom)
         $BalancesDGV.Height = $TabControl.Height - $BalancesLabel.Bottom - 48
 
-        $LaunchedMinersDGV.Height = $LaunchedMinersDGV.RowTemplate.Height * $Variables.MinersBest_Combo.Count + $LaunchedMinersDGV.ColumnHeadersHeight
+        $LaunchedMinersDGV.Height = $LaunchedMinersDGV.RowTemplate.Height * $LaunchedMinersDGV.RowCount + $LaunchedMinersDGV.ColumnHeadersHeight
         If ($LaunchedMinersDGV.Height -gt $TabControl.Height / 2) { 
             $LaunchedMinersDGV.Height = $TabControl.Height / 2
             $LaunchedMinersDGV.ScrollBars = "Vertical"
@@ -827,20 +829,30 @@ $ContextMenuStrip.Add_ItemClicked(
                                     $_.Benchmark = $true
                                     $_.Restart = $true
                                     $Data += "$($_.Name) ($($_.Algorithms -join ' & '))"
-                                    ForEach ($Algorithm in $_.Algorithms) { 
-                                        Remove-Stat -Name "$($_.Name)_$($Algorithm)_Hashrate"
+                                    ForEach ($Worker in $_.Workers) { 
+                                        Remove-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate"
                                         $Worker.Hashrate = [Double]::NaN
                                     }
                                     Remove-Variable Worker
                                     # Also clear power consumption
                                     Remove-Stat -Name "$($_.Name)$(If ($_.Algorithms.Count -eq 1) { "_$($_.Algorithms[0])" })_PowerConsumption"
                                     $_.PowerConsumption = $_.PowerCost = $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = [Double]::NaN
-
+                                    If ($_.Status -eq [MinerStatus]::Idle) { 
+                                        $_.SubStatus = "Idle"
+                                    }
+                                    ElseIf ($_.Status -eq [MinerStatus]::Failed) { 
+                                        $_.Status = "Idle"
+                                        $_.SubStatus = "Idle"
+                                    }
+                                    ElseIf ($_.Status -eq [MinerStatus]::Unavailable) { 
+                                        $_.Status = "Idle"
+                                        $_.SubStatus = "Idle"
+                                    }
+                                    $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons.Where({ $_ -ne "Disabled by user" }))
                                     $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons.Where({ $_ -ne "Disabled by user" }))
                                     $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons.Where({ $_ -ne "0 H/s Stat file" }))
                                     $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons.Where({ $_ -notlike "Unreal profit data *" }) | Sort-Object -Unique)
                                     If (-not $_.Reasons) { $_.Available = $true }
-                                    If ($_.Status -eq "Disabled") { $_.Status = "Idle" }
                                 }
                             )
                         }
@@ -850,7 +862,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "Re-benchmark triggered for $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`r$Message"
+                        $Data = "$($Data -join "`n")`n`n$Message"
                         Update-TabControl
                     }
                     Break
@@ -888,7 +900,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "Re-measure power consumption triggered for $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`r$Message"
+                        $Data = "$($Data -join "`n")`n`n$Message"
                         Update-TabControl
                     }
                     Break
@@ -908,20 +920,19 @@ $ContextMenuStrip.Add_ItemClicked(
                                 { 
                                     If ($Parameters.Value -le 0 -and $Parameters.Type -eq "Hashrate") { $_.Available = $false; $_.Disabled = $true }
                                     $Data += "$($_.Name) ($($_.Algorithms -join ' & '))"
-                                    ForEach ($Algorithm in $_.Algorithms) { 
-                                        $Stat_Name = "$($_.Name)_$($Algorithm)_$($Parameters.Type)"
-                                        If ($Parameters.Value -eq 0) { # Miner failed
-                                            Remove-Stat -Name $Stat_Name
-                                            $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = $_.Earning_Accuracy = [Double]::NaN
-                                            $_.Available = $false
-                                            $_.Disabled = $false
-                                            If ($_.Reasons -notcontains "0 H/s Stat file" ) { $_.Reasons.Add("0 H/s Stat file") }
-                                            $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons.Where({ $_ -notlike "Disabled by user" }) | Sort-Object -Unique)
-                                            $_.Status = [MinerStatus]::Failed
-                                            Set-Stat -Name $Stat_Name -Value $Parameters.Value -FaultDetection $false | Out-Null
-                                        }
+                                    ForEach ($Worker in $_.Workers) { 
+                                        Set-Stat -Name "$($_.Name)_$($Worker.Pool.Algorithm)_Hashrate" -Value $Parameters.Value -FaultDetection $false | Out-Null
+                                        $Worker.Hashrate = [Double]::NaN
                                     }
-                                    Remove-Variable Algorithm
+                                    Remove-Variable Worker
+                                    $_.Available = $false
+                                    $_.Disabled = $false
+                                    If ($_.GetStatus() -eq [MinerStatus]::Running) { $_.SetStatus([MinerStatus]::Idle) }
+                                    $_.Status = "Idle"
+                                    $_.SubStatus = "Failed"
+                                    $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = $_.Earning_Accuracy = [Double]::NaN
+                                    If ($_.Reasons -notcontains "0 H/s Stat file" ) { $_.Reasons.Add("0 H/s Stat file") }
+                                    $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons.Where({ $_ -notlike "Disabled by user" }) | Sort-Object -Unique)
                                 }
                             )
                         }
@@ -931,7 +942,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "Marked $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" }) as failed."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`r$Message"
+                        $Data = "$($Data -join "`n")`n`n$Message"
                         Update-TabControl
                     }
                     Break
@@ -955,10 +966,13 @@ $ContextMenuStrip.Add_ItemClicked(
                                         $Worker.Hashrate = [Double]::NaN
                                     }
                                     Remove-Variable Worker
-                                    $_.Disabled = $true
-                                    $_.Reasons.Add("Disabled by user")
-                                    $_.Reasons = [System.Collections.Generic.List[String]]@($_.Reasons | Sort-Object -Unique)
                                     $_.Available = $false
+                                    If ($_.GetStatus() -eq [MinerStatus]::Running) { $_.SetStatus([MinerStatus]::Idle) }
+                                    $_.Status = "Idls"
+                                    $_.SubStatus = "Disabled"
+                                    $_.Profit = $_.Profit_Bias = $_.Earning = $_.Earning_Bias = $_.Earning_Accuracy = [Double]::NaN
+                                    $_.Disabled = $true
+                                    $_.Reasons = [System.Collections.Generic.List[String]]@("Disabled by user")
                                 }
                             )
                         }
@@ -968,7 +982,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "Disabled $($Data.Count) $(If ($Data.Count -eq 1) { "miner" } Else { "miners" })."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`r$Message"
+                        $Data = "$($Data -join "`n")`n`n$Message"
                         Update-TabControl
                     }
                     Break
@@ -1002,7 +1016,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "$($Data.Count) miner $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`r$Message"
+                        $Data = "$($Data -join "`n")`n`n$Message"
                     }
                     Else { 
                         $Data = "No matching watchdog timers found."
@@ -1036,7 +1050,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "Pool stats for $($Data.Count) $(If ($Data.Count -eq 1) { "pool" } Else { "pools" }) reset."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`r$Message"
+                        $Data = "$($Data -join "`n")`n`n$Message"
                         Update-TabControl
                     }
                     Break
@@ -1069,7 +1083,7 @@ $ContextMenuStrip.Add_ItemClicked(
                         $Data = $Data | Sort-Object -Unique
                         $Message = "$($Data.Count) miner $(If ($Data.Count -eq 1) { "watchdog timer" } Else { "watchdog timers" }) removed."
                         Write-Message -Level Verbose "GUI: $Message"
-                        $Data += "`r$Message"
+                        $Data = "$($Data -join "`n")`n`n$Message"
                     }
                     Else { 
                         $Data = "No matching watchdog timers found."
@@ -1193,22 +1207,22 @@ $EarningsPageControls += $BalancesDGV
 # Miner page Controls
 $MinersPageControls = @()
 
-$RadioButtonMinersBest = New-Object System.Windows.Forms.RadioButton
-$RadioButtonMinersBest.AutoSize = $false
-$RadioButtonMinersBest.Checked = $true
-$RadioButtonMinersBest.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
-$RadioButtonMinersBest.Height = 22
-$RadioButtonMinersBest.Location = [System.Drawing.Point]::new(0, 0)
-$RadioButtonMinersBest.Text = "Best Miners"
-$RadioButtonMinersBest.Width = 110
-$RadioButtonMinersBest.Add_Click({ Update-TabControl })
-$Tooltip.SetToolTip($RadioButtonMinersBest, "These are the best miners per algorithm and device.")
+$RadioButtonMostProfitable = New-Object System.Windows.Forms.RadioButton
+$RadioButtonMostProfitable.AutoSize = $false
+$RadioButtonMostProfitable.Checked = $true
+$RadioButtonMostProfitable.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
+$RadioButtonMostProfitable.Height = 22
+$RadioButtonMostProfitable.Location = [System.Drawing.Point]::new(0, 0)
+$RadioButtonMostProfitable.Text = "Most Profitable Miners"
+$RadioButtonMostProfitable.Width = 172
+$RadioButtonMostProfitable.Add_Click({ Update-TabControl })
+$Tooltip.SetToolTip($RadioButtonMostProfitable, "These are the best miners per algorithm and device.")
 
 $RadioButtonMinersUnavailable = New-Object System.Windows.Forms.RadioButton
 $RadioButtonMinersUnavailable.AutoSize = $false
 $RadioButtonMinersUnavailable.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $RadioButtonMinersUnavailable.Height = 22
-$RadioButtonMinersUnavailable.Location = [System.Drawing.Point]::new($RadioButtonMinersBest.Width, 0)
+$RadioButtonMinersUnavailable.Location = [System.Drawing.Point]::new($RadioButtonMostProfitable.Width, 0)
 $RadioButtonMinersUnavailable.Text = "Unavailable Miners"
 $RadioButtonMinersUnavailable.Width = 154
 $RadioButtonMinersUnavailable.Add_Click({ Update-TabControl })
@@ -1218,7 +1232,7 @@ $RadioButtonMiners = New-Object System.Windows.Forms.RadioButton
 $RadioButtonMiners.AutoSize = $false
 $RadioButtonMiners.Font = [System.Drawing.Font]::new("Microsoft Sans Serif", 10)
 $RadioButtonMiners.Height = 22
-$RadioButtonMiners.Location = [System.Drawing.Point]::new(($RadioButtonMinersBest.Width + $RadioButtonMinersUnavailable.Width), 0)
+$RadioButtonMiners.Location = [System.Drawing.Point]::new(($RadioButtonMostProfitable.Width + $RadioButtonMinersUnavailable.Width), 0)
 $RadioButtonMiners.Text = "All Miners"
 $RadioButtonMiners.Width = 100
 $RadioButtonMiners.Add_Click({ Update-TabControl })
@@ -1237,7 +1251,7 @@ $MinersPanel.Height = 22
 $MinersPanel.Location = [System.Drawing.Point]::new(8, ($MinersLabel.Height + 6))
 $MinersPanel.Controls.Add($RadioButtonMiners)
 $MinersPanel.Controls.Add($RadioButtonMinersUnavailable)
-$MinersPanel.Controls.Add($RadioButtonMinersBest)
+$MinersPanel.Controls.Add($RadioButtonMostProfitable)
 $MinersPageControls += $MinersPanel
 
 $MinersDGV = New-Object System.Windows.Forms.DataGridView

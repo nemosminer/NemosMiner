@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 Product:        NemosMiner
 File:           \Pools\HashCryptos.ps1
 Version:        5.0.2.3
-Version date:   2023/12/13
+Version date:   2023/12/20
 #>
 
 param(
@@ -85,6 +85,7 @@ If ($DivisorMultiplier -and $PriceField -and $Wallet) {
             Pass                     = "x"
             Port                     = [UInt16]($Request.$Algorithm.port -split ' ')[0]
             PortSSL                  = If (($Request.$Algorithm.port -split ' ')[2]) { ($Request.$Algorithm.port -split ' ')[2] } Else { $null }
+            PoolUri                  = ""
             Price                    = $Stat.Live
             Protocol                 = If ($Algorithm_Norm -match $Variables.RegexAlgoIsEthash) { "ethstratum1" } ElseIf ($Algorithm_Norm -match $Variables.RegexAlgoIsProgPow) { "stratum" } Else { "" }
             Reasons                  = $Reasons

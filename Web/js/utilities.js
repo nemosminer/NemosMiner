@@ -58,7 +58,7 @@ function formatMiners(data) {
 
       // Format Mining Duration (DateTime)
       if (item.BeginTime == "0001-01-01T00:00:00") item.tMiningDuration = "n/a";
-      else item.tMiningDuration = formatTimeSince(item.BeginTime).replace(' ago' ,'').replace('just now', 'just started');
+      else item.tMiningDuration = formatTimeSince(item.BeginTime).replace('&nbsp;ago' ,'').replace('just now', 'just started');
 
       // Format status
       item.tStatus = enumminerstatus[item.Status];
@@ -107,7 +107,7 @@ function formatTimeSince(value) {
   var value = (new Date).getTime() - (new Date(value)).getTime();
   if (value == 0) return '-';
   if (value < 1000) return 'just now';
-  return formatTime(value / 1000) + ' ago';
+  return formatTime(value / 1000) + '&nbsp;ago';
 }
 
 function formatTime(seconds) {
@@ -147,7 +147,7 @@ function formatHashrateValue(value) {
     var i = Math.floor(Math.log(value) / Math.log(1000));
     unitvalue = value / Math.pow(1000, i);
     if (i <= 0) i = 1;
-    if (unitvalue < 10) return unitvalue.toLocaleString(navigator.language, { maximumFractionDigits: 3, minimumFractionDigits: 3 }) + '&nbsp;' + sizes[i];;
+    if (unitvalue < 10) return unitvalue.toLocaleString(navigator.language, { maximumFractionDigits: 3, minimumFractionDigits: 3 }) + '&nbsp;' + sizes[i];
     return unitvalue.toLocaleString(navigator.language, { maximumFractionDigits: 2, minimumFractionDigits: 2 }) + '&nbsp;' + sizes[i];
   }
   return 'n/a';
@@ -176,7 +176,7 @@ function formatDecimalsFromBTC(value) {
 };
 
 function formatPrices(value) {
-  return (value * Math.pow(1024, 3)).toLocaleString(navigator.language, { minimumFractionDigits: (getDecimalsFromValue(value * Math.pow(1024, 3)) + 4)});
+  return (value * Math.pow(1024, 3)).toLocaleString(navigator.language, { minimumFractionDigits: (getDecimalsFromValue(value * Math.pow(1024, 3)) + 4) });
 };
 
 function formatDate(value) {
@@ -192,7 +192,7 @@ function formatWatt(value) {
 };
 
 function formatPercent(value) {
-  if (value == 0) return "0.00 %";
+  if (value == 0) return "0.00&nbsp;%";
   if (parseFloat(value)) return parseFloat(value * 100).toFixed(2) + '&nbsp;%';
   return '';
 };
@@ -233,92 +233,92 @@ function format3DecimalDigits(value) {
 };
 
 function format4DecimalDigits(value) {
-  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 4, maximumFractionDigits: 4});;
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 4, maximumFractionDigits: 4});
   return '';
 };
 
 function format5DecimalDigits(value) {
-  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 5, maximumFractionDigits: 5});;
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 5, maximumFractionDigits: 5});
   return '';
 };
 
 function format6DecimalDigits(value) {
-  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 6, maximumFractionDigits: 6});;
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 6, maximumFractionDigits: 6});
   return '';
 };
 
 function format7DecimalDigits(value) {
-  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 7, maximumFractionDigits: 7});;
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 7, maximumFractionDigits: 7});
   return '';
 };
 
 function format8DecimalDigits(value) {
-  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 8, maximumFractionDigits: 8});;
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 8, maximumFractionDigits: 8});
   return '';
 };
 
 function format9DecimalsDigits(value) {
-  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 9, maximumFractionDigits: 9});;
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 9, maximumFractionDigits: 9});
   return '';
 };
 
 function format10DecimalDigits(value) {
-  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 10, maximumFractionDigits: 10});;
+  if (value > 0) return (value).toLocaleString(navigator.language, { minimumFractionDigits: 10, maximumFractionDigits: 10});
   return '';
 };
 
 function formatGiBDigits0(value) {
-  if (value > 0) return format0DecimalDigits(value) + ' GiB';
+  if (value > 0) return format0DecimalDigits(value) + '&nbsp;GiB';
   return '';
 };
 
 function formatGiBDigits1(value) {
-  if (value > 0) return format1DecimalDigits(value) + ' GiB';
+  if (value > 0) return format1DecimalDigits(value) + '&nbsp;GiB';
   return '';
 };
 
 function formatGiBDigits2(value) {
-  if (value > 0) return format2DecimalDigits(value) + ' GiB';
+  if (value > 0) return format2DecimalDigits(value) + '&nbsp;GiB';
   return '';
 };
 
 function formatGiBDigits3(value) {
-  if (value > 0) return format3DecimalDigits(value) + ' GiB';
+  if (value > 0) return format3DecimalDigits(value) + '&nbsp;GiB';
   return '';
 };
 
 function formatGiBDigits4(value) {
-  if (value > 0) return format4DecimalDigits(value) + ' GiB';
+  if (value > 0) return format4DecimalDigits(value) + '&nbsp;GiB';
   return '';
 };
 
 function formatGiBDigits5(value) {
-  if (value > 0) return format5DecimalDigits(value) + ' GiB';
+  if (value > 0) return format5DecimalDigits(value) + '&nbsp;GiB';
   return '';
 };
 
 function formatGiBDigits6(value) {
-  if (value > 0) return format6DecimalDigits(value) + ' GiB';
+  if (value > 0) return format6DecimalDigits(value) + '&nbsp;GiB';
   return '';
 };
 
 function formatGiBDigits7(value) {
-  if (value > 0) return format7DecimalDigits(value) + ' GiB';
+  if (value > 0) return format7DecimalDigits(value) + '&nbsp;GiB';
   return '';
 };
 
 function formatGiBDigits8(value) {
-  if (value > 0) return format8DecimalDigits(value) + ' GiB';
+  if (value > 0) return format8DecimalDigits(value) + '&nbsp;GiB';
   return '';
 };
 
 function formatGiBDigits9(value) {
-  if (value > 0) return format9DecimalDigits(value) + ' GiB';
+  if (value > 0) return format9DecimalDigits(value) + '&nbsp;GiB';
   return '';
 };
 
 function formatGiBDigits10(value) {
-  if (value > 0) return format10DecimalDigits(value) + ' GiB';
+  if (value > 0) return format10DecimalDigits(value) + '&nbsp;GiB';
   return '';
 };
 
