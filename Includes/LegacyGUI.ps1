@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\LegacyGUI.psm1
-Version:        5.0.2.4
+Version:        5.0.2.5
 Version date:   2023/12/20
 #>
 
@@ -160,7 +160,7 @@ Function Update-TabControl {
                         @{ Name = "Power Consumption"; Expression = { If (-not $_.MeasurePowerConsumption) { If ([Double]::IsNaN($_.PowerConsumption)) { "n/a" } Else { "$($_.PowerConsumption.ToString("N2")) W"} } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } } }
                         @{ Name = "Algorithm(s)"; Expression = { $_.Algorithms -join ' & ' } }, 
                         @{ Name = "Pool(s)"; Expression = { $_.WorkersRunning.Pool.Name -join ' & ' } }
-                        @{ Name = "Hashrate(s)"; Expression = { If (-not $_.Benchmark) { ($_.Workers.ForEach({ "$($_.Hashrate | ConvertTo-Hash)/s" -replace '\s+', ' ' })) -join ' & ' } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } } }
+                        @{ Name = "Hashrate(s)"; Expression = { If (-not $_.Benchmark) { $_.Workers.ForEach({ $_.Hashrate | ConvertTo-Hash }) -join ' & ' } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } } }
                         @{ Name = "Running Time`r(hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [Math]::floor((([DateTime]::Now).ToUniversalTime() - $_.BeginTime).TotalDays * 24), (([DateTime]::Now).ToUniversalTime() - $_.BeginTime) } }
                         @{ Name = "Total active`r(hhh:mm:ss)"; Expression = { "{0}:{1:mm}:{1:ss}" -f [Math]::floor($_.TotalMiningDuration.TotalDays * 24), $_.TotalMiningDuration } }
                         If ($RadioButtonPoolsUnavailable.checked) { @{ Name = "Reason"; Expression = { $_.Reasons -join ', ' } } }
@@ -371,7 +371,7 @@ Function Update-TabControl {
                         @{ Name = "Power Consumption"; Expression = { If (-not $_.MeasurePowerConsumption) { If ([Double]::IsNaN($_.PowerConsumption)) { "n/a" } Else { "$($_.PowerConsumption.ToString("N2")) W"} } Else { If ($_.Status -eq "Running") { "Measuring..." } Else { "Unmeasured" } } } }
                         @{ Name = "Algorithm(s)"; Expression = { $_.Algorithms -join ' & ' } }, 
                         @{ Name = "Pool(s)"; Expression = { $_.Workers.Pool.Name -join ' & ' } }, 
-                        @{ Name = "Hashrate(s)"; Expression = { If (-not $_.Benchmark) { ($_.Workers.ForEach({ "$($_.Hashrate | ConvertTo-Hash)/s" -replace '\s+', ' ' })) -join ' & ' } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } } }
+                        @{ Name = "Hashrate(s)"; Expression = { If (-not $_.Benchmark) { $_.Workers.ForEach({ $_.Hashrate | ConvertTo-Hash }) -join ' & ' } Else { If ($_.Status -eq "Running") { "Benchmarking..." } Else { "Benchmark pending" } } } }
                         If ($RadioButtonMinersUnavailable.checked -or $RadioButtonMiners.checked) { @{ Name = "Reason(s)"; Expression = { $_.Reasons -join ', '} } }
                     ) | Sort-Object @{ Expression = { $_.Best }; Descending = $true }, "Device(s)", Miner | Out-DataTable
                     If ($MinersDGV.Columns) { 
@@ -458,59 +458,59 @@ Function Update-TabControl {
             }
             Break
         }
-        "Rig Monitor" { 
-            $WorkersDGV.Visible = $Config.ShowWorkerStatus
-            $EditMonitoringLink.Visible = $Variables.APIRunspace.APIPort
+        # "Rig Monitor" { 
+        #     $WorkersDGV.Visible = $Config.ShowWorkerStatus
+        #     $EditMonitoringLink.Visible = $Variables.APIRunspace.APIPort
 
-            If ($Config.ShowWorkerStatus) { 
+        #     If ($Config.ShowWorkerStatus) { 
 
-                Read-MonitoringData | Out-Null
+        #         Read-MonitoringData | Out-Null
 
-                If ($Variables.Workers) { 
-                    $WorkersLabel.Text = "Worker Status - Updated $($Variables.WorkersLastUpdated.ToString())"
+        #         If ($Variables.Workers) { 
+        #             $WorkersLabel.Text = "Worker Status - Updated $($Variables.WorkersLastUpdated.ToString())"
 
-                    $nl = "`n" # Must use variable, cannot join with '`n' directly
+        #             $nl = "`n" # Must use variable, cannot join with '`n' directly
 
-                    $WorkersDGV.BeginInit()
-                    $WorkersDGV.ClearSelection()
-                    $WorkersDGV.DataSource = $Variables.Workers | Select-Object @(
-                        @{ Name = "Worker"; Expression = { $_.worker } }, 
-                        @{ Name = "Status"; Expression = { $_.status } }, 
-                        @{ Name = "Last seen"; Expression = { (Get-TimeSince $_.date) } }, 
-                        @{ Name = "Version"; Expression = { $_.version } }, 
-                        @{ Name = "Currency"; Expression = { $_.data.Currency | Select-Object -Unique } }, 
-                        @{ Name = "Estimated Earning/day"; Expression = { If ($null -ne $_.Data) { "{0:n$($Config.DecimalsMax)}" -f (($_.Data.Earning.Where({ -not [Double]::IsNaN($_) }) | Measure-Object -Sum | Select-Object -ExpandProperty Sum) * $Variables.Rates.BTC.($_.data.Currency | Select-Object -Unique)) } } }, 
-                        @{ Name = "Estimated Profit/day"; Expression = { If ($null -ne $_.Data) { " {0:n$($Config.DecimalsMax)}" -f (($_.Data.Profit.Where({ -not [Double]::IsNaN($_) }) | Measure-Object -Sum | Select-Object -ExpandProperty Sum) * $Variables.Rates.BTC.($_.data.Currency | Select-Object -Unique)) } } }, 
-                        @{ Name = "Miner(s)"; Expression = { $_.data.Name -join $nl } }, 
-                        @{ Name = "Pool(s)"; Expression = { $_.data.ForEach({ $_.Pool -split "," -join ' & ' }) -join $nl } }, 
-                        @{ Name = "Algorithm(s)"; Expression = { $_.data.ForEach({ $_.Algorithm -split "," -join ' & ' }) -join $nl } }, 
-                        @{ Name = "Live Hashrate(s)"; Expression = { $_.data.ForEach({ ($_.CurrentSpeed.ForEach({ If ([Double]::IsNaN($_)) { "n/a" } Else { "$($_ | ConvertTo-Hash)/s" -replace '\s+' } })) -join ' & ' }) -join $nl } }, 
-                        @{ Name = "Benchmark Hashrate(s)"; Expression = { $_.data.ForEach({ ($_.EstimatedSpeed.ForEach({ If ([Double]::IsNaN($_)) { "n/a" } Else { "$($_ | ConvertTo-Hash)/s" -replace '\s+' } })) -join ' & ' }) -join $nl } }
-                    ) | Sort-Object -Property "Worker" | Out-DataTable
-                    If ($WorkersDGV.Columns) { 
-                        $WorkersDGV.Columns[0].FillWeight = 70
-                        $WorkersDGV.Columns[1].FillWeight = 60
-                        $WorkersDGV.Columns[2].FillWeight = 80
-                        $WorkersDGV.Columns[3].FillWeight = 70
-                        $WorkersDGV.Columns[4].FillWeight = 40
-                        $WorkersDGV.Columns[5].FillWeight = 65; $WorkersDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"
-                        $WorkersDGV.Columns[6].FillWeight = 65; $WorkersDGV.Columns[6].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[6].HeaderCell.Style.Alignment = "MiddleRight"
-                        $WorkersDGV.Columns[7].FillWeight = 150
-                        $WorkersDGV.Columns[8].FillWeight = 95
-                        $WorkersDGV.Columns[9].FillWeight = 75
-                        $WorkersDGV.Columns[10].FillWeight = 65; $WorkersDGV.Columns[10].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[10].HeaderCell.Style.Alignment = "MiddleRight"
-                        $WorkersDGV.Columns[11].FillWeight = 65; $WorkersDGV.Columns[11].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[11].HeaderCell.Style.Alignment = "MiddleRight"
-                    }
-                    Set-WorkerColor
-                    $WorkersDGV.EndInit()
-                }
-                Else { $WorkersLabel.Text = "Worker Status - no workers" }
-            }
-            Else { 
-                $WorkersLabel.Text = "Worker status reporting is disabled$(If (-not $Variables.APIRunspace) { " (Configuration item 'ShowWorkerStatus' -eq `$false)" })."
-            }
-            Break
-        }
+        #             $WorkersDGV.BeginInit()
+        #             $WorkersDGV.ClearSelection()
+        #             $WorkersDGV.DataSource = $Variables.Workers | Select-Object @(
+        #                 @{ Name = "Worker"; Expression = { $_.worker } }, 
+        #                 @{ Name = "Status"; Expression = { $_.status } }, 
+        #                 @{ Name = "Last seen"; Expression = { (Get-TimeSince $_.date) } }, 
+        #                 @{ Name = "Version"; Expression = { $_.version } }, 
+        #                 @{ Name = "Currency"; Expression = { $_.data.Currency | Select-Object -Unique } }, 
+        #                 @{ Name = "Estimated Earning/day"; Expression = { If ($null -ne $_.Data) { "{0:n$($Config.DecimalsMax)}" -f (($_.Data.Earning.Where({ -not [Double]::IsNaN($_) }) | Measure-Object -Sum | Select-Object -ExpandProperty Sum) * $Variables.Rates.BTC.($_.data.Currency | Select-Object -Unique)) } } }, 
+        #                 @{ Name = "Estimated Profit/day"; Expression = { If ($null -ne $_.Data) { " {0:n$($Config.DecimalsMax)}" -f (($_.Data.Profit.Where({ -not [Double]::IsNaN($_) }) | Measure-Object -Sum | Select-Object -ExpandProperty Sum) * $Variables.Rates.BTC.($_.data.Currency | Select-Object -Unique)) } } }, 
+        #                 @{ Name = "Miner(s)"; Expression = { $_.data.Name -join $nl } }, 
+        #                 @{ Name = "Pool(s)"; Expression = { $_.data.ForEach({ $_.Pool -split "," -join ' & ' }) -join $nl } }, 
+        #                 @{ Name = "Algorithm(s)"; Expression = { $_.data.ForEach({ $_.Algorithm -split "," -join ' & ' }) -join $nl } }, 
+        #                 @{ Name = "Live Hashrate(s)"; Expression = { $_.data.ForEach({ $_.CurrentSpeed.ForEach({ If ([Double]::IsNaN($_)) { "n/a" } Else { $_ | ConvertTo-Hash } }) -join ' & ' }) -join $nl } }, 
+        #                 @{ Name = "Benchmark Hashrate(s)"; Expression = { $_.data.ForEach({ $_.EstimatedSpeed.ForEach({ If ([Double]::IsNaN($_)) { "n/a" } Else { $_ | ConvertTo-Hash } }) -join ' & ' }) -join $nl } }
+        #             ) | Sort-Object -Property "Worker" | Out-DataTable
+        #             If ($WorkersDGV.Columns) { 
+        #                 $WorkersDGV.Columns[0].FillWeight = 70
+        #                 $WorkersDGV.Columns[1].FillWeight = 60
+        #                 $WorkersDGV.Columns[2].FillWeight = 80
+        #                 $WorkersDGV.Columns[3].FillWeight = 70
+        #                 $WorkersDGV.Columns[4].FillWeight = 40
+        #                 $WorkersDGV.Columns[5].FillWeight = 65; $WorkersDGV.Columns[5].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[5].HeaderCell.Style.Alignment = "MiddleRight"
+        #                 $WorkersDGV.Columns[6].FillWeight = 65; $WorkersDGV.Columns[6].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[6].HeaderCell.Style.Alignment = "MiddleRight"
+        #                 $WorkersDGV.Columns[7].FillWeight = 150
+        #                 $WorkersDGV.Columns[8].FillWeight = 95
+        #                 $WorkersDGV.Columns[9].FillWeight = 75
+        #                 $WorkersDGV.Columns[10].FillWeight = 65; $WorkersDGV.Columns[10].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[10].HeaderCell.Style.Alignment = "MiddleRight"
+        #                 $WorkersDGV.Columns[11].FillWeight = 65; $WorkersDGV.Columns[11].DefaultCellStyle.Alignment = "MiddleRight"; $WorkersDGV.Columns[11].HeaderCell.Style.Alignment = "MiddleRight"
+        #             }
+        #             Set-WorkerColor
+        #             $WorkersDGV.EndInit()
+        #         }
+        #         Else { $WorkersLabel.Text = "Worker Status - no workers" }
+        #     }
+        #     Else { 
+        #         $WorkersLabel.Text = "Worker status reporting is disabled$(If (-not $Variables.APIRunspace) { " (Configuration item 'ShowWorkerStatus' -eq `$false)" })."
+        #     }
+        #     Break
+        # }
         "Switching Log" { 
             $CheckShowSwitchingCPU.Enabled = [Boolean]($Variables.Devices.Where({ $_.State -ne [DeviceState]::Unsupported -and $_.Name -notin $Config.ExcludeDeviceName -and $_.Type -EQ "CPU" }))
             $CheckShowSwitchingAMD.Enabled = [Boolean]($Variables.Devices.Where({ $_.State -ne [DeviceState]::Unsupported -and $_.Name -notin $Config.ExcludeDeviceName -and $_.Type -EQ "GPU" -and $_.Vendor -EQ "AMD" }))
@@ -1599,7 +1599,8 @@ $TabControl.Name = "TabControl"
 $TabControl.ShowToolTips = $true
 $TabControl.Height = 0
 $TabControl.Width = 0
-$TabControl.Controls.AddRange(@($RunPage, $EarningsPage, $MinersPage, $PoolsPage, $RigMonitorPage, $SwitchingPage, $WatchdogTimersPage))
+# $TabControl.Controls.AddRange(@($RunPage, $EarningsPage, $MinersPage, $PoolsPage, $RigMonitorPage, $SwitchingPage, $WatchdogTimersPage))
+$TabControl.Controls.AddRange(@($RunPage, $EarningsPage, $MinersPage, $PoolsPage, $SwitchingPage, $WatchdogTimersPage))
 $TabControl.Add_Click({ Update-TabControl })
 
 $LegacyGUIForm.Controls.Add($TabControl)

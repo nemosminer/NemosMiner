@@ -9,11 +9,32 @@ If you are coming from 3.8.x.x it is highly recommended that you install NemosMi
 Known issues:
 - Balance Tracker / Earnings Graph: Date change take does not respect local time zone (accumulated data is calculated in UTC time)
 
+ChangeLog NemosMiner 5.0.2.5 2023/12/26
+=======================================
+
+Changes:
+- Remove all references to NemosMiner web page and rig monitor (web page is down, cannot contact Nemo)
+
+Enhancements:
+- Core: Minor speed optimizations
+
+Fixes:
+- Core: Benchmarking / Power consumption measuring miner count incorrect (Regression from 5.0.2.3)
+- Core: Error 'Miner data reader exited unexpectedly' (no more thread jobs available)
+- Main text window: Fix hash rate formatting of previously run miners
+- Legay GUI: Fix hash rate formatting of previously run miners
+
+Miner changes:
+- OneZeroMiner-v1.2.8
+- TeamRedMiner-v0.10.15
+- Wildrig-v0.40.4
+
+
 ChangeLog NemosMiner 5.0.2.4 2023/12/20
 =======================================
 
 Enhancements:
-- Pool: Add 'PoolUri' property with link to algorithms web page
+- Pools: Add 'PoolUri' property with link to algorithms web page
 
 Fixes:
 - PhoenixMiner: Did not create single algorithm miner objects (Regression from 5.0.0.0)
@@ -21,6 +42,7 @@ Fixes:
 Miner updates:
 - lolMiner-v1.81
 - Rigel-v1.11.0
+- SRBMinerMulti-v2.4.4
 - TeamBlackMiner-v2.16
 - Wildrig-v0.40.2a
 

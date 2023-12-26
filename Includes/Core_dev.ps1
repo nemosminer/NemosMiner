@@ -28,7 +28,9 @@ using module .\APIServer.psm1
 
 If ($Config.Transcript) { Start-Transcript -Path ".\Debug\$((Get-Item $MyInvocation.MyCommand.Path).BaseName)-Transcript_$(Get-Date -Format "yyyy-MM-dd_HH-mm-ss").log" }
 
-Do { 
+Do {
+    If ($LegacyGUIForm) { $LegacyGUIForm.Text = "$($Variables.Branding.ProductLabel) $($Variables.Branding.Version) - Runtime: {0:dd} days {0:hh} hrs {0:mm} mins - Path: $($Variables.Mainpath)" -f [TimeSpan](([DateTime]::Now).ToUniversalTime() - $Variables.ScriptStartTime) }
+
     Try { 
         # Set master timer
         $Variables.Timer = ([DateTime]::Now).ToUniversalTime()
@@ -1354,6 +1356,9 @@ Do {
             Start-Sleep -Milliseconds 100
             ForEach ($Miner in $Variables.RunningMiners.Where({ $_.Status -ne [MinerStatus]::DryRun })) { 
                 Try { 
+                    If ($DebugMinerGetData) { 
+                        [Void]$Miner.GetMinerData()
+                    }
                     If ($Miner.GetStatus() -ne [MinerStatus]::Running) { 
                         # Miner crashed
                         $Miner.StatusInfo = "Error: '$($Miner.Info)' exited unexpectedly"
@@ -1460,9 +1465,9 @@ Do {
     }
     Catch { 
         Write-Message -Level Error "Error in file $(($_.InvocationInfo.ScriptName -split "\\" | Select-Object -Last 2) -join "\") line $($_.InvocationInfo.ScriptLineNumber) detected. Restarting core..."
-        "$(Get-Date -Format "yyyy-MM-dd_HH:mm:ss")" >> "Logs\Error.txt"
-        $_.Exception | Format-List -Force >> "Logs\Error.txt"
-        $_.InvocationInfo | Format-List -Force >> "Logs\Error.txt"
+        "$(Get-Date -Format "yyyy-MM-dd_HH:mm:ss")" >> "Logs\Error_Dev.txt"
+        $_.Exception | Format-List -Force >> "Logs\Error_Dev.txt"
+        $_.InvocationInfo | Format-List -Force >> "Logs\Error_Dev.txt"
         $Variables.EndCycleTime = $Variables.StartCycleTime.AddSeconds($Config.Interval) # Reset timers
         Continue
     }

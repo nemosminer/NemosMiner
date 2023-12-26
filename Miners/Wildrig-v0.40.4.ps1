@@ -8,7 +8,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 NemosMiner is distributed in the hope that it will be useful, 
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
@@ -17,13 +17,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.2.4
+Version:        5.0.2.5
 Version date:   2023/12/20
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices.Where({ ($_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 1.2") -or $_.Type -eq "INTEL" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge [Version]"452.39.00") }))) { Return }
 
-$URI = "https://github.com/andru-kun/wildrig-multi/releases/download/0.40.2a/wildrig-multi-windows-0.40.2a.zip"
+$URI = "https://github.com/andru-kun/wildrig-multi/releases/download/0.40.4/wildrig-multi-windows-0.40.4.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = "$PWD\Bin\$Name\wildrig.exe"
 $DeviceEnumerator = "Type_Slot"
@@ -51,7 +51,7 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "Hex";              Type = "AMD"; Fee = @(0.0075); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo hex" }
     [PSCustomObject]@{ Algorithm = "HMQ1725";          Type = "AMD"; Fee = @(0.0075); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo hmq1725" } # CryptoDredge-v0.27.0 is fastest
     [PSCustomObject]@{ Algorithm = "JeongHash";        Type = "AMD"; Fee = @(0.0075); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo glt-jeonghash" }
-    [PSCustomObject]@{ Algorithm = "KawPow";           Type = "AMD"; Fee = @(0.0075); MinMemGiB = 0.62; Minerset = 1; WarmupTimes = @(45, 0);   ExcludeGPUArchitecture = @();        ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo kawpow" } # TeamRedMiner-v0.10.14 is fastest on Navi
+    [PSCustomObject]@{ Algorithm = "KawPow";           Type = "AMD"; Fee = @(0.0075); MinMemGiB = 0.62; Minerset = 1; WarmupTimes = @(45, 0);   ExcludeGPUArchitecture = @();        ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo kawpow" } # TeamRedMiner-v0.10.15 is fastest on Navi
 #   [PSCustomObject]@{ Algorithm = "Lyra2RE2";         Type = "AMD"; Fee = @(0.0075); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo lyra2v2" } # ASIC
 #   [PSCustomObject]@{ Algorithm = "Lyra2RE3";         Type = "AMD"; Fee = @(0.0075); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo lyra2v3" } # ASIC
     [PSCustomObject]@{ Algorithm = "Lyra2TDC";         Type = "AMD"; Fee = @(0.0075); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo lyra2tdc" }
@@ -99,7 +99,7 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "X16s";             Type = "AMD"; Fee = @(0.0075); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo x16s" } # FPGA
     [PSCustomObject]@{ Algorithm = "X17";              Type = "AMD"; Fee = @(0.0075); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo x17" }
     [PSCustomObject]@{ Algorithm = "X18";              Type = "AMD"; Fee = @(0.0075); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(30, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo x18" }
-    [PSCustomObject]@{ Algorithm = "X21s";             Type = "AMD"; Fee = @(0.0075); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(120, 45); ExcludeGPUArchitecture = @();        ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo x21s" } # TeamRedMiner-v0.10.14 is fastest
+    [PSCustomObject]@{ Algorithm = "X21s";             Type = "AMD"; Fee = @(0.0075); MinMemGiB = 2;    MinerSet = 0; WarmupTimes = @(120, 45); ExcludeGPUArchitecture = @();        ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo x21s" } # TeamRedMiner-v0.10.15 is fastest
     [PSCustomObject]@{ Algorithm = "X22";              Type = "AMD"; Fee = @(0.0075); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo x22" }
     [PSCustomObject]@{ Algorithm = "X22i";             Type = "AMD"; Fee = @(0.0075); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo x22i" }
     [PSCustomObject]@{ Algorithm = "X25x";             Type = "AMD"; Fee = @(0.0075); MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(60, 15);  ExcludeGPUArchitecture = @();        ExcludeGPUModel = ""; ExcludePools = @();           Arguments = " --algo x25x" }

@@ -8,7 +8,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 NemosMiner is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
@@ -18,7 +18,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Includes\MinerAPIs\Xgminer.ps1
-Version:        5.0.2.4
+Version:        5.0.2.5
 Version date:   2023/12/20
 #>
 
@@ -93,7 +93,7 @@ Class XgMiner : Miner {
             $Shares_Rejected = [Int64]$DataSummary.rejected
             $Shares_Invalid = [Int64]$DataSummary.stale
             $Shares | Add-Member @{ $HashRate_Name = @($Shares_Accepted, $Shares_Rejected, $Shares_Invalid, ($Shares_Accepted + $Shares_Rejected + $Shares_Invalid)) }
-            }
+        }
 
         $PowerConsumption = [Double]0
 

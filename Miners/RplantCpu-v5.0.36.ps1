@@ -8,7 +8,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 NemosMiner is distributed in the hope that it will be useful, 
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
@@ -17,7 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.2.4
+Version:        5.0.2.5
 Version date:   2023/12/20
 #>
 
@@ -53,7 +53,7 @@ $Algorithms = @(
 #   [PSCustomObject]@{ Algorithm = "CpuPower";      Minerset = 3; WarmupTimes = @(60, 60);  ExcludePools = @();           Arguments = " --algo cpupower" } # ASIC
     [PSCustomObject]@{ Algorithm = "CryptoVantaA";  Minerset = 2; WarmupTimes = @(60, 60);  ExcludePools = @();           Arguments = " --algo cryptovantaa" }
 #   [PSCustomObject]@{ Algorithm = "CurveHash";     Minerset = 2; WarmupTimes = @(90, 15);  ExcludePools = @();           Arguments = " --algo curvehash" } # reported hashrates too high (https://github.com/rplant8/cpuminer-opt-rplant/issues/21)
-#   [PSCustomObject]@{ Algorithm = "Decred";        Minerset = 3; WarmupTimes = @(60, 60);  ExcludePools = @();           Arguments = " --algo Decred" } # ASIC, No hashrate in time
+#   [PSCustomObject]@{ Algorithm = "Decred";        Minerset = 3; WarmupTimes = @(60, 60);  ExcludePools = @();           Arguments = " --algo Decred" } # ASIC, No hashrate in time, algo is now using Blake3d
 #   [PSCustomObject]@{ Algorithm = "DMDGr";         Minerset = 3; WarmupTimes = @(60, 60);  ExcludePools = @();           Arguments = " --algo dmd-gr" } # ASIC
     [PSCustomObject]@{ Algorithm = "Ghostrider";    MinerSet = 0; WarmupTimes = @(180, 60); ExcludePools = @();           Arguments = " --algo gr" }
 #   [PSCustomObject]@{ Algorithm = "Groestl";       Minerset = 3; WarmupTimes = @(90, 15);  ExcludePools = @();           Arguments = " --algo groestl" } # ASIC

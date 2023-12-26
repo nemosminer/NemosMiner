@@ -8,7 +8,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 NemosMiner is distributed in the hope that it will be useful, 
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
@@ -17,7 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.2.4
+Version:        5.0.2.5
 Version date:   2023/12/20
 #>
 
@@ -39,7 +39,7 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithms = @("EthashB3", "kHeavyHash");   Type = "AMD"; Fee = @(0.01, 0.01);   MinMemGiB = 1.24; Minerset = 2; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @());             ExcludeGPUArchitecture = @("GCN4"); Arguments = @(" -algo EthashB3", " -algo Kaspa") } # https://github.com/nanopool/nanominer/issues/406
     [PSCustomObject]@{ Algorithms = @("EvrProgPow");               Type = "AMD"; Fee = @(0.02);         MinMemGiB = 1.08; Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 60); ExcludePools = @(@(), @());             ExcludeGPUArchitecture = @();       Arguments = @(" -algo Evrprogpow") }
     [PSCustomObject]@{ Algorithms = @("FiroPow");                  Type = "AMD"; Fee = @(0.01);         MinMemGiB = 1.08; Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             ExcludeGPUArchitecture = @();       Arguments = @(" -algo FiroPow") }
-    [PSCustomObject]@{ Algorithms = @("KawPow");                   Type = "AMD"; Fee = @(0.02);         MinMemGiB = 1.08; Minerset = 2; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@("ProHashing"), @()); ExcludeGPUArchitecture = @();       Arguments = @(" -algo KawPow") } # TeamRedMiner-v0.10.14 is fastest
+    [PSCustomObject]@{ Algorithms = @("KawPow");                   Type = "AMD"; Fee = @(0.02);         MinMemGiB = 1.08; Minerset = 2; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@("ProHashing"), @()); ExcludeGPUArchitecture = @();       Arguments = @(" -algo KawPow") } # TeamRedMiner-v0.10.15 is fastest
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");               Type = "AMD"; Fee = @(0.02);         MinMemGiB = 2;    Minerset = 2; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             ExcludeGPUArchitecture = @();       Arguments = @(" -algo Kaspa") }
     [PSCustomObject]@{ Algorithms = @("UbqHash");                  Type = "AMD"; Fee = @(0.01);         MinMemGiB = 1.08; Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             ExcludeGPUArchitecture = @();       Arguments = @(" -algo Ubqhash") } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithms = @("VertHash");                 Type = "AMD"; Fee = @(0.01);         MinMemGiB = 3;    Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             ExcludeGPUArchitecture = @();       Arguments = @(" -algo Verthash") }

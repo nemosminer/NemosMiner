@@ -8,7 +8,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 NemosMiner is distributed in the hope that it will be useful, 
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
@@ -17,7 +17,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.2.4
+Version:        5.0.2.5
 Version date:   2023/12/20
 #>
 
@@ -52,7 +52,7 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithms = @("CryptonightGpu");               Type = "AMD"; Fee = @(0.0085);         MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(60, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @());              Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm cryptonight_gpu") }
     [PSCustomObject]@{ Algorithms = @("CryptonightHeavyXhv");          Type = "AMD"; Fee = @(0.0085);         MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @());              Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm cryptonight_xhv") }
     [PSCustomObject]@{ Algorithms = @("CryptonightTalleo");            Type = "AMD"; Fee = @(0.0085);         MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(60, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @());              Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm cryptonight_talleo") }
-    [PSCustomObject]@{ Algorithms = @("CryptonightTurtle");            Type = "AMD"; Fee = @(0.0085);         MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @());              Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm cryptonight_turtle") } # TeamRedMiner-v0.10.14 is fastest
+    [PSCustomObject]@{ Algorithms = @("CryptonightTurtle");            Type = "AMD"; Fee = @(0.0085);         MinMemGiB = 1;    Minerset = 2; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @());              Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm cryptonight_turtle") } # TeamRedMiner-v0.10.15 is fastest
     [PSCustomObject]@{ Algorithms = @("CryptonightUpx");               Type = "AMD"; Fee = @(0.0085);         MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(60, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @());              Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm cryptonight_upx") }
     [PSCustomObject]@{ Algorithms = @("CurveHash");                    Type = "AMD"; Fee = @(0.0085);         MinMemGiB = 2;    Minerset = 1; WarmupTimes = @(60, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @());              Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm curvehash") }
     [PSCustomObject]@{ Algorithms = @("Decred");                       Type = "AMD"; Fee = @(0.01);           MinMemGiB = 1;    MinerSet = 0; WarmupTimes = @(30, 30); ExcludeGPUArchitecture = @(); ExcludePools = @(@(), @());              Arguments = @(" --gpu-auto-tune 2 --disable-cpu --disable-gpu-intel --disable-gpu-nvidia --algorithm blake3d_decred") }
