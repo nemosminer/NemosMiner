@@ -19,8 +19,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           Core.ps1
-Version:        5.0.2.5
-Version date:   2023/12/20
+Version:        5.0.2.6
+Version date:   2023/12/28
 #>
 
 using module .\Include.psm1
@@ -1258,7 +1258,7 @@ Do {
                 }
 
                 # Add extra time when CPU mining and miner requires DAG creation
-                If ($Miner.Workers.Pool.DAGSizeGiB -and $Variables.MinersBestPerDevice_Combo.Type -contains "CPU") { $Miner.WarmupTimes[0] += 15 <# seconds #>}
+                If ($Miner.Workers.Pool.DAGSizeGiB -and $Variables.MinersBestPerDevice_Combo.Type -contains "CPU" -and -not $Config.DryRun) { $Miner.WarmupTimes[0] += 15 <# seconds #>}
                 # Add extra time when notebook runs on battery
                 If ($Miner.Workers.Pool.DAGSizeGiB -and (Get-CimInstance Win32_Battery).BatteryStatus -eq 1) { $Miner.WarmupTimes[0] += 90 <# seconds #>}
 

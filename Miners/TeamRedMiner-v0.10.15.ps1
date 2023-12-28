@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.2.5
-Version date:   2023/12/20
+Version:        5.0.2.6
+Version date:   2023/12/28
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices.Where({ $_.Type -eq "AMD" -and $_.OpenCL.ClVersion -ge "OpenCL C 2.0" }))) { Return }
@@ -51,9 +51,9 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithms = @("Ethash");                   Fee = @(0.01);         MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @());           ExcludeGPUArchitecture = @();                                  Arguments = " --algo=ethash" } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithms = @("Ethash", "kHeavyHash");     Fee = @(0.01, 0.01);   MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @());           ExcludeGPUArchitecture = @();                                  Arguments = " --algo=ethash" } # PhoenixMiner-v6.2c is fastest
 #   [PSCustomObject]@{ Algorithms = @("Ethash", "IronFish");       Fee = @(0.01, 0.01);   MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @("NiceHash")); ExcludeGPUArchitecture = @();                                  Arguments = " --algo=ethash" } # Pools with support at this time are Herominers, Flexpool and Kryptex
-    [PSCustomObject]@{ Algorithms = @("FiroPow");                  Fee = @(0.02);         MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @());           ExcludeGPUArchitecture = @("RDNA3");                           Arguments = " --algo=firopow" } # Wildrig-v0.40.4 is fastest on Polaris
+    [PSCustomObject]@{ Algorithms = @("FiroPow");                  Fee = @(0.02);         MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @());           ExcludeGPUArchitecture = @("RDNA3");                           Arguments = " --algo=firopow" } # Wildrig-v0.40.5 is fastest on Polaris
     [PSCustomObject]@{ Algorithms = @("IronFish");                 Fee = @(0.025);        MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@("NiceHash"), @()); ExcludeGPUArchitecture = @();                                  Arguments = " --algo=ironfish" } # Pools with support at this time are Herominers, Flexpool and Kryptex
-    [PSCustomObject]@{ Algorithms = @("KawPow");                   Fee = @(0.02);         MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @());           ExcludeGPUArchitecture = @("RDNA3");                           Arguments = " --algo=kawpow" } # Wildrig-v0.40.4 is fastest on Polaris
+    [PSCustomObject]@{ Algorithms = @("KawPow");                   Fee = @(0.02);         MinMemGiB = 0.77; MinerSet = 0; WarmupTimes = @(60, 60);  ExcludePools = @(@(), @());           ExcludeGPUArchitecture = @("RDNA3");                           Arguments = " --algo=kawpow" } # Wildrig-v0.40.5 is fastest on Polaris
     [PSCustomObject]@{ Algorithms = @("kHeavyHash");               Fee = @(0.01);         MinMemGiB = 2.0;  MinerSet = 0; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());           ExcludeGPUArchitecture = @();                                  Arguments = " --algo=kas" }
 #   [PSCustomObject]@{ Algorithms = @("Lyra2Z");                   Fee = @(0.03);         MinMemGiB = 2.0;  MinerSet = 0; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());           ExcludeGPUArchitecture = @("GCN1", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=lyra2z" } # ASIC
 #   [PSCustomObject]@{ Algorithms = @("Lyra2RE3");                 Fee = @(0.025);        MinMemGiB = 2.0;  Minerset = 2; WarmupTimes = @(60, 15);  ExcludePools = @(@(), @());           ExcludeGPUArchitecture = @("GCN1", "RDNA1", "RDNA2", "RDNA3"); Arguments = " --algo=lyra2rev3" } # ASIC
@@ -118,13 +118,12 @@ If ($Algorithms) {
                                     $PrerequisiteURI = "https://github.com/Minerx117/miners/releases/download/Verthash.Dat/VertHash.dat"
                                 }
                                 Else { 
-                                    $PrerequisitePath = ""
-                                    $PrerequisiteURI = ""
+                                    $PrerequisitePath = $PrerequisiteURI = ""
                                 }
 
                                 [PSCustomObject]@{ 
                                     API              = "Xgminer"
-                                    Arguments        = "$Arguments --watchdog_script --no_gpu_monitor --init_style=3 --hardware=gpu --platform=$($AvailableMiner_Devices.PlatformId | Sort-Object -Unique) --api_listen=127.0.0.1:$MinerAPIPort --devices=$(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique).ForEach({ '{0:d}' -f $_ }) -join ',')"
+                                    Arguments        = "$Arguments --watchdog_script --no_gpu_monitor --init_style=3 --hardware=gpu --api_listen=127.0.0.1:$MinerAPIPort --devices=$(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique).ForEach({ '{0:d}' -f $_ }) -join ',')"
                                     DeviceNames      = $AvailableMiner_Devices.Name
                                     Fee              = $_.Fee # Dev fee
                                     MinerSet         = $_.MinerSet

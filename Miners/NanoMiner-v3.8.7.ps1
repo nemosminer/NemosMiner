@@ -17,13 +17,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.2.5
-Version date:   2023/12/20
+Version:        5.0.2.6
+Version date:   2023/12/28
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices.Where({ $_.Type -ne "NVIDIA" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.OpenCL.DriverVersion -ge [Version]"455.23") }))) { Return }
 
-$URI = "https://github.com/nanopool/nanominer/releases/download/v3.8.6/nanominer-windows-3.8.6.zip"
+$URI = "https://github.com/nanopool/nanominer/releases/download/v3.8.7/nanominer-windows-3.8.7.zip"
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName
 $Path = "$PWD\Bin\$Name\nanominer.exe"
 $DeviceEnumerator = "Slot"
@@ -44,8 +44,9 @@ $Algorithms = @(
     [PSCustomObject]@{ Algorithms = @("UbqHash");                  Type = "AMD"; Fee = @(0.01);         MinMemGiB = 1.08; Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             ExcludeGPUArchitecture = @();       Arguments = @(" -algo Ubqhash") } # PhoenixMiner-v6.2c is fastest
     [PSCustomObject]@{ Algorithms = @("VertHash");                 Type = "AMD"; Fee = @(0.01);         MinMemGiB = 3;    Minerset = 1; Tuning = " -coreClocks +20 -memClocks +100 -memTweak 2"; WarmupTimes = @(45, 0);  ExcludePools = @(@(), @());             ExcludeGPUArchitecture = @();       Arguments = @(" -algo Verthash") }
 
-#   [PSCustomObject]@{ Algorithms = @("Randomx");   Type = "CPU"; Fee = @(0.02); Minerset = 3; WarmupTimes = @(45, 0); ExcludePools = @(@(), @()); Arguments = @(" -algo Randomx") } # ASIC
-    [PSCustomObject]@{ Algorithms = @("VerusHash"); Type = "CPU"; Fee = @(0.02); Minerset = 3; WarmupTimes = @(45, 0); ExcludePools = @(@(), @()); Arguments = @(" -algo Verushash") } # https://github.com/nanopool/nanominer/issues/389
+#   [PSCustomObject]@{ Algorithms = @("Randomx");    Type = "CPU"; Fee = @(0.02); Minerset = 3; WarmupTimes = @(45, 0); ExcludePools = @(@(), @()); Arguments = @(" -algo Randomx") } # ASIC
+    [PSCustomObject]@{ Algorithms = @("RandomNevo"); Type = "CPU"; Fee = @(0.02); Minerset = 3; WarmupTimes = @(45, 0); ExcludePools = @(@(), @()); Arguments = @(" -algo RandomNEVO") }
+    [PSCustomObject]@{ Algorithms = @("VerusHash");  Type = "CPU"; Fee = @(0.02); Minerset = 3; WarmupTimes = @(45, 0); ExcludePools = @(@(), @()); Arguments = @(" -algo Verushash") } # https://github.com/nanopool/nanominer/issues/389
 
     [PSCustomObject]@{ Algorithms = @("EtcHash");                Type = "INTEL"; Fee = @(0.01);       MinMemGiB = 1.08; Minerset = 2; WarmupTimes = @(45, 45); ExcludePools = @(@(), @());             ExcludeGPUArchitecture = @(); Arguments = @(" -algo Etchash") }
     [PSCustomObject]@{ Algorithms = @("EtcHash", "kHeavyHash");  Type = "INTEL"; Fee = @(0.01, 0.01); MinMemGiB = 1.24; Minerset = 2; WarmupTimes = @(45, 45); ExcludePools = @(@(), @());             ExcludeGPUArchitecture = @(); Arguments = @(" -algo Etchash", " -algo Kaspa") }
@@ -130,8 +131,7 @@ If ($Algorithms) {
                                     }
                                 }
                                 Else { 
-                                    $PrerequisitePath = ""
-                                    $PrerequisiteURI = ""
+                                    $PrerequisitePath = $PrerequisiteURI = ""
                                 }
 
                                 [PSCustomObject]@{ 

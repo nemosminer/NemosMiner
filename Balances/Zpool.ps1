@@ -18,8 +18,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 <#
 Product:        NemosMiner
 File:           \Balances\Zpool.ps1
-Version:        5.0.2.5
-Version date:   2023/12/20
+Version:        5.0.2.6
+Version date:   2023/12/28
 #>
 
 $Name = (Get-Item $MyInvocation.MyCommand.Path).BaseName

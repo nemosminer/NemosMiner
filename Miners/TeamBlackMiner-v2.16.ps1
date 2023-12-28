@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.2.5
-Version date:   2023/12/20
+Version:        5.0.2.6
+Version date:   2023/12/28
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices.Where({ $_.Type -eq "AMD" -or ($_.OpenCL.ComputeCapability -ge "5.0" -and $_.CUDAVersion -ge [Version]"11.6") }))) { Return }
@@ -148,8 +148,7 @@ If ($Algorithms) {
                                         $PrerequisiteURI = "https://github.com/Minerx117/miners/releases/download/Verthash.Dat/VertHash.dat"
                                     }
                                     Else { 
-                                        $PrerequisitePath = ""
-                                        $PrerequisiteURI = ""
+                                        $PrerequisitePath = $PrerequisiteURI = ""
                                     }
 
                                     [PSCustomObject]@{ 

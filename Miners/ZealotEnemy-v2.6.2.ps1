@@ -17,8 +17,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 <#
 Product:        NemosMiner
-Version:        5.0.2.5
-Version date:   2023/12/20
+Version:        5.0.2.6
+Version date:   2023/12/28
 #>
 
 If (-not ($Devices = $Variables.EnabledDevices.Where({ $_.OpenCL.ComputeCapability -gt "5.0" }))) { Return }
@@ -38,10 +38,10 @@ $DeviceEnumerator = "Type_Vendor_Index"
 $Algorithms = @(
     [PSCustomObject]@{ Algorithm = "Aergo";      MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo aergo --intensity 23 --statsavg 5" }
 #   [PSCustomObject]@{ Algorithm = "BCD";        MinMemGiB = 3;    Minerset = 3; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo bcd --statsavg 5" } # ASIC
-    [PSCustomObject]@{ Algorithm = "Bitcore";    MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(90, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo bitcore --intensity 22 --statsavg 5" }
+#   [PSCustomObject]@{ Algorithm = "Bitcore";    MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(90, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo bitcore --intensity 22 --statsavg 5" } # Bitcore is using MegaBtx
     [PSCustomObject]@{ Algorithm = "C11";        MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo c11 --intensity 24 --statsavg 5" }
     [PSCustomObject]@{ Algorithm = "Hex";        MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(30, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo hex --intensity 24 --statsavg 5" }
-#   [PSCustomObject]@{ Algorithm = "KawPow";     MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo kawpow --statsavg 1 --diff-factor 5" } # No hashrate in time
+    [PSCustomObject]@{ Algorithm = "KawPow";     MinMemGiB = 0.77; Minerset = 2; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo kawpow --intensity 24 --statsavg 1" }
 #   [PSCustomObject]@{ Algorithm = "Phi";        MinMemGiB = 3;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo phi --statsavg 5" } # ASIC
     [PSCustomObject]@{ Algorithm = "Phi2";       MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(60, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo phi2 --statsavg 5" }
     [PSCustomObject]@{ Algorithm = "Polytimos";  MinMemGiB = 2;    Minerset = 2; WarmupTimes = @(45, 0);  ExcludeGPUArchitecture = @(); ExcludePools = @(); Arguments = " --algo poly --statsavg 5" }
@@ -74,6 +74,7 @@ If ($Algorithms) {
 
                         $ExcludeGPUArchitecture = $_.ExcludeGPUArchitecture
                         $MinMemGiB = $_.MinMemGiB + $Pool.DAGSizeGiB
+                        If ($_.Algorithm -eq "KawPow" -and $MinMemGB -lt 2) { $MinMemGiB = 4 } # No hash rates in time for GPUs with 2GB
                         If ($AvailableMiner_Devices = $Miner_Devices.Where({ $_.MemoryGiB -ge $MinMemGiB -and $_.Architecture -notin $ExcludeGPUArchitecture })) { 
 
                             $Miner_Name = "$Name-$($AvailableMiner_Devices.Count)x$($AvailableMiner_Devices.Model | Select-Object -Unique)"
@@ -83,7 +84,7 @@ If ($Algorithms) {
 
                             [PSCustomObject]@{ 
                                 API         = "Trex"
-                                Arguments   = "$Arguments $(If ($Pool.PoolPorts[1]) { "--no-cert-verify --url stratum+ssl" } Else { "--url stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User) --pass $($Pool.Pass) --api-bind 0 --api-bind-http $MinerAPIPort --retry-pause 1 --quiet --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique).ForEach({ '{0:x}' -f $_ }) -join ',')"
+                                Arguments   = "$Arguments $(If ($Pool.PoolPorts[1]) { "$(If($Config.SSLAllowSelfSignedCertificate) { "--no-cert-verify " })--url stratum+ssl" } Else { "--url stratum+tcp" })://$($Pool.Host):$($Pool.PoolPorts | Select-Object -Last 1) --user $($Pool.User) --pass $($Pool.Pass) --api-bind 0 --api-bind-http $MinerAPIPort --retry-pause 1 --quiet --devices $(($AvailableMiner_Devices.$DeviceEnumerator | Sort-Object -Unique).ForEach({ '{0:x}' -f $_ }) -join ',')"
                                 DeviceNames = $AvailableMiner_Devices.Name
                                 Fee         = @(0.01) # Dev fee
                                 MinerSet    = $_.MinerSet
