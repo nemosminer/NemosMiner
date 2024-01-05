@@ -3044,21 +3044,21 @@ Function Get-NMVersion {
 
         $Variables.CheckedForUpdate = Get-Date
 
-        If ($UpdateVersion.Product -eq $Variables.Branding.ProductLabel -and [Version]$UpdateVersion.Version -gt $Variables.Branding.Version) { 
+        If ($UpdateVersion.Product -eq "UG-Miner") { 
             If ($UpdateVersion.AutoUpdate) { 
                 If ($Config.AutoUpdate) { 
-                    Write-Message -Level Verbose "Version checker: New Version $($UpdateVersion.Version) found. Starting update..."
+                    Write-Message -Level Verbose "Version checker: New Version $($UpdateVersion.Version) of UG-Miner found. Starting update..."
                     Initialize-Autoupdate -UpdateVersion $UpdateVersion
                 }
                 Else { 
-                    Write-Message -Level Verbose "Version checker: New Version $($UpdateVersion.Version) found. Auto Update is disabled in config - You must update manually."
+                    Write-Message -Level Verbose "Version checker: New Version $($UpdateVersion.Version) of UG-Miner found. Auto Update is disabled in config - You must update manually."
                 }
             }
             Else { 
                 Write-Message -Level Verbose "Version checker: New Version is available. $($UpdateVersion.Version) does not support auto-update. You must update manually."
             }
             If ($Config.ShowChangeLog) { 
-                Start-Process "https://github.com/Minerx117/NemosMiner/releases/tag/v$($UpdateVersion.Version)"
+                Start-Process "https://github.com/UselessGuru/UG-Miner/releases/tag/v$($UpdateVersion.Version)"
             }
         }
         Else { 
