@@ -1,0 +1,409 @@
+{
+  "HashCryptos": {
+    "Algorithm": [],
+    "AutoExchange": true,
+    "BalancesKeepAlive": 90, // Inactive accounts are purged after 90 days
+    "BrainConfig": {
+      "SampleHalfPower": 0,
+      "SampleSizeMinutes": 45,
+      "UseTransferFile": false
+    },
+    "ExcludeAlgorithm": [],
+    "GuaranteedPayoutCurrencies": [
+      "BCH",
+      "BSV",
+      "BTC",
+      "DASH",
+      "DGB",
+      "DOGE",
+      "FTC",
+      "GRS",
+      "LTC",
+      "MONA",
+      "PEPEW",
+      "RVN",
+      "VTC",
+      "XEC",
+      "XMR",
+      "XMY",
+      "XVG",
+      "ZEC"
+    ],
+    "PayoutCurrency": "[Default]",
+    "PayoutThreshold": {
+      "*": 0.0000075
+    },
+    "PoolAPIAllowedFailureCount": 3,
+    "PoolAPIRetryInterval": 11,
+    "PoolAPITimeout": 30,
+    "PoolCurrenciesUri": "",
+    "PoolStatusUri": "https://hashcryptos.com/api/status",
+    "PoolDebug": false,
+    "Region": [
+      "n/a"
+    ],
+    "SSL": "prefer",
+    "Variant": {
+      "HashCryptos": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_current"
+      },
+      "HashCryptos24hr": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_last24h"
+      },
+      "HashCryptosPlus": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "Plus_Price"
+      }
+    }
+  },
+  "Hiveon": {
+    "Algorithm": [],
+    "AutoExchange": false,
+    "BalancesKeepAlive": 90, // No expiration communicated by pool, use 90 days just to be sure
+    "ExcludeAlgorithm": [],
+    "ExcludeRegion": [],
+    "GuaranteedPayoutCurrencies": [
+      "ETC",
+      "ETH",
+      "KAS",
+      "RVN"
+    ],
+    "PayoutCurrencies": [
+      "ETC",
+      "ETH",
+      "KAS",
+      "RVN"
+    ],
+    "PayoutThreshold": {
+      "ETC": 1,
+      "ETH": 0.2,
+      "KAS": 50,
+      "RVN": 10
+    },
+    "Region": [
+      "n/a"
+    ],
+    "PoolAPIAllowedFailureCount": 3,
+    "PoolAPIRetryInterval": 3,
+    "PoolAPITimeout": 20,
+    "PoolDebug": false,
+    "SSL": "prefer",
+    "Variant": {
+      "Hiveon": {}
+    }
+  },
+  "MiningDutch": {
+    "Algorithm": [],
+    "AutoExchange": true,
+    "BalancesKeepAlive": 180, // https://www.mining-dutch.nl/index.php?page=wallets
+    "BrainConfig": {
+      "SampleHalfPower": 0,
+      "SampleSizeMinutes": 45,
+      "UseTransferFile": false
+    },
+    "ExcludeAlgorithm": [],
+    "ExcludeRegion": [],
+    "PayoutThreshold": {
+      "*": {
+         "mBTC": 0.00000025
+      },
+      "BTC": 0.001
+    },
+    "PoolAPIAllowedFailureCount": 3,
+    "PoolAPIRetryInterval": 15, // Only 1 request every 10 seconds allowed
+    "PoolAPITimeout": 3,
+    "PoolCurrenciesUri": "",
+    "PoolStatusUri": "https://www.mining-dutch.nl/api/status",
+    "PoolDebug": false,
+    "Region": [
+      "americas",
+      "europe",
+      "hongkong",
+      "india",
+      "moscow",
+      "singapore"
+    ],
+    "Variant": {
+      "MiningDutch": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_current"
+      },
+      "MiningDutch24hr": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_last24h"
+      },
+      "MiningDutchPlus": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "Plus_Price"
+      }
+    }
+  },
+  "MiningPoolHub": {
+    "Algorithm": [
+      "-Neoscrypt",
+      "-Skein",
+      "-VertHash"
+    ],
+    "AutoExchange": true,
+    "BalancesKeepAlive": 90, // No expiration communicated by pool
+    "EarningsAdjustmentFactor": 0.1, // Lower projected earnings until pool resolves its payout issues (https://bitcointalk.org/index.php?topic=472510.msg61523969#msg61523969)
+    "ExcludeAlgorithm": [],
+    "Fee": 0.009,
+    "GuaranteedPayoutCurrencies": [
+      "ADZ",
+      "AUR",
+      "BCH",
+      "BSTY",
+      "BTC",
+      "BTG",
+      "DASH",
+      "DGB",
+      "ESN",
+      "ETC",
+      "ETH",
+      "ETN",
+      "EXP",
+      "FTC",
+      "GAME",
+      "GRS",
+      "LTC",
+      "MAX",
+      "MONA",
+      "MUSIC",
+      "RVN",
+      "SC",
+      "START",
+      "SXC",
+      "VTC",
+      "XMR",
+      "XMY",
+      "XVG",
+      "XZC",
+      "ZCL",
+      "ZEC",
+      "ZEN"
+    ],
+    "PoolDebug": false,
+    "PoolAPIAllowedFailureCount": 3,
+    "PoolAPIRetryInterval": 3,
+    "PoolAPITimeout": 20,    "Region": [
+      "asia",
+      "europe",
+      "us-east"
+    ],
+    "Variant": {
+      "MiningPoolHub": {}
+    }
+  },
+  "NiceHash": {
+    "Algorithm": [],
+    "AutoExchange": true,
+    "BalancesKeepAlive": 180, // Your NiceHash Account may be deactivated due to your inactivity
+    "EarningsAdjustmentFactor": 1.0, // NiceHash earnings estimates are always correct
+    "ExcludeAlgorithm": [],
+    "GuaranteedPayoutCurrencies": [
+      "BTC" // Required here for donation
+    ],
+    "Region": [
+      "n/a (Anycast)"
+    ],
+    "PoolDebug": false,
+    "PoolAPIAllowedFailureCount": 3,
+    "PoolAPIRetryInterval": 3,
+    "PoolAPITimeout": 20,
+    "SSL": "prefer",
+    "Variant": {
+      "NiceHash External": {
+        "Fee": 0.05,
+        "PayoutCurrency": "BTC", // Only BTC is supported
+        "PayoutThreshold": {
+          "mBTC": 1
+        }
+      },
+      "NiceHash Internal": {
+        "Fee": 0.02,
+        "PayoutCurrency": "BTC", // Only BTC is supported
+        "PayoutThreshold": {
+          "mBTC": 0.5
+        }
+      }
+    }
+  },
+  "ProHashing": {
+    "Algorithm": [],
+    "AutoExchange": true,
+    "BalancesKeepAlive": 90, // The customer has not mined with the pool for 90 days (https://prohashing.com/help/prohashing-legal-information#terms)
+    "BrainConfig": {
+      "SampleHalfPower": 0,
+      "SampleSizeMinutes": 45,
+      "UseTransferFile": false
+    },
+    "ExcludeAlgorithm": [],
+    "GuaranteedPayoutCurrencies": [
+      "BTC",
+      "LTC"
+    ],
+    "PoolAPIAllowedFailureCount": 3,
+    "PoolAPIRetryInterval": 3,
+    "PoolAPITimeout": 20,
+    "PoolCurrenciesUri": "https://prohashing.com/api/v1/currencies",
+    "PoolStatusUri": "https://prohashing.com/api/v1/status",
+    "PoolDebug": false,
+    "Region": [
+      "ASIA",
+      "EU",
+      "US"
+    ],
+    "Variant": {
+      "ProHashing": {
+        "DivisorMultiplier": 1,
+        "PriceField": "estimate_current"
+      },
+      "ProHashing24hr": {
+        "DivisorMultiplier": 1,
+        "PriceField": "actual_last24h"
+      },
+      "ProHashingPlus": {
+        "DivisorMultiplier": 1,
+        "PriceField": "Plus_Price"
+      }
+    }
+  },
+  "ZergPool": {
+    "Algorithm": [],
+    "AutoExchange": true,
+    "BalancesKeepAlive": 90, // Accounts with no mining activity for 3 months are purged 
+    "BrainConfig": {
+      "SampleHalfPower": 0,
+      "SampleSizeMinutes": 45,
+      "UseTransferFile": false
+    },
+    "Currency": [],
+    "DefaultFee": 0.5,
+    "ExcludeAlgorithm": [],
+    "GuaranteedPayoutCurrencies": [
+      "BTC",
+      "DOGE",
+      "LTC",
+      "DASH",
+      "RVN",
+      "FLUX",
+      "BCH",
+      "ETH",
+      "USDT",
+      "XMR",
+      "RTM",
+      "SHIB",
+      "MATIC",
+      "TRX",
+      "USDT-TRC20",
+      "KLV",
+      "WIN",
+      "BNB",
+      "CAKE",
+      "USDT-BEP20",
+      "USDC-TRC20",
+      "USDC",
+      "USDC-BEP20"
+    ],
+    "PayoutCurrency": "[Default]",
+    "PayoutThreshold": { // PayoutThreshold is retrieved from API data, but can be set here to override value set by pool (can only set higher)
+      // e.g. "mBTC": 5
+    },
+    "PoolAPIAllowedFailureCount": 3,
+    "PoolAPIRetryInterval": 3,
+    "PoolAPITimeout": 30,
+    "PoolCurrenciesUri": "https://zergpool.com/api/currencies",
+    "PoolStatusUri": "https://zergpool.com/api/status",
+    "PoolDebug": false,
+    "ProfitSwitching": false, // Pool changes DAG epoch when best coin switches
+    "Region": [
+      "asia",
+      "eu",
+      "n/a (Anycast)",
+      "na"
+    ],
+    "SSL": "false",
+    "Variant": {
+      "ZergPool": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_current"
+      },
+      "ZergPool24hr": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_last24h"
+      },
+      "ZergPoolCoins": {
+        "DivisorMultiplier": 1000000000,
+        "PriceField": "estimate_current"
+      },
+      "ZergPoolCoins24hr": {
+        "DivisorMultiplier": 10000000000,
+        "PriceField": "estimate_last24h"
+      },
+      "ZergPoolCoinsPlus": {
+        "DivisorMultiplier": 1000000000,
+        "PriceField": "Plus_Price"
+      },
+      "ZergPoolPlus": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "Plus_Price"
+      }
+    }
+  },
+  "ZPool": {
+    "Algorithm": [],
+    "AutoExchange": true,
+    "BalancesKeepAlive": 90, // Inactive accounts are purged after 90 days
+    "BrainConfig": {
+      "SampleHalfPower": 0,
+      "SampleSizeMinutes": 45,
+      "UseTransferFile": false
+    },
+    "ExcludeAlgorithm": [],
+    "GuaranteedPayoutCurrencies": [
+      "BCH",
+      "BTC",
+      "DASH",
+      "DOGE",
+      "ETH",
+      "LTC",
+      "RVN"
+    ],
+    "PayoutCurrency": "[Default]",
+    "PayoutThreshold": {
+      "*": 0.0125,
+      "mBTC": 1.5
+    },
+    "PoolAPIAllowedFailureCount": 3,
+    "PoolAPIRetryInterval": 3,
+    "PoolAPITimeout": 30,
+    "PoolCurrenciesUri": "https://www.zpool.ca/api/currencies",
+    "PoolStatusUri": "https://www.zpool.ca/api/status",
+    "PoolDebug": false,
+    "ProfitSwitching": false, // Pool changes DAG epoch when best coin switches
+    "Region": [
+      "eu",
+      "jp",
+      "na",
+      "sea"
+    ],
+    "SSL": "prefer",
+    "Variant": {
+      "ZPool": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_current"
+      },
+      "ZPool24hr": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "estimate_last24h"
+      },
+      "ZPoolPlus": {
+        "DivisorMultiplier": 1000000,
+        "PriceField": "Plus_Price"
+      }
+    }
+  }
+}

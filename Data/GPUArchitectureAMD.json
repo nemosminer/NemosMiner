@@ -1,0 +1,101 @@
+{
+  "GCN1": [
+    "banks",
+    "capeverde",
+    "curacao",
+    "exo",
+    "gfx60[01]",
+    "hainan",
+    "jet",
+    "litho",
+    "mars",
+    "neptune",
+    "oland",
+    "opal",
+    "pitcairn",
+    "sun",
+    "tahiti",
+    "trinidad",
+    "tropo",
+    "venus"
+  ],
+  "GCN2": [
+    "beema",
+    "bonaire",
+    "emerald",
+    "gfx70[01234]",
+    "grenada",
+    "hawaii",
+    "kalindi",
+    "saturn",
+    "spectre",
+    "strato",
+    "tobago",
+    "vesuvius"
+  ],
+  "GCN3": [
+    "amethyst",
+    "antigua",
+    "capsaicin",
+    "fiji",
+    "gfx801",
+    "gfx802",
+    "gfx810",
+    "meso",
+    "polaris24",
+    "stoney",
+    "tonga",
+    "topaz",
+    "wani",
+    "weston"
+  ],
+  "GCN4": [
+    "baffin",
+    "E9[1235]\\d\\d",
+    "ellesmere",
+    "gfx804",
+    "lexa",
+    "polaris",
+    "polaris20",
+    "polaris21",
+    "polaris22",
+    "polaris23",
+    "ProV[57]",
+    "ProWX[23457]100",
+    "RX4[678]0",
+    "RX5[56789]0",
+    "XVega"
+  ],
+  "GCN50": [
+    "bandedkestrel",
+    "fenghuang",
+    "gfx90[01234]",
+    "picasso",
+    "raven",
+    "vega10",
+    "vega12"
+  ],
+  "GCN51": [
+    "cezanne",
+    "gfx90[67c]",
+    "lucienne",
+    "renoir",
+    "vega20"
+  ],
+  "RDNA1": [
+    "gfx101[012]",
+    "navi10",
+    "navi12",
+    "navi14",
+    "RX5\\d00"
+  ],
+  "RDNA2": [
+    "gfx103[012345]",
+    "RX6\\d00"
+  ],
+  "RDNA3": [
+    "gfx110[0123]",
+    "navi3[12]",
+    "RX7[789][059]0"
+  ]
+}

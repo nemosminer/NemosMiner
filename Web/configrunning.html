@@ -1,0 +1,86 @@
+<!--#include file="/parts/head.html" -->
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h2 id="title" data-navbaractive="navconfigrunning">Running Configuration</h2>
+          </div>
+          <div id="configrunning" class="alert alert-info" role="alert">This is the full configuration NemosMiner is currently using</div>
+          <div id="toolbar">
+            <button type="button" class="btn btn-primary" id="btn-editconfig" name="btn-editconfig" title="Edit configuration file&#10;It will become active in next cycle.">Edit Config file</button>
+            <button type="button" class="btn btn-primary" id="btn-editpoolsconfig" name="btn-editpoolsconfig" title="Edit pools config file&#10;It will become active in next cycle.">Edit PoolsConfig file</button>
+          </div>
+          <br>
+
+          <pre id="config" style="height: calc(100vh - 350px); overflow:auto;"></pre>
+          <br>
+<!-- Start of page scripts 'configrunning.html' -->
+          <script type="text/javascript">
+
+            $(document).ready(function () {
+              //Edit config file
+              $('#btn-editconfig').click(function () {
+                document.getElementById('btn-editconfig').disabled = true;
+                document.getElementById('btn-editpoolsconfig').disabled = true;
+                $('.modal-body').load('/functions/file/edit?FileName=' + encodeURIComponent(configfile), function () {
+                  if (this.outerText) {
+                    $('.modal-title').text('Edit Config file');
+                    $('#myModal').modal({ 
+                      show: true
+                    });
+                    $('#myModal').on('hidden.bs.modal', function () {
+                      location.reload(true);
+                    })
+                  }
+                  document.getElementById('btn-editconfig').disabled = false;
+                  document.getElementById('btn-editpoolsconfig').disabled = false;
+                });
+              });
+
+              //Edit poolsconfig file
+              $('#btn-editpoolsconfig').click(function () {
+                document.getElementById('btn-editconfig').disabled = true;
+                document.getElementById('btn-editpoolsconfig').disabled = true;
+                $('.modal-body').load('/functions/file/edit?FileName=' + encodeURIComponent(poolsconfigfile), function () {
+                  if (this.outerText) {
+                    $('.modal-title').text('Edit PoolsConfig file');
+                    $('#myModal').modal({ 
+                      show: true
+                    });
+                  }
+                  document.getElementById('btn-editconfig').disabled = false;
+                  document.getElementById('btn-editpoolsconfig').disabled = false;
+                });
+              });
+
+              // Get config file names
+              $.ajax({
+                async: false,
+                dataType: 'text',
+                url: '/configfile',
+                success: function (result) {
+                  configfile = result;
+                  $.ajax({
+                    async: false,
+                    dataType: 'text',
+                    url: '/poolsconfigfile',
+                    success: function (result) {
+                      poolsconfigfile = result;
+                      $('#configrunning').text("This is the full configuration NemosMiner is currently using. (Current configuration files: '" + configfile + "' & '" + poolsconfigfile + "')");
+                    }
+                  });
+                }
+              });
+
+              $(function() {
+                $.ajax({
+                  async: false,
+                  dataType: 'json',
+                  url: '/configrunning',
+                  success: function(result) {
+                    $('#config').empty();
+                    $('#config').append(JSON.stringify(result, undefined, 4));
+                  }
+                });
+              });
+            });
+          </script>
+<!-- End of page scripts 'configrunning.html' -->
+<!--#include file="/parts/foot.html" -->

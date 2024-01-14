@@ -1,0 +1,84 @@
+{
+  "Ada": {
+    "Compute": [
+      "8.9"
+    ],
+    "Model": [
+      "^AD",
+      "^RTX40\\d{2}",
+      "^RTX6000A"
+    ]
+  },
+  "Ampere": {
+    "Compute": [
+      "8.0",
+      "8.6"
+    ],
+    "Model": [
+      "^A\\d",
+      "^AM",
+      "^CMP[79]0",
+      "^CMP170",
+      "^GRIDA100",
+      "^MX570",
+      "^PG506",
+      "^RTX2050M",
+      "^RTX30\\d{2}",
+      "^RTXA\\d{4}"
+    ]
+  },
+  "Blackwell": {
+    "Compute": [
+      "10.0"
+    ],
+    "Model": [
+      "^GB\\d",
+      "^RTX50\\d{2}"
+    ]
+  },
+  "Hopper": {
+    "Compute": [
+      "9.0"
+    ],
+    "Model": [
+      "^GH\\d",
+      "^H\\d"
+    ]
+  },
+  "Pascal": {
+    "Compute": [
+      "6.0",
+      "6.1"
+    ],
+    "Model": [
+      "^GP",
+      "^GT10[13]0",
+      "^GTX10\\d{2}",
+      "^JETSONTX2",
+      "^MX[23]30",
+      "^MX[123]50",
+      "^P",
+      "^QUADROGP\\d",
+      "^QUADROP\\d",
+      "^TESLAP\\d",
+      "TITANX"
+    ]
+  },
+  "Turing": {
+    "Compute": [
+      "7.5"
+    ],
+    "Model": [
+      "^CMP[345]0",
+      "^GRIDRTXT10",
+      "^GTX16\\d{2}",
+      "^MX[45]50",
+      "^QUADRORTX[34568]000",
+      "^QUADROT\\d",
+      "^RTX20\\d{2}",
+      "^T\\d",
+      "^TESTAT\\d",
+      "^TU"
+    ]
+  }
+}

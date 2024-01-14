@@ -1,0 +1,130 @@
+<!--#include file="/parts/head.html" -->
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h2 id="title" data-navbaractive="navpoolsbest">Best Pools</h2>
+          </div>
+          <div class="alert alert-info" role="alert">This is the list of the best paying pool for each algorithm.</div>
+          <div id="toolbar">
+            <!-- <button id="btn-enable" class="btn btn-success" disabled>Enable Algorithm @ Pool</button> -->
+            <!-- <button id="btn-disable" class="btn btn-danger" disabled>Disable Algorithm @ Pool</button> -->
+            <button id="btn-reset-data" class="btn btn-warning" disabled>Reset Pool Stat Data</button>
+          </div>
+          <table id="pools" class="table"
+            data-ajax-options="ajaxOptions"
+            data-auto-refresh="true"
+            data-auto-refresh-status="false"
+            data-cache="false"
+            data-click-to-select="true"
+            data-cookie="true"
+            data-cookie-id-table="poolsbest"
+            data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
+            data-detail-formatter="detailFormatter"
+            data-detail-view="true"
+            data-disable-control-when-search="true"
+            data-filter-control="true"
+            data-header-style="headerStyleAlignTop"
+            data-icons="icons"
+            data-maintain-meta-data="true"
+            data-reorderable-columns="true"
+            data-response-handler="formatPools"
+            data-show-button-text="true"
+            data-show-columns="true"
+            data-show-fullscreen="true"
+            data-show-refresh="true"
+            data-show-search-clear-button="true"
+            data-show-toggle="true"
+            data-toggle="table"
+            data-toolbar="#toolbar"
+            data-undefined-text=""
+            data-url="/pools/best"
+            >
+            <thead>
+              <tr>
+                <th data-field="state" data-checkbox="true"></th>
+                <th data-field="PoolUri" data-switchable="false" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-class="hidden">Pool Uri</th>
+                <th data-field="Algorithm" data-sortable="true" data-filter-control="select">Algorithm</th>
+                <th data-field="AlgorithmVariant" data-sortable="true" data-filter-control="input" data-visible="false">Algorithm (Variant)</th>
+                <th data-field="CoinName" data-sortable="true" data-filter-control="select">Coin Name</th>
+                <th data-field="Currency" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Currency</th>
+                <th data-field="Reasons" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Reasons</th>
+                <th data-field="tPrice" class="addm" data-align="right" data-sortable="true" data-formatter="formatPrices" data-visible="false">BTC/GH/Day</th>
+                <th data-field="tPrice_Bias" class="addm" data-align="right" data-sortable="true" data-formatter="formatPrices" data-visible="false">BTC/GH/Day<br>(Biased)</th>
+                <th data-field="tStablePrice" class="addm" data-align="right" data-sortable="true" data-formatter="formatPrices" data-visible="false">BTC/GH/Day<br>(Week)</th>
+                <th data-field="Accuracy" data-align="right" data-sortable="true" data-formatter="formatPercent" data-width=2>Accuracy</th>
+                <th data-field="Variant" data-sortable="true" data-filter-control="input">Pool Name (Variant)</th>
+                <th data-field="Name" data-sortable="true" data-filter-control="select" data-visible="false">Pool Name</th>
+                <th data-field="Region" data-sortable="true" data-filter-control="select" data-visible="false">Region</th>
+                <th data-field="User" data-sortable="true" data-filter-control="select" data-visible="false">Username or Wallet</th>
+                <th data-field="WorkerName" data-sortable="true" data-filter-control="select" data-visible="false">WorkerName</th>
+                <th data-field="Pass" data-sortable="true" data-filter-control="select" data-visible="false">Password</th>
+                <th data-field="Host" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Host</th>
+                <th data-field="Port" data-align="right" data-sortable="true" data-formatter="formatPorts" data-filter-control="input" data-filter-strict-search="false" data-width=1>Port</th>
+                <th data-field="PortSSL" data-align="right" data-sortable="true" data-formatter="formatPorts" data-filter-control="input" data-filter-strict-search="false" data-width=1>SSL Port</th>
+                <th data-field="PoolPorts" data-align="right" data-sortable="true" data-formatter="formatPorts" data-filter-control="input" data-filter-strict-search="false" data-width=1 data-visible="false">Available Ports</th>
+                <th data-field="EarningsAdjustmentFactor" data-align="right" data-sortable="true" data-formatter="format3DecimalDigits" data-width=1>Earnings<br>Adjustment<br>Factor</th>
+                <th data-field="Fee" data-align="right" data-sortable="true" data-formatter="formatPercent" data-width=1>Fee</th>
+                <th data-field="Protocol" data-align="right" data-sortable="true" data-filter-control="select" data-visible="false">Protocol</th>
+                <th data-field="SendHashrate" data-align="right" data-sortable="true" data-visible="false">Send<br>Hashrate</th>
+                <th data-field="Workers" data-align="right" data-sortable="true" data-visible="false">Workers</th>
+                <th data-field="DAGSizeGiB" data-align="right" data-sortable="true" data-visible="false" data-formatter="formatGiBDigits3" data-visible="false">DAG Size</th>
+                <th data-field="Epoch" data-align="right" data-sortable="true" data-visible="false">Epoch</th>
+                <th data-field="BlockHeight" data-align="right" data-sortable="true" data-visible="false">Block Height</th>
+                <th data-field="Updated" data-sortable="true" data-formatter="formatTimeSince" data-width=250>Last Updated</th>
+                <th data-field="Key" data-sortable="true" data-filter-control="select" data-visible="false">Key</th>
+                <th data-field="Prioritize" data-sortable="true" data-filter-control="select" data-visible="false">Prioritize</th>
+              </tr>
+            </thead>
+          </table>
+<!-- Start of page scripts 'poolsbest.html' -->
+          <script type="text/javascript">
+            var $table = $('#pools');
+
+            $table.bootstrapTable({
+              async: 'true',
+              onAll: function() {
+                try {
+                  document.getElementById('btn-reset-data').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                  document.getElementById('btn-enable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                  document.getElementById('btn-disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                } catch {}
+              },
+
+              onColumnSwitch: function() {
+                $(".addm").each(function () {
+                  if (config.UsemBTC) this.childNodes[0].innerText = "m" + this.childNodes[0].innerText;
+                });
+              },
+
+              autoRefreshInterval: parseInt(Math.max(config.Interval, 30)), // refresh once per interval, at least 30 seconds
+              height: $(window).height() - $table.offset().top + 30
+            });
+
+            $(document).ready(function () {
+              $('#btn-reset-data').click(function () {
+                var $data = $table.bootstrapTable('getSelections');
+                if ($data.length >= 1) {
+                  $('body').css('cursor', 'progress');
+                  $url = '/functions/stat/remove';
+                  $payload = {'Pools': JSON.stringify($data.map($element => ({ Name: $element.Name, Algorithm: $element.Algorithm, Currency: $element.Currency })))};
+                  $('.modal-body').load($url, $payload, function() {
+                    $('.modal-title').text($('#btn-reset-data').text());
+                    $('body').css('cursor', 'default');
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
+                }
+              });
+
+              $(".addm").each(function () {
+                if (config.UsemBTC) this.childNodes[0].innerText = "m" + this.childNodes[0].innerText;
+              });
+            });
+
+            $(window).resize(function () {
+              if (window.RT) clearTimeout(window.RT);
+              window.RT = setTimeout(function() {
+                this.location.reload(false); /* false to get page from cache */
+              }, 200);
+            })
+          </script>
+<!-- End of page scripts 'poolsbest.html' -->
+<!--#include file="/parts/foot.html" -->

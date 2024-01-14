@@ -1,0 +1,372 @@
+<!-- Copyright (c) 2018-2023 Nemo, MrPlus & UselessGuru
+
+NemosMiner is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+NemosMiner is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+
+Product:        NemosMiner
+File:           API.psm1
+version:        5.0.2.6
+version date:   2023/12/28-->
+
+
+<html>
+
+<body>
+  <h1>NemosMiner API (version 0.5.3.12)</h1>
+
+  API data is available at http://localhost:[API port]/&lt;resource&gt.
+  (The default API port is 3999)
+
+  <h2>File and Scripts</h2>
+  <p>Anything other than the resources listed below will be looked for in the web directory and sent if it exists.</p>
+
+  <p>Any .ps1 files in the web/scripts directory will be run and their output sent. They get passed a $Parameters object with
+     keys and values from the URL string. Test it with this demo:<br>
+  <a href="http://localhost:3999/scripts/demo.ps1?message=Hello%20world!">/scripts/demo.ps1?message=Hello%20world!</a><br>
+     This feature can be used to gather data that the API doesn't expose directly.</p>
+  <h2>Resources</h2>
+  <b><a href="http://localhost:3999/algorithms">/algorithms</a></b>
+  <p>Shows the algorithm mappings used in Get-Algorithm to build normalized algorithm names (defined in '\Data\Algorithms.json').</p>
+  <br>
+  <b><a href="http://localhost:3999/algorithms/lastused">/algorithms/lastused</a></b>
+  <p>Date & time when algorithms were last used (data is stored in '\Data\algorithmsUsed.json').</p>
+  <br>
+  <b><a href="http://localhost:3999/allcurrencies">/allcurrencies</a></b>
+  <p>Returns the list of all currencies (main currency, extra currency and all currencies from balances)</p>
+  <br>
+  <b><a href="http://localhost:3999/apiversion">/apiversion</a></b>
+  <p>Returns the version number of NemosMiner API.</p>
+  <br>
+  <b><a href="http://localhost:3999/balances">/balances</a></b>
+  <p>Returns the current balance information calculated by the balance tracker.</p>
+  <br>
+  <b><a href="http://localhost:3999/balancescurrencies">/balancescurrencies</a></b>
+  <p>Returns the list of balances currencies</p>
+  <br>
+  <b><a href="http://localhost:3999/balancesdata">/balancesdata</a></b>
+  <p>Returns the balances collected by the balances tracker used to calculate balance information.</p>
+  <br>
+  <b><a href="http://localhost:3999/braindata">/braindata</a></b>
+  <p>Returns the braindata information.</p>
+  <br>
+  <b><a href="http://localhost:3999/brainjobs">/brainjobs</a></b>
+  <p>Returns the brainjobs information.</p>
+  <br>
+  <b><a href="http://localhost:3999/btc">/btc</a></b>
+  <p>Shows the BTC to main currency exchange rate.</p>
+  <br>
+  <b><a href="http://localhost:3999/coinnames">/coinnames</a></b>
+  <p>Shows the Currency / CoinName mapping (defined in '\Data\CoinNames.json').</p>
+  <br>
+  <b><a href="http://localhost:3999/config">/config</a></b>
+  <p>Returns the config stored in the current config file.</p>
+  <br>
+  <b><a href="http://localhost:3999/configfile">/configfile</a></b>
+  <p>Returns the current config file name.</p>
+  <br>
+  <b><a href="http://localhost:3999/configrunning">/configrunning</a></b>
+  <p>Returns the full configuration NemosMiner is currently using after all variable substitution (including 'PoolsConfig' built from the optional '.\Config\PoolsConfig.json' file).</p>
+  <br>
+  <b><a href="http://localhost:3999/currency">/currency</a></b>
+  <p>Returns the main currency.</p>
+  <br>
+  <b><a href="http://localhost:3999/currencyalgorithm">/currencyalgorithm</a></b>
+  <p>Shows the Currency / Algorithm mapping (defined in '\Data\CurrencyAlgorithm.json').</p>
+  <br>
+  <b><a href="http://localhost:3999/dagdata">/dagdata</a></b>
+  <p>Returns the DAG data (Ethash & EtcHash).</p>
+  <br>
+  <b><a href="http://localhost:3999/devices">/devices</a></b>
+  <p>Shows information about all mining devices.</p>
+  <br>
+  <b><a href="http://localhost:3999/devices/disabled">/devices/disabled</a></b>
+  <p>Shows information about all disabled mining devices.</p>
+  <br>
+  <b><a href="http://localhost:3999/devices/enabled">/devices/enabled</a></b>
+  <p>Shows information about all enabled mining devices.</p>
+  <br>
+  <b><a href="http://localhost:3999/devices/unsupported">/devices/unsupported</a></b>
+  <p>Shows information about all unsupported mining devices.</p>
+  <br>
+  <b><a href="http://localhost:3999/donationdata">/donationdata</a></b>
+  <p>Returns the donation data stored in 'Data\DonationData.json'.</p>
+  <br>
+  <b><a href="http://localhost:3999/donationlog">/donationlog</a></b>
+  <p>Returns the donation data stored in 'Log\DonateLog.json'.</p>
+  <br>
+  <b><a href="http://localhost:3999/driverversion">/driverversion</a></b>
+  <p>Returns the installed CIM & OpenCL driver version numbers.</p>
+  <br>
+  <b><a href="http://localhost:3999/earningschartdata">/earningschartdata</a></b>
+  <p>Returns the data required for earnings chart.</p>
+  <br>
+  <b><a href="http://localhost:3999/equihashcoinpers">/equihashcoinpers</a></b>
+  <p>Returns the Equihash coin personalisation string data.</p>
+  <br>
+  <b><a href="http://localhost:3999/extracurrencies">/extracurrencies</a></b>
+  <p>Returns the list of extra currencies</p>
+  <br>
+  <b><a href="http://localhost:3999/fiatcurrencies">/fiatcurrencies</a></b>
+  <p>Returns the list of all available FIAT currencies (defined in '\Data\FIATcurrencies.json').</p>
+  <br>
+  <b><a href="http://localhost:3999/miners">/miners</a></b>
+  <p>Shows all miners data, use for debugging.</p>
+  <br>
+  <b><a href="http://localhost:3999/miners/available">/miners/available</a></b>
+  <p>Shows the available miners data, use for debugging.</p>
+  <br>
+  <b><a href="http://localhost:3999/miners/bestperdevice">/miners/bestperdevice</a></b>
+  <p>Shows the minersbestperdevice data, use for debugging.</p>
+  <br>
+  <b><a href="http://localhost:3999/miners/best_combo">/miners/best_combo</a></b>
+  <p>Shows the minersbest_combo data, use for debugging.</p>
+  <br>
+  <b><a href="http://localhost:3999/miners/best_combos">/miners/best_combos</a></b>
+  <p>Shows the minersbest_combos data, use for debugging.</p>
+  <br>
+  <b><a href="http://localhost:3999/miners/device_combos">/miners/device_combos</a></b>
+  <p>Shows the miners_device_combos data, use for debugging.</p>
+  <br>
+  <b><a href="http://localhost:3999/miners/disabled">/miners/disabled</a></b>
+  <p>Shows the disabled miners data, use for debugging.</p>
+  <br>
+  <b><a href="http://localhost:3999/miners/failed">/miners/failed</a></b>
+  <p>Shows the failed miners data, use for debugging.</p>
+  <br>
+  <b><a href="http://localhost:3999/miners/launched">/miners/launched</a></b>
+  <p>Shows the launched miners data, use for debugging.</p>
+  <br>
+  <b><a href="http://localhost:3999/miners/mostprofitable">/miners/mostprofitable</a></b>
+  <p>Shows the most profitable miners data, use for debugging.</p>
+  <br>
+  <b><a href="http://localhost:3999/miners/running">/miners/running</a></b>
+  <p>Shows the running miners data, use for debugging.</p>
+  <br>
+  <b><a href="http://localhost:3999/miners/unavailable">/miners/unavailable</a></b>
+  <p>Shows the unavailable miners data, use for debugging.</p>
+  <br>
+  <b><a href="http://localhost:3999/miningearning">/miningearning</a></b>
+  <p>Shows current mining earning (in BTC).</p>
+  <br>
+  <b><a href="http://localhost:3999/miningpowercost">/miningpowercost</a></b>
+  <p>Shows current mining power cost (in BTC).</p>
+  <br>
+  <b><a href="http://localhost:3999/miningprofit">/miningprofit</a></b>
+  <p>Shows current mining profit (in BTC).</p>
+  <br>
+  <b><a href="http://localhost:3999/poolreasons">/poolreasons</a></b>
+  <p>Shows all reasons why pools are unavailable.</p>
+  <br>
+  <b><a href="http://localhost:3999/poolsconfig">/poolsconfig</a></b>
+  <p>Shows the pool configuration entries.</p>
+  <br>
+  <b><a href="http://localhost:3999/poolname">/poolname</a></b>
+  <p>Shows configured pool list.</p>
+  <br>
+  <b><a href="http://localhost:3999/pooldata">/pooldata</a></b>
+  <p>Shows pool data.</p>
+  <br>
+  <b><a href="http://localhost:3999/pools">/pools</a></b>
+  <p>Shows all pool entries.</p>
+  <br>
+  <b><a href="http://localhost:3999/pools/added">/pools/added</a></b>
+  <p>Shows the added pool entries.</p>
+  <br>
+  <b><a href="http://localhost:3999/pools/available">/pools/available</a></b>
+  <p>Shows the available pool entries.</p>
+  <br>
+  <b><a href="http://localhost:3999/pools/best">/pools/best</a></b>
+  <p>Shows the best pool entries.</p>
+  <br>
+  <b><a href="http://localhost:3999/pools/new">/pools/new</a></b>
+  <p>Shows the new pool entries.</p>
+  <br>
+  <b><a href="http://localhost:3999/pools/updated">/pools/updated</a></b>
+  <p>Shows the updated pool entries.</p>
+  <br>
+  <b><a href="http://localhost:3999/pools/unavailable">/pools/unavailable</a></b>
+  <p>Shows the unavailable pool configuration entries.</p>
+  <br>
+  <b><a href="http://localhost:3999/poolsconfigfile">/poolsconfigfile</a></b>
+  <p>Returns the current pools config file name.</p>
+  <br>
+  <b><a href="http://localhost:3999/pools/lastearnings">/pools/lastearnings</a></b>
+  <p>Date & time of pools last earnings (data collected by the balances tracker).</p>
+  <br>
+  <b><a href="http://localhost:3999/pools/lastused">/pools/lastused</a></b>
+  <p>Date & time when pools were last used (data is stored in '\Data\PoolsLastUsed.json').</p>
+  <br>
+  <b><a href="http://localhost:3999/poolvariants">/poolvariants</a></b>
+  <p>Shows all pool variants (defined in '\Data\PoolConfig.json').</p>
+  <br>
+  <b><a href="http://localhost:3999/rates">/rates</a></b>
+  <p>Shows the current exchange rate for all configured currencies.</p>
+  <br>
+  <b><a href="http://localhost:3999/refreshtimestamp">/refreshtimestamp</a></b>
+  <p>Returns the refresh timestamp (e.g. to trigger web GUI update)</p>
+  <br>
+  <b><a href="http://localhost:3999/regions">/regions</a></b>
+  <p>Shows the list of supported regions (defined in '\Data\Regions.json').</p>
+  <br>
+  <b><a href="http://localhost:3999/regionsdata">/regionsdata</a></b>
+  <p>Shows the region data (defined in '\Data\Regions.json').</p>
+  <br>
+  <b><a href="http://localhost:3999/stats">/stats</a></b>
+  <p>Shows all stat data in the $Stats hashtable, use for debugging.</p>
+  <br>
+  <b><a href="http://localhost:3999/summary">/summary</a></b>
+  <p>Shows earnings / profit summary and BTC exchange rate (as shown in the Web GUI header).</p>
+  <br>
+  <b><a href="http://localhost:3999/switchinglog">/switchinglog</a></b>
+  <p>Shows the previously executed miners.</p>
+  <br>
+  <b><a href="http://localhost:3999/unprofitablealgorithms">/unprofitablealgorithms</a></b>
+  <p>Shows the list of unprofitable algorithms (defined in '\Data\UnprofitableAlgorithms.json').</p>
+  <br>
+  <b>   <a href="http://localhost:3999/version">/version</a></b>
+  <p>Shows NemosMiner, API & PWSH version information</p>
+  <br>
+  <b><a href="http://localhost:3999/wallets">/wallets</a></b>
+  <p>Shows the configured wallet data.</p>
+  <br>
+  <b><a href="http://localhost:3999/watchdogexpiration">/watchdogexpiration</a></b>
+  <p>Shows the watchdog expiration duration (in seconds).</p>
+  <br>
+  <b><a href="http://localhost:3999/watchdogtimers">/watchdogtimers</a></b>
+  <p>Shows the watchdog timers.</p>
+  <br>
+  <b><a href="http://localhost:3999/workers">/workers</a></b>
+  <p>Shows the rig data as reported by the monitoring server.</p>
+  <br>
+  <h2>Functions</h2>
+  <br>Parameters look like '[url]?a=b&c=d&message=Hello%20world' (as [URI]::EscapeDataString)
+  <br>
+  <br><b>/functions/api/stop</b>
+  <br>Stop running API instance
+  <br>Parameters: none
+  <br>
+  <br><b>/functions/balancedata/remove</b>
+  <br>Remove balance data entry
+  <br>Parameters: array of entries (JSON, entries list as array, requires properties DateTime=entry.DateTime, Pool=entry.Pool, Currency=entry.Currency, Wallet=entry.Wallet)
+  <br>e.g.: /functions/balancedata/remove?Data%3D%5B{"DateTime"%3A"2022-07-13T00%3A09%3A30.1564773Z"%2C"Pool"%3A"BlockMasters"%2C"Currency"%3A"BTC"%2C"Wallet"%3A"1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"}%5D
+  <br>
+  <br><b>/functions/config/device/disable</b>
+  <br>Opens notepad to edit current config file. Notepad will remain in foreground until notepad is closed.
+  <br>Parameters: List of device names to disable
+  <br>e.g.: /functions/config/device/disable?Name%3DGPU%2300%2CGPU%2301
+  <br>
+  <br><b>/functions/config/device/enable</b>
+  <br>Opens notepad to edit current config file. Notepad will remain in foreground until notepad is closed.
+  <br>Parameters: List of device names to disable
+  <br>e.g.: /functions/config/device/enable?Name%3DCPU%2300
+  <br>
+  <br><b>/functions/config/set</b>
+  <br>Write full config
+  <br>Parameters: full config (JSON)
+  <br>e.g.: /functions/config/set?{"Algorithm"%3A%5B%5D%2C"APILogfile"%3A""%2C"APIPort"%3A3999%2C"AutoReboot"%3Atrue%2C"AutoUpdate"%3Atrue%2C"AutoUpdateCheckInterval"%3A1%2C"BackupOnAutoUpdate"%3Atrue%2C"BadShareRatioThreshold"%3A0.05%2C"BalancesKeepAlive"%3Atrue%2C"BalancesShowInAllCurrencies"%3Atrue%2C"BalancesTrackerExcludePool"%3A%5B%5D%2C"BalancesTrackerLog"%3Afalse%2C"BalancesTrackerPollInterval"%3A10%2C"CalculatePowerCost"%3Atrue%2C"ConfigFileVersion"%3A"5.0.2.6"%2C"CPUMinerProcessPriority"%3A-2%2C"Currency"%3A"CHF"%2C"DecimalsMax"%3A6%2C"Delay"%3A0%2C"DisableDualAlgoMining"%3Afalse%2C"DisableMinerFee"%3Afalse%2C"DisableMinersWithFee"%3Afalse%2C"DisableSingleAlgoMining"%3Afalse%2C"Donate"%3A13%2C"EarningsAdjustmentFactor"%3A1%2C"ExcludeDeviceName"%3A%5B%5D%2C"ExcludeMinerName"%3A%5B%5D%2C"ExtraCurrencies"%3A%5B"ETC"%2C"ETH"%2C"mBTC"%5D%2C"GPUMinerProcessPriority"%3A-1%2C"IdleDetection"%3Afalse%2C"IdleSec"%3A120%2C"IgnoreMinerFee"%3Afalse%2C"IgnorePoolFee"%3Afalse%2C"IgnorePowerCost"%3Afalse%2C"Interval"%3A90%2C"LogBalanceAPIResponse"%3Afalse%2C"LogToFile"%3A%5B"Info"%2C"Warn"%2C"Error"%2C"Verbose"%5D%2C"LogToScreen"%3A%5B"Info"%2C"Warn"%2C"Error"%2C"Verbose"%5D%2C"MinAccuracy"%3A0.5%2C"MinDataSample"%3A20%2C"MinDataSampleAlgoMultiplier"%3A{"X16r"%3A3}%2C"MinerInstancePerDeviceModel"%3Afalse%2C"MinerSet"%3A1%2C"MinerSwitchingThreshold"%3A10%2C"MinerWindowStyle"%3A"minimized"%2C"MinerWindowStyleNormalWhenBenchmarking"%3Atrue%2C"MiningPoolHubAPIKey"%3A""%2C"MiningPoolHubUserName"%3A"Nemo"%2C"MinInterval"%3A1%2C"MinWorker"%3A25%2C"MonitoringServer"%3A"https%3A%2F%2Fnemosminer.com"%2C"MonitoringUser"%3A""%2C"NiceHashAPIKey"%3A""%2C"NiceHashAPISecret"%3A""%2C"NiceHashOrganizationId"%3A""%2C"NiceHashWallet"%3A""%2C"NiceHashWalletIsInternal"%3Afalse%2C"OpenFirewallPorts"%3Atrue%2C"PayoutCurrency"%3A"BTC"%2C"PoolAPIAllowedFailureCount"%3A3%2C"PoolAPIRetryInterval"%3A3%2C"PoolAPITimeout"%3A20%2C"PoolName"%3A%5B"MiningPoolHubCoins"%2C"NiceHash"%5D%2C"PoolsConfigFile"%3A".%5C%5CConfig%5C%5CPoolsConfig.json"%2C"PoolTimeout"%3A20%2C"PowerPricekWh"%3A{"00%3A00"%3A0.26%2C"12%3A00"%3A0.3}%2C"PowerUsage"%3A{}%2C"PowerUsageIdleSystemW"%3A60%2C"ProfitabilityThreshold"%3A-99%2C"ProHashingAPIKey"%3A""%2C"ProHashingMiningMode"%3A"PPS"%2C"ProHashingUserName"%3A"UselessGuru"%2C"Proxy"%3A""%2C"Region"%3A"Europe"%2C"ReportToServer"%3Afalse%2C"ShowAccuracy"%3Atrue%2C"ShowAllMiners"%3Afalse%2C"ShowChangeLog"%3Afalse%2C"ShowCoinName"%3Atrue%2C"ShowCurrency"%3Atrue%2C"ShowEarning"%3Atrue%2C"ShowEarningBias"%3Atrue%2C"ShowMinerFee"%3Atrue%2C"ShowPoolBalances"%3Afalse%2C"ShowPoolFee"%3Atrue%2C"ShowPowerCost"%3Atrue%2C"ShowPowerUsage"%3Atrue%2C"ShowProfit"%3Atrue%2C"ShowProfitBias"%3Atrue%2C"ShowUser"%3Afalse%2C"ShowWorkerStatus"%3Atrue%2C"SnakeTailConfig"%3A".%5C%5CUtils%5C%5CNemosMiner_LogReader.xml"%2C"SnakeTailExe"%3A".%5C%5CUtils%5C%5CSnakeTail.exe"%2C"SSL"%3A"prefer"%2C"StartGUIMinimized"%3Atrue%2C"StartupMode"%3A"Idle"%2C"SubtractBadShares"%3Atrue%2C"SyncWindow"%3A3%2C"Transcript"%3Afalse%2C"UIStyle"%3A"light"%2C"UnrealMinerEarningFactor"%3A5%2C"UnrealPoolPriceFactor"%3A1.5%2C"UseAnycast"%3Atrue%2C"UsemBTC"%3Atrue%2C"UseMinerTweaks"%3Afalse%2C"Wallets"%3A{"BTC"%3A"1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF"%2C"ETC"%3A""%2C"ETH"%3A""}%2C"Watchdog"%3Atrue%2C"WatchdogCount"%3A3%2C"WebGUI"%3Atrue%2C"UseColorForMinerStatus"%3Atrue%2C"WorkerName"%3A"BLACKBOX"}
+
+  <br>
+  <br><b>/functions/file/edit</b>
+  <br>Opens notepad to edit file. Notepad will remain in foreground until notepad is closed.
+  <br>Parameters: [String]FileName
+  <br>e.g.: /functions/file/edit?FileName%3D.%5CConfig%5Cconfig.json
+  <br>
+  <br><b>/functions/file/showcontent</b>
+  <br>Shows file content in a browser window.
+  <br>Parameters: [String]FileName
+  <br>e.g.: /functions/file/showcontent?FileName%3D.%5CData%5CUnprofitableAlgorithms.json
+  <br>
+  <br><b>/functions/getminerdetail</b>
+  <br>Get full miner object
+  <br>Parameters: [URI]::EscapeDataString("BzMiner-v19.0.2-1xGTX1660SUPER6GB-Ethash&kHeavyHash {Ethash-4GiB[EXP]@ZergPool & kHeavyHash[KAS]@NiceHash}")
+  <br>e.g.:  /functions/getminerdetail?BzMiner-v19.0.2-1xGTX1660SUPER6GB-Ethash%26kHeavyHash%20%7BEthash-4GiB%5BEXP%5D%40ZergPool%20%26%20kHeavyHash%5BKAS%5D%40NiceHash%7D
+  <br>Returns: miner object with all properties
+  <br>
+  <br><b>/functions/log/get</b>
+  <br>Get the last [n] lines of the log file (default 100)
+  <br>Parameters: number of lines (optional)
+  <br>e.g.: /functions/log/get?lines%3D100
+  <br>Returns: log lines (UTF-8)
+  <br>
+  <br><b>/functions/mining/getstatus</b>
+  <br>Get the current mining status
+  <br>Parameters: none
+  <br>Returns: Mining status (Idle / Paused / Running)
+  <br>
+  <br><b>/functions/mining/pause</b>
+  <br>Pause mining (Balances Tracker & Brainjobs running, Miners stopped)
+  <br>Parameters: none
+  <br>
+  <br><b>/functions/mining/start</b>
+  <br>Start mining (Balances Tracker & Brainjobs running, Miners running)
+  <br>Parameters: none
+  <br>
+  <br><b>/functions/mining/stop</b>
+  <br>Stop mining (Balances Tracker & Brainjobs stopped, Miners stopped)
+  <br>Parameters: none
+  <br>
+  <br><b>/functions/querypoolapi/b></b>
+  <br>Query pool API
+  <br>Parameters: Pool name & API type (only works for pools with brain support)
+  <br>e.g.: /functions/querypoolapi?Pool=ZergPool&Type=PoolCurrenciesUri
+  <br>
+  <br><b>/functions/removeorphanedminerstats</b>
+  <br>Remove all left over stats from miners that are no longer exist in the '\Miners' folder
+  <br>Parameters: none
+  <br>
+  <br><b>/functions/stat/get</b>
+  <br>Retrieve stats data
+  <br>Parameters: Stat filter (Optional), Type=[Hashrate|PowerUsage|Profit], Value=Stat.Live (If value is omitted all stat data of given type is returned)
+  <br>e.g.: functions/stat/get?Type%3DHashrate%26Value%3D0
+  <br>Returns: array of stats
+  <br>
+  <br><b>/functions/stat/remove</b>
+  <br>Remove stats data
+  <br>Parameters: Stat filter; Type=[Hashrate|PowerUsage|Profit]&Value=Stat.Live (If value is omitted all stat data of given type are removed)
+  <br>e.g.: /functions/stat/remove?Type%3DHashrate%26Value%3D0
+  <br>
+  <br><b>/functions/stat/set</b>
+  <br>Set miner hashrate value, not useful for pool stats:
+  <br>Parameters: (JSON, pool list as array, requires properties Name=StatName, Algorithm=Algorithm(s), Type=Hashrate, Value (0=failed; -1=disabled))
+  <br>e.g.: /functions/stat/set?Miners%3D%5B{"Name"%3A"SRBMinerMulti-v2.4.4-1xRadeonRX5700XT8GB"%2C"Algorithms"%3A%5B"Argon2d16000"%5D}%5D%26Type%3DHashrate%26Value%3D-1
+  <br>
+  <br><b>/functions/pool/enable</b>
+  <br>Enable disabled pool
+  <br>Parameters: array of pools (JSON, pool list as array, requires properties Name=pool.Name, Algorithm=pool.Algorithm)
+  <br>e.g.: /functions/pool/enable?Pools%3D%5B{"Name"%3A"NLPool24hr"%2C"Algorithm"%3A"Allium"}%5D
+  <br>
+  <br><b>/functions/pool/disable</b>
+  <br>Disable enabled pool
+  <br>Parameters: array of pools (JSON, pool list as array, requires properties Name=pool.Name, Algorithm=pool.Algorithm)
+  <br>e.g.: /functions/pool/disable?Pools%3D%5B{"Name"%3A"NLPool24hr"%2C"Algorithm"%3A"Allium"}%5D
+  <br>
+  <br><b>/functions/switchinglog/clear</b>
+  <br>Clear switching log data
+  <br>Parameters: none
+  <br>
+  <br><b>/functions/variables/get</b>
+  <br>Retrieve variable value
+  <br>Parameters: Variable name (optional, if omitted a list of all available variables is returned)
+  <br>e.g.: /functions/variables/get?CurrentVersion
+  <br>Returns: Variable value or variable list (JSON)
+  <br>
+  <br><b>/functions/watchdogtimers/reset</b>
+  <br>Clear watchdog timers data
+  <br>Parameters: none
+  <br>
+  <br>
+  <a href="https://nemosminer.com">NemosMiner.com</a>
+</body>
+
+</html>

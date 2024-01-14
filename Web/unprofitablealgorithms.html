@@ -1,0 +1,45 @@
+<!--#include file="/parts/head.html" -->
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h2 id="title" data-navbaractive="navunprofitablealgorithms">Unprofitable Algorithms</h2>
+          </div>
+          <div class="alert alert-info" role="alert">This is the static list of unprofitable algorithms (stored in '.\Data\UnprofitableAlgorithms.json'). Feel free to edit it to match your requirements.</br></div>
+          <div id="toolbar">
+            <button type="button" class="btn btn-primary" id="btn-editunprofitablealgorithms" name="btn-editunprofitablealgorithms" title="Edit Unprofitable Algorithms file&#10;It will become active in next cycle.">Edit Unprofitable Algorithms File</button>
+          </div>
+          <br>
+          <pre id="unprofitablealgorithms" style="height: calc(100vh - 350px); overflow: auto;"></pre>
+          <br>
+<!-- Start of page scripts 'unprofitablealgorithms.html' -->
+          <script type="text/javascript">
+            $(document).ready(function () {
+              $(function() {
+                $.ajax({
+                  async: false,
+                  dataType: 'text',
+                  url: '/functions/file/showcontent?FileName=' + encodeURIComponent('.\\Data\\UnprofitableAlgorithms.json'), 
+                  success: function(result) {
+                    $('#unprofitablealgorithms').text(result);
+                  }
+                });
+              });
+
+              //Edit unprofitable algorithms file
+              $('#btn-editunprofitablealgorithms').click(function () {
+                document.getElementById('btn-editunprofitablealgorithms').disabled = true;
+                $('.modal-body').load('/functions/file/edit?FileName=' + encodeURIComponent('.\\Data\\UnprofitableAlgorithms.json'), function () {
+                  if (this.outerText) {
+                    $('.modal-title').text('Edit Unprofitable Algorithms file');
+                    $('#myModal').modal({ 
+                      show: true
+                    });
+                    $('#myModal').on('hidden.bs.modal', function () {
+                      location.reload(true);
+                    })
+                  }
+                  document.getElementById('btn-editunprofitablealgorithms').disabled = false;
+                });
+              });
+            });
+          </script>
+<!-- End of page scripts 'unprofitablealgorithms.html' -->
+<!--#include file="/parts/foot.html" -->

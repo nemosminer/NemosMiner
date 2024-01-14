@@ -1,6 +1,9 @@
-Bin/*
-Stats/*
-Logs/*
+AutoUpdate/
+Bin/
+Cache/
+Stats/
+Logs/
 *.rar
 *.7z
 *.zip
+Data/EarningsChartData.json

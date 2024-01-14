@@ -1,0 +1,333 @@
+<!--#include file="/parts/head.html" -->
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h2 id="title" data-navbaractive="navdevices">Devices</h2>
+          </div>
+          <div class="alert alert-info" role="alert">These are the devices (GPUs and CPUs) detected by NemosMiner. Configuration changes will become active in the next cycle.</div>
+          <div id="toolbarenableddevices">
+            <button id="btn-disable-device" class="btn btn-danger" disabled>Disable Device</button>
+          </div>
+          <h3>Enabled Devices</h3>
+          <table id="enableddevices" class="table"
+            data-ajax-options="ajaxOptions"
+            data-cache="false"
+            data-click-to-select="true"
+            data-cookie="true"
+            data-cookie-id-table="enableddevices"
+            data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
+            data-detail-formatter="detailFormatter"
+            data-detail-view="true"
+            data-disable-control-when-search="true"
+            data-filter-control="true"
+            data-icons="icons"
+            data-maintain-meta-data="true"
+            data-reorderable-columns="true"
+            data-response-handler="formatDevices"
+            data-show-button-text="true"
+            data-show-columns="true"
+            data-show-refresh="true"
+            data-show-search-clear-button="true"
+            data-show-toggle="true"
+            data-toggle="table"
+            data-toolbar="#toolbarenableddevices"
+            data-url="/devices/enabled"
+            >
+            <thead>
+              <tr>
+                <th data-field="state" data-checkbox="true"></th>
+                <th data-switchable="false" data-field="SubStatus" data-class="hidden statuscolor"></th>
+                <th data-field="Name" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
+                <th data-field="Model" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Model</th>
+                <th data-field="Vendor" data-sortable="true" data-filter-control="select">Vendor</th>
+                <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
+                <th data-field="tState"data-sortable="true" data-filter-control="select" data-visible="false">State</th>
+                <th data-field="Status"data-sortable="true" data-filter-control="select" data-visible="false">Status</th>
+                <th data-field="StatusInfo" data-sortable="true" data-filter-control="select">Status Info</th>
+                <th data-field="tMemory" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Memory</th>
+                <th data-field="tCores" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
+                <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
+                <th data-field="tDriverVersionCIM" data-filter-control="select" data-width=3>Driver Version<br>CIM</th>
+                <th data-field="tDriverVersionOpenCL" data-filter-control="select" data-width=3>Driver Version<br>OpenCL</th>
+                <th data-field="tCUDAVersion" data-align="right" data-filter-control="select" data-width=3>CUDA Version</th>
+                <th data-field="tArchitecture" data-filter-control="select" data-width=3>Architecture</th>
+                <th data-field="ConfiguredPowerUsage" data-filter-control="select" data-align="right" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt" data-width=3>Configured Power Usage</th>
+                <th data-field="Bus" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">PCI<br>Bus<br>Id</th>
+                <th data-field="Bus_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Index</th>
+                <th data-field="Bus_Type_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Type<br>Index</th>
+                <th data-field="Bus_Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Vendor<br>Index</th>
+                <th data-field="Bus_Platform_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Platform<br>Index</th>
+                <th data-field="Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Id</th>
+                <th data-field="Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Index</th>
+                <th data-field="PlatformId" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id</th>
+                <th data-field="PlatformId_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id<br>Index</th>
+                <th data-field="Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Slot</th>
+                <th data-field="Type_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Id</th>
+                <th data-field="Type_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Index</th>
+                <th data-field="Type_PlatformId_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>PlatformId<br>Index</th>
+                <th data-field="Type_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Slot</th>
+                <th data-field="Type_Vendor_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Id</th>
+                <th data-field="Type_Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Index</th>
+                <th data-field="Type_Vendor_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Slot</th>
+                <th data-field="Vendor_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Id</th>
+                <th data-field="Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Index</th>
+                <th data-field="Vendor_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Slot</th>
+                <th data-field="tState" data-filter-control="select" data-sortable="true" data-visible="false">State</th>
+              </tr>
+            </thead>
+          </table>
+          <br>
+          <br>
+
+          <h3>Disabled Devices</h3>
+          <div id="toolbardisableddevices">
+              <button id="btn-enable-device" class="btn btn-success" disabled>Enable Device</button>
+          </div>
+          <table id="disableddevices" class="table"
+            data-ajax-options="ajaxOptions"
+            data-cache="false"
+            data-click-to-select="true"
+            data-cookie="true"
+            data-cookie-id-table="disableddevices"
+            data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
+            data-detail-formatter="detailFormatter"
+            data-detail-view="true"
+            data-disable-control-when-search="true"
+            data-filter-control="true"
+            data-icons="icons"
+            data-maintain-meta-data="true"
+            data-reorderable-columns="true"
+            data-response-handler="formatDevices"
+            data-show-button-text="true"
+            data-show-columns="true"
+            data-show-refresh="true"
+            data-show-search-clear-button="true"
+            data-show-toggle="true"
+            data-toggle="table"
+            data-toolbar="#toolbardisableddevices"
+            data-url="/devices/disabled"
+            >
+            <thead>
+              <tr>
+                <th data-switchable="false" data-field="tStatus" data-class="hidden statuscolor"></th>
+                <th data-field="state" data-checkbox="true"></th>
+                <th data-field="Name" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
+                <th data-field="Model" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Model</th>
+                <th data-field="Vendor" data-sortable="true" data-filter-control="select">Vendor</th>
+                <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
+                <th data-field="tState"data-sortable="true" data-filter-control="select" data-visible="false">State</th>
+                <th data-field="Status"data-sortable="true" data-filter-control="select" data-visible="false">Status</th>
+                <th data-field="StatusInfo" data-sortable="true" data-filter-control="select">Status Info</th>
+                <th data-field="tMemory" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Memory</th>
+                <th data-field="tCores" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
+                <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
+                <th data-field="tDriverVersionCIM" data-filter-control="select" data-width=3>Driver Version<br>CIM</th>
+                <th data-field="tDriverVersionOpenCL" data-filter-control="select" data-width=3>Driver Version<br>OpenCL</th>
+                <th data-field="tCUDAVersion" data-filter-control="select" data-align="right" data-width=3>CUDA Version</th>
+                <th data-field="tArchitecture" data-filter-control="select" data-width=3>Architecture</th>
+                <th data-field="ConfiguredPowerUsage" data-filter-control="select" data-align="right" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt" data-width=3>Configured Power Usage</th>
+                <th data-field="Bus" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">PCI<br>Bus<br>Id</th>
+                <th data-field="Bus_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Index</th>
+                <th data-field="Bus_Type_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Type<br>Index</th>
+                <th data-field="Bus_Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Vendor<br>Index</th>
+                <th data-field="Bus_Platform_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Platform<br>Index</th>
+                <th data-field="Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Id</th>
+                <th data-field="Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Index</th>
+                <th data-field="PlatformId" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id</th>
+                <th data-field="PlatformId_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id<br>Index</th>
+                <th data-field="Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Slot</th>
+                <th data-field="Type_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Id</th>
+                <th data-field="Type_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Index</th>
+                <th data-field="Type_PlatformId_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>PlatformId<br>Index</th>
+                <th data-field="Type_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Slot</th>
+                <th data-field="Type_Vendor_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Id</th>
+                <th data-field="Type_Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Index</th>
+                <th data-field="Type_Vendor_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Slot</th>
+                <th data-field="Vendor_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Id</th>
+                <th data-field="Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Index</th>
+                <th data-field="Vendor_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Slot</th>
+                <th data-field="tState" data-filter-control="select" data-sortable="true" data-visible="false">State</th>
+              </tr>
+            </thead>
+          </table>
+          <br>
+          <br>
+
+          <div id="unsupporteddevices" style="visibility: hidden">
+            <h3>Unsupported Devices</h3>
+            <table id="unsupporteddevices" class="table"
+              data-ajax-options="ajaxOptions"
+              data-cache="false"
+              data-click-to-select="true"
+              data-cookie="true"
+              data-cookie-id-table="unsupporteddevices"
+              data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
+              data-detail-formatter="detailFormatter"
+              data-detail-view="true"
+              data-disable-control-when-search="true"
+              data-filter-control="true"
+              data-icons="icons"
+              data-maintain-meta-data="true"
+              data-reorderable-columns="true"
+              data-response-handler="formatDevices"
+              data-show-button-text="true"
+              data-show-columns="true"
+              data-show-refresh="true"
+              data-show-search-clear-button="true"
+              data-show-toggle="true"
+              data-toggle="table"
+              data-url="/devices/unsupported"
+              >
+              <thead>
+                <tr>
+                  <th data-switchable="false" data-field="tStatus" data-class="hidden statuscolor"></th>
+                  <th data-field="Name" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
+                  <th data-field="Model" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Model</th>
+                  <th data-field="Vendor" data-sortable="true" data-filter-control="select">Vendor</th>
+                  <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
+                  <th data-field="tState"data-sortable="true" data-filter-control="select" data-visible="false">State</th>
+                  <th data-field="Status"data-sortable="true" data-filter-control="select" data-visible="false">Status</th>
+                  <th data-field="StatusInfo" data-sortable="true" data-filter-control="select">Status Info</th>
+                  <th data-field="tMemory" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Memory</th>
+                  <th data-field="tCores" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Cores/Stream<br>Processors</th>
+                  <th data-field="tClockSpeed" data-filter-control="select" data-align="right" data-sortable="true" data-width=3>Clock Speed</th>
+                  <th data-field="tDriverVersionCIM" data-filter-control="select" data-width=3>Driver Version<br>CIM</th>
+                  <th data-field="tDriverVersionOpenCL" data-filter-control="select" data-width=3>Driver Version<br>OpenCL</th>
+                  <th data-field="tCUDAVersion" data-filter-control="select" data-align="right" data-width=3>CUDA Version</th>
+                  <th data-field="tArchitecture" data-filter-control="select" data-width=3>Architecture</th>
+                  <th data-field="ConfiguredPowerUsage" data-filter-control="select" data-align="right" data-align="right" data-visible="false" data-sortable="true" data-formatter="formatWatt" data-width=3>Configured<br>Power Usage</th>
+                  <th data-field="Bus" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">PCI<br>Bus<br>Id</th>
+                  <th data-field="Bus_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Index</th>
+                  <th data-field="Bus_Type_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Type<br>Index</th>
+                  <th data-field="Bus_Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Vendor<br>Index</th>
+                  <th data-field="Bus_Platform_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Bus<br>Platform<br>Index</th>
+                  <th data-field="Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Id</th>
+                  <th data-field="Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Index</th>
+                  <th data-field="PlatformId" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id</th>
+                  <th data-field="PlatformId_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Platform<br>Id<br>Index</th>
+                  <th data-field="Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Slot</th>
+                  <th data-field="Type_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Id</th>
+                  <th data-field="Type_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Index</th>
+                  <th data-field="Type_PlatformId_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>PlatformId<br>Index</th>
+                  <th data-field="Type_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Slot</th>
+                  <th data-field="Type_Vendor_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Id</th>
+                  <th data-field="Type_Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Index</th>
+                  <th data-field="Type_Vendor_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Type<br>Vendor<br>Slot</th>
+                  <th data-field="Vendor_Id" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Id</th>
+                  <th data-field="Vendor_Index" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Index</th>
+                  <th data-field="Vendor_Slot" data-filter-control="select" data-align="right" data-visible="false" data-sortable="true">Vendor<br>Slot</th>
+                  <th data-field="tState" data-filter-control="select" data-sortable="true" data-visible="false">State</th>
+                </tr>
+              </thead>
+            </table>
+            <br>
+            <br>
+          </div>
+<!-- Start of page scripts 'devices.html' -->
+          <script type="text/javascript">
+
+            function formatDevices(data) {
+              // This function can alter the returned data before building the table, formatting it in a way
+              // that is easier to display and manipulate in a table
+
+              $.each(data, function(index, item) {
+                // Format the device(s)
+                if (item.OpenCL) item.tMemory = formatBytes(item.OpenCL.GlobalMemSize);
+
+                if (item.OpenCL) item.tClockSpeed = item.OpenCL.MaxClockFrequency;
+                else if (item.CIM) item.tClockSpeed = item.CIM.MaxClockSpeed;
+
+                if (item.CIM) item.tDriverVersionCIM = item.CIM.DriverVersion;
+
+                if (item.OpenCL) item.tDriverVersionOpenCL = item.OpenCL.DriverVersion;
+
+                if (item.OpenCL) item.tCores = item.OpenCL.MaxComputeUnits;
+                else if (item.CIM) item.tCores = item.CIM.NumberOfLogicalProcessors;
+
+                // Convert CUDAVersion to string
+                if (item.CUDAVersion) item.tCUDAVersion = item.CUDAVersion.Major + '.' + item.CUDAVersion.Minor;
+
+                if (item.Architecture) item.tArchitecture = item.Architecture;
+
+                // Format status
+                item.tStatus = item.Status;
+
+                // Format device state
+                item.tState = enumdevicestatus[item.State];
+              });
+              return data;
+            };
+
+            $(".table").bootstrapTable({
+              async: 'true',
+              onPostBody: function () {
+                if (config.UseColorForMinerStatus == true) {
+                  $(".statuscolor").each(function () {
+                    if (this.innerText) {
+                      $(this).parent('tr').addClass('color-' + this.innerText.toLowerCase());
+                    }
+                  });
+                };
+              },
+
+              onAll: function() {
+                document.getElementById('btn-disable-device').disabled = !Boolean($('#enableddevices').bootstrapTable('getSelections').length);
+                document.getElementById('btn-enable-device').disabled = !Boolean($('#disableddevices').bootstrapTable('getSelections').length);
+              }
+            });
+
+            $(document).ready(function () {
+              $(function () {
+                $('#btn-disable-device').click(function () {
+                  $('body').css('cursor', 'progress');
+                  var command = 'functions/config/device/disable?Name=' + encodeURIComponent($('#enableddevices').bootstrapTable('getSelections').map(item => item.Name));
+                  $('.modal-body').load(command, function() {
+
+
+                    $('.modal-title').text($('#btn-disable-device').text());
+                    $('body').css('cursor', 'default');
+                    $('#myModal').modal({show:true});
+                  });
+                  $('#enableddevices').bootstrapTable('refresh');
+                  $('#disableddevices').bootstrapTable('refresh');
+                });
+              });
+
+              $(function () {
+                $('#btn-enable-device').click(function () {
+                  $('body').css('cursor', 'progress');
+                  var command = 'functions/config/device/enable?Name=' + encodeURIComponent($('#disableddevices').bootstrapTable('getSelections').map(item => item.Name));
+                  $('.modal-body').load(command, function() {
+
+                    $('.modal-title').text($('#btn-enable-device').text());
+                    $('body').css('cursor', 'default');
+                    $('#myModal').modal({show:true});
+                  });
+                  $('#enableddevices').bootstrapTable('refresh');
+                  $('#disableddevices').bootstrapTable('refresh');
+                });
+              });
+
+              $(function() {
+                $.ajax({
+                  async: false,
+                  dataType: 'json',
+                  url: '/devices/unsupported', 
+                  success: function(result) {
+                    if (result == '') {
+                      document.getElementById("unsupporteddevices").style.visibility='hidden';
+                    } else {
+                      document.getElementById("unsupporteddevices").style.visibility='visible';
+                    }
+                  }
+                });
+              });
+            });
+
+            $(window).resize(function () {
+              if (window.RT) clearTimeout(window.RT);
+              window.RT = setTimeout(function() {
+                this.location.reload(false); /* false to get page from cache */
+              }, 200);
+            })
+          </script>
+<!-- End of page scripts 'devices.html' -->
+<!--#include file="/parts/foot.html" -->

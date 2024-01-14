@@ -1,0 +1,94 @@
+<!--#include file="/parts/head.html" -->
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h2 id="title" data-navbaractive="navbalancedata">Balance Data</h2>
+          </div>
+          <div class="alert alert-info" role="alert">Balance data collected by the balance tracker (last 30 days or 10'000 entries).</div>
+          <div id="toolbar">
+            <button id="btn-remove-entry" class="btn btn-info">Remove entry</button>
+          </div>
+          <table id="balanceobjects" class="table"
+            data-ajax-options="ajaxOptions"
+            data-auto-refresh="true"
+            data-auto-refresh-status="true"
+            data-cache="false"
+            data-click-to-select="true"
+            data-cookie="true"
+            data-cookie-id-table="balanceobjects"
+            data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
+            data-detail-view="false"
+            data-disable-control-when-search="true"
+            data-filter-control="true"
+            data-header-style="headerStyleAlignTop"
+            data-icons="icons"
+            data-maintain-meta-data="true"
+            data-reorderable-columns="true"
+            data-show-button-text="true"
+            data-show-columns="true"
+            data-show-fullscreen="true"
+            data-show-refresh="true"
+            data-show-search-clear-button="true"
+            data-show-toggle="false"
+            data-toggle="table"
+            data-toolbar="#toolbar"
+            data-url="/balancedata"
+            >
+            <thead>
+              <tr>
+                <th class="align-top" data-field="state" data-checkbox="true"></th>
+                <th class="align-top" data-field="DateTime" data-sortable="true" data-filter-control="input" data-formatter="formatDate">Date & Time</th>
+                <th class="align-top" data-field="Pool" data-sortable="true" data-filter-control="select">Pool</th>
+                <th class="align-top" data-field="Wallet" data-sortable="true" data-visible="true" data-filter-control="select">Username or Wallet</th>
+                <th class="align-top" data-field="Currency" data-sortable="true" data-filter-control="select">Currency</th>
+                <th class="align-top" data-field="Pending" data-align="right" data-sortable="true" data-visible="true" data-formatter="format10DecimalDigits">Pending</th>
+                <th class="align-top" data-field="Balance" data-align="right" data-sortable="true" data-formatter="format10DecimalDigits">Balance</th>
+                <th class="align-top" data-field="Unpaid" data-align="right" data-sortable="true" data-visible="true" data-formatter="format10DecimalDigits">Unpaid</th>
+                <th class="align-top" data-field="Earnings" data-align="right" data-sortable="true" data-visible="true" data-formatter="format10DecimalDigits">Earnings</th>
+                <th class="align-top" data-field="Delta" data-align="right" data-sortable="true" data-visible="true" data-formatter="format10DecimalDigits">Delta</th>
+                <th class="align-top" data-field="Payout" data-align="right" data-sortable="true" data-visible="true" data-formatter="format10DecimalDigits">Payout</th>
+                <th class="align-top" data-field="Paid" data-align="right" data-sortable="true" data-visible="true" data-formatter="format10DecimalDigits">Paid</th>
+                <th class="align-top" data-field="HiddenPending" data-align="right" data-sortable="true" data-visible="false" data-formatter="format10DecimalDigits">Hidden Pending</th>
+              </tr>
+            </thead>
+          </table>
+<!-- Start of page scripts 'balalancedata.html' -->
+          <script type="text/javascript">
+            var $table = $('#balanceobjects');
+
+            $table.bootstrapTable({
+              async: 'true',
+              onAll: function() { 
+                try {
+                  document.getElementById('btn-remove-entry').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                }
+                catch {}
+              },
+              autoRefreshInterval: parseInt(Math.max(config.Interval, 30)), // refresh once per interval, at least 30 seconds
+              height: $(window).height() - $('#balanceobjects').offset().top - 20
+            });
+
+            $(document).ready(function () {
+              $('#btn-remove-entry').click(function () {
+                var $data = $table.bootstrapTable('getSelections');
+                if ($data.length >= 1) {
+                  $('body').css('cursor', 'progress');
+                  $url = '/functions/balancedata/remove';
+                  $payload = {'Data': JSON.stringify($data.map($element => ({DateTime: $element.DateTime, Pool: $element.Pool, Currency: $element.Currency, Wallet: $element.Wallet})))};
+                  $('.modal-body').load($url, $payload, function() {
+                    $('body').css('cursor', 'default');
+                    $('.modal-title').text($('#btn-remove-entry').text());
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
+                }
+              });
+            });
+
+            $(window).resize(function () {
+              if (window.RT) clearTimeout(window.RT);
+              window.RT = setTimeout(function() {
+                this.location.reload(false); /* false to get page from cache */
+              }, 200);
+            })
+          </script>
+<!-- End of page scripts 'balalancedata.html' -->
+<!--#include file="/parts/foot.html" -->

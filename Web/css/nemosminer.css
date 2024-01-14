@@ -1,0 +1,263 @@
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1rem;
+}
+
+/*
+* Footer
+*/
+footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  text-align: right;
+  padding-left: 30px;
+  padding-right: 30px;
+  padding-top: 6px;
+  z-index: 99;
+  background-color: rgb(235, 235, 235);
+  height: 35px;
+}
+
+/*
+ * Sidebar
+ */
+.sidebar {
+  width: 260px;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10; /* Behind the navbar */
+  padding: 75px 0 0; /* Height of navbar */
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+@media (min-width: 768px) {
+  .main {
+    top: 10px;
+    padding-right: 30px;
+    padding-left: 290px;
+  }
+}
+
+.sidebar-sticky {
+  position: relative;
+  top: 0;
+  bottom: 0;
+  padding-left: 1rem;
+  padding-top: 1.5rem;
+  padding-bottom: 1rem;
+  height: calc(100vh - 75px - 35px);
+  overflow-x: auto; /* Scrollable contents if viewport is narrower than content. */
+  overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+}
+
+.sidebar .nav-link {
+  font-weight: 500;
+  color: black;
+}
+
+.sidebar .nav-link .feather {
+  color: #999;
+}
+
+.sidebar .nav-link.active {
+  color: #007bff;
+}
+
+.sidebar .nav-link:hover .feather,
+.sidebar .nav-link.active .feather {
+  color: inherit;
+}
+
+.sidebar-heading {
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+/*
+ * Content
+ */
+[role="main"] {
+  padding-top: 75px; /* Space for fixed navbar */
+}
+
+/*
+ * Navbar
+ */
+.navbar .form-control {
+  border-width: 0;
+  border-radius: 0;
+}
+
+.navbar-brand {
+  padding-left: 2rem;
+  padding-top: 1.4rem;
+  padding-bottom: 1.4rem;
+  font-size: 1.4rem;
+}
+
+.navbar-button {
+  position: absolute;
+  left: 290px;
+}
+
+.navbar-summary {
+  position: absolute;
+  padding-right: 30px;
+  padding-top: 0.6rem;
+  left: 770px;
+  color: white;
+  font-size: 1.2rem;
+  height: 75px;
+  align-items : center;
+  justify-content : center;
+  overflow-y: auto;
+}
+
+/*
+ * Utilities
+ */
+.border-top { border-top: 1px solid #e5e5e5; }
+.border-bottom { border-bottom: 1px solid #e5e5e5; }
+
+.column {
+  float: left;
+  width: 50%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.hidden{
+  display: none;
+  visibility: hidden;
+}
+
+/*
+* Modal
+*/
+.modal {
+  padding: 1%;
+  top: 20%;
+  white-space: pre-wrap; /* allow \n for new line */
+}
+
+.modal-lg {
+  min-width: auto;
+  max-width: fit-content;
+}
+
+.modal-dialog {
+  overflow-y: initial !important
+}
+
+.modal-body {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+/*
+* Form
+*/
+form .error {
+  color: #ff0000;
+  display: inline;
+}
+
+legend {
+  background-color: #d1ecf1;
+  padding: 6px 6px;
+  border-radius: 4px;
+}
+
+/*
+* Table colors
+*/
+.color-benchmarking {
+  background-color: rgb(241, 255, 229);
+}
+.color-disabled {
+  background-color: rgb(255, 243, 231);
+}
+.color-failed {
+  background-color: rgb(255, 230, 230);
+}
+.color-idle {
+  background-color: rgb(230, 248, 252);
+}
+.color-launched {
+  background-color: rgb(229, 255, 229);
+}
+.color-running {
+  background-color: rgb(212, 244, 212);
+}
+.color-starting {
+  background-color: rgb(245, 255, 245);
+}
+.color-stopped {
+  background-color: rgb(230, 248, 252);
+}
+.color-stopping {
+  background-color: rgb(245, 255, 245);
+}
+.color-unavailable {
+  background-color: rgb(254, 245, 220);
+}
+.color-warmingup {
+  background-color: rgb(231, 255, 230);
+}
+
+/*
+* Toggle Switch
+*/
+input[type=checkbox].toggle-switch {
+  font-size: 5px;
+  appearance: none;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  width: 6em;
+  height: 3em;
+  border-radius: 3em;
+  background-color: #7dbcff;
+  outline: 0;
+  cursor: pointer;
+  transition: background-color 0.09s ease-in-out;
+  top: 1px;
+  position: relative;
+}
+
+input[type=checkbox].toggle-switch:checked {
+  background-color: #007bff;
+}
+
+input[type=checkbox].toggle-switch:disabled {
+  background-color: #ddd;
+}
+
+input[type=checkbox].toggle-switch::after {
+  content: '';
+  width: 3em;
+  height: 3em;
+  background-color: white;
+  border-radius: 3em;
+  position: absolute;
+  transform: scale(0.7);
+  left: 0;
+  transition: left 0.09s ease-in-out;
+  box-shadow: 0 0.1em rgba(0, 0, 0, 0.5);
+}
+
+input[type=checkbox].toggle-switch:checked::after {
+  left: 3em;
+}
+
+select {
+  height: 1.75em;
+}

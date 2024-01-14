@@ -1,0 +1,88 @@
+{
+  "HiveOn": {
+    "Algorithm": [
+      "+EtcHash",
+      "+KawPow"
+    ]
+  },
+  "MiningPoolHub": {
+    "Algorithm": [
+      "+EtcHash",
+      "+KawPow",
+      "+VertHash"
+    ]
+  },
+  "NiceHash": {
+    "Algorithm": [
+      "+Autolykos2",
+      "+Equihash1254",
+      "+Equihash1445",
+      "+EtcHash",
+      "+EtHash",
+      "+KawPow",
+      "+kHeavyHash",
+      "+Neoscrypt",
+      "+VersusHash"
+    ]
+  },
+  "MiningDutch": {
+    "Algorithm": [
+      "+Allium",
+      "+Equihash1445",
+      "+Equihash1927",
+      "+Neoscrypt",
+      "+VertHash",
+      "+Yescrypt",
+      "+KawPoW"
+    ]
+  },
+  "ProHashing": {
+    "Algorithm": [
+      "+Autolykos2",
+      "+Equihash1445",
+      "+Ethash",
+      "+EtcHash",
+      "+GhostRider",
+      "+KawPow",
+      "+Neoscrypt"
+    ]
+  },
+  "ZergPool": {
+    "Algorithm": [
+      "+Allium",
+      "+Argon2d16000",
+      "+CurveHash",
+      "+Equihash1254",
+      "+Equihash1927",
+      "+EvrProgPow",
+      "+FiroPow",
+      "+HeavyHash",
+      "+NeoscryptXaya",
+      "+ProgPowZ",
+      "+SHA256dt",
+      "+SHA512256d",
+      "+Skein2",
+      "+UbqHash",
+      "+VertHash",
+      "+YescryptR16"
+    ]
+  },
+  "ZPool": {
+    "Algorithm": [
+      "+Anime",
+      "+Argon2d16000",
+      "+Bitcore",
+      "+C11",
+      "+CurveHash",
+      "+GhostRider",
+      "+Equihash1254",
+      "+KawPow",
+      "+NeoscryptXaya",
+      "+SHA256csm",
+      "+Skein2",
+      "+Verthash",
+      "+Yescrypt",
+      "+YescryptR16"
+    ]
+  }
+}

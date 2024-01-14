@@ -1,0 +1,27 @@
+[
+  {
+    "Name": "grantemsley",
+    "Wallets": {
+      "BTC": "16Qf1mEk5x2WjJ1HhfnvPnqQEi2fvCeity"
+    },
+    "MiningPoolHubUserName": "grantemsley"
+  },
+  {
+    "Name": "Nemo",
+    "Wallets": {
+      "BTC": "1QGADhdMRpp9Pk5u5zG1TrHKRrdK5R81TE"
+    },
+    "MiningPoolHubUserName": "nemo"
+  },
+  {
+    "Name": "uselessguru",
+    "Wallets": {
+      "BTC": "1GPSq8txFnyrYdXL8t6S94mYdF8cGqVQJF",
+      "ETC": "0x7CF99ec9029A98AFd385f106A93977D8105Fec0f",
+      "ETH": "0x92e6F22C1493289e6AD2768E1F502Fc5b414a287"
+    },
+    "MiningDutchUserName": "UselessGuru",
+    "MiningPoolHubUserName": "UselessGuru",
+    "ProHashingUserName": "UselessGuru"
+  }
+]

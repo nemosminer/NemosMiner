@@ -1,0 +1,272 @@
+<!--#include file="/parts/head.html" -->
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h2 id="title" data-navbaractive="navminersmostprofitable">Most Profitable Miners</h2>
+          </div>
+          <div class="alert alert-info" role="alert">These are the most profitable miners per algorithm and device.</div>
+          <div id="toolbar">
+            <button id="btn-re-benchmark" class="btn btn-primary" disabled title="The marked miners will re-benchmark&#10;Use this if the recorded hashrate is unreal or to re-enable disabled miners">Re-benchmark</button>
+            <button id="btn-re-measure" class="btn btn-primary" disabled title="The marked miners will re-measure power consumption&#10;Use this if the recorded power consumption is unreal">Re-measure Power Consumption</button>
+            <button id="btn-failed" class="btn btn-warning" disabled title="The marked miners will be marked as failed&#10;Use this if the miners fail benchmarking or produce unpredictable results">Mark as failed</button>
+            <button id="btn-disable" class="btn btn-danger" disabled title="The marked miners will be marked as disabled&#10;To re-enable trigger re-benchmarking">Disable</button>
+            <button id="btn-remove-watchdog" class="btn btn-info" disabled title="Remove the watchdog timers for the marked miners">Remove Watchdog</button>
+          </div>
+          <table id="miners" class="table"
+            data-ajax-options="ajaxOptions"
+            data-auto-refresh="true"
+            data-auto-refresh-status="false"
+            data-cache="true"
+            data-click-to-select="true"
+            data-cookie="true"
+            data-cookie-id-table="minersmostprofitable"
+            data-cookies-enabled="['bs.table.hiddenColumns', 'bs.table.columns']"
+            data-detail-formatter="detailFormatter"
+            data-detail-view="true"
+            data-disable-control-when-search="true"
+            data-filter-control="true"
+            data-header-style="headerStyleAlignTop"
+            data-icons="icons"
+            data-maintain-meta-data="true"
+            data-reorderable-columns="true"
+            data-response-handler="formatMiners"
+            data-show-button-text="true"
+            data-show-columns="true"
+            data-show-fullscreen="true"
+            data-show-refresh="true"
+            data-show-search-clear-button="true"
+            data-show-toggle="true"
+            data-toggle="table"
+            data-toolbar="#toolbar"
+            data-undefined-text=""
+            data-url="/miners/mostprofitable"
+            >
+            <thead>
+              <tr>
+                <th data-switchable="false" data-field="SubStatus" data-class="hidden statuscolor"></th>
+                <th data-field="state" data-checkbox="true"></th>
+                <th data-field="tName" data-sortable="true" data-filter-control="input" data-filter-strict-search="false">Name</th>
+                <th data-field="tBaseName" data-sortable="true" data-filter-control="select" data-visible="false">Miner</th>
+                <th data-field="Version" data-sortable="true" data-filter-control="select" data-visible="false">Version</th>
+                <th data-field="CommandLine" data-sortable="true" data-filter-control="input" data-visible="false">CommandLine</th>
+                <th data-field="tDevices" data-sortable="true" data-filter-control="select">Devices</th>
+                <th data-field="Type" data-sortable="true" data-filter-control="select" data-visible="false">Type</th>
+                <th data-field="tStatus" data-sortable="true" data-filter-control="select">Status</th>
+                <th data-field="Reasons" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Reasons</th>
+                <th data-field="Earning_Bias" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning Bias</th>
+                <th data-field="Earning" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Earning</th>
+                <th data-field="PowerCost" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Power Cost</th>
+                <th data-field="Profit_Bias" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Profit Bias</th>
+                <th data-field="Profit" class="addlocalcurrency" data-align="right" data-sortable="true" data-formatter="formatDecimalsFromBTC" data-title-tooltip="per 24hrs (estimated)">Profit</th>
+                <th data-field="PowerConsumption" data-align="right" data-sortable="true" data-formatter="formatWatt" class="text-nowrap" data-title-tooltip="per 24hrs (estimated)">Power</th>
+                <th data-field="tTotalMiningDuration" data-sortable="true" data-visible="false">Total Mining Duration</th>
+                <th data-field="tEarningAccuracy" data-align="right" data-sortable="true">Accuracy</th>
+                <th data-field="tPrimaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Primary Algorithm</th>
+                <th data-field="tPrimaryAlgorithmVariant" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Primary Algorithm (Variant)</th>
+                <th data-field="tPrimaryCurrency" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Primary Currency</th>
+                <th data-field="tPrimaryCoinName" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Primary CoinName</th>
+                <th data-field="tPrimaryPool" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Primary Pool</th>
+                <th data-field="tPrimaryPoolVariant" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Primary Pool (Variant)</th>
+                <th data-field="tPrimaryPoolUser" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Primary User</th>
+                <th data-field="tPrimaryHashrate" data-align="right" data-sortable="true" data-formatter="formatHashrateValue" class="text-nowrap">Primary<br>Hashrate</th>
+                <th data-field="tPrimaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Primary Pool Fee</th>
+                <th data-field="tPrimaryMinerFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Primary Algorithm Miner Fee</th>
+                <th data-field="tSecondaryAlgorithm" data-sortable="true" data-filter-control="select" data-filter-strict-search="true">Secondary Algorithm</th>
+                <th data-field="tSecondaryAlgorithmVariant" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Secondary Algorithm (Variant)</th>
+                <th data-field="tSecondaryCurrency" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Secondary Currency</th>
+                <th data-field="tSecondaryCoinName" data-sortable="true" data-filter-control="select" data-filter-strict-search="true" data-visible="false">Secondary CoinName</th>
+                <th data-field="tSecondaryPool" data-sortable="true" data-filter-control="select" data-filter-strict-search="false">Secondary Pool</th>
+                <th data-field="tSecondaryPoolVariant" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Secondary Pool (Variant)</th>
+                <th data-field="tSecondaryPoolUser" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">Secondary User</th>
+                <th data-field="tSecondaryHashrate" data-align="right" data-sortable="true" data-formatter="formatHashrateValue" class="text-nowrap">Secondary<br>Hashrate</th>
+                <th data-field="tSecondaryPoolFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Secondary Pool Fee</th>
+                <th data-field="tSecondaryMinerFee" data-align="right" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-formatter="formatPercent" data-width=1 data-visible="false">Secondary Algorithm Miner Fee</th>
+                <th data-field="API" data-sortable="true" data-filter-control="select" data-visible="false">Miner API</th>
+                <th data-field="Port" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">API Port</th>
+                <th data-field="MinDataSample" data-sortable="true" data-filter-control="select" data-visible="false">Min. Data Samples</th>
+                <th data-field="tWarmupTimes0" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false" data-title-tooltip="Seconds until miner must send first sample&#10;If no sample is received miner will be marked as failed">WarmupTime [0]</th>
+                <th data-field="tWarmupTimes1" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false" data-title-tooltip="Seconds until miner sends stable hashrates&#10;that will count for benchmarking">WarmupTime [1]</th>
+                <th data-field="Updated" data-sortable="true" data-formatter="formatTimeSince" data-width=250 data-visible="false">Updated</th>
+                <th data-field="EnvVars" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Environment Variables</th>
+                <th data-field="Activated" data-sortable="true" data-filter-control="input" data-filter-strict-search="false" data-visible="false">Activated</th>
+                <th data-field="WindowStyle" data-sortable="true" data-filter-control="select" data-visible="false">WindowStyle</th>
+                <th data-field="Available" data-sortable="true" data-filter-control="select" data-visible="false">Available</th>
+                <th data-field="Benchmark" data-sortable="true" data-filter-control="select" data-visible="false">Benchmark</th>
+                <th data-field="MeasurePowerConsumption" data-sortable="true" data-filter-control="select" data-visible="false">Measure PowerConsumption</th>
+                <th data-field="ReadPowerConsumption" data-sortable="true" data-filter-control="select" data-visible="false">Read PowerConsumption</th>
+                <th data-field="Best" data-sortable="true" data-filter-control="select" data-visible="false">Best</th>
+                <th data-field="MostProfitable" data-sortable="true" data-filter-control="select" data-visible="false">Most Profitable</th>
+                <th data-field="Disabled" data-sortable="true" data-filter-control="select" data-visible="false">Disabled</th>
+                <th data-field="Restart" data-sortable="true" data-filter-control="select" data-visible="false">Restart</th>
+                <th data-field="KeepRunning" data-sortable="true" data-filter-control="select" data-visible="false">Keep Running</th>
+                <th data-field="ContinousCycle" data-sortable="true" data-filter-control="select" data-visible="false">Continous Cycles</th>
+                <th data-field="Prioritize" data-sortable="true" data-filter-control="select" data-visible="false">Prioritize</th>
+                <th data-field="MinerSet" data-sortable="true" data-filter-control="select" data-filter-strict-search="false" data-visible="false">MinerSet</th>
+              </tr>
+            </thead>
+          </table>
+<!-- Start of page scripts 'minersmostprofitable.html' -->
+          <script type="text/javascript">
+            var $table = $('#miners');
+
+            $table.bootstrapTable({
+              async: 'true',
+              onLoadSuccess: function() {
+                if (config.CalculatePowerCost == true) {
+                  $table.bootstrapTable('showColumn', 'Profit_Bias');
+                  $table.bootstrapTable('showColumn', 'Profit');
+                  $table.bootstrapTable('showColumn', 'PowerConsumption');
+                  $table.bootstrapTable('showColumn', 'PowerCost');
+                } else {
+                  $table.bootstrapTable('hideColumn', 'Profit_Bias');
+                  $table.bootstrapTable('hideColumn', 'Profit');
+                  $table.bootstrapTable('hideColumn', 'PowerConsumption');
+                  $table.bootstrapTable('hideColumn', 'PowerCost');
+                }
+              },
+
+              // onExpandRow: function(index, row, $detail) {
+              //   $.ajax({
+              //     async: false,
+              //     timeout: 10,
+              //     url: '/functions/getminerdetail?' + row.Info,
+              //     success: function(result) {
+              //       var html = [];
+              //       $.each(result, function (key, value) {
+              //         if (typeof value === 'string') html.push(`<p class="mb-0"><b>${key}:</b> ${JSON.stringify(value).replaceAll('\\\\', '\\')}</p>`);
+              //         else html.push(`<p class="mb-0"><b>${key}:</b> ${JSON.stringify(value)}</p>`);
+              //       });
+              //       $detail.html(html);
+              //     },
+              //   });
+              // },
+
+              onPostBody: function () {
+                if (config.UseColorForMinerStatus == true) {
+                  $(".statuscolor").each(function () {
+                    if (this.innerText) $(this).parent('tr').addClass('color-' + this.innerText.toLowerCase());
+                  });
+                };
+              },
+
+              onReorderColumn: function() {
+                $(".addlocalcurrency").each(function () {
+                  this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.MainCurrency + ')';
+                });
+              },
+
+              onAll: function() {
+                try {
+                  document.getElementById('btn-re-benchmark').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                  document.getElementById('btn-re-measure').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                  document.getElementById('btn-failed').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                  document.getElementById('btn-disable').disabled = !Boolean($table.bootstrapTable('getSelections').length);
+                } catch {}
+              },
+
+              autoRefreshInterval: parseInt(Math.max(config.Interval, 30)), // refresh once per interval, at least 30 seconds
+              height: $(window).height() - $table.offset().top + 26
+            });
+
+            $(document).ready(function () {
+              $('#btn-re-benchmark').click(function () {
+                var $data = $table.bootstrapTable('getSelections');
+                if ($data.length >= 1) {
+                  $('body').css('cursor', 'progress');
+                  $url = '/functions/stat/remove';
+                  $payload = {
+                    'Miners': JSON.stringify($data.map($element => ({Info: $element.Info}))),
+                    'Type' : 'Hashrate'
+                  };
+                  $('.modal-body').load($url, $payload, function() {
+                    $('.modal-title').text($('#btn-re-benchmark').text());
+                    $('body').css('cursor', 'default');
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
+                }
+              });
+
+              $('#btn-re-measure').click(function () {
+                var $data = $table.bootstrapTable('getSelections');
+                if ($data.length >= 1) {
+                  $('body').css('cursor', 'progress');
+                  $url = '/functions/stat/remove';
+                  $payload = {
+                    'Miners': JSON.stringify($data.map($element => ({Info: $element.Info}))),
+                    'Type' : 'PowerConsumption'
+                  };
+                  $('.modal-body').load($url, $payload, function() {
+                    $('.modal-title').text($('#btn-re-measure').text());
+                    $('body').css('cursor', 'default');
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
+                }
+              });
+
+              $('#btn-failed').click(function () {
+                var $data = $table.bootstrapTable('getSelections');
+                if ($data.length >= 1) {
+                  $('body').css('cursor', 'progress');
+                  $url = '/functions/stat/set';
+                  $payload = {
+                    'Miners': JSON.stringify($data.map($element => ({Info: $element.Info}))),
+                    'Type': 'Hashrate',
+                    'Value': 0 
+                  };
+                  $('.modal-body').load($url, $payload, function() {
+                    $('.modal-title').text($('#btn-failed').text());
+                    $('body').css('cursor', 'default');
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
+                }
+              });
+
+              $('#btn-disable').click(function () {
+                var $data = $table.bootstrapTable('getSelections');
+                if ($data.length >= 1) {
+                  $('body').css('cursor', 'progress');
+                  $url = '/functions/stat/disable';
+                  $payload = {
+                    'Miners': JSON.stringify($data.map($element => ({Info: $element.Info})))
+                  };
+                  $('.modal-body').load($url, $payload, function() {
+                    $('.modal-title').text($('#btn-disable').text());
+                    $('body').css('cursor', 'default');
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
+                }
+              });
+
+              $('#btn-remove-watchdog').click(function () {
+                var $data = $table.bootstrapTable('getSelections');
+                if ($data.length >= 1) {
+                  $('body').css('cursor', 'progress');
+                  $url = '/functions/watchdogtimers/remove';
+                  $payload = {
+                    'Miners': JSON.stringify($data.map($element => ({Name: $element.Name, Algorithms: $element.Algorithms})))
+                  };
+                  $('.modal-body').load($url, $payload, function() {
+                    $('.modal-title').text($('#btn-remove-watchdog').text());
+                    $('body').css('cursor', 'default');
+                    $('#myModal').modal({show:true});
+                  });
+                  $table.bootstrapTable('refresh');
+                }
+              });
+
+              $(".addlocalcurrency").each(function () {
+                this.childNodes[0].innerText = this.childNodes[0].innerText + '\n(' + config.MainCurrency + ')';
+              });
+            });
+
+            $(window).resize(function () {
+              if (window.RT) clearTimeout(window.RT);
+              window.RT = setTimeout(function() {
+                this.location.reload(false); /* false to get page from cache */
+              }, 200);
+            })
+          </script>
+<!-- End of page scripts 'minersmostprofitable.html' -->
+<!--#include file="/parts/foot.html" -->

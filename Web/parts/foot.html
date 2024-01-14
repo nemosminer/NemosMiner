@@ -1,0 +1,76 @@
+        </main>
+      </div>
+    </div>
+    <footer id="footer"></footer>
+  </body>
+
+<!-- Start of page scripts 'foot.html'-->
+  <script type='text/javascript'>
+
+    $(document).ready(function () {
+
+      // Set the active sidebar item
+      $(function() {
+        $('#'+$('#title').data('navbaractive')).addClass('active');
+      });
+
+      $('#btn-miningpause').click(function () {
+        $command = '/functions/mining/pause';
+        $('.modal-body').load($command, function() {
+          if (this.outerText) {
+            $('.modal-title').text($('#btn-miningpause').text());
+            $('#myModal').modal({show:true});
+          };
+        });
+        document.getElementById('btn-miningpause').disabled = true;
+        document.getElementById('btn-miningstart').disabled = true;
+        document.getElementById('btn-miningstop').disabled = true;
+        updateSummary();
+      });
+
+      $('#btn-miningstart').click(function () {
+        $command = '/functions/mining/start';
+        $('.modal-body').load($command, function() {
+          if (this.outerText) {
+            $('.modal-title').text($('#btn-miningstart').text());
+            $('#myModal').modal({show:true});
+          };
+        });
+        document.getElementById('btn-miningpause').disabled = true;
+        document.getElementById('btn-miningstart').disabled = true;
+        document.getElementById('btn-miningstop').disabled = true;
+        updateSummary();
+      });
+
+      $('#btn-miningstop').click(function () {
+        $command = '/functions/mining/stop';
+        $('.modal-body').load($command, function() {
+          if (this.outerText) {
+            $('.modal-title').text($('#btn-miningstop').text());
+            $('#myModal').modal({show:true});
+          };
+        });
+        document.getElementById('btn-miningpause').disabled = true;
+        document.getElementById('btn-miningstart').disabled = true;
+        document.getElementById('btn-miningstop').disabled = true;
+        updateSummary();
+      });
+
+      updateSummary();
+      updateVersion();
+      updateButtonStatus();
+
+      // Update data once per interval
+      window.setInterval(function() { 
+        updateData();
+        updateSummary();
+        updateButtonStatus();
+        if (typeof updatePoolBalances === "function") updatePoolBalances();
+      }, config.Interval * 1000);
+
+      if (version) $('#footer').empty().append(version.join('&nbsp;/&nbsp;') + '&nbsp;/&nbsp;All earnings and profit numbers are estimates based on data provided by the pools APIs&nbsp;/&nbsp&copy; www.nemosminer.com');
+
+    });
+</script>
+<!-- End of page scripts 'foot.html'-->
+</html>

@@ -1,0 +1,70 @@
+Command Line:
+-p[gpu_id]"Name"
+apply profile "Name" to GPU with id=[gpu_id]
+-c[gpu_id]"Name"
+same as above, but with confirmation message that application started and everything went ok.
+-r[gpu_id]
+reset GPU with id=[gpu_id]
+cp[gpu_id]"Name"
+compare current values of GPU with id=[gpu_id] with profile "Name", and eventually set this profile if not equal
+cm[gpu_id]"Name"
+compare current values of GPU with id=[gpu_id] with profile "Name", and eventually set this profile if not equal, with additional message if not equal found
+co[gpu_id]"Name"
+only compare current values of GPU with id=[gpu_id] with profile "Name", with message if not equal found
+-consoleonly
+displays all messages (eg. errors) in cmd.exe console window, instead of gui messages. Only commands that are put after -consoleonly are affected, example:
+"OverdriveNTool.exe" -consoleonly -r0 -p0"1" -r1 -p1"1" -r2 -p2"2" - will affect all commands
+"OverdriveNTool.exe" -r0 -p0"1" -r1 -consoleonly -p1"1" -r2 -p2"2" - will affect -p1"1" -r2 -p2"2" commands only
+-showgui
+when added to commandline normal GUI will be displayed after program finishes with all other commands
+-wait[miliseconds]
+program waits specified time before parsing next command, useful if you want to add some delay for example on windows startup, can be used multiple times in one commandline
+example: OverdriveNTool.exe -wait3000 -r0 -wait500 -p0profile1
+
+[gpu_id] - it's the first number taken from GPU description, for single video card it's 0
+"Name" - name of the profile that was saved ealier, must be quoted if has spaces inside
+
+example:
+OverdriveNTool.exe -p0myProfile -p1"Profile 2"
+In this example application starts without gui, then sets "myProfile" to GPU with id=0 and "Profile 2" to GPU with id=1 and then exit.
+
+commands can be used all together, for example:
+OverdriveNTool.exe -p0myProfile -r0 co1"Profile 1"
+On configs with more than 10 GPUs [gpu_id] must have 2 digits, for GPUs 0-9 leading 0 must be added, example: 00,01,02,03,04,05,06,07,08,09,10,11,12. Usage example: -p05"Name"
+It's possible to use * as [gpu_id], which means it affects all supported GPUs, example:
+-r* -p*MyProfile -p2"Custom profile" cm*MyProfile
+
+Advanced:
+-ac[gpu_id] GPU_P[num]=[value];[value][;0] Mem_P[num]=[value];[value][;0] Fan_Min=[value] Fan_Max=[value] Fan_Target=[value] Fan_Acoustic=[value] Power_Temp=[value] Power_Target=[value]
+-ac is similar to -p command, applies values but without using profiles. Format is identical to ini profile. All not specified values will remain untouched. Can be used with other commands (-consoleonly, * as [gpu_id], -r, -p... etc.)
+[num] - Pstate number, using # as [num] will apply to highest available Pstate for scpecified GPU
+[value] – value, for GPU and memory PState first value is clock (MHz), second is voltage (mV), third optional ;0 makes this Pstate disabled.
+Putting * as Memory or GPU value will skip applying this value, for example:
+-ac0 GPU_P7=*;800 Mem_P3=1000;* (only applies GPU_P7 voltage=800mV and Memory P3 clock=1000MHZ)
+-ac0 GPU_P4=*;*;0 (only disables GPU_P4 without changing it’s values)
+
+For I2C settings use –ac with Offset=[value] LLC=[value] PhaseGain=[value] CurrentScale=[value]
+I2C must be enabled and supported for specified GPU, otherwise it will not work. Offset value is multiplied by 6,25mV, so 10 = +62,5mV, -5 = -31,25mV
+Example:
+-ac0 Offset=10 LLC=0
+-ac0 Offset=-5 LLC=1 PhaseGain=000000 CurrentScale=60
+
+Commands example:
+-ac0 GPU_P7=1200;800 Mem_P2=1000;850 Fan_Min=1080 Fan_Max=1700 Fan_Target=70 Fan_Acoustic=700 Power_Temp=90 Power_Target=50 -ac1 GPU_P#=1200;800 Mem_P#=1000;850
+-ac0 GPU_P7=1200;800;0 Mem_P3=1000;850 Fan_Min=1080 Fan_Max=1700
+-consoleonly -r5 -ac5 GPU_P#=1200;800 Mem_P#=1000;850 Fan_Min=1080 Fan_Max=1700 -ac4 Fan_Target=70 Fan_Acoustic=700 Power_Temp=90 Power_Target=50
+-ac* Power_Target=-1 GPU_P7=*;*;0
+-wait1000 -r0 -ac0 GPU_P7=1200;800 Mem_P1=700;850;0 Mem_P2=750;850;0 Mem_P3=800;850;0 Mem_P4=1000;850 Fan_Min=1080 Fan_Max=1700 Fan_Target=70 Fan_Acoustic=700 Power_Temp=90 Power_Target=50
+-ac0 Power_Target=50 -ac1 Power_Target=-50 -ac2 Fan_Max=1700 Fan_Min=1080 -ac1 Fan_Acoustic=700
+
+-getcurrent - prints current values for all supported GPUs in cmd console window.
+-t[gpu_id]
+restart GPU with id=[gpu_id]. It's similar to devices manager enable/disable GPU. Useful for immediately apply registry changes done to AMD keys like SoftPowerPlay table. It requires admin rigths to work.
+
+Additional info:
+-Workaround for bug in 17.7.2 drivers, when driver sometimes uses default voltages instead of user settings: use reset and re-apply profile.
+-It's possible to disable/enable each P state. To do this click on P0, P1.. etc. label. If P state is disabled it will not be used by GPU.
+-I2C currently supports: IR3567B (RX470, RX480, some RX5xx), up9505 (MSI RX5xx)
+-If you prefer to not touch fan settings it's possible to deactivate Fan section for each GPU. To do this press Ctrl + double click somewhere on the Fan box. It's saved per gpu_id, so GUI or commandline will not touch fan settings for such GPU.
+-To open Settings or SoftPowerPlayTable editor left click on top-left program icon, or right click on the titlebar.
+-To change "friendly name" first enable it in settings, than right click on the gpu list to open menu
